@@ -1,0 +1,73 @@
+[b1       9s] test: 400 molecules of 400; 1213 spectra
+[b1      53s] store: 2,539,608 spectra, 275,810 train structures
+[b1      55s] paths: {"train": "/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/train.parquet", "tier": "/kaggle/input/casmi26-pubchem-popularity-prior/casmi26-pubchem-tier", "pop": "/kaggle/input/casmi26-pubchem-popularity-prior", "pool": "/kaggle/input/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/pool_meta.parquet", "fold_safe": "/kaggle/input/casmi26-fold-safe-fpnet", "v3": "/kaggle/input/casmi26-attributed-v4g-reproduction-assets/casmi26-v3-models/code", "glacier": "/kaggle/input/casmi26-attributed-v4g-reproduction-assets/casmi26-glacier", "iceberg": "/kaggle/input/casmi26-attributed-v4g-reproduction-assets/casmi26-iceberg", "work": "/kaggle/working", "store": "None", "runner_python": "None"}
+[b1      58s] COCONUT candidate store: 436,389 structures
+[b1      68s] FPNet folds [0] loaded on cuda; tier rows 105,875,489; pool 710,701
+[b1     139s] library index: 274,186 official identities with reference spectra
+[b1     535s] 20/400 | window median 7732 | shortlist median 249 | lib_max>=0.6: 0 | 19.8s/mol
+[b1     961s] 40/400 | window median 8745 | shortlist median 249 | lib_max>=0.6: 0 | 20.5s/mol
+[b1    1375s] 60/400 | window median 9140 | shortlist median 250 | lib_max>=0.6: 0 | 20.6s/mol
+[b1    1812s] 80/400 | window median 9684 | shortlist median 249 | lib_max>=0.6: 0 | 20.9s/mol
+[b1    2265s] 100/400 | window median 9990 | shortlist median 250 | lib_max>=0.6: 0 | 21.3s/mol
+[b1    2667s] 120/400 | window median 10030 | shortlist median 250 | lib_max>=0.6: 0 | 21.1s/mol
+[b1    3189s] 140/400 | window median 10299 | shortlist median 251 | lib_max>=0.6: 0 | 21.8s/mol
+[b1    3690s] 160/400 | window median 10387 | shortlist median 252 | lib_max>=0.6: 0 | 22.2s/mol
+[b1    4198s] 180/400 | window median 10514 | shortlist median 252 | lib_max>=0.6: 0 | 22.6s/mol
+[b1    4641s] 200/400 | window median 10688 | shortlist median 252 | lib_max>=0.6: 0 | 22.5s/mol
+[b1    5047s] 220/400 | window median 10514 | shortlist median 252 | lib_max>=0.6: 0 | 22.3s/mol
+[b1    5490s] 240/400 | window median 10432 | shortlist median 252 | lib_max>=0.6: 0 | 22.3s/mol
+[b1    5975s] 260/400 | window median 10627 | shortlist median 252 | lib_max>=0.6: 0 | 22.4s/mol
+[b1    6388s] 280/400 | window median 10514 | shortlist median 252 | lib_max>=0.6: 0 | 22.3s/mol
+[b1    6799s] 300/400 | window median 10550 | shortlist median 252 | lib_max>=0.6: 0 | 22.2s/mol
+[b1    7165s] 320/400 | window median 10411 | shortlist median 252 | lib_max>=0.6: 0 | 22.0s/mol
+[b1    7709s] 340/400 | window median 10550 | shortlist median 252 | lib_max>=0.6: 0 | 22.3s/mol
+[b1    8194s] 360/400 | window median 10656 | shortlist median 252 | lib_max>=0.6: 0 | 22.4s/mol
+[b1    8660s] 380/400 | window median 10656 | shortlist median 252 | lib_max>=0.6: 0 | 22.4s/mol
+[b1    9086s] 400/400 | window median 10656 | shortlist median 252 | lib_max>=0.6: 0 | 22.4s/mol
+[b1] site preseed rc 0 
+[b1    9091s] ICE skipped (w_ice = 0)
+4s] chunk: 6 mols 3345 jobs 34.8s (124/371 covered mols scored)
+[gl   866.8s] chunk: 7 mols 3313 jobs 38.1s (131/371 covered mols scored)
+[gl   907.1s] chunk: 7 mols 3016 jobs 39.0s (138/371 covered mols scored)
+[gl   945.6s] chunk: 6 mols 3110 jobs 37.4s (144/371 covered mols scored)
+[gl   981.2s] chunk: 6 mols 3504 jobs 34.4s (150/371 covered mols scored)
+[gl  1019.6s] chunk: 7 mols 3079 jobs 37.2s (157/371 covered mols scored)
+[gl  1055.4s] chunk: 6 mols 3356 jobs 34.6s (163/371 covered mols scored)
+[gl  1083.5s] chunk: 5 mols 3089 jobs 27.3s (168/371 covered mols scored)
+[gl  1120.4s] chunk: 6 mols 3000 jobs 35.8s (174/371 covered mols scored)
+[gl  1152.4s] chunk: 6 mols 3402 jobs 31.0s (180/371 covered mols scored)
+[gl  1194.1s] chunk: 7 mols 3323 jobs 40.3s (187/371 covered mols scored)
+[gl  1229.0s] chunk: 6 mols 3321 jobs 33.9s (193/371 covered mols scored)
+[gl  1266.6s] chunk: 7 mols 3096 jobs 36.2s (200/371 covered mols scored)
+[gl  1303.4s] chunk: 5 mols 3497 jobs 35.9s (205/371 covered mols scored)
+[gl  1342.0s] chunk: 7 mols 3508 jobs 37.3s (212/371 covered mols scored)
+[gl  1374.3s] chunk: 6 mols 3041 jobs 31.2s (218/371 covered mols scored)
+[gl  1417.0s] chunk: 8 mols 3315 jobs 41.2s (226/371 covered mols scored)
+[gl  1445.6s] chunk: 5 mols 3352 jobs 27.8s (231/371 covered mols scored)
+[gl  1483.3s] chunk: 6 mols 3609 jobs 36.6s (237/371 covered mols scored)
+[gl  1520.5s] chunk: 7 mols 3558 jobs 36.0s (244/371 covered mols scored)
+[gl  1570.8s] chunk: 9 mols 3032 jobs 48.5s (253/371 covered mols scored)
+[gl  1599.9s] chunk: 5 mols 3377 jobs 28.2s (258/371 covered mols scored)
+[gl  1635.1s] chunk: 6 mols 3256 jobs 34.1s (264/371 covered mols scored)
+[gl  1674.1s] chunk: 7 mols 3000 jobs 37.6s (271/371 covered mols scored)
+[gl  1708.2s] chunk: 6 mols 3079 jobs 32.8s (277/371 covered mols scored)
+[gl  1751.5s] chunk: 6 mols 3293 jobs 42.1s (283/371 covered mols scored)
+[gl  1787.2s] chunk: 6 mols 3287 jobs 34.6s (289/371 covered mols scored)
+[gl  1834.4s] chunk: 9 mols 3510 jobs 45.5s (298/371 covered mols scored)
+[gl  1870.2s] chunk: 6 mols 3086 jobs 34.6s (304/371 covered mols scored)
+[gl  1911.7s] chunk: 8 mols 3731 jobs 40.0s (312/371 covered mols scored)
+[gl  1948.7s] chunk: 6 mols 3118 jobs 35.9s (318/371 covered mols scored)
+[gl  1981.8s] chunk: 5 mols 3024 jobs 32.1s (323/371 covered mols scored)
+[gl  2014.9s] chunk: 6 mols 3073 jobs 32.1s (329/371 covered mols scored)
+[gl  2043.3s] chunk: 7 mols 3021 jobs 27.3s (336/371 covered mols scored)
+[gl  2073.3s] chunk: 5 mols 3049 jobs 29.2s (341/371 covered mols scored)
+[gl  2119.4s] chunk: 8 mols 3762 jobs 44.6s (349/371 covered mols scored)
+[gl  2156.4s] chunk: 6 mols 3515 jobs 35.7s (355/371 covered mols scored)
+[gl  2205.1s] chunk: 10 mols 3230 jobs 46.9s (365/371 covered mols scored)
+[gl  2235.8s] chunk: 6 mols 2522 jobs 29.6s (371/371 covered mols scored)
+[gl  2236.0s] status ok {'n_mols': 400, 'n_mols_covered': 371, 'n_mols_scored': 371, 'n_cands': 101166, 'n_scored': 94032}
+
+{'status': 'ok', 'n_mols': 400, 'n_mols_covered': 371, 'n_mols_scored': 371, 'n_cands': 101166, 'n_scored': 94032, 'seconds': 2235.81, 'pred_per_s': 92.42, 'device': 'cuda', 'rdkit': '2025.03.6', 'max_mem_gb': 0.35}
+[b1   11333s] GL done
+[b1   11338s] learned fusion model loaded: /kaggle/working/b1/lambdarank.txt (300 trees, features 23)
+[b1   11341s] submission written: (400, 2), fusion {'gl_used': 371, 'lib_priority': 59, 'learned': 371, 'fallback_gl_cover': 29}
