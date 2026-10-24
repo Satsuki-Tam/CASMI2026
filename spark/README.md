@@ -14,3 +14,7 @@
   sporadically on natural-product sets (A ran fine). Workaround applied on the Spark copies of `data/external/{iceberg,glacier}/src/ms_pred/nn_utils/nn_utils.py`:
   the sparse branch runs on CPU and the result is moved back to the GPU (`logs/patch_rwpe.py`). `spark/jobs/ice_resume.py` restarts a runner on the
   unscored molecules after a crash and merges outputs (status partial/ok in the merged meta).
+- Second GB10 crash site (2026-10-24 16:00): `torch.unique(..., dim=...)` in `ms_pred/nn_utils/dgl_graph_ops.py::np_like_unique`
+  (`merge_sort: failed to synchronize: cudaErrorIllegalAddress`) on an A set that had run fine before -> also computed on CPU (`logs/patch_unique_cpu.py`).
+  Both patches live only in the Spark copies of the packages; the Kaggle notebook runs the unpatched packages on T4/P100 where the bug does not occur.
+  `spark/jobs/ice_resume.py --reuse` keeps an existing partial output and reruns only the unscored molecules.
