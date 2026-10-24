@@ -166,7 +166,7 @@ def main():
                 # ---- query spectra: selection library, test adducts, round-robin over adducts (same policy as the submission pipeline)
                 qrows = [int(x) for x in ik_rows.get(mid, []) if lib_of_row[x] == lib and add_of_row[x] in ADDUCT_SHIFT]
                 by_add = {}
-                for x in sorted(qrows, key=lambda x: (add_of_row[x] != "[M+H]+", add_of_row[x], ce_of_row[x] if np.isfinite(ce_of_row[x]) else 0)):
+                for x in sorted(sorted(qrows), key=lambda x: (add_of_row[x] != "[M+H]+", add_of_row[x], ce_of_row[x] if np.isfinite(ce_of_row[x]) else 0)):   # ties broken by store row (deterministic; same as make_eval_test)
                     by_add.setdefault(add_of_row[x], []).append(x)
                 q = []
                 while len(q) < a.max_spectra and any(by_add.values()):

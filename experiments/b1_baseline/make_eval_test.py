@@ -21,8 +21,9 @@ keys = pl.read_parquet(os.path.join(os.path.dirname(a.store), "train_scorer_keys
 sel = meta.join(mols.select("molecule", "lib"), left_on="inchikey14", right_on="molecule", how="inner").filter((pl.col("ingest_lib") == pl.col("lib")) & pl.col("adduct").is_in(list(ADDUCT_SHIFT)))
 # adduct round-robin per molecule, [M+H]+ first, then by CE
 sel = sel.with_columns(pl.col("ce_mean").fill_null(0.0), (pl.col("adduct") != "[M+H]+").cast(pl.Int8).alias("not_mh"))
-sel = sel.sort(["inchikey14", "not_mh", "adduct", "ce_mean"]).with_columns(pl.col("row").cum_count().over(["inchikey14", "adduct"]).alias("k_in_adduct"))
-sel = sel.sort(["inchikey14", "k_in_adduct", "not_mh", "adduct"]).with_columns(pl.col("row").cum_count().over("inchikey14").alias("k")).filter(pl.col("k") <= a.max_spectra)
+# deterministic: within an adduct by CE then store row (b1_features sorts the same way), round-robin over adducts ([M+H]+ first, then by adduct name)
+sel = sel.sort(["inchikey14", "not_mh", "adduct", "ce_mean", "row"], maintain_order=True).with_columns(pl.col("row").cum_count().over(["inchikey14", "adduct"]).alias("k_in_adduct"))
+sel = sel.sort(["inchikey14", "k_in_adduct", "not_mh", "adduct", "row"], maintain_order=True).with_columns(pl.col("row").cum_count().over("inchikey14").alias("k")).filter(pl.col("k") <= a.max_spectra)
 rows = sorted(sel["row"].to_list())
 raw = pl.scan_parquet(f"{a.raw}/train.parquet").with_row_index("row").filter(pl.col("row").is_in(rows)).select(
     "row", "inchikey14", "ms2_mzs", "ms2_normalized_intensities", "precursor_mz", "adduct", "ionization_mode", "instrument_type", "collision_energy_ev", "collision_energy_orig", "collision_energy_orig_units").collect()
