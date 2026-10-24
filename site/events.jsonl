@@ -16,3 +16,5 @@
 {"time": "2026-10-24 10:20", "kind": "event", "text": "B1 実装: アダクト変換(train で検証)、エントロピー類似度、スペクトルストア(9 秒)、統一候補表、固定規則評価、LambdaRank 学習、提出パイプライン(ローカル 3 分子で 1 位 3/3)", "link": "b1.html"}
 {"time": "2026-10-24 10:28", "kind": "event", "text": "B1 Notebook v1 を Kaggle へ push(公開テスト 400 分子で実行時間と動作を測る)", "link": "b1.html"}
 {"time": "2026-10-24 10:40", "kind": "event", "text": "GitHub リポジトリ(Satsuki-Tam/CASMI2026)とこのダッシュボードを作成", "link": "index.html"}
+{"time": "2026-10-24 10:50", "kind": "event", "text": "GitHub へ初回コミットを push(d6dbb1c、490 ファイル)。以後は実験の節目ごとにコミットする", "link": "index.html"}
+{"time": "2026-10-24 10:52", "kind": "submit", "text": "E4 v5 を計測提出(57578830)。P1 では strict 差 A +0.049 / B +0.042。LB は方向のみ読む", "link": "submissions.html"}
