@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 17:41 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 17:52 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-p1">1. 課題の構造(調査と P1 から)</a></li>
@@ -28,6 +28,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#7-v2codex-006-1250commit-7af074d">7. v2(Codex 006 対応、12:50、commit 7af074d)</a></li>
 <li><a href="#8-1410codex-007-w7">8. 評価モード付き提出パイプライン(14:10、Codex 007 W7)</a></li>
 <li><a href="#4-1030">4. 進行中(10:30)</a></li>
+<li><a href="#9-kaggle-b1-notebook-version-22026-10-24-14121748">9. Kaggle 実測(B1 Notebook version 2、2026-10-24 14:12〜17:48)</a></li>
 </ul>
 </div>
 </div><h1 id="b1-2026-10-24-1030">B1: 自前ベースラインの設計(2026-10-24 10:30 版)</h1>
@@ -258,4 +259,45 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><code>eval_set</code> A/B の特徴表構築(約 9 秒/分子、CPU 競合時)→ GL/ICE → <code>b1_evaluate.py</code>。</li>
 <li><code>eval_c1</code> の選定完了後に同じ流れ。</li>
 <li>E4 v5 の可視実行 → ログ確認 → 計測提出(自動)。</li>
+</ul>
+<h2 id="9-kaggle-b1-notebook-version-22026-10-24-14121748">9. Kaggle 実測(B1 Notebook version 2、2026-10-24 14:12〜17:48)</h2>
+<table>
+<thead>
+<tr>
+<th>段</th>
+<th style="text-align: right;">時間</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>読み込み(store、tier mmap、FPNet、参照索引)</td>
+<td style="text-align: right;">215 s</td>
+<td></td>
+</tr>
+<tr>
+<td>CPU 段: 窓生成・FP 採点・参照類似(400 分子、3 ワーカー)</td>
+<td style="text-align: right;">8,494 s(21 s/分子)</td>
+<td>窓の unique 構造 中央値 10,656、shortlist 中央値 122、参照類似の最大値 中央値 0.8</td>
+</tr>
+<tr>
+<td>ICEBERG(371 分子、45,805 候補)</td>
+<td style="text-align: right;">2,522 s(41 予測/秒)</td>
+<td></td>
+</tr>
+<tr>
+<td>GLACIER(同)</td>
+<td style="text-align: right;">1,167 s(87 予測/秒)</td>
+<td></td>
+</tr>
+<tr>
+<td>合計</td>
+<td style="text-align: right;">12,414 s(3.45 h)</td>
+<td>9 時間予算の 38%</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>29/400 分子は forward 対象外(候補 1 件以下または重原子 &gt; 100)。学習モデルは埋め込まれていなかった(<code>rank/lambdarank.txt</code> 不在)ため固定規則で出力。提出 57588650 として計測。</li>
+<li>v3(ICE 無し、候補約 2 倍)の見込み: CPU 段 ≈ 8,500 s、GL ≈ 2,300 s → 約 3.1 h。ICE を GL 融合後の上位 25 件に限る案なら +500 s 程度。</li>
 </ul></article><p class='small muted'>原文: <code>docs/b1_baseline_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
