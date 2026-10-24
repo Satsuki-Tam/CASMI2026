@@ -18,3 +18,5 @@
   (`merge_sort: failed to synchronize: cudaErrorIllegalAddress`) on an A set that had run fine before -> also computed on CPU (`logs/patch_unique_cpu.py`).
   Both patches live only in the Spark copies of the packages; the Kaggle notebook runs the unpatched packages on T4/P100 where the bug does not occur.
   `spark/jobs/ice_resume.py --reuse` keeps an existing partial output and reruns only the unscored molecules.
+- Consistency check of the CPU workarounds (Codex 008 §9): the patched runner (both workarounds) vs the earlier GPU-path outputs on two
+  molecules / 231 common candidates: max |score diff| 7e-4, mean 2e-5, rank correlation 1.000, same top-1 (`logs/smoke_ice/` on the Spark).
