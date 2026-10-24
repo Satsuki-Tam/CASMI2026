@@ -31,7 +31,7 @@ from collections import Counter
 from multiprocessing import Pool
 import numpy as np, pandas as pd, polars as pl
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity
+from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity, forward_proxies
 
 PPM, SHORTLIST_LAM, MAX_REF, DUP_SIM, K_LIB, LIB_MIN = 10.0, 0.15, 24, 0.98, 20, 0.2
 MAX_HEAVY_FORWARD = 100   # structures above this are not sent to the forward models (GLACIER rejects them; ICEBERG crashed a CUDA context)
@@ -103,6 +103,8 @@ def main():
     ap.add_argument("--k", type=int, default=100); ap.add_argument("--workers", type=int, default=12); ap.add_argument("--max_spectra", type=int, default=8)
     ap.add_argument("--k_fpp", type=int, default=None, help="FP+prior branch size (default = --k)"); ap.add_argument("--k_pop", type=int, default=0, help="prior-only branch size (default 0 = off)")
     ap.add_argument("--sets", nargs="*", default=["A_timstof", "B_nplib"]); ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--adduct_proxy", action="store_true", help="forward-model proxies for molecules without a covered positive spectrum: [M+NH4]+ / [M-H2O+H]+ scored as [M+H]+ (public N1A arm A)")
+    ap.add_argument("--neg_proxy", action="store_true", help="EXPERIMENTAL: also map negative-mode spectra of such molecules onto the positive axis (see b1_common.forward_proxies)")
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True)
     import torch
     sys.path.insert(0, a.v3)
@@ -329,8 +331,10 @@ def main():
                                          lib_nsame_c1=int(max(nsame["c1"][j] for j in idxs)), lib_nsame_c2=int(max(nsame["c2"][j] for j in idxs)),
                                          in_top_fp=bool(si & top_fp), in_top_fpprior=bool(si & top_fpp), in_top_pop=bool(si & top_pop), in_top_lib_c1=bool(si & top_lib["c1"]), in_top_lib_c2=bool(si & top_lib["c2"]),
                                          **{n: float(comp[n][i]) for n in comp}, pop_public=float(pop[i])))
-                runner.append(dict(mid=mid, spectra=[dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
-                                                          ce_ev=[s["ce"]] if s["ce"] is not None else None, ce_orig=None, ce_units="eV" if s["ce"] is not None else None) for s in qspec],
+                rspec = [dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
+                              ce_ev=[s["ce"]] if s["ce"] is not None else None, ce_orig=None, ce_units="eV" if s["ce"] is not None else None) for s in qspec]
+                if a.adduct_proxy: rspec += forward_proxies(rspec, neg=a.neg_proxy)   # proxies only when the molecule has no covered positive spectrum
+                runner.append(dict(mid=mid, spectra=rspec,
                                    cands=[s_ for s_ in (smiles[rep[keys[max(idxs, key=lambda j: np.nan_to_num(fpu[j], nan=-1e18))]]["i"]] for idxs in best.values()) if heavy_ok(s_)]))
                 truth_other_lib_refs = int(sum(1 for x in key_rows.get(truth_key, []) if lib_of_row[x] != lib))
                 tb = best.get(truth_key, [])
@@ -358,7 +362,7 @@ def main():
             json.dump(runner, open(f"{a.out}/b1_runner_{set_name}_in.json", "w"))
             print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} shortlist rows ({time.time()-t0:.0f}s)", flush=True)
     import rdkit
-    json.dump(dict(k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=DUP_SIM, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
+    json.dump(dict(k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, adduct_proxy=bool(a.adduct_proxy), neg_proxy=bool(a.neg_proxy), shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=DUP_SIM, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
                    rdkit=rdkit.__version__, seconds=round(time.time() - t0)), open(f"{a.out}/b1_features_manifest.json", "w"), indent=1)
     print(f"done {time.time()-t0:.0f}s")
 

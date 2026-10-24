@@ -1,0 +1,14 @@
+{
+  "topic": {
+    "id": 752297,
+    "title": "Rules question: automated processing across test spectra at inference",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/752297",
+    "postDate": "2026-10-24T10:10:01.133Z",
+    "authorName": "Odim David Emeka",
+    "authorUrl": "https://www.kaggle.com/odimdavidchukwuemeka",
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi David,</p>\n<p>A quick rules clarification. Is it permitted for a submission notebook to apply automated, unsupervised processing that uses relationships across the test spectra at inference time? Examples would be clustering test spectra by similarity, or using a confidently identified test molecule to help rank candidates for similar test molecules.</p>\n<p>Everything would be fully automated inside the notebook, with no hand labelling and no human prediction (Rule 2.5.b), and no external information about the test set.</p>\n<p>A yes/no would be very helpful. Thank you!</p>"
+  },
+  "comments": []
+}

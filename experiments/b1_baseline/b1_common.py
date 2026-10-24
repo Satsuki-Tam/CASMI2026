@@ -78,3 +78,42 @@ def entropy_similarity(mz_a, ia, mz_b, ib, tol_da=0.01, tol_ppm=20.0):
     def ent(p):
         p = p[p > 0]; return float(-(p * np.log(p)).sum())
     return max(0.0, min(1.0, 1.0 - (2 * ent(m) - ent(a) - ent(b)) / np.log(4)))
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+# Forward-model adduct proxies (2026-10-25). The MassSpecGym ICEBERG/GLACIER checkpoints cover positive [M+H]+ / [M+Na]+ only, so a
+# molecule without such a spectrum gets no forward evidence (panel enveda-np-examples: 34/250; 16 of them have an [M+NH4]+ spectrum,
+# 18 are negative-only). The public lineage's N1A arm A (LB-validated, +0.027 [0.010, 0.047] on its NP bench) scores [M+NH4]+ and
+# [M-H2O+H]+ spectra of such molecules as [M+H]+ proxies; proxies where a real [M+H]+ exists HURT (-0.047) and are never made.
+#   [M+NH4]+   : M = prec - 18.033823 (NH4+), drop peaks >= M + 1.007276 - 1.5 (the adduct/precursor region), precursor -> M + 1.007276
+#   [M-H2O+H]+ : M = prec + 18.010565 - 1.007276, keep peaks < prec - 1.5, precursor -> M + 1.007276
+#   [M-2H2O+H]+, [M+K]+, [M+Na]+ : never (as in the public lineage)
+# neg=True (EXPERIMENTAL, not LB-validated): negative-mode spectra mapped onto the positive axis (deprotonated fragment F-H -> F+H:
+# m/z + 2*1.007276), precursor -> M + 1.007276. Fragmentation chemistry differs between modes; use only after a paired test.
+PROTON_MASS = 1.007276; NH4_ION = 18.033823; H2O_MASS = 18.010565
+NEG_NEUTRAL = {"[M-H]-": lambda p: p + PROTON_MASS, "[M-H2O-H]-": lambda p: p + PROTON_MASS + H2O_MASS, "[M+CH2O2-H]-": lambda p: p - (46.005480 - PROTON_MASS),
+               "[M+Cl]-": lambda p: p - 34.969402}
+
+
+def _is_positive(s):
+    md = s.get("mode")
+    return md in (1, "1", "positive", "pos", "+")
+
+
+def forward_proxies(spectra, covered=("[M+H]+", "[M+Na]+"), neg=False):
+    """spectra: list of dicts with mz, it, prec, adduct, mode (+ any other keys, copied). Returns the list of proxy spectra (possibly empty)."""
+    if any(_is_positive(s) and s.get("adduct") in covered for s in spectra): return []
+    out = []
+    for s in spectra:
+        mz = np.asarray(s["mz"], float); it = np.asarray(s["it"], float); add = s.get("adduct"); prec = float(s["prec"])
+        if _is_positive(s) and add == "[M+NH4]+":
+            newp = prec - NH4_ION + PROTON_MASS; keep = mz < newp - 1.5; shift = 0.0; kind = "nh4"
+        elif _is_positive(s) and add == "[M-H2O+H]+":
+            newp = prec + H2O_MASS; keep = mz < prec - 1.5; shift = 0.0; kind = "h2o"
+        elif neg and (not _is_positive(s)) and add in NEG_NEUTRAL:
+            newp = NEG_NEUTRAL[add](prec) + PROTON_MASS; shift = 2 * PROTON_MASS; keep = (mz + shift) < newp - 1.5; kind = "neg"
+        else: continue
+        if keep.sum() < 2: continue
+        p = dict(s); p.update(mz=(mz[keep] + shift).tolist(), it=it[keep].tolist(), prec=float(newp), adduct="[M+H]+", mode="positive", proxy=kind, proxy_from=add)
+        out.append(p)
+    return out

@@ -22,7 +22,7 @@ from multiprocessing import Pool
 import numpy as np, pandas as pd, polars as pl
 
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
-from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity  # noqa: E402
+from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity, forward_proxies  # noqa: E402
 
 KAGGLE = os.path.exists("/kaggle/input")
 PPM, K_SHORT, K_LIB, LIB_MIN, MAX_REF, MAX_Q = 10.0, 100, 20, 0.2, 24, 8      # MAX_Q 8 with adduct round-robin = the evaluation's query policy
@@ -199,6 +199,8 @@ def main():
     ap.add_argument("--gl_budget", type=int, default=GL_BUDGET); ap.add_argument("--ice_budget", type=int, default=ICE_BUDGET)
     ap.add_argument("--deadline_s", type=int, default=0, help="wall-clock deadline since start; runner budgets are capped at deadline - elapsed - 900 s (0 = off)")
     ap.add_argument("--min_gl_cover", type=float, default=0.5, help="learned fusion only when GL scored at least this fraction of a molecule's candidates (else the fixed rule)")
+    ap.add_argument("--adduct_proxy", action="store_true", help="forward-model proxies for molecules without a covered positive spectrum: [M+NH4]+ / [M-H2O+H]+ scored as [M+H]+ (public N1A arm A)")
+    ap.add_argument("--neg_proxy", action="store_true", help="EXPERIMENTAL: also map negative-mode spectra of such molecules onto the positive axis (b1_common.forward_proxies)")
     args = ap.parse_args(); P = paths(args); os.makedirs(P["work"], exist_ok=True); T0 = time.time(); log = lambda *x: print(f"[b1 {time.time()-T0:7.0f}s]", *x, flush=True)
     test_path = args.test or ("/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/test.parquet" if KAGGLE else os.path.join(os.path.dirname(P["train"]), "test.parquet"))
     workers = args.workers or max(2, (os.cpu_count() or 4) - 1)
@@ -400,9 +402,11 @@ def main():
                                  fp_rank_window=int(len(fp_sorted) - np.searchsorted(fp_sorted, np.nan_to_num(fpu[i], nan=-1e18), side="left")), **{n: float(comp[n][i]) for n in comp}))
             feats[mid] = rows
             molinfo[mid] = dict(n_query=len(q), ce_known=float(np.mean([s["ce"] is not None for s in q])), n_unique=float(n_u))
-            runner.append(dict(mid=mid, lib_max=float(lib.max()), spectra=[dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
-                                                                                   ce_ev=s.get("ce_ev"), ce_orig=s.get("ce_orig"), ce_units=s.get("ce_units")) for s in q], cands=[r["smiles"] for r in rows if heavy_ok(r["smiles"])]))
-            stats.append(dict(molecule=mid, n_query=len(q), adducts="|".join(sorted(M_by_add)), n_window=len(smiles), n_unique=n_u, n_train=int(in_train.sum()), n_shortlist=len(rows), lib_max=float(lib.max()), seconds=time.time() - tm0))
+            rspec = [dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
+                          ce_ev=s.get("ce_ev"), ce_orig=s.get("ce_orig"), ce_units=s.get("ce_units")) for s in q]
+            prox = forward_proxies(rspec, neg=args.neg_proxy) if args.adduct_proxy else []; rspec += prox   # proxies only when no covered positive spectrum
+            runner.append(dict(mid=mid, lib_max=float(lib.max()), spectra=rspec, cands=[r["smiles"] for r in rows if heavy_ok(r["smiles"])]))
+            stats.append(dict(molecule=mid, n_query=len(q), adducts="|".join(sorted(M_by_add)), n_window=len(smiles), n_unique=n_u, n_train=int(in_train.sum()), n_shortlist=len(rows), lib_max=float(lib.max()), n_proxy=len(prox), seconds=time.time() - tm0))
             if (n_i + 1) % 20 == 0 or n_i == len(mols) - 1:
                 d = pd.DataFrame(stats); log(f"{n_i+1}/{len(mols)} | window median {d.n_unique.median():.0f} | shortlist median {d.n_shortlist.median():.0f} | lib_max>=0.6: {int((d.lib_max >= TAU).sum())} | {d.seconds.mean():.1f}s/mol")
     pd.DataFrame(stats).to_csv(f"{P['work']}/b1_stage_stats.csv", index=False)
@@ -485,7 +489,7 @@ def main():
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
