@@ -85,10 +85,12 @@ def main():
     fig.tight_layout(); fig_iso = png(fig)
     # similarities: same molecule across CE vs isomers at the same CE
     sims = {}
-    if 20.0 in pick and 40.0 in pick:
-        q20 = clean_peaks(*spec(pick[20.0][0]), pick[20.0][1]); q40 = clean_peaks(*spec(pick[40.0][0]), pick[40.0][1]); m40 = clean_peaks(*spec(pick[40.0][2]), pick[40.0][3]); m20 = clean_peaks(*spec(pick[20.0][2]), pick[20.0][3])
-        sims = {"ケルセチン 20 eV vs ケルセチン 40 eV(同じ分子、CE 違い)": entropy_similarity(*q20, *q40), "ケルセチン 40 eV vs モリン 40 eV(異性体、同じ CE)": entropy_similarity(*q40, *m40),
-                "ケルセチン 20 eV vs モリン 20 eV(異性体、同じ CE)": entropy_similarity(*q20, *m20)}
+    ces = sorted(pick)
+    cl = {ce: (clean_peaks(*spec(pick[ce][0]), pick[ce][1]), clean_peaks(*spec(pick[ce][2]), pick[ce][3])) for ce in ces}
+    for a_, b_ in zip(ces, ces[1:]):
+        sims[f"ケルセチン {a_:g} eV vs ケルセチン {b_:g} eV(同じ分子、CE 違い)"] = entropy_similarity(*cl[a_][0], *cl[b_][0])
+    for ce in ces:
+        sims[f"ケルセチン {ce:g} eV vs モリン {ce:g} eV(異性体、同じ CE)"] = entropy_similarity(*cl[ce][0], *cl[ce][1])
     sim_rows = "".join(f"<tr><td>{html.escape(k)}</td><td>{v:.3f}</td></tr>" for k, v in sims.items())
     parts.append(f"""
 <article><h1>1. この課題は何をするのか</h1>
