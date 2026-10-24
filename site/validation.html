@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 18:07 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 18:31 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -24,6 +24,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#3">3. 残る懸念(優先順)</a></li>
 <li><a href="#4">4. 現在の評価集合</a></li>
 <li><a href="#5-codex-007-1405">5. Codex 007 の判断(14:05)</a></li>
+<li><a href="#w7-parity-2026-10-24-183050-eval_set-ab-25sparkjobsspark_parity50_chainsh">W7 parity の結果(2026-10-24 18:30、50 分子 = eval_set A/B 各 25、spark/jobs/spark_parity50_chain.sh)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -225,4 +226,43 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 </table>
 <h2 id="5-codex-007-1405">5. Codex 007 の判断(14:05)</h2>
 <p>優先順位: W7(評価/提出の一致、固定分母)→ W4/W8(参照条件・adduct 層の台帳)→ W1 限定診断(パネル 250 は FP/参照/prior/規則の形の診断、同一 identity の装置差組、A の事前固定した化学層)→ W9(学習融合の比較、identity 単位 bootstrap、単調制約は 1 変種)→ W5(拡大)。W6 は並行。W3 は「DB holdout の C3 代理」の枠組みだけ先に決める。
-Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の上限のみ)。最終提出は開封前に主候補・保険候補を固定。詳細は <code>reports/agent_review/007_decision.md</code>。</p></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の上限のみ)。最終提出は開封前に主候補・保険候補を固定。詳細は <code>reports/agent_review/007_decision.md</code>。</p>
+<h2 id="w7-parity-2026-10-24-183050-eval_set-ab-25sparkjobsspark_parity50_chainsh">W7 parity の結果(2026-10-24 18:30、50 分子 = eval_set A/B 各 25、<code>spark/jobs/spark_parity50_chain.sh</code>)</h2>
+<p>評価器(<code>b1_features</code> の特徴表 + 保存済み GL/ICE)と提出パイプライン(評価モード: per-query マスク <code>--mask_json</code>、電子質量規約を test 側にも適用)を同じ分子で比較した。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>C2</th>
+<th>C1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>固定規則の top-1 一致 / 分子別 RR の差</td>
+<td>50/50 一致 / 全分子 0</td>
+<td>50/50 一致 / 全分子 0</td>
+</tr>
+<tr>
+<td>正解が shortlist に入るか(両経路)</td>
+<td>0.66 / 0.66、不一致 0 分子</td>
+<td>0.88 / 0.88、不一致 0 分子</td>
+</tr>
+<tr>
+<td>候補集合が完全一致 / Jaccard 平均</td>
+<td>62% / 0.991</td>
+<td>78% / 0.992</td>
+</tr>
+<tr>
+<td>prior・所属フラグ(tier/COCONUT/train)の一致</td>
+<td>1.000</td>
+<td>1.000</td>
+</tr>
+<tr>
+<td>参照類似の最大差 / ppm の最大差</td>
+<td>0.015 / 1.25 ppm</td>
+<td>0.015 / 1.25 ppm</td>
+</tr>
+</tbody>
+</table>
+<p>候補集合の差の内訳: (a) 9 分子で窓の unique 数が 1 だけ違う = パイプラインの C2 マスクが「ライブラリにしか無い正解構造」を窓から削除する(評価器は C2 視点で同じ構造を落とすので出力は同じ); (b) 1 分子(ACZWIDANLCXHBM、スペクトル 8 本超)で adduct round-robin の選択が異なり FP が最大 33 違う; (c) 数分子で境界(100 位付近)の候補が 1〜2 件入れ替わる(FP の数値差 ≤ 1.8)。いずれも固定規則の出力(RR)は一致。<strong>合格(注記付き)</strong> とし、600 分子の W7 本番(<code>spark_w7full_chain.sh</code>)へ進む。残課題: (b) の query 選択を完全一致させる(make_eval_test の順序を b1_features と同じ関数に揃える)。</p></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
