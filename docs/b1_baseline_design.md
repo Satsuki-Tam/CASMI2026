@@ -71,6 +71,16 @@ GL/ICE 完了版。strict = 外部 DB に到達不能な正解を 0 とした Cl
 - 推論(`b1_pipeline.py --rank_model`): モデルファイルがあれば LightGBM で候補を並べ替え、無ければ固定規則。Notebook 生成時にモデルを同梱。
 - 予備試験(fit = 新評価集合の fit 群 186 group のみ、eval 群 199 分子): C2 strict 0.490 → 0.517(+0.026 [−0.005, +0.057])、C1(n=29、重複込み)0.392 → 0.696。本試験は P1 600 分子を fit に加え、重複除外版の特徴で行う。
 
+## 7. v2(Codex 006 対応、12:50、commit 7af074d)
+
+- **視点別 shortlist**: 参照枠を C1/C2 それぞれの類似度で作り、保存表は和集合 + 所属フラグ。旧版では C2 に C1 参照由来の正解が混入していた(B 7 分子、MRR 寄与 0.0097)。
+- **到達判定**: `reach_external_b1`(B1 自身の窓で、正解の raw 鍵またはタウトマー別名が tier/COCONUT 出典の候補として存在)を strict マスクに使う。
+- **重複参照の 2 段階**: 確実な複製(同アダクト・|Δprec| < 5 mDa・cleaned ピーク列一致)は常に除外。疑い(類似度 ≥ 0.98)は主類似度から除外し `*_keepdup` を併記。非正解側の除外数も記録。MAX_REF は分類後。C1 の分母は処理後に参照が残る分子(`c1_usable`)。
+- **C2 視点で出典なし候補を除外**(評価・学習とも)。空候補の分子も分母に残す。paired delta は strict でも報告。fit/tune/eval の identity group 共有を assert。
+- **λ の分離**: shortlist 0.15 / 融合 0.5。提出パイプラインの query 選択(アダクト round-robin、最大 8)と候補源(tier + pool + prvsiyan COCONUT)を評価と一致させた。アダクト窓をまたぐ SMILES の重複を指紋計算前に除去。
+- **評価集合の役割**: `eval_set` は開発集合(prior 選択に使用)。採用判断は `locked_eval`(seed 4、A/B 各 300、未使用 group)で 1 回だけ。
+- 再構築(Spark): run1_v2(eval_set)、run_c1_v2(C1 集合)、run_p1_v2(P1 600、LambdaRank の fit)。
+
 ## 4. 進行中(10:30)
 
 - `eval_set` A/B の特徴表構築(約 9 秒/分子、CPU 競合時)→ GL/ICE → `b1_evaluate.py`。
