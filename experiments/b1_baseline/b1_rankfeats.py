@@ -13,7 +13,8 @@ FEATS = ["z_fp", "z_gl", "z_ice", "fp", "gl", "ice", "pop_public", "lsid", "lpmi
 EXTRA_V3 = ["rank_fp", "rank_gl", "rank_ice", "gap_fp", "gap_gl", "gap_ice", "margin_fp_mol", "margin_gl_mol", "margin_ice_mol", "lib_rank", "in_train_x_lib", "log_n_window"]
 # v3s = the small block to compare first (Codex 008): per-model rank + per-model confidence + window size
 EXTRA_V3S = ["rank_fp", "rank_gl", "rank_ice", "margin_fp_mol", "margin_gl_mol", "margin_ice_mol", "log_n_window"]
-FEATSETS = {"v2": FEATS, "v3s": FEATS + EXTRA_V3S, "v3": FEATS + EXTRA_V3}
+# v2_noice: ICE removed entirely (the fixed rule is better without the ICE term on all development sets, 2026-10-24 16:50)
+FEATSETS = {"v2": FEATS, "v2_noice": [f for f in FEATS if f not in ("z_ice", "ice", "ice_missing")], "v3s": FEATS + EXTRA_V3S, "v3": FEATS + EXTRA_V3}
 # monotone directions for the constrained variant (0 = unconstrained): only the model scores (up) and the mass error (down), Codex 008
 MONO = dict(z_fp=1, z_gl=1, z_ice=1, fp=1, gl=1, ice=1, ppm_err=-1)
 
