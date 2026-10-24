@@ -6,7 +6,7 @@
 set -u
 cd ~/CASMI2026 || exit 1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=1
-B=experiments/b1_baseline; PY=.venv/bin/python; J=spark/jobs/b1_features_job_v3b.sh; EVAL=$B/eval_set2/p2_dev_molecules.csv
+B=experiments/b1_baseline; PY=.venv/bin/python; J=spark/jobs/b1_features_job_v3b.sh; EVAL=$B/eval_set2/v2/p2_molecules.csv   # p2 v2 (query-based strata, Codex 016)
 SETS="C_np_crosslib D_np_single E_np_negonly F_np_uncovered G_tims_crosslib"
 if [ "${WAIT_FOR_E0:-1}" = 1 ]; then
   while pgrep -f "^[^ ]*python[^ ]* [^ ]*run_e0_offline" > /dev/null 2>&1; do sleep 300; done

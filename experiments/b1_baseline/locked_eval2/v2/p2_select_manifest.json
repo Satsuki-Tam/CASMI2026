@@ -1,0 +1,100 @@
+{
+ "version": "v2",
+ "seed": 5,
+ "n_per_stratum": 100,
+ "split_method": "one permutation per stratum: first n = dev2, next n = locked2",
+ "max_spectra": 8,
+ "ref_min": 10,
+ "fold_identity": 0,
+ "strata": [
+  "E_np_negonly",
+  "F_np_uncovered",
+  "C_np_crosslib",
+  "G_tims_crosslib",
+  "D_np_single"
+ ],
+ "stratum_priority": "E, F, C, G, D (exclusive by identity group)",
+ "query_library_policy": "fixed-seed choice among qualifying libraries of the stratum family; enveda-180 fixed for G",
+ "reference_count_definition": "other-library spectra whose polarity matches a selected query, metadata de-dup on (adduct, precursor 3dp, CE 1dp, n_peaks) minus cross-library copies of a query; before MAX_REF; upper bound of usable C1 refs",
+ "counts": {
+  "census_raw_keys": 269846,
+  "after_msg_exclusion": 239729,
+  "after_dev_identity_group_exclusion": 237006,
+  "fold0_eligible_raw_keys": 45594,
+  "fold0_eligible_groups": 45548
+ },
+ "strata_counts": {
+  "E_np_negonly": {
+   "qualifying_groups_before_allocation": 876,
+   "qualifying_groups_after_allocation": 876,
+   "dev2": 100,
+   "locked2": 100
+  },
+  "F_np_uncovered": {
+   "qualifying_groups_before_allocation": 279,
+   "qualifying_groups_after_allocation": 273,
+   "dev2": 100,
+   "locked2": 100
+  },
+  "C_np_crosslib": {
+   "qualifying_groups_before_allocation": 238,
+   "qualifying_groups_after_allocation": 224,
+   "dev2": 100,
+   "locked2": 100
+  },
+  "G_tims_crosslib": {
+   "qualifying_groups_before_allocation": 333,
+   "qualifying_groups_after_allocation": 282,
+   "dev2": 100,
+   "locked2": 100
+  },
+  "D_np_single": {
+   "qualifying_groups_before_allocation": 1854,
+   "qualifying_groups_after_allocation": 1854,
+   "dev2": 100,
+   "locked2": 100
+  }
+ },
+ "checks": {
+  "dev2_locked2_group_intersection": 0,
+  "selected_vs_used_groups": 0,
+  "selected_vs_used_keys": 0,
+  "one_per_group": 1
+ },
+ "used_identities": 3001,
+ "used_groups": 2944,
+ "exclude": [
+  "experiments/p1_baseline/run1/p1_molecules.csv",
+  "experiments/b1_baseline/eval_set/p1_molecules.csv",
+  "experiments/b1_baseline/eval_c1/p1_molecules.csv",
+  "experiments/b1_baseline/locked_eval/p1_molecules.csv",
+  "experiments/e2_forward/e2b_np_unseen_molecules.csv",
+  "experiments/e2_forward/e2b_np_unseen_hard_molecules.csv",
+  "experiments/e2_forward/e2b_timstof_unseen_molecules.csv",
+  "experiments/e2_forward/e2b_timstof_unseen_hard_molecules.csv",
+  "experiments/e2_forward/v2/e2b_timstof_unseen_molecules.csv",
+  "experiments/e2_forward/v2/e2b_timstof_unseen_hard_molecules.csv",
+  "experiments/e2_forward/v2/e2b_np_unseen_molecules.csv",
+  "experiments/e2_forward/v2/e2b_np_unseen_hard_molecules.csv"
+ ],
+ "exclude_sha256": {
+  "experiments/p1_baseline/run1/p1_molecules.csv": "b18cdb9869d3f8e28447577fbf59a09b66585a41a839461172c9e0bad700989a",
+  "experiments/b1_baseline/eval_set/p1_molecules.csv": "bbfd686c9ae9effb7c25f777dd96396af66d96fdff20f2b18b1c2cd907a60811",
+  "experiments/b1_baseline/eval_c1/p1_molecules.csv": "768aa184ae106f7f03c4b165fe01fe1994cb96679b3ecc284a88db91435e0e78",
+  "experiments/b1_baseline/locked_eval/p1_molecules.csv": "724f4af05978304d53f635fc7c71df12ba91b4892819fd8b8a4c04aed81bc364",
+  "experiments/e2_forward/e2b_np_unseen_molecules.csv": "d5db1ae8979b23769aba3ddc9b26a9cbb5957eb6c45f5ddbd053c8455d68afe3",
+  "experiments/e2_forward/e2b_np_unseen_hard_molecules.csv": "d5db1ae8979b23769aba3ddc9b26a9cbb5957eb6c45f5ddbd053c8455d68afe3",
+  "experiments/e2_forward/e2b_timstof_unseen_molecules.csv": "6ce4ba308c237a2e68a02f23904537ff81b70d3d593157486369a01b89fec967",
+  "experiments/e2_forward/e2b_timstof_unseen_hard_molecules.csv": "6ce4ba308c237a2e68a02f23904537ff81b70d3d593157486369a01b89fec967",
+  "experiments/e2_forward/v2/e2b_timstof_unseen_molecules.csv": "9c4a32a917afd34625851b7bd182dc5bb393f3cd8c8460daaaf9bd38e276d3e7",
+  "experiments/e2_forward/v2/e2b_timstof_unseen_hard_molecules.csv": "898c6951e179c163583eca4cca7989ba2f819d55fb81cda2094c517436b7465e",
+  "experiments/e2_forward/v2/e2b_np_unseen_molecules.csv": "9d43185da7936f78510da7dbb097f7bba52fa1b1aeb3751c6f8e5185ae588c37",
+  "experiments/e2_forward/v2/e2b_np_unseen_hard_molecules.csv": "56882a459779cec46ff10c84f85f07cc291a528d93fe7ea19c7b23f4691f95d5"
+ },
+ "inputs_sha256": {
+  "census": "813f7ef84a77164f8a344003eab8191d6b37f3150ef5f55921b86b5a00eb34aa",
+  "structures": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
+  "selector": "0cef7d359f6a9619b7480ca8d46153efd9732a4c7a277ac35872fb917bb06224",
+  "b1_common": "fa9bb9eb3a8e489aab85f861939b0db0101f60eb78462eb947b09a7105476c8e"
+ }
+}
