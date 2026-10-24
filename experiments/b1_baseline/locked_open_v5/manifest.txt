@@ -1,0 +1,25 @@
+opened_at: 2026-10-25 04:53:16
+git_head: e949a4afa47836d68400c990eb2c213c23632d2a
+git_status_dirty_files: 125
+registered_main: M1 learned (frozen control) | M2x blend21
+sha256 experiments/b1_baseline/b1_locked_eval.py 3aa42a62cf9ca3b5bc8f274662e9e24345853e2bb041cf65ec681aea9f1424ad
+sha256 experiments/b1_baseline/b1_rankfeats.py 6e4d6e1d0b71294d203b2490ec9a93fab4214abfae7550857a6abe4b554a3e7f
+sha256 experiments/b1_baseline/b1_evaluate.py 4c4948ff756af96b798684b449ef9e462a798818b7ff8bbb5cc17077f5781817
+sha256 experiments/b1_baseline/b1_features.py f1562bb4ca613e4957efdc0f3e9fd306a7960116e22d06c0ca608337c7bfd7e2
+sha256 src/metric.py 4fc66b39a622621db77c84c27345419ec32213831480c928682a997139665f7c
+sha256 experiments/b1_baseline/rank_v2/lambdarank.txt a84fe3ff61a5a11b3e8e9d478d5c59ec41391625c5f406c6fef5a6497d5e58b2
+sha256 experiments/b1_baseline/rank_v4b/lambdarank.txt 237710b6ee11ea7186882a9d5016088b0b84e7467097dfd15cd2380f5a353a93
+experiments/b1_baseline/run_locked_v2b/work/gl_A_timstof.json.meta.json {"status":"ok","n_mols":300,"n_mols_scored":300,"skipped":[],"restarts":0,"seconds":0,"via":"ice_resume.py"}
+experiments/b1_baseline/run_locked_v2b/work/gl_B_nplib.json.meta.json {"status":"partial","n_mols":298,"n_mols_scored":296,"skipped":[],"restarts":0,"seconds":10,"via":"ice_resume.py"}
+experiments/b1_baseline/run_locked_v2b/work/gl_B_nplib.json.part0.json.meta.json {"model":"glacier","status":"ok","n_mols":3,"n_mols_scored":1,"n_mols_covered":3,"n_cands":139,"n_scored":138,"errors":["smilesrejected(elementoutsideVALID_ATOM
+experiments/b1_baseline/run_locked_v2b/work/ice_A_timstof.json.meta.json {"status":"ok","n_mols":300,"n_mols_scored":300,"skipped":[],"restarts":0,"seconds":16,"via":"ice_resume.py"}
+experiments/b1_baseline/run_locked_v2b/work/ice_A_timstof.json.part0.json.meta.json {"status":"ok","n_mols":1,"n_mols_scored":1,"n_mols_covered":1,"n_cands":114,"n_scored":113,"errors":["smilesrejected(inchiroundtrip):C1=CC=C2C(=C1)[N+](=C(N=[N
+experiments/b1_baseline/run_locked_v2b/work/ice_B_nplib.json.meta.json {"status":"partial","n_mols":298,"n_mols_scored":296,"skipped":[],"restarts":0,"seconds":64,"via":"ice_resume.py"}
+experiments/b1_baseline/run_locked_v2b/work/ice_B_nplib.json.part0.json.meta.json {"status":"ok","n_mols":8,"n_mols_scored":6,"n_mols_covered":8,"n_cands":663,"n_scored":657,"errors":["smilesrejected(inchiroundtrip):CCCCCCCCN1CCN([C]1)C2=C(C=
+{"k":100,"k_fpp":100,"k_pop":0,"adduct_proxy":false,"neg_proxy":false,"shortlist_lam":0.15,"ppm":10.0,"max_spectra":8,"max_ref":24,"dup_sim":0.98,"fpnet":"ddf6eaaa8e541a16e3f0357ed30f0346e529054f75d5619aedb6024dcb1bd7f0","pool":"82b8c40315611289b9a4004b3af18d6d3402b3cd5baa4ee5723da07b7e2f6bb0","rdki
+
+experiments/b1_baseline/run_v3b_locked/work/gl_A_timstof.json.meta.json {"status":"ok","n_mols":300,"n_mols_scored":300,"skipped":[],"restarts":0,"seconds":0,"via":"ice_resume.py"}
+experiments/b1_baseline/run_v3b_locked/work/gl_B_nplib.json.meta.json {"status":"partial","n_mols":298,"n_mols_scored":296,"skipped":[],"restarts":0,"seconds":16,"via":"ice_resume.py"}
+experiments/b1_baseline/run_v3b_locked/work/gl_B_nplib.json.part0.json.meta.json {"model":"glacier","status":"ok","n_mols":3,"n_mols_scored":1,"n_mols_covered":3,"n_cands":242,"n_scored":241,"errors":["smilesrejected(elementoutsideVALID_ATOM
+{"k":100,"k_fpp":200,"k_pop":50,"adduct_proxy":false,"neg_proxy":false,"shortlist_lam":0.15,"ppm":10.0,"max_spectra":8,"max_ref":24,"dup_sim":0.98,"fpnet":"ddf6eaaa8e541a16e3f0357ed30f0346e529054f75d5619aedb6024dcb1bd7f0","pool":"82b8c40315611289b9a4004b3af18d6d3402b3cd5baa4ee5723da07b7e2f6bb0","rdk
+
