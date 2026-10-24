@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 16:51 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 17:29 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -3264,6 +3264,7 @@ p1 + p2 + p3 = 1
 <li><a href="#2">2. 採否</a></li>
 <li><a href="#3-codex-9">3. 次の比較表(Codex §9 に沿う)</a></li>
 <li><a href="#4">4. 実装(本判断で行った変更)</a></li>
+<li><a href="#5-1735-locked">5. 追記(17:35): locked 集合の開封規則(事前登録)</a></li>
 </ul>
 </div>
 </div><h1 id="008-codex-008">008 判断: 診断に基づく次の一手(Codex 008 への回答と採否)</h1>
@@ -3340,4 +3341,11 @@ p1 + p2 + p3 = 1
 <li><code>b1_features.py</code>: <code>lib_nsame_c1/c2</code>、仮想 shortlist の候補数・正解到達フラグ、真の窓内順位。</li>
 <li><code>b1_shortlist_audit.py</code>: 上記フラグによる配分比較表。</li>
 <li><code>docs/b1_diagnostic_2026-10-24.md</code>: §9 に訂正を追記。</li>
+</ul>
+<h2 id="5-1735-locked">5. 追記(17:35): locked 集合の開封規則(事前登録)</h2>
+<ul>
+<li>候補 M1 = B1 v2: shortlist FP 100 ∪ FP+prior 100 ∪ 参照 20、GL+ICE、LambdaRank 28 特徴(<code>rank_v2</code>)。保険 = S(2,1,0.5) + libpri(0.9,0.2)。</li>
+<li>候補 M2 = B1 v3: shortlist FP 100 ∪ FP+prior 200 ∪ 参照 20 ∪ prior 50、GL のみ、LambdaRank v2_noice(<code>rank_v3</code>)。保険 = S(2,0,0.5) + libpri(0.9,0.2)。</li>
+<li>locked(seed 4、A/B 各 300)は両候補を同時に 1 回だけ採点する(<code>spark_post_chain2.sh</code> 段 5)。採用規則: C2 strict(全 N 分母)が高い方。差が 0.01 未満なら実行時間の短い M2。C1 視点と到達率は併記し、結果を見て規則を変えない。</li>
+<li>v3 の開発集合での結果(到達率・固定規則・LambdaRank)は locked 開封前に記録する。</li>
 </ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

@@ -101,6 +101,7 @@ def main():
     ap = argparse.ArgumentParser()
     for k in ("eval_csv", "store", "tier", "pop", "pool", "coco", "fold_safe", "v3", "out"): ap.add_argument(f"--{k}", required=True)
     ap.add_argument("--k", type=int, default=100); ap.add_argument("--workers", type=int, default=12); ap.add_argument("--max_spectra", type=int, default=8)
+    ap.add_argument("--k_fpp", type=int, default=None, help="FP+prior branch size (default = --k)"); ap.add_argument("--k_pop", type=int, default=0, help="prior-only branch size (default 0 = off)")
     ap.add_argument("--sets", nargs="*", default=["A_timstof", "B_nplib"]); ap.add_argument("--limit", type=int, default=0)
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True)
     import torch
@@ -296,10 +297,11 @@ def main():
                 if len(ref_cache) > 300_000: ref_cache.clear()
                 # ---- per-view shortlists; stored table = union; official keys; merge duplicates
                 fpz = np.nan_to_num(fpu, nan=np.nanmin(fpu) if np.isfinite(fpu).any() else 0.0); zf = (fpz - fpz.mean()) / (fpz.std() + 1e-9)
-                K = min(a.k, n_u)
-                top_fp = set(np.argsort(-np.nan_to_num(fpu, nan=-1e18), kind="stable")[:K].tolist()); top_fpp = set(np.argsort(-(zf + SHORTLIST_LAM * pop), kind="stable")[:K].tolist())
+                K = min(a.k, n_u); K2 = min(a.k_fpp if a.k_fpp else a.k, n_u)
+                top_fp = set(np.argsort(-np.nan_to_num(fpu, nan=-1e18), kind="stable")[:K].tolist()); top_fpp = set(np.argsort(-(zf + SHORTLIST_LAM * pop), kind="stable")[:K2].tolist())
                 top_lib = {v: {int(i) for i in np.argsort(-L[v], kind="stable")[:K_LIB] if L[v][i] > LIB_MIN} for v in ("c1", "c2")}
-                short_v = {v: top_fp | top_fpp | top_lib[v] for v in ("c1", "c2")}
+                top_pop = set(np.argsort(-(pop + 1e-6 * zf), kind="stable")[:min(a.k_pop, n_u)].tolist()) if a.k_pop > 0 else set()   # prior-only branch (audit 2026-10-24)
+                short_v = {v: top_fp | top_fpp | top_lib[v] | top_pop for v in ("c1", "c2")}
                 short = sorted(short_v["c1"] | short_v["c2"])
                 # shortlist audit (Codex 008 Q2): hypothetical branch allocations measured without forward models (sizes + truth membership)
                 def _top(score, k_): return set(np.argsort(-score, kind="stable")[:min(k_, n_u)].tolist())
@@ -324,7 +326,7 @@ def main():
                                          lib_same_c1=float(max(L["same_c1"][j] for j in idxs)), lib_same_c2=float(max(L["same_c2"][j] for j in idxs)),
                                          lib_nref_c1=int(max(nref["c1"][j] for j in idxs)), lib_nref_c2=int(max(nref["c2"][j] for j in idxs)),
                                          lib_nsame_c1=int(max(nsame["c1"][j] for j in idxs)), lib_nsame_c2=int(max(nsame["c2"][j] for j in idxs)),
-                                         in_top_fp=bool(si & top_fp), in_top_fpprior=bool(si & top_fpp), in_top_lib_c1=bool(si & top_lib["c1"]), in_top_lib_c2=bool(si & top_lib["c2"]),
+                                         in_top_fp=bool(si & top_fp), in_top_fpprior=bool(si & top_fpp), in_top_pop=bool(si & top_pop), in_top_lib_c1=bool(si & top_lib["c1"]), in_top_lib_c2=bool(si & top_lib["c2"]),
                                          **{n: float(comp[n][i]) for n in comp}, pop_public=float(pop[i])))
                 runner.append(dict(mid=mid, spectra=[dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
                                                           ce_ev=[s["ce"]] if s["ce"] is not None else None, ce_orig=None, ce_units="eV" if s["ce"] is not None else None) for s in qspec],
@@ -355,7 +357,7 @@ def main():
             json.dump(runner, open(f"{a.out}/b1_runner_{set_name}_in.json", "w"))
             print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} shortlist rows ({time.time()-t0:.0f}s)", flush=True)
     import rdkit
-    json.dump(dict(k=a.k, shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=DUP_SIM, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
+    json.dump(dict(k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=DUP_SIM, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
                    rdkit=rdkit.__version__, seconds=round(time.time() - t0)), open(f"{a.out}/b1_features_manifest.json", "w"), indent=1)
     print(f"done {time.time()-t0:.0f}s")
 

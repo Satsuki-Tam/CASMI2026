@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 16:51 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 17:29 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-c2-strict">1. 漏斗(C2 視点、strict)</a></li>
@@ -29,6 +29,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#8-lambdarank-1500">8. 追補: LambdaRank の特徴追加の予備比較(15:00、開発集合のみ)</a></li>
 <li><a href="#9-codex-008-1525reportsagent_review008_codexmd">9. Codex 008 による訂正(15:25、reports/agent_review/008_codex.md)</a></li>
 <li><a href="#10-ice-b-1650results_008b">10. ICE 復旧後の B と、各モデルの寄与(16:50、results_008b/)</a></li>
+<li><a href="#11-shortlist-1722spark-run_audit_b1_shortlist_auditpy">11. shortlist 監査の結果(17:22、Spark run_audit_*、b1_shortlist_audit.py)</a></li>
 </ul>
 </div>
 </div><h1 id="b1-2026-10-24">B1 失敗モード診断(2026-10-24 午後)</h1>
@@ -397,4 +398,54 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li>ICE は Kaggle 実行時間の最大部分を占める(GB10 でも GL の約 4 倍)。ICE を外せば shortlist を 3〜4 倍に広げて GL を回せる計算になり、§7 の取りこぼし(6〜11%)に充てられる。ただし学習融合では ICE が特徴として効く可能性があるため、LambdaRank の v2 と v2_noice(ICE 特徴を除去)を同じ群で比較してから決める(Spark <code>spark_rankcmp_chain.sh</code>)。</li>
 <li>負の参照証拠 negev(0.5 / 0): C2 は A ±0、B +0.002、C1 集合 +0.009/+0.010 だが、C1 視点は A 0.590→0.590/0.519、C1 集合 0.561→0.542/0.525 と悪化。固定規則には入れない(学習融合に <code>lib_nsame</code> を渡す)。</li>
 <li>libpri τ=0.9, m=0.2: C2 の損失 A −0.005、B −0.005、C1 集合 0。C1 利得 B +0.13、C1 集合 +0.10(τ=0.8 は C2 −0.019/−0.009/−0.001、C1 +0.20/+0.18)。ε ≤ 0.01 の下では τ=0.9 が保険候補。</li>
-</ul></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul>
+<h2 id="11-shortlist-1722spark-run_audit_b1_shortlist_auditpy">11. shortlist 監査の結果(17:22、Spark <code>run_audit_*</code>、<code>b1_shortlist_audit.py</code>)</h2>
+<p>同じ窓・FP・prior のスコアで、仮想的な枝配分の正解到達率(到達可能分子のうち真が shortlist に入る割合)と候補数を測った。現行 = FP 100 ∪ FP+prior(λ0.15) 100 ∪ 参照 20。</p>
+<table>
+<thead>
+<tr>
+<th>配分</th>
+<th>A: 到達率 / 平均候補数</th>
+<th>B: 到達率 / 平均候補数</th>
+<th>C1 集合 B: 到達率 / 平均候補数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>現行</td>
+<td>0.958 / 124</td>
+<td>0.898 / 113</td>
+<td>0.867 / 113</td>
+</tr>
+<tr>
+<td>FP 枝 200</td>
+<td>0.983 / 212</td>
+<td>0.910 / 198</td>
+<td>0.892 / 193</td>
+</tr>
+<tr>
+<td><strong>FP+prior 枝 200</strong></td>
+<td>0.986 / 208</td>
+<td>0.927 / 194</td>
+<td>0.928 / 188</td>
+</tr>
+<tr>
+<td>prior 枝 50 を追加</td>
+<td>0.958 / 172</td>
+<td>0.938 / 152</td>
+<td>0.892 / 150</td>
+</tr>
+<tr>
+<td><strong>FP+prior 200 + prior 50</strong></td>
+<td><strong>0.986 / 254</strong></td>
+<td><strong>0.960 / 229</strong></td>
+<td><strong>0.936 / 221</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>取りこぼしの回収は <strong>FP+prior 枝の拡大</strong>が最も効率的(A +2.8pt、B +2.9pt、C1 集合 +6.1pt)。prior 単独枝は天然物 B でさらに +3.3pt(C1 集合 +0.8pt、A 0)。失う正解は無し。</li>
+<li>「FP+prior 200 + prior 50」で候補数は約 2 倍(予測ジョブ数も約 2 倍)。ICEBERG を外せば(§10)GL だけで十分収まる計算: GB10 で GL は約 140 ジョブ/秒、ICE はその 1/4 の速度。</li>
+<li>窓内順位の分布: A では真は FP で中央値 2 位(90% 点 31 位)、B・C1 集合では FP 中央値 14〜15 位(90% 点 336〜377 位)だが FP+0.15·prior では 4〜7 位(90% 点 121〜143 位)。prior 単独は B で中央値 45 位。</li>
+</ul>
+<p><strong>次の実験 B1 v3</strong>(Spark <code>spark_v3_chain.sh</code>): shortlist = FP 100 ∪ FP+prior 200 ∪ 参照 20 ∪ prior 50、GLACIER のみ(ICE 無し)、LambdaRank は ICE 特徴を除いた v2_noice。開発集合(eval_set A/B、C1 集合)と学習用 P1 600 分子で特徴表 → GL → 評価 → 学習。locked 集合は v2・v3 の 2 候補を同時に 1 回だけ開く(事前登録: <code>008_decision.md</code> 追記)。</p></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

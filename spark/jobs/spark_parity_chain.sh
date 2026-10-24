@@ -3,7 +3,7 @@
 cd ~/CASMI2026 || exit 1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=1
 B=experiments/b1_baseline; E=$B/eval_test_set; PY=.venv/bin/python
-until grep -q "PIPEEVAL_DONE" logs/spark_post_chain.log 2>/dev/null; do sleep 300; done
+until grep -q "PIPEEVAL_DONE" logs/spark_post_chain2.log 2>/dev/null; do sleep 300; done
 git fetch -q origin && git checkout -q origin/main -- $B/b1_parity.py && echo "synced $(git rev-parse --short origin/main) $(date +%T)"
 for mode in c2 c1; do
   echo "== $(date +%T) parity $mode"

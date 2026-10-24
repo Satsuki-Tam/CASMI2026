@@ -40,3 +40,10 @@
 - `b1_features.py`: `lib_nsame_c1/c2`、仮想 shortlist の候補数・正解到達フラグ、真の窓内順位。
 - `b1_shortlist_audit.py`: 上記フラグによる配分比較表。
 - `docs/b1_diagnostic_2026-10-24.md`: §9 に訂正を追記。
+
+## 5. 追記(17:35): locked 集合の開封規則(事前登録)
+
+- 候補 M1 = B1 v2: shortlist FP 100 ∪ FP+prior 100 ∪ 参照 20、GL+ICE、LambdaRank 28 特徴(`rank_v2`)。保険 = S(2,1,0.5) + libpri(0.9,0.2)。
+- 候補 M2 = B1 v3: shortlist FP 100 ∪ FP+prior 200 ∪ 参照 20 ∪ prior 50、GL のみ、LambdaRank v2_noice(`rank_v3`)。保険 = S(2,0,0.5) + libpri(0.9,0.2)。
+- locked(seed 4、A/B 各 300)は両候補を同時に 1 回だけ採点する(`spark_post_chain2.sh` 段 5)。採用規則: C2 strict(全 N 分母)が高い方。差が 0.01 未満なら実行時間の短い M2。C1 視点と到達率は併記し、結果を見て規則を変えない。
+- v3 の開発集合での結果(到達率・固定規則・LambdaRank)は locked 開封前に記録する。

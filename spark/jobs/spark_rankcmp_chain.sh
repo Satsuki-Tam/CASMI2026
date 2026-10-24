@@ -4,7 +4,7 @@
 cd ~/CASMI2026 || exit 1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=1
 B=experiments/b1_baseline; PY=.venv/bin/python
-until grep -q "TRAIN_V2_DONE" logs/spark_post_chain.log 2>/dev/null; do sleep 180; done
+until grep -q "TRAIN_V2_DONE" logs/spark_post_chain2.log 2>/dev/null; do sleep 180; done
 git fetch -q origin && git checkout -q origin/main -- $B/b1_rank_train.py $B/b1_rankfeats.py && echo "synced $(git rev-parse --short origin/main) $(date +%T)"
 RUNS="$B/run_p1_v2:experiments/p1_baseline/run1/p1_molecules.csv:fit $B/run1_v2:$B/eval_set/p1_molecules.csv $B/run_c1_v2:$B/eval_c1/p1_molecules.csv"
 for V in "v2_noice:" "v3s:" "v2:--monotone"; do
