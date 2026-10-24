@@ -7,8 +7,13 @@ import json, os, sys, hashlib
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SRC = os.path.join(ROOT, "experiments", "b1_baseline")
 files = {n: open(os.path.join(SRC, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py", "b1_rankfeats.py")}
-model = os.path.join(SRC, "rank", "lambdarank.txt")
-if os.path.exists(model): files["lambdarank.txt"] = open(model, encoding="utf-8").read()
+import argparse
+ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--model", default=os.path.join(SRC, "rank", "lambdarank.txt"), help="LambdaRank model to embed ('' = none -> fixed rule)")
+ap.add_argument("--pipeline_args", default="", help="extra b1_pipeline.py arguments, e.g. '--k_short 200 --k_pop 50 --w_ice 0'")
+A = ap.parse_args()
+model = A.model
+if model and os.path.exists(model): files["lambdarank.txt"] = open(model, encoding="utf-8").read(); print("embedding model", model)
+else: print("no model embedded -> fixed rule")
 shas = {n: hashlib.sha256(v.encode()).hexdigest() for n, v in files.items()}
 
 cells = []
@@ -31,9 +36,10 @@ else:
     print('no rdkit 2026.3.3 wheel attached; using the image RDKit', flush=True)
 import rdkit; print('rdkit', rdkit.__version__, flush=True)
 ''')
-cells.append('''import subprocess, sys, time, json, os
+cells.append(f'''PIPELINE_ARGS = {json.dumps(A.pipeline_args.split())}
+''' + '''import subprocess, sys, time, json, os
 t0 = time.time()
-cmd = [sys.executable, '-X', 'utf8', '/kaggle/working/b1/b1_pipeline.py', '--out', '/kaggle/working']
+cmd = [sys.executable, '-X', 'utf8', '/kaggle/working/b1/b1_pipeline.py', '--out', '/kaggle/working'] + PIPELINE_ARGS
 print('running', ' '.join(cmd), flush=True)
 with open('/kaggle/working/b1_pipeline.log', 'w') as lf:
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
@@ -51,6 +57,6 @@ print('OK', sub.shape, flush=True)
 ''')
 nb = {"cells": [{"cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [], "source": c.splitlines(keepends=True)} for c in cells],
       "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}, "language_info": {"name": "python"}}, "nbformat": 4, "nbformat_minor": 5}
-out = sys.argv[1]
+out = A.out
 json.dump(nb, open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print("wrote", out, shas)

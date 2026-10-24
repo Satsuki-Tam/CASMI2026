@@ -185,6 +185,10 @@ def official_keys_of_train(store, pool):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--test", default=None); ap.add_argument("--out", default="experiments/b1_baseline/pipeline_local"); ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--no_forward", action="store_true"); ap.add_argument("--workers", type=int, default=0); ap.add_argument("--folds", default="0")
+    ap.add_argument("--k_short", type=int, default=K_SHORT, help="FP branch size of the shortlist (default 100)")
+    ap.add_argument("--k_fpp", type=int, default=None, help="FP+prior branch size (default = --k_short)")
+    ap.add_argument("--k_pop", type=int, default=0, help="prior-only branch size added to the shortlist (default 0 = off)")
+    ap.add_argument("--w_ice", type=float, default=W_ICE, help="ICE weight in the fixed rule; 0 skips the ICEBERG runner entirely")
     ap.add_argument("--rank_model", default=None, help="LightGBM LambdaRank model file (default: lambdarank.txt next to this script; absent -> fixed rule)")
     ap.add_argument("--exclude_rows", default=None, help="evaluation: JSON list of spectra-store rows never used as references (the query acquisitions) -> class-1 proxy")
     ap.add_argument("--exclude_identities", default=None, help="evaluation: JSON list of official keys whose references are removed and whose train membership is hidden -> class-2 proxy")
@@ -365,9 +369,11 @@ def main():
             if len(ref_cache) > 200_000: ref_cache.clear()
             # shortlist + official keys
             fpz = np.nan_to_num(fpu, nan=np.nanmin(fpu) if np.isfinite(fpu).any() else 0.0); zf = (fpz - fpz.mean()) / (fpz.std() + 1e-9)
-            K = min(K_SHORT, n_u); top_fp = np.argsort(-np.nan_to_num(fpu, nan=-1e18), kind="stable")[:K]; top_fpp = np.argsort(-(zf + SHORTLIST_LAM * pop), kind="stable")[:K]
+            K = min(args.k_short, n_u); K2 = min(args.k_fpp if args.k_fpp is not None else args.k_short, n_u)
+            top_fp = np.argsort(-np.nan_to_num(fpu, nan=-1e18), kind="stable")[:K]; top_fpp = np.argsort(-(zf + SHORTLIST_LAM * pop), kind="stable")[:K2]
             top_lib = [i for i in np.argsort(-lib, kind="stable")[:K_LIB] if lib[i] > LIB_MIN]
             short = np.union1d(np.union1d(top_fp, top_fpp), np.array(top_lib, dtype=np.int64))
+            if args.k_pop > 0: short = np.union1d(short, np.argsort(-(pop + 1e-6 * zf), kind="stable")[:min(args.k_pop, n_u)])   # prior-only branch (Codex 008 Q2)
             s_smiles = [smiles[rep[keys[i]]["i"]] for i in short]
             okeys = [k for rr_ in wp.map(_okey, [s_smiles[i:i + 25] for i in range(0, len(s_smiles), 25)]) for k in rr_]
             best = {}
@@ -383,7 +389,7 @@ def main():
                                  in_tier=bool(any(trow[j] >= 0 for j in idxs)), in_coconut=bool(any(in_coco[j] for j in idxs)), ppm_err=float(np.nanmin([ppm_err[j] for j in idxs])),
                                  fp_rank_window=int(len(fp_sorted) - np.searchsorted(fp_sorted, np.nan_to_num(fpu[i], nan=-1e18), side="left")), **{n: float(comp[n][i]) for n in comp}))
             feats[mid] = rows
-            molinfo[mid] = dict(n_query=len(q), ce_known=float(np.mean([s["ce"] is not None for s in q])))
+            molinfo[mid] = dict(n_query=len(q), ce_known=float(np.mean([s["ce"] is not None for s in q])), n_unique=float(n_u))
             runner.append(dict(mid=mid, lib_max=float(lib.max()), spectra=[dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
                                                                                    ce_ev=s.get("ce_ev"), ce_orig=s.get("ce_orig"), ce_units=s.get("ce_units")) for s in q], cands=[r["smiles"] for r in rows if heavy_ok(r["smiles"])]))
             stats.append(dict(molecule=mid, n_query=len(q), adducts="|".join(sorted(M_by_add)), n_window=len(smiles), n_unique=n_u, n_train=int(in_train.sum()), n_shortlist=len(rows), lib_max=float(lib.max()), seconds=time.time() - tm0))
@@ -403,8 +409,10 @@ def main():
             import fuse as ice_fuse, gl_fuse
             try: preseed_site(P["iceberg"], f"{P['work']}/ice_site")
             except Exception as e: log("site preseed failed (runner will try its own install):", repr(e))
-            try: ICE = ice_fuse.run_ice(P["iceberg"], items, workdir=f"{P['work']}/ice_work", device=dev, budget_s=ICE_BUDGET, site=f"{P['work']}/ice_site", extra_args=["--any-rdkit"]); log("ICE done")
-            except Exception as e: log("ICE failed:", repr(e))
+            if args.w_ice == 0: log("ICE skipped (w_ice = 0)")
+            else:
+              try: ICE = ice_fuse.run_ice(P["iceberg"], items, workdir=f"{P['work']}/ice_work", device=dev, budget_s=ICE_BUDGET, site=f"{P['work']}/ice_site", extra_args=["--any-rdkit"]); log("ICE done")
+              except Exception as e: log("ICE failed:", repr(e))
             try: GL = gl_fuse.run_gl(P["glacier"], items, workdir=f"{P['work']}/gl_work", device=dev, budget_s=GL_BUDGET, site=f"{P['work']}/ice_site", wheels=os.path.join(P["iceberg"], "wheels"), extra_args=["--any-rdkit"]); log("GL done")
             except Exception as e: log("GL failed:", repr(e))
         else:
@@ -427,7 +435,9 @@ def main():
         try:
             import lightgbm as lgb
             from b1_rankfeats import feature_matrix
-            booster = lgb.Booster(model_file=model_path); log(f"learned fusion model loaded: {model_path} ({booster.num_trees()} trees)")
+            booster = lgb.Booster(model_file=model_path)
+            model_feats = booster.feature_name(); model_feats = None if any(f.startswith("Column_") for f in model_feats) else model_feats
+            log(f"learned fusion model loaded: {model_path} ({booster.num_trees()} trees, features {len(model_feats) if model_feats else 'default'})")
         except Exception as e:
             booster = None; log("learned fusion unavailable -> fixed rule:", repr(e))
     sub, sub_fixed, fused_stats = [], [], Counter()
@@ -440,7 +450,7 @@ def main():
         # fixed rule first: the insurance candidate, and the fallback when the learned fusion is unavailable
         S = z(fp) + LAM * pop
         if np.isfinite(g).sum() >= 2: S = S + W_GL * z(g); fused_stats["gl_used"] += 1
-        if np.isfinite(ic).sum() >= 2: S = S + W_ICE * z(ic); fused_stats["ice_used"] += 1
+        if args.w_ice != 0 and np.isfinite(ic).sum() >= 2: S = S + args.w_ice * z(ic); fused_stats["ice_used"] += 1
         top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
         if lib.max() >= TAU and lib.max() - second >= MARGIN: S = np.where(lib >= TAU, 100.0 + lib, S); fused_stats["lib_priority"] += 1
         order = np.argsort(-S, kind="stable"); sub_fixed.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
@@ -449,14 +459,15 @@ def main():
                 mi = molinfo.get(str(mid), dict(n_query=1, ce_known=0.0))
                 X = feature_matrix(fp, g, ic, pop, [r["lsid"] for r in rows], [r["lpmid"] for r in rows], [r["lsynonyms"] for r in rows], [r["np"] for r in rows], [r["src_mask"] for r in rows],
                                    [r["lotus_refs"] for r in rows], lib, [r["lib_same"] for r in rows], [r["lib_nref"] for r in rows], [r["in_tier"] for r in rows], [r["in_train"] for r in rows],
-                                   [r["in_coconut"] for r in rows], [r["ppm_err"] for r in rows], [r["fp_rank_window"] for r in rows], mi["n_query"], mi["ce_known"])
+                                   [r["in_coconut"] for r in rows], [r["ppm_err"] for r in rows], [r["fp_rank_window"] for r in rows], mi["n_query"], mi["ce_known"],
+                                   n_window=mi.get("n_unique", np.nan), feats=model_feats)
                 order = np.argsort(-booster.predict(X), kind="stable"); fused_stats["learned"] += 1
             except Exception as e:
                 fused_stats["learned_failed"] += 1; log("learned fusion failed for", mid, repr(e))
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=K_SHORT, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, w_ice=args.w_ice, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
