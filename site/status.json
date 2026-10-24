@@ -21,15 +21,21 @@
     },
     {
       "state": "run",
-      "name": "B1 特徴表(新評価集合 A/B 各 300)",
-      "detail": "候補取得 → FPNet → ライブラリ類似度 → shortlist。完了後 GLACIER/ICEBERG → 固定規則の評価(C1/C2・strict)",
-      "eta": "評価表 12:00 頃"
+      "name": "B1 固定規則の評価(新評価集合 A/B 各 300)",
+      "detail": "特徴表完了。ICEBERG(B)実行中 → 評価表(C1/C2・strict)を自動生成",
+      "eta": "12:10 頃"
     },
     {
-      "state": "wait",
-      "name": "B1 特徴表(C1 専用集合 300、P1 分子 600)",
-      "detail": "C1(参照あり)の評価と LambdaRank の学習データ",
-      "eta": "14:00 頃"
+      "state": "run",
+      "name": "B1 C1 専用集合(300)と P1 分子(600)",
+      "detail": "C1 特徴表完了、GL/ICE 実行中 → 評価。続いて P1 分子の特徴表(LambdaRank の学習データ)",
+      "eta": "14:30 頃"
+    },
+    {
+      "state": "run",
+      "name": "DGX Spark の環境構築とデータ同期",
+      "detail": "ユーザー指示: 以後の GPU 実験は Spark で実行。uv 環境 2 本(scorer 版 RDKit / 順方向モデル版)とデータ 13 GB を転送中",
+      "eta": "12:30 頃"
     }
   ],
   "next": [

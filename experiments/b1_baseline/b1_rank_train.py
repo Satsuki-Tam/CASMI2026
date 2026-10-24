@@ -4,7 +4,7 @@ Training rows: shortlist candidates of molecules in the FIT groups of the given 
 possible, C1) -- the two views of one molecule are one 'identity' and always stay in the same split. Features are molecule-relative
 (z within the shortlist) plus raw values and flags; the label is is_truth. Model selection (num_leaves / learning rate / rounds) uses
 the TUNE groups; the EVAL groups are scored once with the selected setting and reported next to the fixed rule S(2,1,0.15).
-Usage: python -X utf8 b1_rank_train.py --runs RUN[:eval_csv] ... [--out DIR]
+Usage: python -X utf8 b1_rank_train.py --runs RUN:eval_csv[:group_override] ... [--out DIR]   (e.g. run_p1:...:fit uses all P1 molecules as fit)
        e.g. --runs experiments/b1_baseline/run1:experiments/b1_baseline/eval_set/p1_molecules.csv experiments/b1_baseline/run_c1:...
 """
 import argparse, json, os, sys
@@ -17,7 +17,7 @@ FEATS = ["z_fp", "z_gl", "z_ice", "fp", "gl", "ice", "pop_public", "lsid", "lpmi
          "lib_max_mol", "in_tier", "in_train", "in_coconut", "ppm_err", "fp_rank_window", "n_cands", "gl_missing", "ice_missing", "n_query", "ce_known", "view_c1"]
 
 
-def load_run(run, eval_csv):
+def load_run(run, eval_csv, group_override=None):
     ev = pd.read_csv(eval_csv).set_index("molecule")
     out = []
     for s in ("A_timstof", "B_nplib"):
@@ -41,7 +41,7 @@ def load_run(run, eval_csv):
                 if view == "c1" and not bool(m.c1_possible): continue
                 lib = g[f"lib_sim_{view}"].values.astype(float); top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
                 S = zfp + (2 * zgl if zgl is not None else 0) + (zice if zice is not None else 0) + LAM * pop
-                d = pd.DataFrame(dict(run=run, set=s, molecule=mid, view=view, group=m.group, identity=mid, is_truth=g.is_truth.values.astype(int),
+                d = pd.DataFrame(dict(run=run, set=s, molecule=mid, view=view, group=group_override or m.group, identity=mid, is_truth=g.is_truth.values.astype(int),
                                       z_fp=zfp, z_gl=zgl if zgl is not None else 0.0, z_ice=zice if zice is not None else 0.0, fp=np.nan_to_num(fp, nan=np.nanmin(fp) if np.isfinite(fp).any() else 0),
                                       gl=np.nan_to_num(glv, nan=-1.0), ice=np.nan_to_num(icv, nan=-1.0), pop_public=pop, lsid=g.lsid.values, lpmid=g.lpmid.values, lsynonyms=g.lsynonyms.values,
                                       np_bit=(g["np"].values != 0).astype(float), src_bit=((g.src_mask.values.astype(np.int64) & 1) != 0).astype(float), lotus=np.log1p(np.maximum(g.lotus_refs.values, 0)),
@@ -68,7 +68,7 @@ def mrr_of(df, score_col):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--runs", nargs="+", required=True); ap.add_argument("--out", default="experiments/b1_baseline/rank")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
-    data = pd.concat([load_run(*r.split(":", 1)) for r in a.runs], ignore_index=True)
+    data = pd.concat([load_run(*r.split(":")) for r in a.runs], ignore_index=True)   # RUN:eval_csv[:group_override]
     print("rows", len(data), "| molecules", data.molecule.nunique(), "| groups", data.groupby("group").molecule.nunique().to_dict(), "| views", data.groupby("view").molecule.nunique().to_dict())
     fit, tune, ev = (data[data.group == g].copy() for g in ("fit", "tune", "eval"))
     # keep only training groups whose shortlist contains the truth (ranking loss needs a positive); evaluation keeps every molecule

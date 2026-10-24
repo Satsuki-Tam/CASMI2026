@@ -18,3 +18,4 @@
 {"time": "2026-10-24 10:40", "kind": "event", "text": "GitHub リポジトリ(Satsuki-Tam/CASMI2026)とこのダッシュボードを作成", "link": "index.html"}
 {"time": "2026-10-24 10:50", "kind": "event", "text": "GitHub へ初回コミットを push(d6dbb1c、490 ファイル)。以後は実験の節目ごとにコミットする", "link": "index.html"}
 {"time": "2026-10-24 10:52", "kind": "submit", "text": "E4 v5 を計測提出(57578830)。P1 では strict 差 A +0.049 / B +0.042。LB は方向のみ読む", "link": "submissions.html"}
+{"time": "2026-10-24 11:51", "kind": "event", "text": "DGX Spark(spark-8fda.local)への移行を開始: 環境構築スクリプトを実行、データ 13 GB を転送中。以後の GPU 実験は Spark で行う", "link": "index.html"}
