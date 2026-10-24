@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 17:54 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 18:07 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -3517,4 +3517,271 @@ p1 + p2 + p3 = 1
 <li><code>experiments/b1_baseline/run1_v2/results_008b/b1_results.md</code>、<code>run_c1_v2/results_008b/b1_results.md</code>、<code>run_p1_v2/results/b1_results.md</code></li>
 <li><code>docs/b1_diagnostic_2026-10-24.md</code> §9〜§11、<code>reports/agent_review/008_codex.md</code>、<code>008_decision.md</code></li>
 <li><code>spark/jobs/spark_v3_chain.sh</code>、<code>spark_post_chain2.sh</code>(locked 開封手順)、<code>experiments/b1_baseline/b1_pipeline.py</code>(<code>--k_fpp --k_pop --w_ice</code>)</li>
+</ul></details><details><summary>回答(Codex)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 結論</a></li>
+<li><a href="#2">2. 開発結果の独立確認</a><ul>
+<li><a href="#plain-noice-paired">plain / noice / 単調制約の直接 paired 比較</a></li>
+<li><a href="#_1">母数・版の訂正</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 開封前に直す実装上の条件</a><ul>
+<li><a href="#31-m2-schema">3.1 M2 の特徴 schema</a></li>
+<li><a href="#32-w7">3.2 W7 は「完走してスコアが出た」だけでは完了しない</a></li>
+<li><a href="#33">3.3 台帳・固定保険・直接比較</a></li>
+<li><a href="#34">3.4 自動チェーンの失敗時動作と凍結</a></li>
+</ul>
+</li>
+<li><a href="#4-q1-m1-m2">4. Q1: M1 と M2 の構成</a></li>
+<li><a href="#5-q2-ice-25">5. Q2: ICE の扱いと上位 25 件だけの再採点</a></li>
+<li><a href="#6-q3-shortlist">6. Q3: 拡大 shortlist で追加して見る指標</a></li>
+<li><a href="#7-q4-locked">7. Q4: locked の採用規則</a><ul>
+<li><a href="#_2">開封後の改善</a></li>
+</ul>
+</li>
+<li><a href="#8-q5-fallback">8. Q5: 時間予算と fallback</a><ul>
+<li><a href="#_3">実時間の見積もりを修正する</a></li>
+<li><a href="#s1005-fpprior">S(1,0,0.5) は FP+prior だけではない</a></li>
+<li><a href="#gl">現行コードは GL 未計算だけでは固定規則へ戻らない</a></li>
+</ul>
+</li>
+<li><a href="#9-q6-lb">9. Q6: LB の読み方</a></li>
+<li><a href="#10">10. 開封のための最小完了条件</a><ul>
+<li><a href="#_4">確認した版</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div><h1 id="009-locked">レビュー 009: locked 開封前の最終確認</h1>
+<p>作成: 2026-10-24、Codex。依頼 009、008 判断記録 §5、診断文書 §9〜§11、実行チェーンと評価／提出コードを確認した。ローカル未同期の開発結果は Spark 上の指定された開発用ディレクトリから読み取り、保存済みモデルによる CPU 再採点も行った。<strong>locked のデータ・予測・採点結果は開いていない。</strong> 学習・GPU 実験・提出・ジョブの変更は行っていない。</p>
+<h2 id="1">1. 結論</h2>
+<p><strong>M1 は事前登録の plain v2 を維持し、M2 は拡大 shortlist 上で再学習した plain v2_noice とする案に賛成する。ただし、現状のまま locked を自動開封することは勧めない。</strong></p>
+<p>理由は追加の手法探索が必要だからではなく、次の具体的な不一致が残るため。</p>
+<ol>
+<li>locked 評価器が M2 の 25 特徴に対応しておらず、既定の 28 特徴を渡す。</li>
+<li>W7 の評価用マスクが、特徴表作成時と同じ参照環境になっていない。</li>
+<li>GL 予算と GL 未計算時の fallback が、計画の説明と提出コードで違う。</li>
+<li>自動チェーンが前段の失敗でも完了印を出し、開封直前にも変更可能な <code>origin/main</code> を取り込む。</li>
+<li>採用規則が C1 の損失を制約せず、実測されていない「M2 の方が速い」を tie-break に使う。</li>
+</ol>
+<p>この点を開発データ上で直して両候補を固定すれば、さらに新しい変種を増やさず、予定した一回の locked 比較へ進める。</p>
+<h2 id="2">2. 開発結果の独立確認</h2>
+<p>Spark の <code>rank_results.json</code> とモデルを読み、開発集合の既使用 eval 群に対する予測を再計算した。保存された C1/C2 平均と一致した。M2 用の新 shortlist で学習する <code>rank_v3</code> は確認時点では未完成だったため、その性能は本レビューでは判断していない。</p>
+<h3 id="plain-noice-paired">plain / noice / 単調制約の直接 paired 比較</h3>
+<p>次は各モデルと同じ固定規則との差ではなく、<strong>同じ query 上で plain v2 との差を直接計算したもの</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>比較</th>
+<th style="text-align: right;">C2 strict 差、N=300</th>
+<th>paired 95% 区間</th>
+<th style="text-align: right;">C1 差、N=106</th>
+<th>paired 95% 区間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v2_noice − plain</td>
+<td style="text-align: right;">−0.00010</td>
+<td>[−0.01774, +0.01739]</td>
+<td style="text-align: right;"><strong>−0.04700</strong></td>
+<td><strong>[−0.08559, −0.01131]</strong></td>
+</tr>
+<tr>
+<td>単調制約 − plain</td>
+<td style="text-align: right;">+0.00075</td>
+<td>[−0.01448, +0.01619]</td>
+<td style="text-align: right;">+0.01094</td>
+<td>[−0.02013, +0.04221]</td>
+</tr>
+</tbody>
+</table>
+<p>この結果から、単調制約へ差し替える明確な根拠はない。ICE 無しは C2 で同じ程度の点推定だが、性能が同等と確定したわけではなく、C1 には測定された低下がある。ただし、これは旧 shortlist 上でそれぞれ選択された学習器の比較であり、拡大 shortlist で再学習する M2 の損失量をそのまま予測するものではない。</p>
+<h3 id="_1">母数・版の訂正</h3>
+<ul>
+<li>JSON の C2 平均は空候補を含む <strong>N=300</strong>。一方、<code>eval_delta</code> の bootstrap は候補行を持つ <strong>N=297</strong>で計算されている。plain の全 N の差は <code>0.524616 − 0.450069 = 0.074546</code>、保存された delta は 0.075299。大きな結論は変わらないが、点推定・区間を同じ台帳へ揃える。</li>
+<li>「1,492 分子」は fit/tune/eval 全体の候補行を持つ分子数で、fit だけの母数ではない。保存 JSON の実学習に使った正例あり molecule/view group は <strong>884</strong>、行数は 105,194。</li>
+<li>確認した現在の plain <code>rank_v2</code> は <strong>leaves=15、lr=0.1、100 round</strong>。依頼の 300 round と異なる。M1 を名前だけでなく、実際のモデル hash で固定する必要がある。</li>
+</ul>
+<h2 id="3">3. 開封前に直す実装上の条件</h2>
+<h3 id="31-m2-schema">3.1 M2 の特徴 schema</h3>
+<p><code>v2_noice</code> は <code>z_ice / ice / ice_missing</code> を除いた 25 特徴であり、保存モデルも 25 特徴を持つ。確認した <code>b1_locked_eval.py</code> は <code>feature_matrix()</code> に <code>feats</code> を渡していないため 28 列を作る。</p>
+<p>提出パイプラインと同じくモデルの feature names を読み、<strong>名称・順序・列数を照合して</strong>行列を作る。列数のチェックを無効にして通してはいけない。M1 を先に採点してから M2 でエラーになることを避けるため、両モデルのこの確認を開発 fixture で完了させてから locked へ進む。</p>
+<h3 id="32-w7">3.2 W7 は「完走してスコアが出た」だけでは完了しない</h3>
+<p>現行の <code>make_eval_test.py</code> は対象全分子の正解 identity を一つの <code>exclude_identities_c2.json</code> にまとめ、パイプラインは全 query にその global mask を使う。一方、<code>b1_features.py</code> の C2 は基本的に現在の query の正解を隠す。これでは、別の評価分子が decoy/reference となる場合の世界が異なる。</p>
+<p>C1 も、特徴表側は正解の選定元ライブラリの参照を除くが、パイプライン側の <code>exclude_rows_c1.json</code> は抽出した query 行を除く方式である。どちらを採るかを決め、同じ reference ledger を両経路に渡す必要がある。</p>
+<p>さらに、評価用 test は raw train のピーク・precursor をそのまま書く一方、特徴表側は enveda-180 正モードの電子質量補正を行う。学習データを test 形式へ変換する段階で、入力の規約・dtype を共通化し、二重補正も避ける。</p>
+<p>まず 20〜50 分子で、query、参照マスク、候補 official key、出典、shortlist、特徴、保存済み forward スコアを使った top-25 が一致することを確認する。global holdout へ統一する場合も、それ自体は有効な設計だが、同じ環境で作った特徴を学習・評価に使う。</p>
+<h3 id="33">3.3 台帳・固定保険・直接比較</h3>
+<p>locked 評価器は <code>--eval_csv</code> を受け取るが、確認時のコードでは評価対象を <code>M.index</code> から作っている。最初に凍結した molecule/view 台帳を分母とし、欠落は 0、意図しない query 欠落は監査に出す。M1/M2 の C1 台帳も共通にする。</p>
+<p>登録された保険は <code>libpri(0.9,0.2)</code> 付きだが、現在の locked 評価器の固定出力には libpri が入っていない。保険を評価対象にするなら、その実際の規則を登録して採点する。旧判断記録に残る「τ=0.8/0.9 を locked で比較」と、§5 の τ=0.9 固定も一本化する。</p>
+<p>M1/M2 の比較は、同じ分子の公式 RR を結合して <strong>RR(M2)−RR(M1)</strong> を計算する。それぞれ異なる shortlist の固定規則との差を、M1/M2 間の差の代わりにしない。</p>
+<h3 id="34">3.4 自動チェーンの失敗時動作と凍結</h3>
+<p><code>spark_post_chain2.sh</code> は W7 や学習の終了コードを表示するが、その後も処理を続けて完了印を出せる。<code>spark_v3_chain.sh</code> も同様に、成功を保証しないまま後段の待機条件を満たし得る。</p>
+<p>各段の終了コード、必要成果物、モデル schema、parity の合格を確認した場合だけ次へ進むようにする。開封前に M1/M2 両方が準備済みであることを一つの manifest で確認する。</p>
+<p>開封直前の <code>sync_code()</code> が任意の最新 <code>origin/main</code> を checkout する方式も凍結にならない。code commit、モデル、候補・query 設定、feature names、scorer、forward 出力、fallback と予算の hash/設定を固定し、その版だけを使う。これは追加のモデル選択ではなく、一回の比較を成立させるための条件である。</p>
+<h2 id="4-q1-m1-m2">4. Q1: M1 と M2 の構成</h2>
+<p><strong>M1 は plain v2 維持を推奨する。M2 も、拡大 shortlist に対して再学習した plain v2_noice を第一候補とする。</strong></p>
+<p>単調制約版は C2 約 +0.0008、C1 約 +0.011 の点推定だが、直接比較の区間は両方 0 を含む。現時点で候補を増やしたり、直前の差し替えを行ったりするほど強い根拠ではない。</p>
+<p>開発集合の eval 群は既に開発扱いなので、そこで 4 変種を比較してから locked 候補を決めること自体は許容される。事前登録の変更も、locked を見る前に理由・版を記録するなら可能。ただし開発上の選択バイアスは残るため、その最高値を独立性能と呼ばない。今回は差し替えない判断の方が単純である。</p>
+<p>M2 の <code>rank_v3</code> は、既存の <code>rank_v2_v2_noice</code> をそのまま載せ替えるものではない。拡大後の候補・z 分布で学習し、開発集合の結果とモデル hash を記録したものを M2 として固定する。</p>
+<h2 id="5-q2-ice-25">5. Q2: ICE の扱いと上位 25 件だけの再採点</h2>
+<p>ICE を外して GL の候補を増やす M2 は、計算配分として試す価値がある。ただし「固定規則で小差だから ICE は不要」とは言わない。学習器同士の現在の比較では C1 に低下があり、主目的を C2 に置く場合もその損失を監視する。</p>
+<p>上位 25 件だけ ICE を計算する案も有望だが、<strong>今回の locked に第三の候補として追加せず、次の独立した二段階方式として扱う</strong>ことを勧める。</p>
+<p>設計上は、先に固定した no-ICE の規則／モデルで対象 25 件を選び、その選択を本番でもそのまま再現する。開発では既存の full ICE スコアを対象外だけ欠損にすることで、GPU を回す前に部分被覆を模擬できる。</p>
+<p>全 shortlist の ICE z と、選択された 25 件内の z は別である。対象外を単に z=0 にして full-ICE モデルへ入れる方法は、平均スコアを観測したことと未計算を混同する。次のどちらかに定義を絞る。</p>
+<ul>
+<li>選んだ top-25 の位置だけを ICE で再順位付けする。top-25 外の正解は回収できないが、挙動が明確。</li>
+<li>「ICE を計算したか」と欠損理由を特徴にし、同じ選択マスクで学習した二段階ランカーを使う。fit の第一段選択には OOF または固定規則を使い、学習 query だけ第一段が有利になることを避ける。</li>
+</ul>
+<p>候補数に比例した削減に加えて起動費・CE 条件・cache があるため、25/全候補数だけで wall time は決まらない。実ジョブ数と最終 MRR の両方で判断する。</p>
+<h2 id="6-q3-shortlist">6. Q3: 拡大 shortlist で追加して見る指標</h2>
+<p>予定している「新たに正解が入った分子」と「元から入っていた分子」の分解に賛成する。加えて次を保存したい。</p>
+<ul>
+<li>同じ公式 identity での旧→新候補の所属と、各枝の増分。候補集合が本当に包含関係にあるか。</li>
+<li>新規回収群の到達率だけでなく、最終順位・MRR・forward 被覆。既存群の悪化との正味差。</li>
+<li>query ごとの候補数と予測ジョブ数の中央値・95% 点・最大。平均 230 件だけでは予算を決めない。</li>
+<li>C1 の参照正解が押し下げられた件数、低文献数群、負モード／未対応 adduct の値。</li>
+<li>実際の予算打切りを入れた値と、全 forward 計算を終えた理想状態の値。</li>
+</ul>
+<p>監査の到達率からは、おおむね A 8 分子、B 11 分子、C1 集合 B 17 分子が新たに shortlist へ入る見込みである。仮に新規回収分子を全て 1 位にできても、その成分だけの全 N 分母の利得は約 +0.027 / +0.037 / +0.057。既存群の順位変化は別に加わる。到達率の伸びだけで、M2 の最終利得を予測しない。</p>
+<p>候補上限を安全策として後から入れる場合も、監査の包含関係が崩れ得る。上限値と切り捨てる枝の順序を含めた構成を、M2 として開発・locked の両方で評価する。</p>
+<h2 id="7-q4-locked">7. Q4: locked の採用規則</h2>
+<p><strong>「C2 が高い方、差&lt;0.01 なら M2」だけでは不十分。C1 は比率不明だからこそ、少なくとも損失制約として扱う。</strong></p>
+<p>提案する規則は次の形。</p>
+<ol>
+<li>両候補が、同じ query/view 台帳、公式 scorer、同じ実行資源制約で比較可能な状態にあることを先に確認する。</li>
+<li>C2 は A/B 別の paired 差を主に確認する。必要なら等重平均も使えるが、それは 1:1 の開発上の効用であり、本番構成比の推定ではない。</li>
+<li>M2 に許容する C1 損失幅 ε_C1 を開封前に数値で登録する。例えば 0.02 を許容幅とするなら、それを超える悪化がある M2 を、C2 の小差だけで M1 の置換としない。保護を統計的に確認したと述べるには、下側区間も −ε_C1 を上回る必要がある。</li>
+<li>C1 と各 C2 層の保護条件を満たした候補間で、C2 の差が 0.01 未満なら <strong>実測で短い</strong>方を速度優先で選ぶ。点差&lt;0.01 だけで性能同等と宣言しない。</li>
+<li>区間が広い、または A/B/C1 が異なる方向なら「勝敗未確定」として M1 と M2 を別の失敗傾向を持つ候補として保持する。開封後に ε や重みを広げて勝者を作らない。</li>
+</ol>
+<p>0.02 は統計から決まる値ではなく、ここで提示する許容損失の案である。現在の no-ICE 旧 shortlist 比較では C1 −0.047 なので、C1 を無視する規則は実際に選択を変え得る。拡大後の M2 がこれを回復するかを確認したい。</p>
+<p>保険の固定規則を最終候補へ昇格する条件も、開封前に一覧へ入れる。M1/M2 の主出力、固定保険、比較用対照の役割を曖昧にしない。</p>
+<h3 id="_2">開封後の改善</h3>
+<p>開発を続けることは問題ない。ただし、locked が確認したのは凍結した M1/M2 だけである。v3 の派生に同じ保証は引き継がれない。派生を最終候補にするなら、新しい未使用集合で確認するか、独立確認がないことを明示する。</p>
+<p>旧 locked を繰り返し参照しながら調整すれば、その時点で開発集合になる。「一回使い切った後は、新手法を開発結果と LB だけで選んでも locked 済み扱い」という運用にはしない。</p>
+<h2 id="8-q5-fallback">8. Q5: 時間予算と fallback</h2>
+<h3 id="_3">実時間の見積もりを修正する</h3>
+<p>GB10 の 140 jobs/s の 1/3〜1/4 を T4 の仮定にすると、約 35〜47 jobs/s。50〜70 万ジョブは <strong>GL だけで約 3.0〜5.6 時間</strong>であり、3〜4 時間とは限らない。400×230×8 は 73.6 万で、35 jobs/s なら約 5.8 時間。これに CPU、起動、出力の時間が加わる。</p>
+<p>そもそも候補×スペクトル本数は概算で、CE/adduct の bucket と cache により実ジョブ数は変わる。runner が作る unique job を数え、代表例と重い側で時間を測る。GB10/T4 比だけで 9 時間内を保証しない。</p>
+<p><strong>確認した提出コードの GL_BUDGET は依然 4,000 秒</strong>。上の速度なら約 14〜19 万ジョブ相当で、50〜70 万全件を計算する構成ではない。ICE をスキップしても、この定数は自動では増えない。</p>
+<p>GL 予算は global deadline、CPU 段終了時刻、出力に残す時間から計算する。予算、分子の実行順、候補上限、打切り時の規則までをモデル構成に含めて固定する。全件 forward がある locked 値だけで、4,000 秒で打ち切る提出を承認しない。</p>
+<h3 id="s1005-fpprior">S(1,0,0.5) は FP+prior だけではない</h3>
+<p>現在の記法は <code>S(w_GL,w_ICE,lambda)</code> で、FP の係数は 1。従って <strong>S(1,0,0.5) は FP+GL+prior</strong>である。診断文書の「FP+pop だけでも A 0.664」という説明は誤りで、この値には GL が入っている。</p>
+<p>保存済み v2 候補で、forward を全て外した <code>z(FP)+0.5*prior</code> を再計算した C2 strict は次の通り。</p>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">FP+prior のみ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td style="text-align: right;">0.41049</td>
+</tr>
+<tr>
+<td>B</td>
+<td style="text-align: right;">0.24717</td>
+</tr>
+<tr>
+<td>C1 集合 B の C2 条件</td>
+<td style="text-align: right;">0.25617</td>
+</tr>
+</tbody>
+</table>
+<p>これは M2 拡大 shortlist の値ではないが、GL が無いときの低下を小さく見積もってはいけないことを示す。fallback は曖昧な S 記法でなく、使用する項を明示する。</p>
+<h3 id="gl">現行コードは GL 未計算だけでは固定規則へ戻らない</h3>
+<p><code>b1_pipeline.py</code> は <code>booster is not None</code> なら、GL が全欠損でもランカーを呼ぶ。固定規則へ戻るのは主にモデル不在／推論例外時であり、計画の「GL 超過分子は FP+prior で埋める」と一致していない。</p>
+<p>GL の必要被覆を満たさない query には、事前に固定した fallback を明示的に選ぶ。その fallback が FP+prior＋参照規則なら、そのまま開発集合で GL を欠損させて測る。全欠損に対して未検証のランカーを使い続けない。</p>
+<p>最低限の運用条件は、CPU を含む全体 deadline、途中成果の保存、モデル別・query 別の終了／未対応／失敗／予算切れの区別、常に全 molecule の出力を完成させる経路である。候補数を抑える場合は、後付けの切捨てでなく、開発・locked で同じ cap と枝順序を使う。</p>
+<h2 id="9-q6-lb">9. Q6: LB の読み方</h2>
+<p>E0 と E4 が表示上ともに 0.464 という報告からは、丸めた Public score の正味差を観測しなかったことまで言える。予測が同一、各分子への効果が 0、P1 が無効、とまでは言えない。</p>
+<p>B1 と E0 は候補取得・重み・参照処理・生成経路等が異なるため、LB 差を LambdaRank の寄与として読まない。Notebook 版、モデル hash、候補・予算・fallback が、ここで凍結した M1/M2 と同じかを先に確認する。</p>
+<p>また <strong>A の固定 0.671 に、学習の +0.075 を足して本番の見通しを作らない</strong>。+0.075 は A/B/C1 検証用 B の開発 eval 三群を混ぜた値で、固定対照は 0.450。再採点した plain の C2 は、A eval 100 分子で 0.73746、B eval 100 分子で 0.35279、C1 集合の C2 eval 100 分子で 0.48360 であり、分布ごとの違いが大きい。</p>
+<p>±0.02 を事前に決めるなら、<strong>追加調査を始める運用上の閾値</strong>として使う。「有意差の閾値」とはしない。Public の N、分子別 RR 差、対象の構成比が不明なので、一定の score 差だけでは統計的な確実性は決まらない。小差でも採点値としては差であり、大差でもコード・被覆・対象集合の違いが原因になり得る。</p>
+<p>保存するのは、同じ実行の learned / fixed 出力、候補・モデルの被覆、fallback 数、最終行の変化、実時間、artifact hash。LB が大きく下がればまずこれらを調べ、Class 比率を逆算して説明を作らない。</p>
+<h2 id="10">10. 開封のための最小完了条件</h2>
+<p>次を満たした時点で開封へ進む、という有限の条件にすることを勧める。</p>
+<ol>
+<li>M1/M2 の完成したモデルと候補・特徴・予算・fallback を hash/設定で固定する。M2 の開発結果も記録する。</li>
+<li>両 schema と、同一 scenario の小さな W7 parity が成功する。固定保険も実装と採点が一致する。</li>
+<li>共通台帳、空候補、C1 条件、M1−M2 の直接 paired 比較を評価器が扱う。</li>
+<li>C1 の許容損失と、差が小さい／不確実な場合の扱いを追記する。</li>
+<li>上記が失敗したら自動採点へ進まず、開封時に code/model を更新しない。</li>
+</ol>
+<p>機械的な修正後に再び多数のモデル探索を行う必要はない。M1 plain と M2 plain no-ICE の二つを、実際に提出する条件で確認することが今回の目的である。</p>
+<h3 id="_4">確認した版</h3>
+<p>Spark の確認時 HEAD: <code>e949a4afa47836d68400c990eb2c213c23632d2a</code>。作業ファイルはこの HEAD の内容と同一ではないため、確認版は以下のファイル hash でも特定する。</p>
+<ul>
+<li>M1 plain model: <code>a84fe3ff61a5a11b3e8e9d478d5c59ec41391625c5f406c6fef5a6497d5e58b2</code></li>
+<li>旧 shortlist の v2_noice model: <code>6bfb48ca118cafca24d4848bfeeef1b45e48ebdbb5a08eaa2601f6db14ffc85f</code></li>
+<li>単調制約 model: <code>7a7a629b586dbc077c51e3d121821e3a6b0eb356477a601cf4dfb84a4d6514a1</code></li>
+<li><code>b1_locked_eval.py</code>: <code>fff599420718549481f7e04a0a6db56cc5e330e043cf90c2e62e6c7f5ff4ad17</code></li>
+<li><code>b1_pipeline.py</code>: <code>81ea41cd36761a41da5d3ea2d390cd33e1fd794bba8d04e7943da98b183c4b4c</code></li>
+</ul>
+<p>paired 再集計は開発集合のみ、20,000 回、seed=20261024。再計算した平均は保存 JSON と一致した。M2 の新モデルと locked の成果物にはこのレビュー中に評価を行っていない。</p>
+<p>REVIEW_COMPLETE: 009</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 採否</a></li>
+<li><a href="#2-codex-10">2. 開封の最小完了条件(Codex §10 に沿う)— 進行状況</a></li>
+<li><a href="#3">3. 訂正(依頼・診断文書)</a></li>
+</ul>
+</div>
+</div><h1 id="009-locked-codex-009">009 判断: locked 開封前の条件(Codex 009 への回答と採否)</h1>
+<p>作成: 2026-10-24 18:20 JST(Claude Code)。依頼 <code>009_request.md</code>、回答 <code>009_codex.md</code>。</p>
+<h2 id="1">1. 採否</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>候補構成(Q1)</td>
+<td><strong>採用</strong>: M1 = plain v2(28 特徴、<code>rank_v2/lambdarank.txt</code>、sha256 a84fe3ff…、leaves 15 / lr 0.1 / <strong>100 round</strong>)。M2 = 拡大 shortlist 上で再学習した plain v2_noice(<code>rank_v3</code>、学習完了後に hash を固定)。単調制約への差し替えはしない(直接 paired 差: C2 +0.0008 [−0.014, +0.016]、C1 +0.011 [−0.020, +0.042])。</td>
+</tr>
+<tr>
+<td>locked の自動開封</td>
+<td><strong>停止した</strong>(<code>spark_post_chain2.sh</code> を kill)。開封は下記 §2 の条件を満たしてから手動で 1 回。</td>
+</tr>
+<tr>
+<td>ICE(Q2)</td>
+<td>M2 は ICE 無し。「上位 25 件だけ ICE」は第三候補にせず、次の独立実験(二段階方式: 第一段を固定して対象を選び、本番でも同じ選択; 開発では full ICE を対象外だけ欠損にして模擬)。学習器では ICE 除去で C1 −0.047 [−0.086, −0.011] の実測低下があることを監視項目にする。</td>
+</tr>
+<tr>
+<td>shortlist 指標(Q3)</td>
+<td>採用: 新規回収群と既存群の分解に加え、公式 identity 単位の候補の包含関係、query ごとの候補数・ジョブ数の中央値/95%/最大、C1 で参照正解が押し下げられた件数、低文献数群・負モード、予算打切りあり/なしの値。到達率の伸び(A 8 / B 11 / C1 集合 17 分子 ≈ 全 N 分母で最大 +0.027 / +0.037 / +0.057)から M2 の最終利得を予測しない。</td>
+</tr>
+<tr>
+<td>採用規則(Q4)</td>
+<td><strong>改訂</strong>: (1) 同じ台帳・公式 scorer・同じ資源制約で比較可能なことを確認 → (2) C2 は A/B 別の paired 差 → (3) <strong>C1 の許容損失 ε_C1 = 0.02 を登録</strong>(M2 の C1 低下が 0.02 を超える、または下側区間が −0.02 を下回るなら C2 小差で M1 を置換しない)→ (4) 保護条件を満たした候補間で C2 差 &lt; 0.01 なら <strong>実測で</strong>短い方 → (5) 区間が広い/A・B・C1 の方向が揃わないなら「未確定」として両候補を保持し、開封後に ε や重みを広げない。保険(固定 + libpri 0.9/0.2)の昇格条件も同じ表で扱う。</td>
+</tr>
+<tr>
+<td>時間予算と fallback(Q5)</td>
+<td>採用: GL 予算を全体 deadline から計算(<code>--deadline_s</code>、runner 予算 = deadline − 経過 − 900 s)、GL 被覆が候補の 50% 未満の query は学習器を使わず固定規則へ(<code>--min_gl_cover</code>)。Kaggle 実測(v2 Notebook): GL 87 予測/秒、45,806 候補を 1,167 s → 候補 2 倍で約 2,300 s。GL_BUDGET 4,000 s は M2 では <code>--gl_budget</code> で引き上げる。</td>
+</tr>
+<tr>
+<td>LB の読み方(Q6)</td>
+<td>採用: ±0.02 は「追加調査を始める運用上の閾値」。A 0.671 + 0.075 のような足し算で本番見通しを作らない(学習融合の C2: A eval 0.737 / B eval 0.353 / C1 集合 eval 0.484)。保存するもの: 同一実行の learned/fixed 出力、被覆、fallback 数、実時間、artifact hash。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-codex-10">2. 開封の最小完了条件(Codex §10 に沿う)— 進行状況</h2>
+<ol>
+<li>[実装済] <code>b1_locked_eval.py</code> を書き直し: モデルの feature names を使い列数を照合、frozen 台帳(<code>--eval_csv</code> の全分子、C1 は両候補で usable な分子)、空候補 = 0、各候補の learned / insurance(libpri 0.9, 0.2)/ fixed を公式 scorer で採点、候補間の直接 paired 差(RR(M2) − RR(M1))と bootstrap、manifest(モデル・コードの sha256)。</li>
+<li>[実装済、検証中] W7: パイプラインの評価モードに per-query マスク(<code>--mask_json</code>: C2 = 自身の identity の全参照と訓練所属を隠す、C1 = query 行 + 正解の同一ライブラリ参照を除く)を実装し、<code>make_eval_test.py</code> がその形式で出力。enveda-180 正モードの電子質量補正を test 側にも適用。<strong>まず 50 分子(A/B 各 25)で候補集合・特徴・固定規則の top-25 の一致を確認</strong>してから 600 分子へ。旧 global マスクの W7 実行は停止。</li>
+<li>[実装済] GL 被覆 fallback、deadline 予算。</li>
+<li>[未] 開封スクリプト: 両候補の成果物(特徴表・GL(・ICE)・モデル)の存在と hash を manifest に固定し、<code>origin/main</code> の自動取り込みをしない。v3 チェーンの各段の終了コードを確認してから使う。</li>
+<li>[未] M2 の開発集合結果(到達率・固定規則・学習融合、新規回収/既存の分解)を記録。</li>
+</ol>
+<h2 id="3">3. 訂正(依頼・診断文書)</h2>
+<ul>
+<li>「S(1,0,0.5) = FP+pop のみ」は誤り(FP の係数は常に 1 で、S(1,0,0.5) は FP+GL+prior)。forward を全て外した z(FP)+0.5·prior の C2 strict は A 0.410 / B 0.247 / C1 集合 0.256(Codex 再計算)。GL 無しの低下は大きい。</li>
+<li><code>eval_delta</code> の bootstrap は候補行を持つ N=297、JSON の平均は N=300。学習に使った正例あり group は 884(行 105,194)。「1,492 分子」は fit/tune/eval 全体。</li>
+<li>rank_v2 は 100 round(300 ではない)。</li>
 </ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
