@@ -1,0 +1,105 @@
+[b1       7s] test: 400 molecules of 400; 1213 spectra
+[b1      82s] store: 2,539,608 spectra, 275,810 train structures
+[b1      83s] paths: {"train": "/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/train.parquet", "tier": "/kaggle/input/casmi26-pubchem-popularity-prior/casmi26-pubchem-tier", "pop": "/kaggle/input/casmi26-pubchem-popularity-prior", "pool": "/kaggle/input/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/pool_meta.parquet", "fold_safe": "/kaggle/input/casmi26-fold-safe-fpnet", "v3": "/kaggle/input/casmi26-attributed-v4g-reproduction-assets/casmi26-v3-models/code", "glacier": "/kaggle/input/casmi26-attributed-v4g-reproduction-assets/casmi26-glacier", "iceberg": "/kaggle/input/casmi26-attributed-v4g-reproduction-assets/casmi26-iceberg", "work": "/kaggle/working", "store": "None", "runner_python": "None"}
+[b1      84s] COCONUT candidate store: 436,389 structures
+[b1      88s] FPNet folds [0] loaded on cuda; tier rows 105,875,489; pool 710,701
+[b1     153s] library index: 274,186 official identities with reference spectra
+[b1     469s] 20/400 | window median 7732 | shortlist median 120 | lib_max>=0.6: 0 | 15.8s/mol
+[b1     824s] 40/400 | window median 8745 | shortlist median 122 | lib_max>=0.6: 0 | 16.8s/mol
+[b1    1173s] 60/400 | window median 9140 | shortlist median 122 | lib_max>=0.6: 0 | 17.0s/mol
+[b1    1562s] 80/400 | window median 9684 | shortlist median 123 | lib_max>=0.6: 0 | 17.6s/mol
+[b1    1961s] 100/400 | window median 9990 | shortlist median 124 | lib_max>=0.6: 0 | 18.1s/mol
+[b1    2315s] 120/400 | window median 10030 | shortlist median 123 | lib_max>=0.6: 0 | 18.0s/mol
+[b1    2780s] 140/400 | window median 10299 | shortlist median 124 | lib_max>=0.6: 0 | 18.8s/mol
+[b1    3215s] 160/400 | window median 10387 | shortlist median 124 | lib_max>=0.6: 0 | 19.1s/mol
+[b1    3664s] 180/400 | window median 10514 | shortlist median 124 | lib_max>=0.6: 0 | 19.5s/mol
+[b1    4056s] 200/400 | window median 10688 | shortlist median 123 | lib_max>=0.6: 0 | 19.5s/mol
+[b1    4401s] 220/400 | window median 10514 | shortlist median 123 | lib_max>=0.6: 0 | 19.3s/mol
+[b1    4795s] 240/400 | window median 10432 | shortlist median 123 | lib_max>=0.6: 0 | 19.3s/mol
+[b1    5219s] 260/400 | window median 10627 | shortlist median 122 | lib_max>=0.6: 0 | 19.5s/mol
+[b1    5581s] 280/400 | window median 10514 | shortlist median 122 | lib_max>=0.6: 0 | 19.4s/mol
+[b1    5945s] 300/400 | window median 10550 | shortlist median 122 | lib_max>=0.6: 0 | 19.3s/mol
+[b1    6256s] 320/400 | window median 10411 | shortlist median 121 | lib_max>=0.6: 0 | 19.1s/mol
+[b1    6716s] 340/400 | window median 10550 | shortlist median 121 | lib_max>=0.6: 0 | 19.3s/mol
+[b1    7124s] 360/400 | window median 10656 | shortlist median 122 | lib_max>=0.6: 0 | 19.4s/mol
+[b1    7531s] 380/400 | window median 10656 | shortlist median 122 | lib_max>=0.6: 0 | 19.4s/mol
+[b1    7907s] 400/400 | window median 10656 | shortlist median 122 | lib_max>=0.6: 0 | 19.4s/mol
+[b1] site preseed rc 0 
+[ice     0.5s] stubbed (absent) modules: ['pygmtools']
+[ice    21.8s] ms_pred tautomer mode v2 cache /tmp/ice_ms_pred_cache
+[ice    23.3s] model loaded on cuda (rdkit 2025.03.6, torch 2.10.0+cu128, numba True)
+[ice   109.1s] chunk: 12 mols 3084 jobs 77.0s (12/371 covered mols scored)
+[ice   182.3s] chunk: 11 mols 3027 jobs 70.1s (23/371 covered mols scored)
+[ice   261.0s] chunk: 12 mols 3209 jobs 75.2s (35/371 covered mols scored)
+[ice   341.4s] chunk: 11 mols 3248 jobs 76.8s (46/371 covered mols scored)
+[ice   422.8s] chunk: 11 mols 3418 jobs 78.0s (57/371 covered mols scored)
+[ice   502.7s] chunk: 10 mols 3207 jobs 76.1s (67/371 covered mols scored)
+[ice   582.1s] chunk: 11 mols 3150 jobs 75.5s (78/371 covered mols scored)
+[ice   660.9s] chunk: 9 mols 3042 jobs 75.9s (87/371 covered mols scored)
+[ice   740.3s] chunk: 10 mols 3205 jobs 75.9s (97/371 covered mols scored)
+[ice   818.1s] chunk: 11 mols 3135 jobs 74.1s (108/371 covered mols scored)
+[ice   903.4s] chunk: 10 mols 3496 jobs 82.1s (118/371 covered mols scored)
+[ice   977.1s] chunk: 12 mols 3029 jobs 69.7s (130/371 covered mols scored)
+[ice  1056.2s] chunk: 13 mols 3025 jobs 74.3s (143/371 covered mols scored)
+[ice  1132.8s] chunk: 12 mols 3021 jobs 72.7s (155/371 covered mols scored)
+[ice  1213.9s] chunk: 12 mols 3305 jobs 77.0s (167/371 covered mols scored)
+[ice  1291.9s] chunk: 12 mols 3054 jobs 73.8s (179/371 covered mols scored)
+[ice  1369.3s] chunk: 12 mols 3007 jobs 73.1s (191/371 covered mols scored)
+[ice  1448.1s] chunk: 12 mols 3239 jobs 75.0s (203/371 covered mols scored)
+[ice  1525.2s] chunk: 13 mols 3140 jobs 72.6s (216/371 covered mols scored)
+[ice  1604.0s] chunk: 13 mols 3184 jobs 74.5s (229/371 covered mols scored)
+[ice  1678.7s] chunk: 11 mols 3098 jobs 70.9s (240/371 covered mols scored)
+[ice  1762.7s] chunk: 15 mols 3305 jobs 78.7s (255/371 covered mols scored)
+[ice  1842.5s] chunk: 12 mols 3132 jobs 75.4s (267/371 covered mols scored)
+[ice  1930.6s] chunk: 14 mols 3390 jobs 83.1s (281/371 covered mols scored)
+[ice  2015.3s] chunk: 14 mols 3209 jobs 79.3s (295/371 covered mols scored)
+[ice  2093.2s] chunk: 13 mols 3087 jobs 73.5s (308/371 covered mols scored)
+[ice  2174.6s] chunk: 13 mols 3283 jobs 76.6s (321/371 covered mols scored)
+[ice  2248.5s] chunk: 12 mols 3010 jobs 69.8s (333/371 covered mols scored)
+[ice  2327.9s] chunk: 14 mols 3206 jobs 74.7s (347/371 covered mols scored)
+[ice  2405.9s] chunk: 13 mols 3071 jobs 73.3s (360/371 covered mols scored)
+[ice  2460.1s] chunk: 11 mols 2081 jobs 49.9s (371/371 covered mols scored)
+[ice  2460.2s] status ok {'n_mols': 400, 'n_mols_covered': 371, 'n_mols_scored': 371, 'n_cands': 49223, 'n_scored': 45805}
+
+{'status': 'ok', 'n_mols': 400, 'n_mols_covered': 371, 'n_mols_scored': 371, 'n_cands': 49223, 'n_scored': 45805, 'seconds': 2460.14, 'pred_per_s': 41.92, 'device': 'cuda', 'rdkit': '2025.03.6', 'max_mem_gb': 4.18}
+[b1   10377s] ICE done
+del loaded on cuda (rdkit 2025.03.6, torch 2.10.0+cu128, numba True, threads 1)
+/usr/local/lib/python3.12/dist-packages/torch/nn/modules/transformer.py:531: UserWarning: The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.)
+  output = torch._nested_tensor_from_mask(
+[gl    54.9s] chunk: 12 mols 3084 jobs 32.8s (12/371 covered mols scored)
+[gl    83.8s] chunk: 11 mols 3027 jobs 28.1s (23/371 covered mols scored)
+[gl   115.1s] chunk: 12 mols 3209 jobs 30.3s (35/371 covered mols scored)
+[gl   147.1s] chunk: 11 mols 3248 jobs 31.1s (46/371 covered mols scored)
+[gl   179.1s] chunk: 11 mols 3418 jobs 31.1s (57/371 covered mols scored)
+[gl   208.3s] chunk: 10 mols 3207 jobs 28.4s (67/371 covered mols scored)
+[gl   240.9s] chunk: 11 mols 3150 jobs 31.6s (78/371 covered mols scored)
+[gl   271.1s] chunk: 9 mols 3042 jobs 29.3s (87/371 covered mols scored)
+[gl   300.9s] chunk: 10 mols 3205 jobs 29.0s (97/371 covered mols scored)
+[gl   330.9s] chunk: 11 mols 3135 jobs 29.0s (108/371 covered mols scored)
+[gl   364.3s] chunk: 10 mols 3496 jobs 32.6s (118/371 covered mols scored)
+[gl   396.4s] chunk: 12 mols 3029 jobs 31.0s (130/371 covered mols scored)
+[gl   434.1s] chunk: 13 mols 3025 jobs 36.6s (143/371 covered mols scored)
+[gl   465.2s] chunk: 12 mols 3021 jobs 30.1s (155/371 covered mols scored)
+[gl   498.2s] chunk: 12 mols 3305 jobs 31.9s (167/371 covered mols scored)
+[gl   530.5s] chunk: 12 mols 3054 jobs 31.3s (179/371 covered mols scored)
+[gl   564.5s] chunk: 12 mols 3007 jobs 32.9s (191/371 covered mols scored)
+[gl   598.5s] chunk: 12 mols 3239 jobs 32.9s (203/371 covered mols scored)
+[gl   630.9s] chunk: 13 mols 3140 jobs 31.2s (216/371 covered mols scored)
+[gl   664.5s] chunk: 13 mols 3184 jobs 32.5s (229/371 covered mols scored)
+[gl   695.0s] chunk: 11 mols 3098 jobs 29.5s (240/371 covered mols scored)
+[gl   734.5s] chunk: 15 mols 3305 jobs 38.1s (255/371 covered mols scored)
+[gl   766.5s] chunk: 12 mols 3134 jobs 31.0s (267/371 covered mols scored)
+[gl   805.1s] chunk: 14 mols 3390 jobs 37.3s (281/371 covered mols scored)
+[gl   845.5s] chunk: 14 mols 3209 jobs 39.0s (295/371 covered mols scored)
+[gl   879.7s] chunk: 13 mols 3087 jobs 33.1s (308/371 covered mols scored)
+[gl   915.3s] chunk: 13 mols 3283 jobs 34.5s (321/371 covered mols scored)
+[gl   945.9s] chunk: 12 mols 3010 jobs 29.6s (333/371 covered mols scored)
+[gl   980.8s] chunk: 14 mols 3206 jobs 33.7s (347/371 covered mols scored)
+[gl  1015.1s] chunk: 13 mols 3071 jobs 33.1s (360/371 covered mols scored)
+[gl  1042.0s] chunk: 11 mols 2081 jobs 25.9s (371/371 covered mols scored)
+[gl  1042.0s] status ok {'n_mols': 400, 'n_mols_covered': 371, 'n_mols_scored': 371, 'n_cands': 49223, 'n_scored': 45806}
+
+{'status': 'ok', 'n_mols': 400, 'n_mols_covered': 371, 'n_mols_scored': 371, 'n_cands': 49223, 'n_scored': 45806, 'seconds': 1041.96, 'pred_per_s': 98.02, 'device': 'cuda', 'rdkit': '2025.03.6', 'max_mem_gb': 0.34}
+[b1   11422s] GL done
+[b1   11426s] learned fusion model loaded: /kaggle/working/b1/lambdarank.txt (100 trees, features 28)
+[b1   11427s] submission written: (400, 2), fusion {'gl_used': 371, 'ice_used': 371, 'lib_priority': 59, 'learned': 400}

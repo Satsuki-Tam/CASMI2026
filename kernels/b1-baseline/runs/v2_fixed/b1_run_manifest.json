@@ -1,0 +1,23 @@
+{
+ "seconds": 12414,
+ "molecules": 400,
+ "scored": 400,
+ "fusion": {
+  "gl_used": 371,
+  "ice_used": 371
+ },
+ "gl_mols": 400,
+ "ice_mols": 400,
+ "learned_model": null,
+ "params": {
+  "K": 100,
+  "W_GL": 2.0,
+  "W_ICE": 1.0,
+  "LAM": 0.5,
+  "TAU": 2.0,
+  "MARGIN": 0.2,
+  "folds": [
+   0
+  ]
+ }
+}

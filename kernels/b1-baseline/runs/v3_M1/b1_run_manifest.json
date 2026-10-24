@@ -1,0 +1,30 @@
+{
+ "seconds": 11427,
+ "molecules": 400,
+ "scored": 400,
+ "fusion": {
+  "gl_used": 371,
+  "ice_used": 371,
+  "lib_priority": 59,
+  "learned": 400
+ },
+ "gl_mols": 400,
+ "ice_mols": 400,
+ "learned_model": "/kaggle/working/b1/lambdarank.txt",
+ "params": {
+  "K": 100,
+  "K_fpp": null,
+  "K_pop": 0,
+  "w_ice": 1.0,
+  "tau": 0.9,
+  "margin": 0.2,
+  "W_GL": 2.0,
+  "W_ICE": 1.0,
+  "LAM": 0.5,
+  "TAU": 2.0,
+  "MARGIN": 0.2,
+  "folds": [
+   0
+  ]
+ }
+}
