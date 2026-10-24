@@ -8,6 +8,21 @@ import numpy as np
 
 FEATS = ["z_fp", "z_gl", "z_ice", "fp", "gl", "ice", "pop_public", "lsid", "lpmid", "lsynonyms", "np_bit", "src_bit", "lotus", "lib_sim", "lib_same", "lib_nref", "lib_margin",
          "lib_max_mol", "in_tier", "in_train", "in_coconut", "ppm_err", "fp_rank_window", "n_cands", "gl_missing", "ice_missing", "n_query", "ce_known"]
+# v3 additions (Codex 008 / diagnostic D1): each model's confidence on this list (top-1 minus top-2 of its z), the candidate's rank within the
+# list under each model, its distance to the list's best, the library-similarity rank, the in_train x lib_sim interaction and the window size.
+EXTRA_V3 = ["rank_fp", "rank_gl", "rank_ice", "gap_fp", "gap_gl", "gap_ice", "margin_fp_mol", "margin_gl_mol", "margin_ice_mol", "lib_rank", "in_train_x_lib", "log_n_window"]
+FEATSETS = {"v2": FEATS, "v3": FEATS + EXTRA_V3}
+# monotone directions for the constrained variant (0 = unconstrained)
+MONO = dict(z_fp=1, z_gl=1, z_ice=1, fp=1, gl=1, ice=1, lib_sim=1, lib_same=1, lib_margin=1, pop_public=1, lotus=1, lsid=1, lpmid=1, lsynonyms=1, in_train_x_lib=1,
+            ppm_err=-1, fp_rank_window=-1, rank_fp=-1, rank_gl=-1, rank_ice=-1, gap_fp=-1, gap_gl=-1, gap_ice=-1, lib_rank=-1)
+
+
+def rank_desc(v):
+    """1 = best; candidates without a value get the worst rank (len)."""
+    v = np.asarray(v, float); ok = np.isfinite(v); r = np.full(len(v), float(len(v)))
+    if ok.any():
+        idx = np.flatnonzero(ok); order = idx[np.argsort(-v[ok], kind="stable")]; r[order] = np.arange(1, len(order) + 1)
+    return r
 
 
 def zlist(x):
@@ -24,7 +39,7 @@ def term(vals):
 
 
 def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src_mask, lotus_refs, lib_sim, lib_same, lib_nref, in_tier, in_train, in_coconut,
-                   ppm_err, fp_rank_window, n_query, ce_known):
+                   ppm_err, fp_rank_window, n_query, ce_known, n_window=np.nan, feats=None):
     """arrays of equal length (one molecule's candidates) -> (n, len(FEATS)) float matrix in FEATS order."""
     fp = np.asarray(fp, float); gl = np.asarray(gl, float); ice = np.asarray(ice, float); lib = np.asarray(lib_sim, float)
     top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
@@ -35,4 +50,14 @@ def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src
                 lib_max_mol=np.full(len(fp), float(lib.max()) if len(lib) else 0.0), in_tier=np.asarray(in_tier, float), in_train=np.asarray(in_train, float), in_coconut=np.asarray(in_coconut, float),
                 ppm_err=np.nan_to_num(np.asarray(ppm_err, float), nan=10.0), fp_rank_window=np.log1p(np.asarray(fp_rank_window, float)), n_cands=np.full(len(fp), float(len(fp))),
                 gl_missing=(~np.isfinite(gl)).astype(float), ice_missing=(~np.isfinite(ice)).astype(float), n_query=np.full(len(fp), float(n_query)), ce_known=np.full(len(fp), float(ce_known)))
-    return np.column_stack([cols[c] for c in FEATS])
+    feats = list(feats) if feats is not None else FEATS
+    if any(c in EXTRA_V3 for c in feats):
+        def gap(zv): return (float(np.max(zv)) - zv) if len(zv) else zv
+        def margin(zv):
+            srt = np.sort(zv)[::-1]; return np.full(len(zv), float(srt[0] - srt[1]) if len(srt) > 1 else 0.0)
+        cols.update(rank_fp=np.log1p(rank_desc(fp)), rank_gl=np.log1p(rank_desc(gl)), rank_ice=np.log1p(rank_desc(ice)),
+                    gap_fp=gap(cols["z_fp"]), gap_gl=gap(cols["z_gl"]), gap_ice=gap(cols["z_ice"]),
+                    margin_fp_mol=margin(cols["z_fp"]), margin_gl_mol=margin(cols["z_gl"]), margin_ice_mol=margin(cols["z_ice"]),
+                    lib_rank=np.log1p(rank_desc(lib)), in_train_x_lib=cols["in_train"] * lib,
+                    log_n_window=np.full(len(fp), np.log1p(float(n_window)) if np.isfinite(float(n_window)) else np.nan))
+    return np.column_stack([cols[c] for c in feats])

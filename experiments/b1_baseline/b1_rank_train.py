@@ -12,11 +12,11 @@ import numpy as np, pandas as pd
 import lightgbm as lgb
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from b1_evaluate import z, rr, boot, term, LAM
-from b1_rankfeats import FEATS, feature_matrix
+from b1_rankfeats import FEATS, FEATSETS, MONO, feature_matrix
 
 
 
-def load_run(run, eval_csv, group_override=None):
+def load_run(run, eval_csv, group_override=None, feats=FEATS):
     ev = pd.read_csv(eval_csv).set_index("molecule")
     out = []
     for s in ("A_timstof", "B_nplib"):
@@ -50,8 +50,9 @@ def load_run(run, eval_csv, group_override=None):
                 S15 = zfp + (2 * zgl if zgl is not None else 0) + (zice if zice is not None else 0) + LAM * pop
                 X = feature_matrix(fp, glv, icv, pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values,
                                    lib, g[f"lib_same_{view}"].values, g[f"lib_nref_{view}"].values, g.in_tier.values, g[f"in_train_{view}"].values, g.in_coconut.values,
-                                   g.ppm_err.values, g.fp_rank_window.values, float(m.n_query), float(m.ce_known))
-                d = pd.DataFrame(X, columns=FEATS)
+                                   g.ppm_err.values, g.fp_rank_window.values, float(m.n_query), float(m.ce_known),
+                                   n_window=float(m["n_unique"]) if "n_unique" in M.columns and np.isfinite(float(m["n_unique"])) else np.nan, feats=feats)
+                d = pd.DataFrame(X, columns=feats)
                 d.insert(0, "is_truth", g.is_truth.values.astype(int)); d.insert(0, "identity", mid); d.insert(0, "group", group_override or m.group); d.insert(0, "view", view)
                 d.insert(0, "molecule", mid); d.insert(0, "set", s); d.insert(0, "run", run)
                 d["S_fixed"] = S; d["S_fixed15"] = S15; d["reachable"] = bool(m["reach_external_b1"]) if "reach_external_b1" in M.columns else (bool(ev.loc[mid, "window_external"]) if mid in ev.index else True)
@@ -83,8 +84,10 @@ def mrr_of(df, score_col):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--runs", nargs="+", required=True); ap.add_argument("--out", default="experiments/b1_baseline/rank")
-    a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
-    data = pd.concat([load_run(*r.split(":")) for r in a.runs], ignore_index=True)   # RUN:eval_csv[:group_override]
+    ap.add_argument("--feats", default="v2", choices=sorted(FEATSETS), help="feature set (v2 = 28 features; v3 adds per-model confidence/rank/window features)")
+    ap.add_argument("--monotone", action="store_true", help="monotone constraints (scores/similarities up, ranks/|ppm| down)")
+    a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); FE = FEATSETS[a.feats]
+    data = pd.concat([load_run(*r.split(":"), feats=FE) for r in a.runs], ignore_index=True)   # RUN:eval_csv[:group_override]
     print("rows", len(data), "| molecules", data.molecule.nunique(), "| groups", data.groupby("group").molecule.nunique().to_dict(), "| views", data.groupby("view").molecule.nunique().to_dict())
     fit, tune, ev = (data[data.group == g].copy() for g in ("fit", "tune", "eval"))
     ig = {g: set(data[(data.group == g) & (data.identity_group >= 0)].identity_group) for g in ("fit", "tune", "eval")}
@@ -97,24 +100,26 @@ def main():
     def to_ds(d):
         d = d.sort_values(["molecule", "view"], kind="stable")
         sizes = d.groupby(["molecule", "view"], sort=False).size().values
-        return lgb.Dataset(d[FEATS].values, label=d.is_truth.values, group=sizes, free_raw_data=False), d
+        return lgb.Dataset(d[FE].values, label=d.is_truth.values, group=sizes, free_raw_data=False, feature_name=list(FE)), d
     ds_fit, fit_s = to_ds(fit_t)
     grid = [dict(num_leaves=nl, learning_rate=lr, min_data_in_leaf=20, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=1, lambda_l2=1.0, verbose=-1, objective="lambdarank",
-                 metric="ndcg", eval_at=[25], label_gain=[0, 1], seed=0) for nl in (7, 15, 31) for lr in (0.03, 0.1)]
+                 metric="ndcg", eval_at=[25], label_gain=[0, 1], seed=0, **({"monotone_constraints": [MONO.get(f, 0) for f in FE], "monotone_constraints_method": "advanced"} if a.monotone else {}))
+            for nl in (7, 15, 31) for lr in (0.03, 0.1)]
     results = []
     for params in grid:
         for rounds in (100, 300, 600):
             bst = lgb.train(params, ds_fit, num_boost_round=rounds)
-            tune = tune.copy(); tune["pred"] = bst.predict(tune[FEATS].values)
+            tune = tune.copy(); tune["pred"] = bst.predict(tune[FE].values)
             m = mrr_of(tune, "pred"); results.append(dict(params=params, rounds=rounds, tune_c2_strict=m.get("c2", {}).get("strict"), tune_c1=m.get("c1", {}).get("mrr"), tune_c2=m.get("c2", {}).get("mrr")))
             print(f"  leaves {params['num_leaves']} lr {params['learning_rate']} rounds {rounds}: tune C2 strict {m.get('c2', {}).get('strict', float('nan')):.4f} | C1 {m.get('c1', {}).get('mrr', float('nan')):.4f}", flush=True)
     base_tune = mrr_of(tune, "S_fixed"); print("fixed rule S(2,1,0.5) on tune:", base_tune); print("fixed rule S(2,1,0.15) on tune:", mrr_of(tune, "S_fixed15"))
     best = max(results, key=lambda r: (r["tune_c2_strict"] or 0) + 0.5 * (r["tune_c1"] or 0))
     print("selected:", best)
     bst = lgb.train(best["params"], ds_fit, num_boost_round=best["rounds"])
-    ev = ev.copy(); ev["pred"] = bst.predict(ev[FEATS].values)
+    ev = ev.copy(); ev["pred"] = bst.predict(ev[FE].values)
     out = dict(selected=best, tune_fixed=base_tune, eval_lambdarank=mrr_of(ev, "pred"), eval_fixed=mrr_of(ev, "S_fixed"), eval_fixed15=mrr_of(ev, "S_fixed15"),
-               importance=dict(zip(FEATS, [int(x) for x in bst.feature_importance("gain").round().astype(int)])), n_fit_rows=len(fit_t), n_fit_groups=int(fit_t.groupby(["molecule", "view"]).ngroups))
+               importance=dict(zip(FE, [int(x) for x in bst.feature_importance("gain").round().astype(int)])), n_fit_rows=len(fit_t), n_fit_groups=int(fit_t.groupby(["molecule", "view"]).ngroups),
+               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone))
     # paired bootstrap on eval (per molecule-view)
     rows = []
     for (mid, view), g in ev.groupby(["molecule", "view"], sort=False):
