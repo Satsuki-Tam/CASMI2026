@@ -60,21 +60,27 @@
   {
    "state": "running",
    "name": "Codex 015 (a): E0(公開 0.464 系譜)を自前分子で実行",
-   "detail": "Spark で移植・起動中(別エージェント)。まず W7 600 分子の C2 代理、次に C1 代理、パネル 250。段階別(窓・shortlist・参照・forward・最終)に B1 が負ける箇所を特定する",
+   "detail": "Spark で E0 を自前分子に対して実行中(runs/c2_full3: W7 600 分子の C2 代理)。段階別出力を保存し e0_vs_b1_stages.py で結合する(Codex 016 の必須列を送付済み)",
    "eta": "移植後に起動、数時間"
   },
   {
-   "state": "running",
+   "state": "done",
    "name": "(b) p2 v2: query 基準の層定義で再選択",
-   "detail": "Codex 016: 層は実際の query(選択後)と同極性の他ライブラリ参照数で定義、段階別適格数と hash を manifest に。v1(500/500)は暫定、locked2 未開封",
-   "eta": "07:40 開始"
+   "detail": "Codex 016: 層は実際の query(選択後)と同極性の他ライブラリ参照数で定義、段階別適格数と hash を manifest に。v1(500/500)は暫定、locked2 未開封。v2 選択完了(各層 dev2 100 / locked2 100、適格 group E 876 / F 279 / C 238 / G 333 / D 1,854)、test ファイル 1,464 spectra / 500 分子",
+   "eta": "07:45 完了"
+  },
+  {
+   "state": "running",
+   "name": "dev2 v2 の評価チェーン(M1 構成 / M2x 構成の特徴表 → 登録出力の評価器)",
+   "detail": "spark_p2dev_chain.sh、07:45 起動、E0 と GPU 共有。層別(C/D/E/F/G)に M1 learned と M2x blend21、固定、保険を両 view で採点",
+   "eta": "数時間"
   }
  ],
  "next": [
-  "kernel 完走 → 09:00 以降に提出: 本命 casmi26-b1-baseline v4(M2x blend21)/ 保険 casmi26-b1-insurance v1。提出 ID・manifest・Public 値を記録",
-  "朝の進捗報告を確定(docs/progress_2026-10-25_morning.md)",
-  "E0 自前分子実行の完走 → e0_vs_b1_stages で段階別の差を特定(Codex 016 で議論)",
-  "(b) 検証集合に層を追加(参照多数/少数、装置、文献数、負イオンのみ、NH4 のみ)、locked 2 の確保 → (d) proxy / FIORA は損失が実測された層のみ"
+  "09:00 以降に提出: 本命 casmi26-b1-baseline v4(M2x blend21)/ 保険 casmi26-b1-insurance v1(固定 + libpri τ0.9)。提出 ID・Public 値を記録(読みの規則は 015_decision.md)",
+  "E0 自前分子実行(c2_full3)の完走 → 段階別の差を特定(Codex 017)",
+  "dev2 v2 の層別結果(C/D/E/F/G × view)→ 層ごとの paired Δ と CI、n_query 事後層別も併記",
+  "朝の進捗報告を確定(docs/progress_2026-10-25_morning.md)"
  ],
  "pages": [
   [
