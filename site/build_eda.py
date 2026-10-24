@@ -62,9 +62,17 @@ def main():
 
     rows_q = spectra_of("REFJWTPEDVJJIY"); rows_m = spectra_of("YXOLAZRVSSWPPT")
     pick = {}
+    def richest(rows, ce):
+        # riken holds many replicate acquisitions per CE; take the one with the most fragment peaks below the precursor (display + similarity)
+        cand = rows.filter((pl.col("ce_mean") - ce).abs() < 0.6)
+        best = None
+        for row, prec in zip(cand["row"].to_list(), cand["precursor_mz"].to_list()):
+            n = len(clean_peaks(*spec(int(row)), float(prec))[0])
+            if best is None or n > best[2]: best = (int(row), float(prec), n)
+        return best
     for ce in (10.0, 20.0, 40.0):
-        rq = rows_q.filter((pl.col("ce_mean") - ce).abs() < 0.6); rm = rows_m.filter((pl.col("ce_mean") - ce).abs() < 0.6)
-        if rq.height and rm.height: pick[ce] = (int(rq["row"][0]), float(rq["precursor_mz"][0]), int(rm["row"][0]), float(rm["precursor_mz"][0]))
+        bq, bm = richest(rows_q, ce), richest(rows_m, ce)
+        if bq and bm and bq[2] >= 5 and bm[2] >= 5: pick[ce] = (bq[0], bq[1], bm[0], bm[1])
     fig, axes = plt.subplots(len(pick), 2, figsize=(11, 2.6 * len(pick)), sharex=True)
     axes = np.atleast_2d(axes)
     for i, (ce, (rq, pq, rm, pm)) in enumerate(pick.items()):
