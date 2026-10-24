@@ -34,3 +34,12 @@
 ## 4. 朝の予定
 - M2′ を 1 本に確定(rank_v5x or v4b × blend × proxy)→ 50 分子 parity → locked 開封 1 回 → Notebook を push(〜05:00)→ 09:00 以降に本命を提出、2 枠目は保険 version(τ0.9)で「本命 − 保険」の LB 差を観測。
 - 進捗報告の確定版と、次段(E0 の強みの部品ごとの移植: 候補源・参照処理・proxy / FIORA)の提案。
+
+## 5. 次段の準備: E0(公開パイプライン)を自前の分子集合で動かす(「適切な評価」の核)
+
+公開 Notebook(24 セル、255 KB)の構造を確認した結果、オフライン実行は可能(所要: 半日の移植 + 400 分子あたり数時間の実行):
+- データ探索は `data/raw`(train/test/sample_submission)を受け付け、各データセットは `/kaggle/input/**/<slug>/<marker>` の glob で見つける → Spark では `data/external` へのシンボリックリンクで `/kaggle/input` 相当の木を作る(または glob の根を環境変数化)。
+- `CASMI_TEST_PATH` でテスト parquet を差し替え可能。可視ダミー test の md5 と一致しなければ全分子を処理する(SMOKE 切替)。
+- クラス 2 の模擬は、評価分子の自前スペクトル行を除いた `train.parquet`(`eval_test_full/exclude_rows_c2.json`)を渡して行う。クラス 1 は除外なし。
+- RDKit 2026.03.3 は `.venv` にあり検証を通る。ICEBERG/GLACIER は Notebook が同梱 wheel から site を構築する部分を、GB10 対応済みの `.venv-ice` に差し替える必要がある(最大の作業)。
+- 出力: 分子ごとの最終リストと中間リスト(engine 1/2、PubChem channel、参照 merge) → B1 の候補・順位と段ごとに照合し、差 0.13 の所在を特定する。
