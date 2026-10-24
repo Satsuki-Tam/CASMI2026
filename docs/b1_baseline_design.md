@@ -81,6 +81,11 @@ GL/ICE 完了版。strict = 外部 DB に到達不能な正解を 0 とした Cl
 - **評価集合の役割**: `eval_set` は開発集合(prior 選択に使用)。採用判断は `locked_eval`(seed 4、A/B 各 300、未使用 group)で 1 回だけ。
 - 再構築(Spark): run1_v2(eval_set)、run_c1_v2(C1 集合)、run_p1_v2(P1 600、LambdaRank の fit)。
 
+## 8. 評価モード付き提出パイプライン(14:10、Codex 007 W7)
+
+`b1_pipeline.py` に評価用の入力を追加: `--exclude_rows`(query 自身の取得行を参照から外す = C1 模擬)、`--exclude_identities`(正解 identity の参照を全て外し、学習構造としての存在を隠し、外部出典の無い候補を候補集合から除く = C2 模擬)、`--solution`(公式スコアラー複製で採点、分子別 RR と set/group/lib 別の集計)。参照側の複製除外(ピーク列一致・類似度 ≥ 0.98)も提出コードに入れた(本番では発火しない)。
+`make_eval_test.py` が選定 CSV から test.parquet 形式(新評価集合: 600 分子・2,221 本・10 アダクト)と正解・マスクを作る。これで**評価と提出が同じコード**を通り、特徴表方式(`b1_features.py`)との parity 確認にも使う。Spark で C2/C1 の端から端の評価を連鎖に追加。
+
 ## 4. 進行中(10:30)
 
 - `eval_set` A/B の特徴表構築(約 9 秒/分子、CPU 競合時)→ GL/ICE → `b1_evaluate.py`。
