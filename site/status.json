@@ -74,6 +74,12 @@
    "name": "dev2 v2 の評価チェーン(M1 構成 / M2x 構成の特徴表 → 登録出力の評価器)",
    "detail": "spark_p2dev_chain.sh、07:45 起動、E0 と GPU 共有。層別(C/D/E/F/G)に M1 learned と M2x blend21、固定、保険を両 view で採点",
    "eta": "数時間"
+  },
+  {
+   "state": "queued",
+   "name": "B1 パイプラインのパネル run(E0 比較用、M2x blend21、C2/C1)",
+   "detail": "spark_panel_pipe_chain.sh、dev2 チェーン完了後に起動。E0 のパネル run と段階台帳で比較する",
+   "eta": "dev2 完了後 1〜2 時間"
   }
  ],
  "next": [
