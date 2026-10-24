@@ -10,7 +10,7 @@ B=experiments/b1_baseline; PY=.venv/bin/python
 CAND=${CAND:-M1}
 if [ "$CAND" = M2 ]; then FRUN=$B/run_v3_eval; MODEL=$B/rank_v3/lambdarank.txt; WICE=0; PARGS="--k_fpp 200 --k_pop 50 --w_ice 0"; E=$B/eval_test_50_m2
 else FRUN=$B/run1_v2; MODEL=$B/rank_v2/lambdarank.txt; WICE=1; PARGS=""; E=$B/eval_test_50c; fi
-MODEL=${MODEL_OVERRIDE:-$MODEL}; TAU=${TAU:-0.9}; E=${E_OVERRIDE:-$E}   # re-registration (2026-10-25): MODEL_OVERRIDE / TAU / E_OVERRIDE select the re-registered model, insurance tau and output dir
+MODEL=${MODEL_OVERRIDE:-$MODEL}; TAU=${TAU:-0.9}; E=${E_OVERRIDE:-$E}; MAIN=${MAIN:-learned}   # re-registration (2026-10-25): MODEL_OVERRIDE / TAU / E_OVERRIDE select the re-registered model, insurance tau and output dir
 echo "candidate $CAND: features $FRUN, model $MODEL, w_ice $WICE, tau $TAU, pipeline args [$PARGS] -> $E"
 git fetch -q origin && git checkout -q origin/main -- $B/b1_pipeline.py $B/b1_parity.py $B/b1_rankfeats.py $B/b1_common.py $B/make_eval_test.py $B/b1_evaluate.py $B/b1_locked_eval.py src/metric.py && echo "synced $(git rev-parse --short origin/main) $(date +%T)"
 mkdir -p $E
@@ -18,10 +18,10 @@ $PY -X utf8 $B/make_eval_test.py --eval_csv $B/eval_set/p1_molecules.csv --store
 cat $E/eval_test_manifest.json | tr -d '\n '; echo
 for mode in c2 c1; do
   echo "== $(date +%T) pipeline $mode on 50 molecules"
-  $PY -X utf8 $B/b1_pipeline.py --test $E/test.parquet --out $E/run_$mode --workers 12 --folds 0 --mask_json $E/mask_$mode.json --solution $E/solution.csv --rank_model $MODEL --tau $TAU $PARGS > $E/run_$mode.log 2>&1
+  $PY -X utf8 $B/b1_pipeline.py --test $E/test.parquet --out $E/run_$mode --workers 12 --folds 0 --mask_json $E/mask_$mode.json --solution $E/solution.csv --rank_model $MODEL --tau $TAU --main $MAIN $PARGS > $E/run_$mode.log 2>&1
   rc=$?; echo "== $(date +%T) exit $rc : $(grep -a 'OFFICIAL\|Traceback\|Error' $E/run_$mode.log | tail -2 | cut -c1-300)"
   [ $rc = 0 ] && [ -s $E/run_$mode/b1_candidates.parquet ] || { echo "PARITY50 FAILED: pipeline $mode"; exit 1; }
-  $PY -X utf8 $B/b1_parity.py --dump $E/run_$mode/b1_candidates.parquet --features_run $FRUN --view $mode --solution $E/solution.csv --out $E/run_$mode/parity_$mode.md       --pred_main $E/run_$mode/submission.csv --pred_fixed $E/run_$mode/submission_fixed.csv --stage_stats $E/run_$mode/b1_stage_stats.csv --model $MODEL --w_ice $WICE --tau $TAU --margin 0.2 --min_gl_cover 0.5 --pipe_work $E/run_$mode 2>&1 | cut -c1-240
+  $PY -X utf8 $B/b1_parity.py --dump $E/run_$mode/b1_candidates.parquet --features_run $FRUN --view $mode --solution $E/solution.csv --out $E/run_$mode/parity_$mode.md       --pred_main $E/run_$mode/submission.csv --pred_fixed $E/run_$mode/submission_fixed.csv --stage_stats $E/run_$mode/b1_stage_stats.csv --model $MODEL --w_ice $WICE --tau $TAU --main $MAIN --margin 0.2 --min_gl_cover 0.5 --pipe_work $E/run_$mode 2>&1 | cut -c1-240
   prc=${PIPESTATUS[0]}; echo "parity $mode exit $prc"; [ $prc = 0 ] || PARITY_FAIL=1
   echo "-- eval_scores: $(tr -d '\n ' < $E/run_$mode/eval_scores.json | cut -c1-400)"
 done

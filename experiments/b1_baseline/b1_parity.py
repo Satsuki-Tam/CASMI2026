@@ -16,6 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE); sys
 ap = argparse.ArgumentParser(); ap.add_argument("--dump", required=True); ap.add_argument("--features_run", required=True); ap.add_argument("--view", choices=["c1", "c2"], required=True)
 ap.add_argument("--solution", required=True); ap.add_argument("--out", required=True); ap.add_argument("--pred_main", default=None); ap.add_argument("--pred_fixed", default=None)
 ap.add_argument("--stage_stats", default=None); ap.add_argument("--model", default=None); ap.add_argument("--w_ice", type=float, default=1.0); ap.add_argument("--tau", type=float, default=0.9)
+ap.add_argument("--main", default="learned", choices=["learned", "blend21", "blend11"], help="the pipeline's main-list rule to replicate (b1_pipeline --main)")
 ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
 ap.add_argument("--top25_set_min_share", type=float, default=0.95, help="top-25 identical as SETS (strict criterion)"); ap.add_argument("--top25_min_share", type=float, default=0.85, help="ordered top-25 identical (tail order is subject to forward-score run-to-run noise)")
 ap.add_argument("--pipe_work", default=None, help="pipeline output dir with gl_out.json / ice_out.json: measures forward-score differences vs the evaluator run"); a = ap.parse_args()
@@ -98,6 +99,7 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
                                    g[f"lib_nref_{v}"].values, g.in_tier.values, g[f"in_train_{v}"].values, g.in_coconut.values, g.ppm_err.values, g.fp_rank_window.values,
                                    float(Mall.loc[mid, "n_query"]), float(Mall.loc[mid, "ce_known"]), n_window=float(Mall.loc[mid, "n_unique"]) if "n_unique" in Mall.columns else np.nan, feats=feats)
                 main = booster.predict(X)
+                if a.main != "learned": main = (2.0 if a.main == "blend21" else 1.0) * z(main) + z(Sc)   # blend hedge, as in b1_pipeline --main
             else: main = ins; stats["fallback_eval"] += 1
             ev_main = [ident(str(g.smiles.values[i])) for i in np.argsort(-main, kind="stable")[:25]]; ev_ins = [ident(str(g.smiles.values[i])) for i in np.argsort(-ins, kind="stable")[:25]]
             pp_main = [ident(x) for x in pm_of[mid].split(";")]; pp_ins = [ident(x) for x in pf_of[mid].split(";")]

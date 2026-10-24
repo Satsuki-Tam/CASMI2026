@@ -199,6 +199,7 @@ def main():
     ap.add_argument("--gl_budget", type=int, default=GL_BUDGET); ap.add_argument("--ice_budget", type=int, default=ICE_BUDGET)
     ap.add_argument("--deadline_s", type=int, default=0, help="wall-clock deadline since start; runner budgets are capped at deadline - elapsed - 900 s (0 = off)")
     ap.add_argument("--min_gl_cover", type=float, default=0.5, help="learned fusion only when GL scored at least this fraction of a molecule's candidates (else the fixed rule)")
+    ap.add_argument("--main", default="learned", choices=["learned", "blend21", "blend11"], help="main list: learned model, or the blend hedge w*z(learned)+z(fixed rule) with w = 2 or 1 (GL-cover fallback unchanged)")
     ap.add_argument("--adduct_proxy", action="store_true", help="forward-model proxies for molecules without a covered positive spectrum: [M+NH4]+ / [M-H2O+H]+ scored as [M+H]+ (public N1A arm A)")
     ap.add_argument("--neg_proxy", action="store_true", help="EXPERIMENTAL: also map negative-mode spectra of such molecules onto the positive axis (b1_common.forward_proxies)")
     args = ap.parse_args(); P = paths(args); os.makedirs(P["work"], exist_ok=True); T0 = time.time(); log = lambda *x: print(f"[b1 {time.time()-T0:7.0f}s]", *x, flush=True)
@@ -472,6 +473,7 @@ def main():
         if np.isfinite(g).sum() >= 2: S = S + W_GL * z(g); fused_stats["gl_used"] += 1
         if args.w_ice != 0 and np.isfinite(ic).sum() >= 2: S = S + args.w_ice * z(ic); fused_stats["ice_used"] += 1
         top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
+        S_plain = S.copy()   # the fixed rule without library priority (used by the blend hedges)
         if lib.max() >= args.tau and lib.max() - second >= args.margin: S = np.where(lib >= args.tau, 100.0 + lib, S); fused_stats["lib_priority"] += 1
         order = np.argsort(-S, kind="stable"); sub_fixed.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
         gl_cover_ok = np.isfinite(g).sum() >= max(2, args.min_gl_cover * len(rows))
@@ -483,13 +485,16 @@ def main():
                                    [r["lotus_refs"] for r in rows], lib, [r["lib_same"] for r in rows], [r["lib_nref"] for r in rows], [r["in_tier"] for r in rows], [r["in_train"] for r in rows],
                                    [r["in_coconut"] for r in rows], [r["ppm_err"] for r in rows], [r["fp_rank_window"] for r in rows], mi["n_query"], mi["ce_known"],
                                    n_window=mi.get("n_unique", np.nan), feats=model_feats)
-                order = np.argsort(-booster.predict(X), kind="stable"); fused_stats["learned"] += 1
+                pred = booster.predict(X)
+                if args.main == "learned": sc = pred
+                else: sc = (2.0 if args.main == "blend21" else 1.0) * z(pred) + z(S_plain)   # blend hedge (2026-10-25): z(learned) + z(fixed rule), 2:1 or 1:1
+                order = np.argsort(-sc, kind="stable"); fused_stats["learned"] += 1
             except Exception as e:
                 fused_stats["learned_failed"] += 1; log("learned fusion failed for", mid, repr(e))
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
