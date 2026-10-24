@@ -28,6 +28,7 @@ KAGGLE = os.path.exists("/kaggle/input")
 PPM, K_SHORT, K_LIB, LIB_MIN, MAX_REF, MAX_Q = 10.0, 100, 20, 0.2, 24, 8      # MAX_Q 8 with adduct round-robin = the evaluation's query policy
 SHORTLIST_LAM = 0.15   # prior weight for the shortlist (as evaluated); LAM below is the fusion weight
 MAX_HEAVY_FORWARD = 100   # structures above this are not sent to the forward models
+DUP_SIM = 0.98            # a reference at the same precursor this similar to a query spectrum is treated as the same acquisition (re-deposit) and not used
 W_GL, W_ICE, LAM, TAU, MARGIN = 2.0, 1.0, 0.5, 2.0, 0.2   # LAM 0.5 (B1 eval: better than 0.15 on A, B and the C1 set); TAU 2.0 disables the library-priority rule until the deduplicated C1 evaluation supports it
 ICE_BUDGET, GL_BUDGET = 5400, 4000
 
@@ -185,6 +186,9 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--test", default=None); ap.add_argument("--out", default="experiments/b1_baseline/pipeline_local"); ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--no_forward", action="store_true"); ap.add_argument("--workers", type=int, default=0); ap.add_argument("--folds", default="0")
     ap.add_argument("--rank_model", default=None, help="LightGBM LambdaRank model file (default: lambdarank.txt next to this script; absent -> fixed rule)")
+    ap.add_argument("--exclude_rows", default=None, help="evaluation: JSON list of spectra-store rows never used as references (the query acquisitions) -> class-1 proxy")
+    ap.add_argument("--exclude_identities", default=None, help="evaluation: JSON list of official keys whose references are removed and whose train membership is hidden -> class-2 proxy")
+    ap.add_argument("--solution", default=None, help="evaluation: CSV with molecule_id,smiles; scores the submission with the official scorer replica")
     args = ap.parse_args(); P = paths(args); os.makedirs(P["work"], exist_ok=True); T0 = time.time(); log = lambda *x: print(f"[b1 {time.time()-T0:7.0f}s]", *x, flush=True)
     test_path = args.test or ("/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/test.parquet" if KAGGLE else os.path.join(os.path.dirname(P["train"]), "test.parquet"))
     workers = args.workers or max(2, (os.cpu_count() or 4) - 1)
@@ -249,6 +253,9 @@ def main():
                 if k: key_rows.setdefault(k, []).append(rows)
             key_rows = {k: np.concatenate(v) for k, v in key_rows.items()}
         log(f"library index: {len(key_rows):,} official identities with reference spectra")
+        EXCL_ROWS = set(json.load(open(args.exclude_rows))) if args.exclude_rows else set()
+        EXCL_IDS = set(json.load(open(args.exclude_identities))) if args.exclude_identities else set()
+        if EXCL_ROWS or EXCL_IDS: log(f"EVALUATION MODE: {len(EXCL_ROWS)} reference rows and {len(EXCL_IDS)} identities masked")
         for n_i, (mid, spectra) in enumerate(mols.items()):
             tm0 = time.time()
             known = [s for s in spectra if s["adduct"] in ADDUCT_SHIFT]
@@ -309,6 +316,11 @@ def main():
                     if p["trow"] < 0: p["trow"] = tier_row[i]
                     if p["pid"] < 0: p["pid"] = pool_pid[i]; p["pkey"] = pool_key[i]
                     if np.isfinite(fp[i]) and fp[i] > p["fp"]: p["fp"] = float(fp[i])
+            if EXCL_IDS:
+                for k in list(rep):
+                    if rep[k]["pkey"] in EXCL_IDS:
+                        if rep[k]["trow"] < 0 and not rep[k]["coco"]: del rep[k]      # a library-only structure would not exist as a candidate for a novel molecule
+                        else: rep[k]["train"] = False
             keys = list(rep); n_u = len(keys)
             if n_u == 0:
                 stats.append(dict(molecule=mid, n_query=len(q), n_unique=0, seconds=time.time() - tm0)); feats[mid] = []; continue
@@ -325,21 +337,31 @@ def main():
             lib = np.zeros(n_u); lib_same = np.zeros(n_u); nref = np.zeros(n_u, int)
             for ci, k in enumerate(keys):
                 pk = rep[k]["pkey"]
-                if not rep[k]["train"] or pk is None or pk not in key_rows: continue
-                rrows = key_rows[pk]
-                if len(rrows) > MAX_REF:
-                    pri = np.array([0 if add_of_row[x] in M_by_add else 1 for x in rrows]); rrows = rrows[np.argsort(pri, kind="stable")][:MAX_REF]
-                best = same = 0.0
-                for x in rrows:
+                if not rep[k]["train"] or pk is None or pk not in key_rows or pk in EXCL_IDS: continue
+                rrows = [int(x) for x in key_rows[pk] if x not in EXCL_ROWS]
+                kept = []
+                for x in rrows:                                       # duplicate acquisitions of a query spectrum are not independent references
                     if x not in ref_cache:
                         sh = ELECTRON if (lib_of_row[x] == "enveda-180" and mode_of_row[x] == "positive") else 0.0
-                        mz, it = spectrum(x, sh); ref_cache[x] = clean_peaks(mz, it, float(prec_of_row[x]) - sh)
-                    rmz, rit = ref_cache[x]
+                        mz, it = spectrum(x, sh); ref_cache[x] = (clean_peaks(mz, it, float(prec_of_row[x]) - sh), float(prec_of_row[x]) - sh)
+                    (rmz, rit), rprec = ref_cache[x]
+                    dup = False
+                    for s in q:
+                        if abs(s["prec"] - rprec) < 0.005 and s["mode"] == mode_of_row[x]:
+                            qmz, qit = s["clean"]
+                            if (s["adduct"] == add_of_row[x] and len(qmz) == len(rmz) and len(qmz) > 0 and np.allclose(qmz, rmz, atol=2e-4) and np.allclose(qit, rit, atol=1e-3)) or \
+                               entropy_similarity(qmz, qit, rmz, rit) >= DUP_SIM: dup = True; break
+                    if not dup: kept.append(x)
+                if len(kept) > MAX_REF:
+                    pri = np.array([0 if add_of_row[x] in M_by_add else 1 for x in kept]); kept = [kept[i] for i in np.argsort(pri, kind="stable")[:MAX_REF]]
+                best = same = 0.0
+                for x in kept:
+                    (rmz, rit), rprec = ref_cache[x]
                     for s in q:
                         if s["mode"] != mode_of_row[x]: continue
                         sim = entropy_similarity(s["clean"][0], s["clean"][1], rmz, rit); best = max(best, sim)
                         if add_of_row[x] == s["adduct"]: same = max(same, sim)
-                lib[ci], lib_same[ci], nref[ci] = best, same, len(rrows)
+                lib[ci], lib_same[ci], nref[ci] = best, same, len(kept)
             if len(ref_cache) > 200_000: ref_cache.clear()
             # shortlist + official keys
             fpz = np.nan_to_num(fpu, nan=np.nanmin(fpu) if np.isfinite(fpu).any() else 0.0); zf = (fpz - fpz.mean()) / (fpz.std() + 1e-9)
@@ -368,6 +390,9 @@ def main():
             if (n_i + 1) % 20 == 0 or n_i == len(mols) - 1:
                 d = pd.DataFrame(stats); log(f"{n_i+1}/{len(mols)} | window median {d.n_unique.median():.0f} | shortlist median {d.n_shortlist.median():.0f} | lib_max>=0.6: {int((d.lib_max >= TAU).sum())} | {d.seconds.mean():.1f}s/mol")
     pd.DataFrame(stats).to_csv(f"{P['work']}/b1_stage_stats.csv", index=False)
+    try:   # per-candidate table (parity tests / debugging): molecule, official key, scores, provenance
+        pd.DataFrame([dict(molecule=m, **{k_: v_ for k_, v_ in r_.items()}) for m, rows_ in feats.items() for r_ in rows_]).to_parquet(f"{P['work']}/b1_candidates.parquet", index=False)
+    except Exception as e: log('candidate dump failed:', repr(e))
     # ---- forward models: weakest library match first
     runner.sort(key=lambda it: it["lib_max"]); items = [dict(mid=it["mid"], spectra=it["spectra"], cands=it["cands"]) for it in runner]
     json.dump(items, open(f"{P['work']}/b1_forward_in.json", "w"))
@@ -433,6 +458,18 @@ def main():
     json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=K_SHORT, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
+    if args.solution:
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(HERE)), "src"))
+        import metric
+        sol = pd.read_csv(args.solution); sol["molecule_id"] = sol["molecule_id"].astype(str); sub_ = df.copy(); sub_["molecule_id"] = sub_["molecule_id"].astype(str)
+        sol = sol[sol.molecule_id.isin(set(sub_.molecule_id))]
+        official = float(metric.score(sol[["molecule_id", "smiles"]].copy(), sub_[sub_.molecule_id.isin(set(sol.molecule_id))].copy(), "molecule_id"))
+        rr = {m: metric.per_molecule_reciprocal_rank(s_, str(p_).split(";")) for m, s_, p_ in zip(sol.molecule_id, sol.smiles, sub_.set_index("molecule_id").loc[sol.molecule_id, "smiles"])}
+        per = sol.assign(rr=[rr[m] for m in sol.molecule_id]); per.to_csv(f"{P['work']}/eval_per_molecule.csv", index=False)
+        out_ = dict(official_mrr25=official, n=len(sol), masks=dict(rows=len(EXCL_ROWS), identities=len(EXCL_IDS)))
+        for col in ("set", "group", "lib"):
+            if col in per.columns: out_[f"by_{col}"] = {str(k): round(float(g.rr.mean()), 4) for k, g in per.groupby(col)}
+        json.dump(out_, open(f"{P['work']}/eval_scores.json", "w"), indent=1); log(f"OFFICIAL MRR@25 = {official:.4f} on {len(sol)} molecules | {out_.get('by_set')}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,25 @@
+{
+ "official_mrr25": 0.0091875,
+ "n": 600,
+ "masks": {
+  "rows": 2221,
+  "identities": 600
+ },
+ "by_set": {
+  "A_timstof": 0.0184,
+  "B_nplib": 0.0
+ },
+ "by_group": {
+  "eval": 0.0054,
+  "fit": 0.0146,
+  "tune": 0.0075
+ },
+ "by_lib": {
+  "enveda-180": 0.0184,
+  "gnps": 0.0,
+  "massbank": 0.0,
+  "mona": 0.0,
+  "msdial": 0.0,
+  "riken": 0.0
+ }
+}
