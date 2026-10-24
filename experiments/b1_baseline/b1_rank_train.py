@@ -12,7 +12,7 @@ import numpy as np, pandas as pd
 import lightgbm as lgb
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from b1_evaluate import z, rr, boot, term, LAM
-from b1_rankfeats import FEATS, FEATSETS, MONO, feature_matrix
+from b1_rankfeats import FEATS, FEATSETS, MONO, MONO_LIB, feature_matrix
 
 
 
@@ -91,8 +91,11 @@ def main():
                     "re-weighting the ranker learns 'has references -> decoy' from the C2 majority)")
     ap.add_argument("--c2_nolib", action="store_true", help="zero every library feature in the C2-view fit rows (the C2 view hides the truth's references, so there "
                     "'has a reference' is a perfect negative label; with this flag the use of reference evidence is learned from the C1 rows only)")
+    ap.add_argument("--monotone_lib", action="store_true", help="monotone constraints incl. the library similarities (reference evidence may only raise a candidate)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); FE = [f for f in FEATSETS[a.feats] if f not in set(a.drop)]
-    print("features:", len(FE), "| dropped:", a.drop, "| c1_repeat:", a.c1_repeat, "| c2_nolib:", a.c2_nolib)
+    if a.monotone_lib: a.monotone = True
+    MONO_USED = MONO_LIB if a.monotone_lib else MONO
+    print("features:", len(FE), "| dropped:", a.drop, "| c1_repeat:", a.c1_repeat, "| c2_nolib:", a.c2_nolib, "| monotone:", a.monotone, "lib" if a.monotone_lib else "")
     data = pd.concat([load_run(*r.split(":"), feats=FE) for r in a.runs], ignore_index=True)   # RUN:eval_csv[:group_override]
     print("rows", len(data), "| molecules", data.molecule.nunique(), "| groups", data.groupby("group").molecule.nunique().to_dict(), "| views", data.groupby("view").molecule.nunique().to_dict())
     fit, tune, ev = (data[data.group == g].copy() for g in ("fit", "tune", "eval"))
@@ -116,7 +119,7 @@ def main():
         return lgb.Dataset(d[FE].values, label=d.is_truth.values, group=sizes, free_raw_data=False, feature_name=list(FE)), d
     ds_fit, fit_s = to_ds(fit_t)
     grid = [dict(num_leaves=nl, learning_rate=lr, min_data_in_leaf=20, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=1, lambda_l2=1.0, verbose=-1, objective="lambdarank",
-                 metric="ndcg", eval_at=[25], label_gain=[0, 1], seed=0, **({"monotone_constraints": [MONO.get(f, 0) for f in FE], "monotone_constraints_method": "advanced"} if a.monotone else {}))
+                 metric="ndcg", eval_at=[25], label_gain=[0, 1], seed=0, **({"monotone_constraints": [MONO_USED.get(f, 0) for f in FE], "monotone_constraints_method": "advanced"} if a.monotone else {}))
             for nl in (7, 15, 31) for lr in (0.03, 0.1)]
     results = []
     for params in grid:

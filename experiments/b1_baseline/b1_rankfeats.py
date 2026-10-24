@@ -17,6 +17,9 @@ EXTRA_V3S = ["rank_fp", "rank_gl", "rank_ice", "margin_fp_mol", "margin_gl_mol",
 FEATSETS = {"v2": FEATS, "v2_noice": [f for f in FEATS if f not in ("z_ice", "ice", "ice_missing")], "v3s": FEATS + EXTRA_V3S, "v3": FEATS + EXTRA_V3}
 # monotone directions for the constrained variant (0 = unconstrained): only the model scores (up) and the mass error (down), Codex 008
 MONO = dict(z_fp=1, z_gl=1, z_ice=1, fp=1, gl=1, ice=1, ppm_err=-1)
+# 2026-10-25 (panel probe): reference evidence may only raise a candidate -- in the C2 training view the truth has no references by construction,
+# so an unconstrained ranker learns 'has references -> decoy' (lib_same / lib_nref) and collapses on class-1 molecules with many references
+MONO_LIB = dict(MONO, lib_sim=1, lib_same=1, lib_margin=1, in_train_x_lib=1)
 
 
 def rank_desc(v):

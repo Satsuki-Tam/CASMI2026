@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 00:10 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 00:16 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-c2-strict">1. 漏斗(C2 視点、strict)</a></li>
@@ -580,15 +580,31 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <td>+ C1 fit 群 ×3(C1 比率 46%)</td>
 <td>0.833 / 0.527</td>
 <td>0.737(0.754)</td>
-<td>(集計中)</td>
+<td>0.882</td>
 </tr>
 <tr>
-<td>rank_v4c / v4d</td>
-<td>+ C2 行の lib 特徴を 0 / C1 ×5</td>
-<td>実行中</td>
-<td></td>
-<td></td>
+<td>rank_v4c</td>
+<td>v4b + C2 行の lib 特徴を 0 にして学習</td>
+<td>0.875 / <strong>0.416</strong>(固定以下)</td>
+<td>0.900</td>
+<td><strong>0.640</strong>(崩壊)</td>
+</tr>
+<tr>
+<td>rank_v4d</td>
+<td>counts 除去 + C1 ×5(59%)</td>
+<td>0.857 / 0.499</td>
+<td>0.740</td>
+<td>0.877</td>
+</tr>
+<tr>
+<td>rank_v4e</td>
+<td>v4b + 参照類似に単調制約(上げる方向のみ)</td>
+<td>0.865 / 0.461</td>
+<td>0.857</td>
+<td><strong>0.674</strong>(崩壊)</td>
 </tr>
 </tbody>
 </table>
-<p>固定 0.862・lib 単独 0.908 にはまだ届かない。残る原因は「lib_sim &gt; 0 が C2 行で完全な負ラベル」になること(ablation: no_sim 0.631 &gt; learned 0.588)。選択肢: C2 行の lib 特徴を学習に使わない(v4c)、同ライブラリ独立取得を残す C1-all view、推論時の体制切替(guard τ:m のグリッドを計測中)。Codex 012 に意見を求めた。</p></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>C1(参照あり)と C2(参照なし)の間には本質的なトレードオフがある: 参照証拠を強く信じる構成(v4c, v4e)はパネル C1 を固定規則水準(0.86〜0.90)に戻すが C2 を崩す(パネル C2 0.64〜0.67、eval C2 が固定以下)。類似 0.6〜0.9 の帯では「クラス 1 の真」と「クラス 2 の高類似アナログ」を参照情報だけでは区別できず、学習データのクラス比が賭けになる。v4b(counts 除去 + C1 ×3)が現時点の均衡点: v3 比でパネル C1 +0.31、C2 −0.05、eval 群は同等。</p>
+<p>推論時 guard(lib_max ≥ τ かつ margin ≥ m なら参照順)の格子(<code>--guards</code>): v4b 上の (0.8,0.2) はパネル C1 +0.033 / パネル C2 −0.021 / A C2 −0.032 / B C2 −0.007 → 本命には入れない。固定規則上の libpri(0.8,0.2)(保険): C1 集合 0.734(固定 0.546)、パネル C1 0.884、B C1 0.768;C2 損失 A −0.022、B −0.006、パネル −0.020。保険は τ=0.8 とする。</p>
+<p>期待値の試算(クラス 1 を全体の 0.2、クラス 2 を 0.4 と仮定、公開 LB のライブラリ検索単独 ≈0.15 から): パネル体制(著名化合物)のクラス 1 なら v4b は固定比 +0.009、M1(v2)は −0.024、M2(v3)は −0.051;開発体制(GNPS 様)なら v4b +0.108、M1 +0.10、M2 +0.11。<strong>v4b はどちらの体制でも M1/M2 を下回らない</strong>ため、M2′ = v4b で再登録する方向(Codex 012 に諮問中)。M1 の LB 値は体制の判別材料(パネル体制なら 0.31 前後、開発体制なら 0.43 前後の見込み)。</p></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
