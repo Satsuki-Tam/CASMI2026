@@ -210,14 +210,14 @@
    "id": "B1 v2 (57588650)",
    "what": "自前パイプライン B1 v2 Notebook(version 2): PubChem/COCONUT 10 ppm 窓、shortlist FP100 ∪ FP+prior100 ∪ 参照20、固定規則 z(FP)+2z(GL)+z(ICE)+0.5pop、参照優先なし、学習モデルなし(埋め込み漏れ)",
    "public": "Public 0.334",
-   "note": "E0(0.464)より 0.13 低い。参照優先・学習融合の無い自前固定規則は、ライブラリに近い化合物が多い隠しテストで大きく損をする(予想どおりの方向、幅は大)。",
+   "note": "E0(0.464)より 0.13 低い。参照優先・学習融合の無い自前固定規則。注: Notebook ログの参照類似 0.8 等は可視ダミー test の値で隠し test の性質ではない(Codex 011)。",
    "score": "0.334",
    "state": "done"
   },
   {
    "when": "2026-10-24 21:08",
    "id": "B1 M1 (57593667)",
-   "what": "候補 M1: B1 v2 パイプライン + LambdaRank 28 特徴(rank_v2, sha a84fe3ff, fit 884 群)。shortlist FP100 ∪ FP+prior100 ∪ 参照20、GL+ICE、本命 = 学習融合(修正前の GL 被覆ポリシー: GL 無しの 29 分子にも学習器を適用)。Notebook version 3、3.17 h",
+   "what": "候補 M1: B1 v2 パイプライン + LambdaRank 28 特徴(rank_v2, sha a84fe3ff, fit 884 群)。shortlist FP100 ∪ FP+prior100 ∪ 参照20、GL+ICE、本命 = 学習融合(修正前の GL 被覆ポリシー: GL 無しの 29 分子にも学習器を適用)。Notebook version 3、3.17 h(可視ダミー test での実行時間)",
    "public": "採点待ち",
    "note": "保険(固定 + libpri τ0.9)は submission_fixed.csv として同じ version から提出可能。本命と保険の top-1 は 172/400 分子で異なる。LB の読みは ±0.02 を追加調査の閾値とし、増分を予測しない",
    "score": null,

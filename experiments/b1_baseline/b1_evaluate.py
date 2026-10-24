@@ -91,7 +91,9 @@ def main():
                        # ICE contribution (Codex 008 / ICE repaired on B): no ICE term, double ICE, GL-only, FP-only fusion
                        "S(2,0,0.5)": S(2, 0, 0.5), "S(2,2,0.5)": S(2, 2, 0.5), "S(0,1,0.5)": S(0, 1, 0.5), "S(1,0,0.5)": S(1, 0, 0.5),
                        # prior-weight regime (panel diagnostic 2026-10-24: the public pipelines lean on the documentation prior on test-like natural products)
-                       "S(2,1,1)": S(2, 1, 1.0), "S(2,1,2)": S(2, 1, 2.0), "S(2,1,4)": S(2, 1, 4.0), "S(2,0,1)": S(2, 0, 1.0), "S(2,0,2)": S(2, 0, 2.0)}
+                       "S(2,1,1)": S(2, 1, 1.0), "S(2,1,2)": S(2, 1, 2.0), "S(2,1,4)": S(2, 1, 4.0), "S(2,0,1)": S(2, 0, 1.0), "S(2,0,2)": S(2, 0, 2.0),
+                       # forward-free (Codex 011): FP + lambda * prior only, the prior diagnostic that avoids MSG-contaminated forward models
+                       "S(0,0,0.15)": S(0, 0, 0.15), "S(0,0,0.5)": S(0, 0, 0.5), "S(0,0,1)": S(0, 0, 1.0), "S(0,0,2)": S(0, 0, 2.0), "S(0,0,4)": S(0, 0, 4.0)}
                 base = S(2, 1, LAM)
                 for beta in (1.0, 2.0, 4.0): res[f"S(2,1,0.15)+{beta:g}lib"] = base + beta * lib
                 top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0

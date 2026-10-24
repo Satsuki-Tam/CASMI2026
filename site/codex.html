@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 22:27 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 22:35 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -4001,4 +4001,59 @@ p1 + p2 + p3 = 1
 <p><strong>Q4</strong> locked 開封の扱い。候補 M1/M2 は LB 0.334 の体制で作られたもの。パネル診断で λ や照合規則を変える必要が出た場合、開封を延期して候補を作り直すべきか、それとも登録済みの M1/M2 で一度開き、改訂版は新しい未使用集合(locked 2)で確認する方がよいか。</p>
 <p><strong>Q5</strong> 提出の運用。本日残り 2 回、M1 の採点待ち。M1 が 0.464 を下回っても、M1 の保険(submission_fixed.csv、libpri τ0.9)を提出して「保険 vs 本命」の LB 差を観測する価値はあるか(手元の C1 視点では保険 0.79 vs 学習 0.82、C2 では学習 +0.075)。</p>
 <h2 id="_1">参照</h2>
-<p><code>docs/progress_2026-10-24_evening.md</code>、<code>docs/b1_diagnostic_2026-10-24.md</code> §10〜§12、<code>kernels/b1-baseline/runs/{v2_fixed,v3_M1}/b1_run_manifest.json</code>、<code>experiments/e1_panel/e1_results.json</code>(E1 パネル再現)、<code>010_decision.md</code>、<code>spark/jobs/spark_panel_chain.sh</code>。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p><code>docs/progress_2026-10-24_evening.md</code>、<code>docs/b1_diagnostic_2026-10-24.md</code> §10〜§12、<code>kernels/b1-baseline/runs/{v2_fixed,v3_M1}/b1_run_manifest.json</code>、<code>experiments/e1_panel/e1_results.json</code>(E1 パネル再現)、<code>010_decision.md</code>、<code>spark/jobs/spark_panel_chain.sh</code>。</p></details><details><summary>回答(Codex)</summary><p><strong>結論：0.334 は比較系を見直す十分な理由だが、差0.130の主因はまだ特定できない。優先するのは、同じ入力・候補条件での参照優先の切り分けと、forward を外した prior 診断。パネルだけで λ を決め直すことや、さらに候補を増やすことは先にしない。locked は今回の診断を待ち、変更する候補は開封前に再登録することを勧める。</strong></p>
+<p><strong>最初に訂正すべき事実：保存された実行記録は隠しテストの記録ではない。</strong></p>
+<p><code>runs/v2_fixed</code> と <code>runs/v3_M1</code> の <code>b1_stage_stats.csv</code> を、Spark の <code>data/raw/test.parquet</code> と照合した。両 run の400分子の ID 集合は公開ダミー test と完全一致する。昇順 ID を改行結合した SHA256 は3者とも <code>f300cbe427300469664a60d074db35c0f02cf2ad184f0778599ceec7175d6802</code>。ログの1,213スペクトルも一致する。公式保存資料 <code>docs/official/pages/data-description.md:6</code> は、このファイルが train 由来の例で、採点再実行時に隠し test に置き換わると明記している。</p>
+<p>従って、参照類似の中央値 <strong>0.77863</strong>、libpri 発火59件、GL/ICE 使用371件、所要12,414／11,427秒は<strong>可視実行</strong>の観測値。隠しテストの C1 比率、参照の強さ、forward 被覆、実行時間の根拠にはできない。両 manifest の <code>gl_mols=400</code> も全分子で GL が有効という意味ではなく、ログ上の有効対象は371。M1 の <code>learned=400</code> は旧 fallback 方針で全分子に学習器を適用した記録である。LB 0.334 自体は依頼の採点報告として扱う。</p>
+<p><strong>Q1：0.130 の差と、最短の切り分け。</strong></p>
+<p>E0 と B1 は候補生成、参照の扱い、学習モデル、prior、候補の混ぜ方が異なる。差を LambdaRank、C1、prior のいずれかへそのまま帰属させられない。B の0.373より低いことも、未知のクラス構成・化学分布を持つ Public への外挿では検証破綻の証明にならない。一方、同じ Public 上の0.130差は、E0を対照から外して B1 内部の比較だけを続けるべきでないことを示す。</p>
+<p>まず、既存開発集合の固定した小集合とパネルを別々に扱い、同じ query、参照マスク、公式 identity、全分子分母で E0 の対応版と B1 を比較する。E1 の保存 main list は公開系の部品診断に使えるが、E0 の最終提出全体と同一とは見なさない。学習データとの重複があるモデルの値は、挙動の診断と未見性能の評価を区別する。</p>
+<table>
+<thead>
+<tr>
+<th>切り分け</th>
+<th>最小の対照</th>
+<th>記録するもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>候補生成・絞り込み</td>
+<td>同じ query／マスクで、E0 と B1 の候補を公式 identity で照合</td>
+<td>正解が「DB／質量窓／shortlist／top-25」のどこで消えるか。E0だけが当てる分子について、候補不在と順位不足を分ける</td>
+</tr>
+<tr>
+<td>参照優先</td>
+<td>B1 の同じ shortlist・保存済みスコアで、現行 S と既存の libpri(0.9,0.2) を比較</td>
+<td>C1 の救済数と誤昇格数、C2 の損失、分子別 ΔRR。参照候補自体が欠ける場合は検索・参照選択を先に調べる</td>
+</tr>
+<tr>
+<td>prior</td>
+<td>同じ候補で prior 単独、fold-safe FP 単独、FP＋λ·prior を比較。GL/ICE は使わない</td>
+<td>全 N の MRR、低／高文献数・到達有無別の ΔRR、prior の欠損・出典別の値。候補生成を変えた効果と再順位付けの効果を分ける</td>
+</tr>
+</tbody>
+</table>
+<p>既存スコアの再順位付けから始めれば、重い再学習は要らない。参照と prior の両方が効いた場合にだけ「参照優先なし／あり × 現行 λ／選んだ λ」の小さな比較を追加し、相互作用を確認する。可視ダミーの重複は照合処理のデバッグには使えるが、C1 汎化性能の評価には混ぜない。隠し実行のログが得られない場合、実行時の欠損については公開された隠し仕様を模した負荷・未対応 adduct の確認で補い、可視の371件を代用しない。</p>
+<p>パネル診断だけでは主因の確定には足りない。とくに以下の解釈を修正する。</p>
+<ul>
+<li>E1 の71.1%は、PubChem キャッシュにある <strong>246分子・正解分子式に限定した候補集合</strong>での <code>doc only</code>。<code>doc = log_substances + log_pubmed</code> である。B の21%は「到達可能かつ shortlist に真がある159分子」での <code>pop_public</code>。候補集合、分母、prior の定義が違い、隠しテストの prior が強いことを示す直接比較ではない。パネル自体も、公式説明で意図的に一般的な天然物を選んだ集合とされている。</li>
+<li>E1 の C1 <code>ranker_only</code> 0.95483 は、複数特徴を使う ranker の値で、純粋なライブラリ照合の未見性能0.95ではない。同パネルでは参照なしでも0.97064であり、この値から C1 の本番性能を推定しない。</li>
+<li>§10 の <code>S(1,0,0.5) = FP+pop</code> は、009で訂正済みの誤記が残っている。この規則には GL が入る。パネルで λ=0.5/1/2/4 を比べるなら、<strong><code>S(0,0,λ)</code> の対照も必要</strong>。現行 <code>b1_evaluate.py</code> の追加グリッドは GL を含むため、それだけでは「forward 汚染を避けた prior 診断」にならない。GL/ICE を外した系列と、それらを含む参考系列を分ける。</li>
+</ul>
+<p>v3 の固定規則 A=0.65237／B=0.37677 は Spark の JSON でも確認した。到達増加と全体 MRR の悪化は両立する。ただし「新規回収した真は上位に来ていない」まで集計平均から断定せず、既存到達群・新規回収群の ΔRR を分解する。候補拡大をさらに進める前に、どちらの損益が支配するかを確認する。</p>
+<p><strong>Q2：優先順は、(a)を診断に使い、(c)で採用判断を補強し、その後に(b)。</strong></p>
+<p>すでに走っている λ グリッドは感度を見るために使ってよい。しかし、パネルで最大だった λ をそのまま採用しない。まず同じ公式 identity に付く E0 の <code>doc</code> と B1 の <code>pop_public</code>、結合欠損、スコアを標準化する候補範囲を照合する。λ の数値だけでは二系統の prior の強弱を比較できない。</p>
+<p>開発集合を全部捨てて作り直す必要はない。既存 A/B を残し、天然物・アナログ、低／高文献数、同装置／他装置、forward 対応状況の層を追加・明示する。可能な範囲で MSG 非重複かつ identity が学習から独立した確認群を設け、候補や λ の選択前に固定する。本番の未知クラス比率を LB から逆算して重み付けしない。</p>
+<p>その確認でも prior の過小利用が再現したら、小さな固定規則の改訂を先に比較する。パネルを GL/ICE 付きで LambdaRank に追加すると、学習済み分子にだけ成立する関係を再学習するおそれがある。汚染のない対応データで再学習する段階まで、(b)や prior の単調制約を最優先にはしない。パネルの forward を欠損にしただけで、本番の完全被覆時にも有効な学習例になるとは限らない。</p>
+<p><strong>Q3：公開系の参照処理の移植には賛成。ただし、検索と最終順位の保護を分けて評価する。</strong></p>
+<p>保存 E0 Notebook の最終 merge は <code>lib_max &gt;= 0.9</code> なら main list を維持する。これは「最大類似度の候補を直接1位にする」規則とは異なる。B1 へ移す際は、参照スペクトルの選択、ピーク前処理、同 adduct／複数 query の証拠、候補取得、順位保護のどこが効くかを一つずつ確かめる。最初は既存 B1 の libpri を対照とし、閾値0.9だけを同じ意味として移さない。参照候補を守る規則には C1 の救済だけでなく、近縁異性体を誤昇格する C2 の損失も報告する。</p>
+<p>C1 は現在の「他ライブラリ参照のみ」を維持し、別の条件として「同じライブラリ・装置の<strong>独立した取得</strong>を参照に残す」を追加する。query と同じ取得の CE 違い・派生ピーク列・他ライブラリへ複製されたスペクトルはまとめて除外する。取得を分離できるメタデータがなければ、この条件は楽観的な近似として表示し、正式な未見性能とはしない。C2 の全 identity 参照除外も併置する。C1 の参照利用と、ranker/FP/forward の学習重複は別に監査する。</p>
+<p><strong>Q4：未開封なら、今回の小さな対照結果を待つ延期を推奨。</strong></p>
+<p>診断で構成を変える見込みが高い時点で、旧候補だけの確認に locked を使う必要はない。今回のパネル対照、M2 の開発結果、E0/B1 の差の所在を確認する一巡を区切りにする。改訂不要なら登録済み M1/M2 で進む。改訂が必要なら旧登録を保存したまま、候補数を増やさず新しい版・保険・比較規則を開封前に登録し直す。未使用集合を見ていない限り、この更新は locked に対する調整ではない。</p>
+<p>M1/M2 の選択自体を今確定する必要があるなら、旧登録で開封し、改訂候補を独立した locked 2 で確認する運用も可能。ただし未使用の identity を別に確保するコストがあり、今回はこちらを第一選択にしない。既に採点値を一部でも見た場合は、その集合を再び未使用とは扱わない。機械的条件は010を継続し、W7 の旧95%基準と報告86〜92%の違いは、同一 forward cache での一致と独立 runner の実行差を区別して記録する。本依頼では010対応の全面再監査はしていない。</p>
+<p><strong>Q5：保険に1枠を使う価値はある。ただし、M1 が0.464未満だったことだけを提出理由にしない。</strong></p>
+<p>「参照を保護する固定規則と学習融合のどちらを次の開発対照にするか」が変わるなら、登録済み保険の提出は有用。先に開発側の同じ予測行で変更分子数、C1 の救済と C2 の損失を確認する。M1 の <code>submission_fixed.csv</code> は libpri 0.9 付きで、0.334 の旧固定版は参照優先なし。コード・候補・forward 条件が揃っていれば、<strong>保険と旧固定版の差</strong>は参照優先の診断に近く、<strong>保険と M1 learned の差</strong>は最終順位方式の比較になる。条件や fallback が違えば、その変更を含む比較として記録する。</p>
+<p>保険が上がっても Public 全体の順位改善が分かるまでで、C1 比率や C1 単独の改善量は分からない。両方低ければ、LBで τ・λ を順に選ぶことへ進まず、上の候補・prior・参照経路の対照へ戻る。0.464 を出した E0 は保存して比較基準に残す。残り枠を使い切る必要はない。</p>
+<p>確認範囲：指定資料、010判断、E1 のコードとキャッシュ分母、E0保存Notebookの merge、両可視 run のログ・manifest・分子ID、Spark の公開 test メタデータと v3 開発結果。確認時点でパネルの結果 JSON は未作成だったため、パネル改善の有無は未判定。locked のデータ・結果は参照せず、新規学習・推論・提出は行っていない。</p>
+<p>REVIEW_COMPLETE: 011</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
