@@ -27,6 +27,7 @@ from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity  #
 KAGGLE = os.path.exists("/kaggle/input")
 PPM, K_SHORT, K_LIB, LIB_MIN, MAX_REF, MAX_Q = 10.0, 100, 20, 0.2, 24, 8      # MAX_Q 8 with adduct round-robin = the evaluation's query policy
 SHORTLIST_LAM = 0.15   # prior weight for the shortlist (as evaluated); LAM below is the fusion weight
+MAX_HEAVY_FORWARD = 100   # structures above this are not sent to the forward models
 W_GL, W_ICE, LAM, TAU, MARGIN = 2.0, 1.0, 0.5, 2.0, 0.2   # LAM 0.5 (B1 eval: better than 0.15 on A, B and the C1 set); TAU 2.0 disables the library-priority rule until the deduplicated C1 evaluation supports it
 ICE_BUDGET, GL_BUDGET = 5400, 4000
 
@@ -127,6 +128,14 @@ def preseed_site(pkg, site):
     if r.returncode != 0: raise RuntimeError("site preseed failed: " + (r.stdout or "")[-500:])
     shutil.rmtree(wdir, ignore_errors=True)
     open(os.path.join(site, ".ice_site_ok"), "w").write(chr(10).join(os.path.basename(w) for w in srcs))
+
+
+def heavy_ok(smiles):
+    try:
+        from rdkit import Chem
+        m = Chem.MolFromSmiles(smiles); return m is not None and m.GetNumHeavyAtoms() <= MAX_HEAVY_FORWARD
+    except Exception:
+        return False
 
 
 # ------------------------------------------------------------------------------------------------------------ data
@@ -354,7 +363,7 @@ def main():
             feats[mid] = rows
             molinfo[mid] = dict(n_query=len(q), ce_known=float(np.mean([s["ce"] is not None for s in q])))
             runner.append(dict(mid=mid, lib_max=float(lib.max()), spectra=[dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
-                                                                                   ce_ev=s.get("ce_ev"), ce_orig=s.get("ce_orig"), ce_units=s.get("ce_units")) for s in q], cands=[r["smiles"] for r in rows]))
+                                                                                   ce_ev=s.get("ce_ev"), ce_orig=s.get("ce_orig"), ce_units=s.get("ce_units")) for s in q], cands=[r["smiles"] for r in rows if heavy_ok(r["smiles"])]))
             stats.append(dict(molecule=mid, n_query=len(q), adducts="|".join(sorted(M_by_add)), n_window=len(smiles), n_unique=n_u, n_train=int(in_train.sum()), n_shortlist=len(rows), lib_max=float(lib.max()), seconds=time.time() - tm0))
             if (n_i + 1) % 20 == 0 or n_i == len(mols) - 1:
                 d = pd.DataFrame(stats); log(f"{n_i+1}/{len(mols)} | window median {d.n_unique.median():.0f} | shortlist median {d.n_shortlist.median():.0f} | lib_max>=0.6: {int((d.lib_max >= TAU).sum())} | {d.seconds.mean():.1f}s/mol")
