@@ -1,0 +1,93 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>進捗報告 2026-10-24(午後〜夜)</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 20:15 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 結論(いま分かっていること)</a></li>
+<li><a href="#2-codex-008010">2. 今日の判断(Codex 008〜010 と合意)</a></li>
+<li><a href="#3">3. 直したこと(環境・バグ)</a></li>
+<li><a href="#4-spark">4. 進行中(Spark)</a></li>
+<li><a href="#5">5. 明朝までの予定</a></li>
+</ul>
+</div>
+</div><h1 id="2026-10-24">進捗報告 2026-10-24(午後〜夜)</h1>
+<p>対象期間: 14:00〜20:15 JST。前回の報告は <code>progress_2026-10-24_night.md</code>(深夜〜朝)。計算はすべて DGX Spark、PC は監視と記録のみ(15:05 のユーザー指示)。</p>
+<h2 id="1">1. 結論(いま分かっていること)</h2>
+<table>
+<thead>
+<tr>
+<th>事項</th>
+<th>数値・根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>自前ベースライン B1 v2 の固定規則(開発集合、strict = 未到達 0)</td>
+<td>A 0.671 / B 0.373 / C1 集合 B 0.425(<code>run1_v2</code>, <code>run_c1_v2</code>、ICE 復旧後)</td>
+</tr>
+<tr>
+<td>学習融合 LambdaRank v2(28 特徴、fit 884 群)— 開発 eval 群</td>
+<td><strong>C2 strict 0.525 vs 固定 0.450(+0.075 [+0.047, +0.105])、C1 視点 0.824 vs 0.473</strong></td>
+</tr>
+<tr>
+<td>ICEBERG の寄与</td>
+<td>固定規則では無し(ICE 項を外すと A 0.682 / B 0.377 / C1 集合 0.427)。学習器では C2 ±0、C1 −0.047 [−0.086, −0.011]。実行時間は GL の 2〜4 倍</td>
+</tr>
+<tr>
+<td>shortlist の取りこぼし</td>
+<td>FP+prior 枝 200 + prior 枝 50 で到達率 A 0.958→0.986、B 0.898→0.960、C1 集合 0.867→0.936(候補数 2 倍)</td>
+</tr>
+<tr>
+<td>提出パイプラインと評価器の一致(W7)</td>
+<td>50 分子で合格: 候補集合・top-1・RR・top-25 集合がすべて一致、順序付き top-25 86〜92%(forward スコアの実行間ノイズ ≤ 0.027)</td>
+</tr>
+<tr>
+<td>Kaggle 実測(B1 Notebook v2、400 分子)</td>
+<td>3.45 h: CPU 段 21 s/分子(8,494 s)、ICE 2,522 s、GL 1,167 s。隠しテストの参照類似 最大値 中央値 0.8</td>
+</tr>
+<tr>
+<td>提出</td>
+<td>E4 v5 = 0.464(E0 と同値)。B1 v2 固定規則(57588650)採点待ち。M1 Notebook(学習融合 + 保険 τ0.9)実行中。残り 3 回</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-codex-008010">2. 今日の判断(Codex 008〜010 と合意)</h2>
+<ol>
+<li><strong>候補 2 本を事前登録</strong>: M1 = v2(現行 shortlist、GL+ICE、28 特徴 LambdaRank、sha a84fe3ff…)、M2 = v3(FP 100 ∪ FP+prior 200 ∪ 参照 20 ∪ prior 50、GL のみ、ICE 特徴なしで再学習)。単調制約版への差し替えはしない(直接 paired 差が 0 を含む)。</li>
+<li><strong>locked(seed 4)は両候補を同時に 1 回だけ開く</strong>。採用規則: C2 は A/B 別の paired 差、M2 の C1 損失 ≤ 0.02(下側区間 &gt; −0.02 で保護)、保護下で C2 差 &lt; 0.01 なら実測時間の短い方、方向不一致なら未確定で両候補保持。開封後に規則を変えない。</li>
+<li>開封前の条件(Codex 010): 評価器の schema 照合・GL 被覆 fallback・frozen 台帳・直接 paired・入力の hash manifest・失敗時停止・再実行拒否 → すべて実装し Spark に配置。parity 合格。M2 でも同じ parity を自動実行。</li>
+<li>参照優先規則は保険(τ 0.9 / margin 0.2)。負の参照証拠規則は C1 を傷めるため固定規則に入れない。FP は重み 1 のまま(外すと A −0.078)。</li>
+<li>ICE を「GL 融合後の上位 25 件だけ」計算する案は第三候補にせず、次の独立実験(二段階方式)として扱う。</li>
+</ol>
+<h2 id="3">3. 直したこと(環境・バグ)</h2>
+<ul>
+<li>DGX Spark(GB10, CUDA 13)で ICEBERG が <code>cudaErrorIllegalAddress</code> を散発する箇所を 2 つ特定(<code>random_walk_pe</code> の疎行列 coalesce、<code>np_like_unique</code> の unique_dim)。両方を CPU 計算に退避(数値は GPU 経路と一致: 最大差 7e-4、順位同一)。再開ドライバ <code>spark/jobs/ice_resume.py --reuse</code> で部分出力を引き継いで再採点。</li>
+<li>評価器と提出パイプラインの不一致 3 点を修正: query 選択の同点順序、float32 精度、隠す正解構造の窓統計。</li>
+</ul>
+<h2 id="4-spark">4. 進行中(Spark)</h2>
+<ul>
+<li>v3 チェーン: eval_set の特徴表(候補 2 倍)完了 → GL → C1 集合・学習用集合 → LambdaRank(ICE なし)→ locked の特徴表。完了見込み 23:00〜23:30。完了後に M2 の parity → 条件が揃えば <code>spark/jobs/locked_open.sh</code> を手動で 1 回。</li>
+<li>W7 600 分子(M1): C2 の ICE 437/599、続いて C1。見込み 22:40。</li>
+</ul>
+<h2 id="5">5. 明朝までの予定</h2>
+<ol>
+<li>locked 開封(M1/M2 同時)→ 採用規則で判定 → <code>docs/</code> と Codex 011 に記録。</li>
+<li>M2 Notebook(<code>--k_fpp 200 --k_pop 50 --w_ice 0 --tau 0.9 --gl_budget 14000 --deadline_s 30000</code>、rank_v3 埋め込み)を作成・実行(約 3 h)→ 本命を提出。M1 Notebook の完走後は learned を提出、保険は登録基準で判断。</li>
+<li>LB の読み: ±0.02 は「追加調査の閾値」。A 0.671 + 0.075 のような足し算で本番を見積もらない。</li>
+</ol></article><p class='small muted'>原文: <code>docs/progress_2026-10-24_evening.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
