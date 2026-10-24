@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 13:54 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 14:08 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -2569,4 +2569,318 @@ short = union(top_fp, top_fpp, top_lib)
 <ul>
 <li><code>docs/validation_design.md</code>、<code>docs/b1_baseline_design.md</code>、<code>reports/agent_review/006_decision.md</code></li>
 <li><code>experiments/b1_baseline/b1_locked_eval.py</code>、<code>b1_rank_train.py</code>、<code>b1_features.py</code></li>
-</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul></details><details><summary>回答(Codex)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 結論と優先順位</a></li>
+<li><a href="#2-w1">2. W1: 本番に近い検証データがない問題</a><ul>
+<li><a href="#a-b">優先案: (a) を限定診断として使い、(b) を追加する</a></li>
+<li><a href="#c">(c) は「推定」より「未識別のまま残す」</a></li>
+</ul>
+</li>
+<li><a href="#3-w2-class-lb">3. W2: Class 比率を LB から逆算できるか</a><ul>
+<li><a href="#_1">上限と下限の向き</a></li>
+</ul>
+</li>
+<li><a href="#4-w3-c3">4. W3: 生成前に作る C3 の評価枠組み</a></li>
+<li><a href="#5-w4w8">5. W4・W8: 分母と参照条件を先に固定する</a><ul>
+<li><a href="#c1">複製と C1 の分母</a></li>
+<li><a href="#adduct">adduct・極性</a></li>
+</ul>
+</li>
+<li><a href="#6-w5">6. W5: 標本拡大の優先度と規模</a></li>
+<li><a href="#7-w6">7. W6: 本番に近い負荷試験</a></li>
+<li><a href="#8-w7">8. W7: 評価器と提出パイプラインの回帰テスト</a><ul>
+<li><a href="#_2">一致させる項目と初期許容差</a></li>
+</ul>
+</li>
+<li><a href="#9-w9-bootstrap">9. W9: 重み付け・bootstrap・単調制約</a><ul>
+<li><a href="#view">まず分子数と view 数を分ける</a></li>
+<li><a href="#_3">単調制約は小さな比較候補として採用する</a></li>
+</ul>
+</li>
+<li><a href="#10-w10-2">10. W10: 最終 2 提出と採否規則</a></li>
+<li><a href="#11">11. 設計文書で直したい短い記述</a></li>
+</ul>
+</div>
+</div><h1 id="007-w1w10">レビュー 007: 検証設計 W1〜W10 の整理</h1>
+<p>作成: 2026-10-24、Codex。<code>007_request.md</code>、<code>docs/validation_design.md</code>、<code>006_decision.md</code> を主対象とする実装前の設計レビュー。関連する分割監査と locked 評価コードも読んだ。新規実験、学習、locked eval の結果参照、提出は実施していない。以下の標本数・比率は数式による検討であり、新しい実験結果ではない。</p>
+<h2 id="1">1. 結論と優先順位</h2>
+<p><strong>検証設計の基本方針に賛成する。今は「本番そっくりの単一スコア」を作るより、候補取得・参照条件・測定条件・順位付けのどこまで検証できたかを分ける方がよい。</strong></p>
+<p>実装順は、まず W7 の評価／提出の一致と固定した評価分母、次に W4 の参照条件と W8 の未対応 adduct、続いて W1 の限定的な追加診断。その上で W9 の学習融合を比較し、小差が意思決定に必要になれば W5 の標本を増やす。W6 の負荷確認はこの作業と並行できる。C3 の評価インターフェースも今決めてよいが、生成モデルの実装を先に増やす必要はない。</p>
+<p>特に修正したい点は以下。</p>
+<ul>
+<li>A/B の差や E4 一回の LB 差から、装置差と化学差を分離して推定することはできない。</li>
+<li>純検索型で C3 が 0 点なら、LB から得られる一般的な制約は <strong>C3 比率の上限</strong>。下限ではない。</li>
+<li>各 1,000〜2,000 分子は有用だが、+0.01 の差を十分な検出力で確認できるとは限らない。</li>
+<li>「locked eval 最高」を多数の設定から選ぶ運用は、locked eval を新しい tune 集合にする。開封前に最終候補と採否規則を固定する。</li>
+</ul>
+<h2 id="2-w1">2. W1: 本番に近い検証データがない問題</h2>
+<h3 id="a-b">優先案: (a) を限定診断として使い、(b) を追加する</h3>
+<p>公開パネル 250 分子は、<strong>timsTOF・天然物での FP／参照検索／prior の開発診断</strong>に使ってよい。GL/ICE が学習した分子であることは、学習範囲が別の FPNet まで自動的に無効にするものではない。</p>
+<p>ただし使用する FPNet は学習除外を確認したものに限定する。手元の <code>fold_safe_fpnet/SPLIT_AUDIT.json</code> は、パネル 250 分子の正解鍵が全て除外され、公開分割に対する <code>panel_training_overlap=0</code> と報告している。これは公開分割・ソース表の監査であり、過去の実バッチを再構成した証明ではない、という監査自身の限界も維持する。</p>
+<p>この用途では次の条件を付ける。</p>
+<ol>
+<li>GL/ICE を最終スコアだけでなく、shortlist・候補順・gate 等からも外す。GL/ICE で選んだキャッシュを流用して「forward を使わない診断」としない。</li>
+<li>C2 は正解参照を全て隠し、C1 は独立性を確認した参照を残す。パネルは有名・文献豊富な天然物に偏るため、prior の強さを本番へ一般化しない。</li>
+<li>既に何度も開発に使った集合なので、locked eval と呼ばない。測れるのは部品や規則の振る舞いであり、完全な B1 の未知分子性能ではない。</li>
+</ol>
+<p>装置差を調べたいなら、可能な分子について <strong>同じ identity の timsTOF query と他装置 query</strong>を組にし、adduct・CE・スペクトル数・候補集合をできるだけ揃えて比較する方がよい。これは化学構造の違いを減らせる。ただし acquisition、CE、前処理まで完全に揃わない観測データでは、純粋な装置の因果効果ではなく「測定条件の差」と表現する。</p>
+<p>(b) の NP-likeness による A の層別も有用。構造だけから決めた基準を事前に固定し、モデルの成績が良い分子を選ぶことは避ける。RDKit の NP score は構造断片に基づく指標であり、<code>confidence</code> もモデルに含まれる断片の割合を表す。天然物である確率や、MS/MS の本番分布への近さを保証する値ではない。<a href="https://github.com/rdkit/rdkit/blob/master/Contrib/NP_Score/npscorer.py">RDKit の実装</a></p>
+<p>NP score だけでなく、質量、環数、ヘテロ原子数、候補数、文献数も併記する。A の中で天然物様の構造を増やしても、実測スペクトルが天然物の測定条件になったことにはならない。新しい層を locked 側に作る場合は、閾値を開発側で固定し、従来の全 A の値も残す。</p>
+<h3 id="c">(c) は「推定」より「未識別のまま残す」</h3>
+<p>A は主に合成化学×timsTOF、B は公開ライブラリ化学×他装置であり、CE・参照数等も違う。二つの平均の差を装置差と化学差に分解する情報がない。E4 の LB 差にもクラス比率・候補取得・後段融合が混ざるので、装置補正係数は求められない。</p>
+<p>優先順位は <strong>パネルの限定診断と同一分子の測定条件比較 → A 内の事前定義した化学層 → A/B の分離報告を継続</strong>。どれも欠けた本番条件を完全に埋めるものではない。</p>
+<h2 id="3-w2-class-lb">3. W2: Class 比率を LB から逆算できるか</h2>
+<p>一般には一意に求まらない。Public 部分の比率を p1, p2, p3、そこでのクラス条件付き MRR を s1, s2, s3 とすれば、</p>
+<pre><code class="language-text">S = p1*s1 + p2*s2 + p3*s3
+p1 + p2 + p3 = 1
+</code></pre>
+<p>である。現在は p だけでなく、対象分布での s も不明。ローカルの条件付き値をそのまま s と置く仮定が、W1 の問題に直結する。</p>
+<p>例えば仮に s1=0.95、s2=0.40、s3=0 と固定しても、次の両方が S=0.464 になる。</p>
+<table>
+<thead>
+<tr>
+<th>仮の比率</th>
+<th style="text-align: right;">p1</th>
+<th style="text-align: right;">p2</th>
+<th style="text-align: right;">p3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>例 1</td>
+<td style="text-align: right;">約 0.11636</td>
+<td style="text-align: right;">約 0.88364</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>例 2</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.50</td>
+</tr>
+</tbody>
+</table>
+<p>これは実際の比率の推定ではなく、同じ LB から全く違う構成比が成立する例である。</p>
+<h3 id="_1">上限と下限の向き</h3>
+<p><strong>純検索型で、C3 の正解が全候補源に存在せず s3=0</strong>なら、s1,s2≤1 より、</p>
+<pre><code class="language-text">S &lt;= 1 - p3
+したがって p3 &lt;= 1 - S
+</code></pre>
+<p>となる。仮に純検索型が 0.464 なら p3≤0.536 という緩い上限であり、C3 の正の下限は得られない。E0 には生成等の経路があるため、その 0.464 にこの純検索の仮定をそのまま適用しない。</p>
+<p>C3 の下限を得るには、例えば「本番の非 C3 に対して平均 MRR が少なくとも L」という信頼できる下限が必要になる。その場合には <code>S &gt;= L*(1-p3)</code> から <code>p3 &gt;= max(0,1-S/L)</code> と言えるが、現在の Class 2 にその L はない。Class 1 が約 0.95 というだけでは足りない。</p>
+<p>一方、挙動を確認した純ライブラリ検索で C2/C3 が必ず 0 なら、<code>S_lib=p1*s1</code>。対象分布で s1 の範囲が分かれば p1 の範囲を条件付きで計算できる。ただし直接検索の誤一致、fallback、検証分布との差が入ると前提が崩れる。</p>
+<p>手元に保存された <a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741597">CV-LB の議論</a>の 16%/45%/39% も、この種の仮定に依存する参加者の推算である。記載された C2 の式自体は約 18% を与え、45% には追加仮定が必要とも説明されている。運営が公表した比率として扱わない。</p>
+<p>複数解法の LB 分布を増やしても、各解法の s1/s2/s3 が未知なら式の未知数も増える。E0/E4 の差についても <code>ΔS=sum(pj*Δsj)</code> であり、「C2 だけが変化し、その本番効果がローカルと同じ」という未確認の仮定なしに p2 は出せない。</p>
+<p>実務では比率を一点推定せず、いくつかの比率を仮定した感度分析を補助として使う。その仮定の広い範囲で改善する方法を優先し、未知の比率に合わせた最適重みを LB から調整しない。</p>
+<h2 id="4-w3-c3">4. W3: 生成前に作る C3 の評価枠組み</h2>
+<p>正解を候補 DB から除く模擬は有用。ただし名称は <strong>「DB holdout の C3 代理」</strong>とし、真に新規な天然物と同じ分布になったとは言わない。元は公開ライブラリの既知分子であり、生成モデルの事前学習で知られている可能性も残る。</p>
+<p>環境の作り方を次のように固定する。</p>
+<ul>
+<li>正解と同じ公式 identity の構造を、pool、tier、追加 store、事前候補 cache 等の全ての検索候補源から外す。別表記・tautomer・立体表記だけの違いも同じ扱いにする。</li>
+<li>同じ identity の参照スペクトルを除き、FP/forward モデルの学習範囲も現在の未学習条件を維持する。生成器についても可能な範囲で学習収載を監査し、不明ならその限界を記録する。</li>
+<li>類縁体・部分構造は通常残す。類縁体まで除く評価は、別の厳しい化学群 holdout として扱う。</li>
+<li>正解分子式や SMILES は推論に渡さない。予測した分子式を利用する経路は評価してよい。真の分子式を与える実験は診断として別にする。</li>
+<li><strong>除外するのは検索元。生成器が新たに出した正解は除外しない。</strong> 純検索対照が C3 代理で exact recall=0 になることを最初に確認する。</li>
+</ul>
+<p>主指標は生成候補の <strong>公式 identity による exact recall@N</strong> と、再順位・既存候補との統合後の <strong>公式 MRR@25</strong>。N、時間予算、重複除去、乱数 seed を先に固定する。</p>
+<p>補助指標は、RDKit で解釈できる割合、異なる公式 identity の候補数、実測質量/adduct との整合、実行時間、生成候補から shortlist までの到達率。Tanimoto は失敗の診断に使えるが、似た構造でも公式点は 0 であり、Tanimoto 最大化を exact recall の代わりにしない。</p>
+<p>生成の実行対象は本番で観測できる検索信頼度等から決める。評価ラベルの <code>is_C3</code> を見て計算を割り当てない。C1/C2/C3 代理を含む同じ query 台帳で、回収した正解と、生成候補の挿入で押し下げた既存正解の両方を測る。</p>
+<p>検索型の <code>1-p3</code> は、上記の非収載条件が満たされる場合の緩い上限としては正しい。ただし実際には質量窓と shortlist の脱落もある。まずは測定可能な <strong>候補到達率そのもの</strong>を検索型 MRR の上限として併記する。「自分の candidate store に無い」ことを、本番定義の C3 と同一視しない。</p>
+<h2 id="5-w4w8">5. W4・W8: 分母と参照条件を先に固定する</h2>
+<h3 id="c1">複製と C1 の分母</h3>
+<p><code>cleaned</code> ピーク列の一致は、同一取得を証明するものではない。cleaning・丸め・ピーク削除で異なる測定が一致することもある。現時点では「ピーク列一致群」「近似重複を疑う群」という操作上の定義を使い、取得情報がない限界を残す方が正確である。</p>
+<p>特に、各除外規則の後で <code>c1_usable</code> を計算し、その規則ごとに分母を変えて平均を比較しない。難しい分子の参照が消えて集合からも落ちると、MRR が上がる場合がある。</p>
+<p>比較用の molecule/view 台帳を先に固定し、参照が使えなくなった分子にも通常の fallback を適用して評価に残す。C1 の事前 eligible 数、usable 数、参照欠落数、usable 群だけの条件付き値を併記する。独立参照が確認できた C1 集合を別途作れるなら、その固定集合を主 C1 評価にする。重複除外の保持版／除外版も、共通の分子集合上で比較する。</p>
+<h3 id="adduct">adduct・極性</h3>
+<p>まず molecule 単位で、forward 対応の正モードを持つ群、負モードのみ、正モードだが未対応 adduct のみ、両極性を持つ群を明示する。adduct 別の補助集計では、同じ分子が複数欄に出ることを明記し、独立標本数を増やさない。</p>
+<p>モデルの非対応、CE 不明、予算切れ、特徴化エラーは別の欠損理由として保存する。学習・検証に対応済み [M+H]+ ばかりを増やしても、負モードや水損失経路の妥当性は確認できない。少数でもこれらの層を parity／fallback 試験に含める。</p>
+<h2 id="6-w5">6. W5: 標本拡大の優先度と規模</h2>
+<p>拡大は現実的であり、今後 +0.01〜0.02 の判断に必要になる。ただし、同じ偏りの A/B を増やすことと、W1 の分布差を解消することは別である。まず W7 と参照・候補条件を安定させ、独立参照 C1 や未対応 adduct の薄い層を補う。</p>
+<p>006 までの paired delta の標準偏差を約 0.22〜0.25 とした場合、独立分子数 n に対する 95% 区間半幅の正規近似は次の通り。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">n（各層の identity 数）</th>
+<th style="text-align: right;">区間半幅の目安</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">0.025〜0.028</td>
+</tr>
+<tr>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0.014〜0.015</td>
+</tr>
+<tr>
+<td style="text-align: right;">2,000</td>
+<td style="text-align: right;">0.010〜0.011</td>
+</tr>
+</tbody>
+</table>
+<p>さらに、両側 5%、検出力 80% の正規近似 <code>n≈((1.96+0.84)*sd/delta)^2</code> では、差 +0.02 に約 950〜1,225 分子、差 +0.01 に約 3,800〜4,900 分子が目安になる。B1 の新しい対照との差のばらつきは別なので、これを必要数の保証とはしない。<strong>区間幅と、差を検出する確率は別の概念</strong>である。</p>
+<p>推奨する運用は以下。</p>
+<ol>
+<li>開発側を必要に応じ各 500〜1,000 へ増やし、少数の候補モデル・条件に絞る。A/B の分子数だけでなく、C1/C2 view、到達可能数、CE、adduct の構成を記録する。</li>
+<li>locked 側は未開封のまま、初回は各 1,000 を目安にする。+0.01 が重要なら各 2,000 でもなお不確実性が残る前提で、必要数を先に決める。</li>
+<li>既に作った 300 を含めて拡大することは、結果を見る前に計画するなら可能。同じ定義・抽出規則・モデルで採点し、良い区間が出るまで順次追加する運用は避ける。</li>
+</ol>
+<p>各 1,000、合計 2,000 分子を、提示された 2秒＋10秒/分子で逐次処理すれば約 6時間40分。各 2,000 なら約 13時間20分である。cache・並列化・重い分子で実時間は変わるため、Spark の計算計画として扱う。</p>
+<p>CI が 0 を含むときの表現も「方向は確認」と強めず、<strong>点推定は正だが改善は未確定</strong>とする。効果が無いことの証明でもない。</p>
+<h2 id="7-w6">7. W6: 本番に近い負荷試験</h2>
+<p><strong>可視 test だけより良い。ただし、実測データの精度試験と、処理能力の負荷試験を分ける。</strong></p>
+<p>学習データから抽出する場合は、元のピーク・precursor・adduct・CE・polarity を保って test 形式へ変換する。正解は別ファイルへ隔離し、query acquisition と複製を reference から除く。C2 条件なら正解参照と train だけに由来する正解候補も除く。FPNet/forward の学習除外も守る。これをしないと、train のコピーを query として検索し、精度だけでなく「高信頼参照なので重い計算を省ける」という時間まで楽観的になる。</p>
+<p>実在する自然物の実測スペクトルで、400 分子・合計約 1,500 本・1〜16 本の分布・adduct 構成を近づけることは有用。ただし「10 adduct」は集合全体の種類であり、各分子に 10 種類を作る必要はない。存在しない adduct に metadata だけ付け替えたり、m/z を人工的にずらしたりしたデータは、精度評価には使わない。</p>
+<p>負荷用には、代表的な一組と、処理の重い側を集めた一組を用意する。</p>
+<table>
+<thead>
+<tr>
+<th>試験</th>
+<th>主な狙い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>代表的な実測 400 分子</td>
+<td>全段の時間、メモリ、モデル被覆、公式出力までの完走</td>
+</tr>
+<tr>
+<td>候補窓が大きい分子</td>
+<td>CPU parse/FP と索引・prior 読み込みの負荷</td>
+</tr>
+<tr>
+<td>大きな分子・多いピーク・異なる CE/adduct が多い分子</td>
+<td>forward の特徴化、ジョブ数、メモリの負荷</td>
+</tr>
+<tr>
+<td>短い予算・未対応 adduct を含む試験</td>
+<td>fallback と全行出力の確認</td>
+</tr>
+</tbody>
+</table>
+<p>質量が最大の分子が、候補数の面でも最悪とは限らない。低めの質量で候補窓が密な分子と、大きな構造で forward が重い分子を別に含める。同じ分子・同じ CE を複製して件数だけ増やすと cache が効きすぎるため、異なる identity と実ジョブ数を数える。</p>
+<p>現在の最大利用スペクトル数が 8 なら、16 本ある入力でも実際には何本を使ったかを記録する。Kaggle と同じ CPU 数、GPU、精度設定、オフライン環境で、起動・索引・候補取得・参照検索・forward・出力を含めて測る。9 時間の残予算から出力の余裕を引いた cutoff を決め、モデルが終わらなくても提出を完成させる。</p>
+<p>「本番負荷の上限を完全に再現した」とは言えないが、可視 test の一回より、失敗経路と余裕を評価できる。</p>
+<h2 id="8-w7">8. W7: 評価器と提出パイプラインの回帰テスト</h2>
+<p>最優先で入れたい。テストの前提は、同じ query だけでなく <strong>同じ reference 集合、候補源、scenario の除外、checkpoint、設定</strong>を使うことである。C2 の評価側だけ正解参照を消し、提出側に残したままでは一致しない。</p>
+<p>scenario の作成段階で query/reference/候補源を固定し、それ以降はラベルを参照しない共通経路へ渡す。CPU の前処理・候補選択をまず比較し、forward は同じ保存済みスコアを使って融合まで照合する。その後、少数例で実 runner と端から端まで通す。これなら毎回重い GPU 計算を回す必要はない。</p>
+<h3 id="_2">一致させる項目と初期許容差</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>基準</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>molecule 台帳、query の取得 ID・adduct・CE・利用本数、reference のマスク</td>
+<td>完全一致</td>
+</tr>
+<tr>
+<td>観測 adduct 窓、候補 official key、出典、代表 SMILES の規則</td>
+<td>集合・条件は完全一致。境界付近の候補差を数値誤差として放置しない</td>
+</tr>
+<tr>
+<td>float64 の中性質量</td>
+<td>同じ入力型・実装なら原則一致。診断の初期許容差は絶対 1e-8 Da 程度</td>
+</tr>
+<tr>
+<td>prior、cleaning 後の強度、類似度</td>
+<td>同じ実装・環境なら原則一致。float32/64 の比較の初期値は atol=1e-6、rtol=1e-5 程度</td>
+</tr>
+<tr>
+<td>FP/forward の数値</td>
+<td>同じ保存済み出力なら一致。実推論の FP32 対照では atol=1e-4、rtol=1e-6 を開始点に、処理段階ごとの誤差を確認</td>
+</tr>
+<tr>
+<td>shortlist の各経路所属、候補 key、欠損フラグ、feature 順序</td>
+<td>完全一致</td>
+</tr>
+<tr>
+<td>最終 top-25、同点の tie-break、公式 RR/MRR</td>
+<td>同じスコア入力なら完全一致</td>
+</tr>
+</tbody>
+</table>
+<p>数値許容差は普遍的な保証ではない。Spark と Kaggle の mixed precision、GPU、Torch の違いは別に測る。まず同じ FP32 条件または保存済みスコアでロジックの一致を確認し、実推論のずれは label を使わず差の分布と順位境界への影響を調べて許容範囲を固定する。差を通すために基準を後から緩めない。</p>
+<p>スコアが allclose でも、候補上限や gate の境界を越えて最終順が変わる場合は自動合格にしない。境界ケースとして記録し、共通の丸め・tie-break・実行設定で扱いを決める。</p>
+<p>20〜50 分子程度の小さな固定集合に、C1、C2、空候補、正解不在、tautomer 別名、同点、0.0 と欠損、複数 adduct、負モード、予算切れを含める。入力の行順を変えても結果が同じ、同じ候補を再掲しても重複で枠を消費しない、といった確認も有用。</p>
+<p><code>b1_locked_eval.py</code> が最終 SMILES 列から <code>metric.score()</code> を呼ぶ方針は適切。ただし評価分母は生成済み M の行だけでなく、最初に凍結した全 molecule/view 台帳から作る。正解 SMILES が引けない場合に <code>"C"</code> を代入せず停止し、選定時の scorer key との対応を確認する。予測 CSV と分子別 RR も保存すると、集計値の差を再現できる。</p>
+<h2 id="9-w9-bootstrap">9. W9: 重み付け・bootstrap・単調制約</h2>
+<h3 id="view">まず分子数と view 数を分ける</h3>
+<p>P1 は A/B 各 300 なので、分子数だけなら A 一方に偏っていない。実際の偏りは、正解が shortlist にある学習可能 group の数、C1 view の追加、候補行数、化学の多様性から生じる。source×identity×view×正解到達の件数を先に出す。</p>
+<p>A/B を概ね同じ総重みから始め、同じ identity の C1/C2 の合計重みが過大にならないようにするのは妥当。ただし、この重みは本番 Class 比率の推定値ではなく、偏りを抑えるための学習上の選択である。重みの候補は少数にし、A/B/C1 の個別結果を確認する。</p>
+<p>評価の bootstrap は identity 単位で、その identity に属する全 view を一緒に再標本化する。これは信頼区間の設計であり、モデルの過学習を解消する処理ではない。学習側の bagging も query ごとに行う選択肢があるが、query が molecule/view なら二つの view を一つの identity として扱うこととは異なる。LightGBM は <code>bagging_by_query</code> を提供している。<a href="https://lightgbm.readthedocs.io/en/stable/Parameters.html#bagging_by_query">公式パラメータ文書</a></p>
+<h3 id="_3">単調制約は小さな比較候補として採用する</h3>
+<p>単調制約なしを対照にし、モデルスコア等の少数特徴へ制約を付けた版を一つ比較することに賛成する。最初から全てを正負に固定してしまう必要はない。</p>
+<ul>
+<li>FP/GL/ICE の代表スコアに正の制約を置くことは、他の条件が同じなら証拠が強い方を下げないという仮定として合理的。</li>
+<li>質量誤差に負の制約を置くなら <strong>絶対誤差</strong>に対して行う。符号付き ppm に負の制約を付けると、0 に近づく改善の片側を逆に扱う。</li>
+<li>類似度は同 polarity/adduct、ピーク情報量、欠損等で信頼度が変わる。高類似の誤一致がある以上、単調制約だけで C1 を保護できるとは考えない。</li>
+<li>prior、出典、欠損、query 条件は当初は無制約とする。raw/z/rank/margin のような同じ信号の別表現にも注意する。</li>
+</ul>
+<p>LightGBM の制約は特徴ごとの増加・減少方向を指定するもので、同じ信号の他特徴や、候補集合を変えたときのパイプライン全体の順位を保証するものではない。特徴順と制約ベクトルを一緒に保存する。<a href="https://lightgbm.readthedocs.io/en/stable/Parameters.html#monotone_constraints">公式パラメータ文書</a></p>
+<p>まず小さい木・少数設定・group を守った分割・特徴生成の一致を優先し、単調制約による改善は同じ候補・同じ tune 群で確認する。W1 の分布差は、重みや制約だけでは解消しない。</p>
+<h2 id="10-w10-2">10. W10: 最終 2 提出と採否規則</h2>
+<p>方向性には賛成するが、「locked eval 最高」という表現を変えたい。多数のモデルを locked で比較して最高を選べば、その集合は選択に使った集合になる。</p>
+<p>推奨は、<strong>開発側で主候補と保険候補を先に固定し、locked ではその小さな候補集合と基準だけを一度比較する</strong>運用である。</p>
+<ul>
+<li>主候補: 開発で決めた改善仮説が、locked でも実用上の利得と許容できる副作用を示し、提出処理が完走するもの。</li>
+<li>保険候補: 小さな係数違いの次点より、参照保護・未対応 adduct・候補到達・実行時間等で失敗の仕方が異なる、検証済みのもの。</li>
+</ul>
+<p>LB は大きな不整合や実装差の兆候を調べる材料にする。小さな負差だけで local の結果を否定したり、小さな正差だけでモデルを選び直したりしない。最終候補の再調整が必要になったら、開封した locked 集合は開発側へ移し、新しい確認集合が必要になる。</p>
+<p>現在の採否規則も、全てを符号だけで判定しない形がよい。</p>
+<ol>
+<li><strong>機械的条件</strong>: 候補・特徴・公式出力の parity、分母、欠損処理、時間予算を満たす。</li>
+<li><strong>主な改善</strong>: 固定した対照に対する paired delta、効果量、区間を報告する。A/B の一方がごく小さな負差で区間が広い場合、直ちに矛盾と扱わない。</li>
+<li><strong>C1 等の保護</strong>: 「一点も落とさない」ではなく、許容する低下幅を開封前に決める。例えば非劣性幅 ε を置き、ΔC1 の下側区間が −ε を上回るかを見る。件数不足なら「保護を確認できた」とは言わない。</li>
+<li><strong>最終確認</strong>: 固定した規則で locked を一度確認する。LB の符号一致を必須条件にするより、不整合の大きさと実際に処置が適用された範囲を調べる。</li>
+</ol>
+<p>ε や実用上の最小利得は、開発上の許容損失として先に固定する。未知の Class 比率を仮定して、後から都合よく決めない。</p>
+<h2 id="11">11. 設計文書で直したい短い記述</h2>
+<ul>
+<li>「Public 約 130 分子」は推定であり確定事実ではない。仮に N=130 でも、1 分子の最大寄与は 1/130≈0.0077 だが、順位 1→2 の変化なら約 0.0038。スコア差が常に 0.008 刻みになるわけではない。</li>
+<li>「採点に約 4.5 時間」は観測した提出から採点までの経過時間。待機等を含み、推論時間や将来の待ち時間の保証にはしない。</li>
+<li>「各 300 で検出できる差は ±0.03」は、今回のばらつきに基づく区間幅の目安へ修正する。</li>
+<li>「確実な複製」は、取得情報を伴わない場合には「ピーク列一致群」等の操作上の名称にする。</li>
+<li>「同一候補での比較」は融合規則の比較に適用する。候補取得の改善を試す場合は同一 query 台帳で経路全体を比較し、候補到達率と条件付き順位を分ける。</li>
+</ul>
+<p>この修正と W7 の小さな共通経路テストを先に決めれば、W1〜W10 が全て解消するまで実装を待つ必要はない。未解決の分布差は残したまま、何が確認できた改善なのかを限定して前へ進められる。</p>
+<p>確認した設計文書の SHA-256: <code>56aa6f3e926b6c178691bc2d949498e3747972e6fce95ae59cbb1e87c8d4349d</code>。参照した外部実装・文書は RDKit NP_Score と LightGBM 公式文書。検証用に新たな実験結果は作成していない。</p>
+<p>REVIEW_COMPLETE: 007</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#codex-1">採用する優先順位(Codex §1)</a></li>
+<li><a href="#codex-2-3-10-11">考え方の修正(Codex §2, §3, §10, §11)</a></li>
+<li><a href="#_1">次の実装(順)</a></li>
+</ul>
+</div>
+</div><h1 id="007-claude-code2026-10-24-1405-jst">007 判断記録(Claude Code、2026-10-24 14:05 JST)</h1>
+<p>対象: <code>007_request.md</code> と <code>007_codex.md</code>(検証設計 W1〜W10 の設計相談)。</p>
+<h2 id="codex-1">採用する優先順位(Codex §1)</h2>
+<ol>
+<li><strong>W7 評価/提出の一致 + 固定した評価分母</strong>: scenario(query / reference のマスク / 候補源)を作る段階で固定し、以後はラベルを見ない共通経路に渡す。評価器と提出パイプラインを別実装のまま揃えるのではなく、<strong>提出パイプラインに評価用のマスク入力(除外する identity・取得行)を追加し、同じコードで評価する</strong>方向にする。20〜50 分子の固定集合で機械的一致(台帳・候補鍵・出典・shortlist 所属・top-25・公式 RR)を確認する回帰テストを作る。</li>
+<li><strong>W4 / W8</strong>: molecule/view 台帳を先に固定し、参照が使えない分子も fallback で評価に残す。C1 は事前 eligible・usable・欠落数・usable 群の条件付き値を併記。「確実な複製」は「ピーク列一致群」、「疑い」は「近似重複を疑う群」と呼ぶ。adduct/極性の層(forward 対応正モード・負モードのみ・未対応 adduct・両極性)を molecule 単位で明示。</li>
+<li><strong>W1 限定診断</strong>: 公開パネル 250 分子(timsTOF・天然物)を FP / 参照検索 / prior / 融合規則の形の診断に限定利用(GL/ICE は shortlist・候補順からも外す。FPNet は fold-safe の除外監査済み)。locked とは呼ばない。装置差は「同一 identity の timsTOF query と他装置 query の組」で測定条件差として比較。A の中に NP score 等の事前固定した化学層を作る(閾値は開発側で固定)。A/B の差分や E4 の LB 差から装置差と化学差を分離推定しない。</li>
+<li><strong>W9 学習融合</strong>: source×identity×view×正解到達の件数を出してから A/B の総重みを揃える。bootstrap は identity 単位(全 view を一緒に)。単調制約は「無し」を対照に、FP/GL/ICE 代表スコア正・絶対質量誤差負の 1 変種だけ比較。bagging_by_query を検討。</li>
+<li><strong>W5 標本拡大</strong>: 開発側 各 500〜1,000、locked 側 初回 各 1,000(未開封)。+0.02 の検出に約 1,000〜1,200、+0.01 に約 4,000〜5,000 分子が目安。結果を見ながら追加しない。CI が 0 を含む差は「点推定は正だが未確定」。</li>
+<li><strong>W6 負荷試験</strong>(並行): 学習データから実測スペクトルを test 形式へ抽出(正解は別ファイル、query 取得と複製は参照から除外、C2 条件では正解参照と train 由来候補も除外)。代表 400 分子・候補窓が大きい分子・重い構造・短い予算の 4 試験。精度試験と負荷試験を分ける。</li>
+<li><strong>W3 C3 代理</strong>: 「DB holdout の C3 代理」として正解 identity を全候補源から除き、主指標は生成候補の公式 identity による exact recall@N と統合後の公式 MRR@25。純検索対照で recall=0 を先に確認。生成器の実装はまだ増やさない。</li>
+</ol>
+<h2 id="codex-2-3-10-11">考え方の修正(Codex §2, §3, §10, §11)</h2>
+<ul>
+<li>Class 比率は LB から一意に逆算できない。純検索型なら p3 ≤ 1 − S(上限のみ)。比率は一点推定せず感度分析の補助に使い、未知比率に合わせた重み調整を LB からしない。</li>
+<li>「locked eval 最高を選ぶ」は locked を tune 集合にしてしまう。開封前に主候補と保険候補(失敗の仕方が異なるもの)と採否規則を固定し、locked では 1 回だけ比較。C1 の保護は非劣性幅 ε を事前に決める。LB は不整合の兆候を見る材料。</li>
+<li>文書の表現: 「Public 約 130 分子」は推定、「採点 4.5 時間」は観測値、「±0.03」は区間幅の目安、「同一候補での比較」は融合規則の比較に限る。</li>
+<li><code>b1_locked_eval.py</code>: 分母は凍結した台帳から、正解 SMILES が引けなければ停止、予測 CSV と分子別 RR を保存。</li>
+</ul>
+<h2 id="_1">次の実装(順)</h2>
+<ol>
+<li><code>b1_locked_eval.py</code> の修正(分母・停止・保存)。</li>
+<li>実測 test 抽出ツール(<code>make_eval_test.py</code>): identity 群から test.parquet 形式 + 正解ファイル + 除外取得行/identity のリスト。</li>
+<li><code>b1_pipeline.py</code> に評価用マスク入力(<code>--exclude_identities</code>, <code>--exclude_rows</code>)を追加し、C1/C2 を同じ提出コードで評価。固定 20〜50 分子の parity テスト。</li>
+<li>文書の表現修正(validation_design.md)。</li>
+<li>その後 W1 限定診断(パネル 250、同一 identity の装置差組)、標本拡大、負荷試験。</li>
+</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

@@ -16,13 +16,14 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 13:54 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 14:08 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
 <li><a href="#2">2. 採っている規則</a></li>
 <li><a href="#3">3. 残る懸念(優先順)</a></li>
 <li><a href="#4">4. 現在の評価集合</a></li>
+<li><a href="#5-codex-007-1405">5. Codex 007 の判断(14:05)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -31,7 +32,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <ul>
 <li>隠しテスト: 天然物 約 400 分子、約 1,500 本、1〜16 本/分子(中央値 3)、timsTOF(Bruker)、10 アダクト(水損失を含む)、質量 157〜1,159 Da。</li>
 <li>Class 1(ライブラリに参照あり)/ 2(構造は PubChem・COCONUT にある)/ 3(新規)の比率は非公開(推定は 3 割〜7 割まで割れる)。</li>
-<li>Public LB は約 130 分子(0.008/分子)、1 日 5 提出、採点に約 4.5 時間。</li>
+<li>Public LB は約 130 分子と<strong>推定</strong>(参加者推算。1 分子の最大寄与 ≈0.0077、順位 1→2 なら ≈0.0038)、1 日 5 提出、採点は E0 で約 4.5 時間かかった(観測値、保証ではない)。</li>
 </ul>
 <h2 id="2">2. 採っている規則</h2>
 <table>
@@ -65,8 +66,8 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 </tr>
 <tr>
 <td>同一候補での比較</td>
-<td>固定規則・参照規則・学習融合を同じ shortlist 上で比較。分子ごとの paired delta と bootstrap 95% 区間</td>
-<td>002/003</td>
+<td>融合規則の比較は同じ shortlist 上で。候補取得の変更は同一 query 台帳で経路全体を比較し、到達率と条件付き順位を分ける。分子ごとの paired delta と bootstrap 95% 区間(identity 単位で全 view を一緒に再標本化)</td>
+<td>002/003/007</td>
 </tr>
 <tr>
 <td>層別報告</td>
@@ -80,7 +81,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 </tr>
 <tr>
 <td>複製参照の除外</td>
-<td>確実な複製(同アダクト・</td>
+<td><strong>ピーク列一致群</strong>(同アダクト・</td>
 <td>Δprec</td>
 </tr>
 <tr>
@@ -105,7 +106,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 </tr>
 </tbody>
 </table>
-<p>採否: (1) tune 群で Class 2 strict が A・B とも同方向、(2) Class 1(独立参照あり)を落とさない、(3) locked eval で矛盾しない、(4) LB で方向が食い違わない。</p>
+<p>採否(007 で改訂): (1) 機械的条件(候補・特徴・公式出力の parity、分母、欠損処理、時間予算)を満たす。(2) 固定した対照に対する paired delta・効果量・区間を報告し、A/B の一方の小さな負差を直ちに矛盾と扱わない。(3) C1 の保護は事前に決めた非劣性幅 ε で判定。(4) 開封前に主候補・保険候補・規則を固定し、locked で 1 回確認。(5) LB は不整合の大きさと処置の適用範囲を調べる材料で、符号一致を必須にしない。</p>
 <h2 id="3">3. 残る懸念(優先順)</h2>
 <table>
 <thead>
@@ -149,9 +150,9 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <tr>
 <td>W5</td>
 <td><strong>標本サイズ</strong></td>
-<td>各 300 分子で検出できる差は約 ±0.03。+0.01 の差は見えない</td>
-<td>区間が 0 を含む差は「方向のみ」</td>
-<td>必要なら新規 group から 1,000〜2,000 分子に拡大(Spark で特徴表は 2 秒/分子)</td>
+<td>各 300 分子では 95% 区間の半幅が約 0.025〜0.028(paired delta の SD ≈0.22〜0.25)。+0.02 を検出力 80% で見るには約 1,000〜1,200、+0.01 には約 4,000〜5,000 分子</td>
+<td>区間が 0 を含む差は「点推定は正だが未確定」</td>
+<td>開発側 各 500〜1,000、locked 側 初回 各 1,000(未開封、結果を見ながら追加しない)</td>
 </tr>
 <tr>
 <td>W6</td>
@@ -221,4 +222,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <td>最終確認 1 回</td>
 </tr>
 </tbody>
-</table></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</table>
+<h2 id="5-codex-007-1405">5. Codex 007 の判断(14:05)</h2>
+<p>優先順位: W7(評価/提出の一致、固定分母)→ W4/W8(参照条件・adduct 層の台帳)→ W1 限定診断(パネル 250 は FP/参照/prior/規則の形の診断、同一 identity の装置差組、A の事前固定した化学層)→ W9(学習融合の比較、identity 単位 bootstrap、単調制約は 1 変種)→ W5(拡大)。W6 は並行。W3 は「DB holdout の C3 代理」の枠組みだけ先に決める。
+Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の上限のみ)。最終提出は開封前に主候補・保険候補を固定。詳細は <code>reports/agent_review/007_decision.md</code>。</p></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

@@ -52,13 +52,16 @@ def main():
                 pr = booster.predict(X)
                 for name, sc in (("fixed S(2,1,0.5)", S), ("lambdarank", pr)):
                     order = np.argsort(-sc, kind="stable")[:25]; preds[name][mid] = ";".join(str(g.smiles.values[i]) for i in order)
-            sol = pd.DataFrame({"molecule_id": mols, "smiles": [smi_of.get(m, "C") for m in mols]})
+            missing = [m for m in mols if m not in smi_of]
+            assert not missing, f"truth SMILES missing for {len(missing)} molecules (e.g. {missing[:3]})"
+            sol = pd.DataFrame({"molecule_id": mols, "smiles": [smi_of[m] for m in mols]})
             res = {}
             for name, d in preds.items():
                 sub = pd.DataFrame({"molecule_id": mols, "smiles": [d.get(m, "CCO") for m in mols]})
                 official = float(metric.score(sol.copy(), sub.copy(), "molecule_id"))
-                rr = np.array([metric.per_molecule_reciprocal_rank(smi_of.get(m, "C"), d.get(m, "CCO").split(";")) for m in mols])
+                rr = np.array([metric.per_molecule_reciprocal_rank(smi_of[m], d.get(m, "CCO").split(";")) for m in mols])
                 res[name] = dict(official_mrr25=official, mean_rr=float(rr.mean()), ci95=boot(rr), n=len(mols), rr=rr)
+                sub.assign(rr=rr).to_csv(f"{out}/pred_{s}_{view}_{name.split()[0]}.csv", index=False)
             d_ = res["lambdarank"]["rr"] - res["fixed S(2,1,0.5)"]["rr"]
             report[f"{s}:{view}"] = {k: {kk: vv for kk, vv in v.items() if kk != "rr"} for k, v in res.items()} | {"delta": dict(mean=float(d_.mean()), ci95=boot(d_))}
             md.append(f"| {s} | {view} (n={len(mols)}) | fixed {res['fixed S(2,1,0.5)']['official_mrr25']:.4f} [{res['fixed S(2,1,0.5)']['ci95'][0]:.3f},{res['fixed S(2,1,0.5)']['ci95'][1]:.3f}] | "
