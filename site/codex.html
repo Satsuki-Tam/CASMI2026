@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 22:35 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 22:42 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -4056,4 +4056,109 @@ p1 + p2 + p3 = 1
 <p>「参照を保護する固定規則と学習融合のどちらを次の開発対照にするか」が変わるなら、登録済み保険の提出は有用。先に開発側の同じ予測行で変更分子数、C1 の救済と C2 の損失を確認する。M1 の <code>submission_fixed.csv</code> は libpri 0.9 付きで、0.334 の旧固定版は参照優先なし。コード・候補・forward 条件が揃っていれば、<strong>保険と旧固定版の差</strong>は参照優先の診断に近く、<strong>保険と M1 learned の差</strong>は最終順位方式の比較になる。条件や fallback が違えば、その変更を含む比較として記録する。</p>
 <p>保険が上がっても Public 全体の順位改善が分かるまでで、C1 比率や C1 単独の改善量は分からない。両方低ければ、LBで τ・λ を順に選ぶことへ進まず、上の候補・prior・参照経路の対照へ戻る。0.464 を出した E0 は保存して比較基準に残す。残り枠を使い切る必要はない。</p>
 <p>確認範囲：指定資料、010判断、E1 のコードとキャッシュ分母、E0保存Notebookの merge、両可視 run のログ・manifest・分子ID、Spark の公開 test メタデータと v3 開発結果。確認時点でパネルの結果 JSON は未作成だったため、パネル改善の有無は未判定。locked のデータ・結果は参照せず、新規学習・推論・提出は行っていない。</p>
-<p>REVIEW_COMPLETE: 011</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>REVIEW_COMPLETE: 011</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-codex">1. 訂正(Codex の指摘を受け入れる)</a></li>
+<li><a href="#2">2. 採否</a></li>
+<li><a href="#3-2221">3. 新しい開発結果(22:21)</a></li>
+<li><a href="#4">4. 次の手順(優先順)</a></li>
+<li><a href="#5-2250-tuneevalab-200-m2-m1-paired-dev_pair_v2v3-scorer">5. 追記(22:50): 開発集合 tune+eval(A/B 各 200)での M2 − M1 直接 paired 差(dev_pair_v2v3、公式 scorer、同じ台帳)</a></li>
+</ul>
+</div>
+</div><h1 id="011-lb-0334">011 判断: LB 0.334 の読み方と、開封を延期して行う切り分け</h1>
+<p>作成: 2026-10-24 22:45 JST(Claude Code)。依頼 <code>011_request.md</code>、回答 <code>011_codex.md</code>。</p>
+<h2 id="1-codex">1. 訂正(Codex の指摘を受け入れる)</h2>
+<ul>
+<li><strong>Notebook の実行記録は可視ダミー test の観測</strong>(400 分子 ID 集合が公開ダミー test と一致、SHA256 f300cbe4…)。参照類似の中央値 0.78、libpri 発火 59、GL/ICE 対象 371、所要 3.2〜3.5 h は隠し test の性質・時間の根拠にならない。docs と dashboard を訂正済み。隠し再実行は E0 で約 4 h 15 min。</li>
+<li>E1 の「prior 単独 71%」は PubChem キャッシュ内・正解分子式限定の 246 分子での doc(log_substances + log_pubmed)の値、B の 21% は到達かつ shortlist 内 159 分子での pop_public。定義も分母も違い、「隠し test の prior が強い」直接証拠ではない(仮説のまま)。E1 の C1 0.955 は多特徴 ranker の値で、純粋なライブラリ照合の未見性能ではない。</li>
+<li>診断文書 §10 の「S(1,0,0.5) = FP+pop」を再訂正(GL を含む)。forward を外した prior 診断には S(0,0,λ) が必要 → 評価器に追加(λ ∈ {0.15, 0.5, 1, 2, 4})。</li>
+<li>「新規回収した真は上位に来ていない」は分解で確認: A は既存 275 分子で −0.037、新規 8 分子で +0.008(RR 平均 0.30、top-1 25%)、B は既存 159 で −0.017、新規 11 で +0.017(RR 0.46)。候補倍増の損は既存群の希釈が支配。</li>
+</ul>
+<h2 id="2">2. 採否</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1 差 0.130 の切り分け</td>
+<td>採用: 同じ query・マスク・公式 identity・全 N 分母で (i) E0 と B1 の候補照合(真が DB / 窓 / shortlist / top-25 のどこで消えるか)、(ii) 同じ shortlist・保存スコア上での参照優先の分子別 ΔRR(C1 救済・誤昇格・C2 損失)、(iii) forward を外した prior 診断(prior 単独 / FP 単独 / FP+λ·prior、低/高文献数・到達有無別)。重い再学習はしない。</td>
+</tr>
+<tr>
+<td>Q2 λ の決め方</td>
+<td>パネルの λ グリッドは感度のみ。E0 の doc と B1 の pop_public を同じ identity で照合してから。開発集合は捨てず層(天然物・アナログ、低/高文献数、同装置/他装置、forward 対応)を追加し、MSG 非重複の確認群を候補・λ 選択前に固定。パネルで LambdaRank を再学習しない。</td>
+</tr>
+<tr>
+<td>Q3 公開系の参照処理</td>
+<td>採用(部品ごとに評価)。E0 の最終 merge は「lib_max ≥ 0.9 なら main list 維持」で、最大類似候補を 1 位にする規則ではない。B1 の libpri を対照に、参照選択・前処理・同 adduct 証拠・候補取得・順位保護を個別に測る。C1 は「他ライブラリ参照のみ」を維持し、「同ライブラリ・同装置の独立取得を残す」条件を楽観近似として併置。</td>
+</tr>
+<tr>
+<td>Q4 locked</td>
+<td><strong>開封を延期</strong>(この切り分けの一巡後)。構成を変える場合は候補数を増やさず、新版・保険・比較規則を開封前に再登録。旧登録は保存。</td>
+</tr>
+<tr>
+<td>Q5 提出</td>
+<td>保険の提出は診断価値あり → 試みたが <strong>同じ Notebook version からの 2 回目の提出は 400 で拒否</strong>(code competition は version あたり 1 回)。保険を出すには保険を submission.csv として書く別 version の実行(約 3 h)が必要。本日は見送り(残り 2 回、09:00 JST にリセット)。E0 は比較基準として保存。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-2221">3. 新しい開発結果(22:21)</h2>
+<ul>
+<li>rank_v3(M2: shortlist FP100 ∪ FP+prior200 ∪ 参照20 ∪ prior50、GL のみ、ICE 特徴なし; fit 898 群): eval 群 C2 strict <strong>0.529</strong> vs 自身の固定規則 0.442(+0.088 [+0.056, +0.122])、C1 視点 0.830 vs 0.451。M1(rank_v2)は 0.525 / 0.824。拡大 shortlist の希釈は学習器が吸収し、ICE 無しでも同等。</li>
+<li>開発集合 tune+eval 群での M2 − M1 の直接 paired 差: <code>experiments/b1_baseline/dev_pair_v2v3/</code>(Spark)に保存(本判断の追記参照)。</li>
+</ul>
+<h2 id="4">4. 次の手順(優先順)</h2>
+<ol>
+<li>パネル診断(実行中): 固定規則 λ 感度、libpri、S(0,0,λ)、rank_v2 の learned/insurance/fixed。</li>
+<li>E0 vs B1 の候補照合: パネル(E1 のキャッシュ main list)で「E0 だけが当てる分子」の候補不在/順位不足を分ける。</li>
+<li>参照優先の分子別 ΔRR と、E0 doc vs B1 pop_public の照合。</li>
+<li>1〜3 の結果で M1/M2 の構成を見直すか決め、必要なら再登録 → locked 開封(1 回)。</li>
+<li>明朝(09:00 以降): M2 Notebook(ICE 無し、候補 2 倍、rank_v3)と、保険 version の提出。</li>
+</ol>
+<h2 id="5-2250-tuneevalab-200-m2-m1-paired-dev_pair_v2v3-scorer">5. 追記(22:50): 開発集合 tune+eval(A/B 各 200)での M2 − M1 直接 paired 差(<code>dev_pair_v2v3</code>、公式 scorer、同じ台帳)</h2>
+<table>
+<thead>
+<tr>
+<th>set</th>
+<th>view</th>
+<th style="text-align: right;">M1 learned</th>
+<th style="text-align: right;">M2 learned</th>
+<th>M2 − M1 (learned)</th>
+<th>M1 保険 − 固定</th>
+<th>M2 保険 − 固定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>C2 (200)</td>
+<td style="text-align: right;">0.757</td>
+<td style="text-align: right;">0.744</td>
+<td>−0.013 [−0.037, +0.010]</td>
+<td>−0.005</td>
+<td>−0.008</td>
+</tr>
+<tr>
+<td>B</td>
+<td>C2 (200)</td>
+<td style="text-align: right;">0.395</td>
+<td style="text-align: right;">0.414</td>
+<td>+0.020 [−0.004, +0.045]</td>
+<td>−0.005</td>
+<td>−0.005</td>
+</tr>
+<tr>
+<td>B</td>
+<td>C1 (41)</td>
+<td style="text-align: right;">0.853</td>
+<td style="text-align: right;">0.855</td>
+<td>+0.002 [−0.059, +0.058]</td>
+<td>+0.135</td>
+<td>+0.180</td>
+</tr>
+</tbody>
+</table>
+<p>学習 − 固定: A +0.098 / +0.101、B +0.012(M1, ns)/ +0.039(M2)。M1 と M2 は開発集合で同等(A で M2 がわずかに低く、B でわずかに高い)。M2 は ICE 不要で時間が短い。両候補とも登録を維持し、開封は切り分け後。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
