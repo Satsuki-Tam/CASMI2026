@@ -154,3 +154,10 @@ C1 代理では、学習融合はパイプラインの中でも固定規則よ�
 - 検証 `test_select_queries.py`(Spark、CPU、`logs/spark_select_queries_check.log`): 旧 3 実装(逐語コピー)と新関数を実データで照合 — 評価器 600 分子 ×(8, 16)差 0、builder 600 分子(8, 16)差 0、builder(8) と評価器(8) の行集合差 0、パイプライン経路(`eval_test_full3/test.parquet`、600 分子)旧新差 0、**パイプライン(8) と評価器(8) の順序付き store 行 600/600 一致**。判定 PASS。
 - 新 builder で `eval_test_full3` を再構築(max_spectra 8): `test.parquet` 2,107 行・全列同一、`exclude_rows_c1/exclude_identities_c2/solution.csv` 同一、`mask_c1/c2.json` は行集合同一(リスト順のみ差;パイプラインは集合として消費)。以後 builder は行リストをソートして出力(再構築で安定)。比較は `compare_eval_test_dirs.py`。
 - 2026-10-24 の sed 事故(filter がコメント化され 2,819 行の無効 test ファイル)の再発防止として、W7 の入力生成はこの関数と比較スクリプトで固定する。
+
+## 検証集合の層追加 p2(Codex 015 (b)、2026-10-25 07:00、設計は 016 で確認中)
+
+- 母集団調査 `strata_census.py`(store 全体、MSG 28,929 と開発済み identity 3,001 を除外 → 自由分子 237,009)。事実: 既存 A/B・locked は `p1_select.py` が **[M+H]+ 正イオン spectra を持つ分子**からのみ選ぶため、負イオンのみ・NH4 のみの分子は開発集合に 0。timsTOF を持つ自由分子は enveda-180(合成化学)のみ。
+- `p2_select.py`(seed 5、fold_identity 0、identity group を開発集合と排他、層間排他、dev2 = 各層先頭 100 / locked2 = 次の 100): C_np_crosslib(NP、参照 ≥20、≥2 ライブラリ;query ライブラリ = spectra 最多の NP ライブラリ)、D_np_single(NP、単一ライブラリ、参照 ≤2)、E_np_negonly(NP、負イオンのみ)、F_np_uncovered(NP、正イオンあり・[M+H]+/[M+Na]+ なし)、G_tims_crosslib(enveda-180 query、≥2 ライブラリ)。適格 identity group: E 649 / F 241 / C 284 / G 303 / D 2,016。
+- 出力: `eval_set2/p2_dev_molecules.csv`(500)、`locked_eval2/p2_locked_molecules.csv`(500、**未開封**)、`eval_set2/p2_select_manifest.json`。dev2 の test ファイル `eval_test_p2dev/`(共通 selector、max 8): 1,511 spectra / 500 分子;層別 query 平均本数 C 5.0 / D 1.35 / E 2.1 / F 2.2 / G 4.4、E は負イオン 100%。
+- 読みの規則(案、016 で確認): 層ごとに paired Δ と CI のみ報告、層の重み付けはしない。dev2 で手を加えた構成は locked2 で 1 回だけ最終確認。

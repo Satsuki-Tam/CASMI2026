@@ -1,0 +1,30 @@
+{
+ "seed": 5,
+ "n_per_stratum": 100,
+ "strata": [
+  "E_np_negonly",
+  "F_np_uncovered",
+  "C_np_crosslib",
+  "G_tims_crosslib",
+  "D_np_single"
+ ],
+ "exclude": [
+  "experiments/p1_baseline/run1/p1_molecules.csv",
+  "experiments/b1_baseline/eval_set/p1_molecules.csv",
+  "experiments/b1_baseline/eval_c1/p1_molecules.csv",
+  "experiments/b1_baseline/locked_eval/p1_molecules.csv",
+  "experiments/e2_forward/e2b_np_unseen_molecules.csv",
+  "experiments/e2_forward/e2b_np_unseen_hard_molecules.csv",
+  "experiments/e2_forward/e2b_timstof_unseen_molecules.csv",
+  "experiments/e2_forward/e2b_timstof_unseen_hard_molecules.csv",
+  "experiments/e2_forward/v2/e2b_timstof_unseen_molecules.csv",
+  "experiments/e2_forward/v2/e2b_timstof_unseen_hard_molecules.csv",
+  "experiments/e2_forward/v2/e2b_np_unseen_molecules.csv",
+  "experiments/e2_forward/v2/e2b_np_unseen_hard_molecules.csv"
+ ],
+ "census": "experiments/b1_baseline/eval_set2/census.parquet",
+ "eligible": 45594,
+ "used_identities": 3001,
+ "used_groups": 2944,
+ "fold_identity": 0
+}

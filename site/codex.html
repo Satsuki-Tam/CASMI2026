@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 06:53 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 07:01 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -5469,4 +5469,148 @@ p1 + p2 + p3 = 1
 </tbody>
 </table>
 <h2 id="2">2. 提出の記録様式(完走後に埋める)</h2>
-<p>提出 ID、Notebook 版(本命 <code>casmi26-b1-baseline</code> v4 / 保険 <code>casmi26-b1-insurance</code> v1)、出力ファイル、<code>b1_run_manifest.json</code>(被覆・fallback・learned 件数・時間)、Public 値、比較目的、読み。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>提出 ID、Notebook 版(本命 <code>casmi26-b1-baseline</code> v4 / 保険 <code>casmi26-b1-insurance</code> v1)、出力ファイル、<code>b1_run_manifest.json</code>(被覆・fallback・learned 件数・時間)、Public 値、比較目的、読み。</p></details></article><article><h1>016: 016 依頼: (c) query 選択の共通関数化の完了報告、(a) E0 自前分子実行の開始、(b) 検証集合の層追加(p2 / locked 2)の設計確認</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-c-docsvalidation_designmd-commit-f92ca5f">1. (c) 完了(docs/validation_design.md 末尾、commit f92ca5f)</a></li>
+<li><a href="#2-a">2. (a) 開始</a></li>
+<li><a href="#3-b-strata_censuspystore-msg-28929-identity-3001-237009">3. (b) 層の追加: 母集団の調査(strata_census.py、store 全体、MSG 28,929 + 開発済み identity 3,001 を除外 → 自由分子 237,009)</a><ul>
+<li><a href="#p2-dev2-seed-5locked2-seed-6identity-group-fold_identity-0-100-2query-max-8view-c2-c1">提案(p2: dev2 = seed 5、locked2 = seed 6、identity group 非重複、fold_identity 0、各層 100 分子 × 2、query は共通関数 max 8、view は C2 / C1)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div><h1 id="016-c-query-a-e0-b-p2-locked-2">016 依頼: (c) query 選択の共通関数化の完了報告、(a) E0 自前分子実行の開始、(b) 検証集合の層追加(p2 / locked 2)の設計確認</h1>
+<p>作成: 2026-10-25 07:05 JST(Claude Code)。前回 <code>015_decision.md</code>。kernel 2 本(本命 v4 / 保険 v1)は 04:11 から実行中(07:00 時点 RUNNING)。提出は 09:00 以降。</p>
+<h2 id="1-c-docsvalidation_designmd-commit-f92ca5f">1. (c) 完了(<code>docs/validation_design.md</code> 末尾、commit f92ca5f)</h2>
+<ul>
+<li><code>b1_common.select_queries</code> を新設し、評価器 <code>b1_features.py</code>・パイプライン <code>b1_pipeline.py</code>・builder <code>make_eval_test.py</code> の 3 実装を置換。方針不変(test adduct のみ、[M+H]+ → adduct 名、adduct 内 CE(欠損→0)→ 入力順、round-robin、max_q)。</li>
+<li><code>test_select_queries.py</code>(Spark、実データ): 旧 3 実装(逐語コピー)との差 0(評価器 600 分子 ×(8,16)、builder(8,16)、パイプライン経路 600)、<strong>パイプライン(8) と評価器(8) の順序付き store 行 600/600 一致</strong>。<code>eval_test_full3</code> を新 builder で再構築 → <code>test.parquet</code> 2,107 行・全列同一、exclude/solution 同一、mask は行集合同一(リスト順のみ;以後ソート出力)。</li>
+</ul>
+<h2 id="2-a">2. (a) 開始</h2>
+<p>E0(公開 0.464 系譜、24 セル)の Spark 移植を 06:45 に開始(別エージェント)。順序: W7 600 分子の C2 代理(自分子の train 行を除去)→ C1 代理 → パネル 250。段階別出力(engine/PubChem チャネル/ICE・GL/参照 merge/最終)を保存し、<code>e0_vs_b1_stages.py</code> で公式 identity 結合 → 段階表・層別 paired Δ。起動後に PID・予定時刻を報告する。</p>
+<h2 id="3-b-strata_censuspystore-msg-28929-identity-3001-237009">3. (b) 層の追加: 母集団の調査(<code>strata_census.py</code>、store 全体、MSG 28,929 + 開発済み identity 3,001 を除外 → 自由分子 237,009)</h2>
+<table>
+<thead>
+<tr>
+<th>層(自由分子)</th>
+<th style="text-align: right;">全体</th>
+<th style="text-align: right;">timsTOF あり(= enveda-180)</th>
+<th style="text-align: right;">NP ライブラリ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>参照 1–2 本</td>
+<td style="text-align: right;">29,939</td>
+<td style="text-align: right;">12,240</td>
+<td style="text-align: right;">13,179</td>
+</tr>
+<tr>
+<td>参照 3–9</td>
+<td style="text-align: right;">187,225</td>
+<td style="text-align: right;">162,061</td>
+<td style="text-align: right;">8,714</td>
+</tr>
+<tr>
+<td>参照 10–19</td>
+<td style="text-align: right;">15,072</td>
+<td style="text-align: right;">3,563</td>
+<td style="text-align: right;">3,521</td>
+</tr>
+<tr>
+<td>参照 ≥20</td>
+<td style="text-align: right;">4,773</td>
+<td style="text-align: right;">650</td>
+<td style="text-align: right;">2,260</td>
+</tr>
+<tr>
+<td>参照 ≥20 かつ ≥2 ライブラリ(パネル型)</td>
+<td style="text-align: right;">2,440</td>
+<td style="text-align: right;">645</td>
+<td style="text-align: right;">2,105</td>
+</tr>
+<tr>
+<td>≥2 ライブラリ(他ライブラリ参照 = クラス 1 条件が可能)</td>
+<td style="text-align: right;">10,584</td>
+<td style="text-align: right;">2,160</td>
+<td style="text-align: right;">9,130</td>
+</tr>
+<tr>
+<td>単一ライブラリ・1 本</td>
+<td style="text-align: right;">13,185</td>
+<td style="text-align: right;">1,843</td>
+<td style="text-align: right;">8,035</td>
+</tr>
+<tr>
+<td>負イオンのみ</td>
+<td style="text-align: right;">17,873</td>
+<td style="text-align: right;">9,911</td>
+<td style="text-align: right;">3,092</td>
+</tr>
+<tr>
+<td>NH4 のみ</td>
+<td style="text-align: right;">3,633</td>
+<td style="text-align: right;">716</td>
+<td style="text-align: right;">302</td>
+</tr>
+<tr>
+<td>被覆正イオン([M+H]+/[M+Na]+)なし</td>
+<td style="text-align: right;">22,895</td>
+<td style="text-align: right;">10,778</td>
+<td style="text-align: right;">4,243</td>
+</tr>
+<tr>
+<td>〃 かつ正イオンあり(NH4/K/脱水のみ)</td>
+<td style="text-align: right;">5,035</td>
+<td style="text-align: right;">867</td>
+<td style="text-align: right;">1,164</td>
+</tr>
+</tbody>
+</table>
+<p>事実: (i) 既存 A/B・locked は <strong>[M+H]+ 正イオン spectra を持つ分子からのみ</strong>選んでいる(<code>p1_select.py</code> は <code>adduct == [M+H]+</code> で母集団を作る)→ 負イオンのみ・NH4 のみの分子は開発集合に 0。(ii) timsTOF を持つ自由分子は enveda-180(合成化学)のみ;NP かつ timsTOF はパネル 250 以外に無い。(iii) 文献数(popularity)は <code>pubchem_popularity/</code> に表形式が無く、選択時の層にできない → 候補表の prior 特徴(lsynonyms/pop)で事後層別にする。</p>
+<h3 id="p2-dev2-seed-5locked2-seed-6identity-group-fold_identity-0-100-2query-max-8view-c2-c1">提案(p2: dev2 = seed 5、locked2 = seed 6、identity group 非重複、fold_identity 0、各層 100 分子 × 2、query は共通関数 max 8、view は C2 / C1)</h3>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th>定義</th>
+<th>測るもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C_np_crosslib</td>
+<td>NP ライブラリ、参照 ≥20、≥2 ライブラリ;query ライブラリ = その分子の spectra が最多の NP ライブラリ</td>
+<td>パネル体制(他ライブラリ参照多数・NP 化学)でのクラス 1 — 崩壊の再現性</td>
+</tr>
+<tr>
+<td>D_np_single</td>
+<td>NP、単一ライブラリ、参照 ≤2</td>
+<td>参照なし体制(両 view で参照 0)、NP 化学</td>
+</tr>
+<tr>
+<td>E_np_negonly</td>
+<td>NP、負イオンのみ</td>
+<td>forward 不在(ICE/GL 0)での最終 merge・fallback</td>
+</tr>
+<tr>
+<td>F_np_uncovered</td>
+<td>NP、正イオンあり・被覆正イオンなし(NH4/K/脱水のみ)</td>
+<td>proxy 検証の場(H を隠す比較は不要:本当に H が無い分子)</td>
+</tr>
+<tr>
+<td>G_tims_crosslib</td>
+<td>enveda-180(timsTOF query)、≥2 ライブラリ</td>
+<td>同装置 query + 他装置参照(隠しテストのクラス 1 条件、化学は合成)</td>
+</tr>
+<tr>
+<td>(事後層)文献数</td>
+<td>候補表の lsynonyms/pop 分位</td>
+<td>prior の効きすぎ/不足</td>
+</tr>
+</tbody>
+</table>
+<p>読みの規則(案): 層ごとに paired Δ と CI のみ報告、層の重み付け(隠しクラス比率の推定)はしない。dev2 で手を加えた構成は locked2 で 1 回だけ最終確認(seed 4 の locked は凍結済み)。</p>
+<p><strong>Q1</strong> 層の定義・サイズ(各 100 × dev2/locked2)に異論・追加は。特に C と G の「query ライブラリ」の決め方(最多 spectra のライブラリ vs 乱択)。
+<strong>Q2</strong> D(参照 0)は B_nplib と重複が大きいので落として C/E/F/G を 150 ずつにする案はどうか。
+<strong>Q3</strong> E/F は forward が無いので learned ranker(GL/ICE 特徴を使う)の挙動が未定義域に入る。これらの層では「保険(固定 + libpri)」も同時に採点し、出力ポリシーの差として読む — で良いか。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

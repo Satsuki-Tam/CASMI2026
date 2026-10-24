@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 06:53 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 07:01 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -36,6 +36,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#w7-600-m2x-blend21-test-eval_test_full32026-10-25-0358">W7 600 分子の再実行(M2x blend21、正しい test ファイル eval_test_full3、2026-10-25 03:58)</a></li>
 <li><a href="#locked-2026-10-25-0504seed-4ab-300strict-scorer-experimentsb1_baselinelocked_open_v5">locked 開封の結果(2026-10-25 05:04、seed 4、A/B 各 300、strict、公式 scorer 複製;experiments/b1_baseline/locked_open_v5/)</a></li>
 <li><a href="#query-codex-015-c2026-10-25-0650">query 選択の共通関数化(Codex 015 (c)、2026-10-25 06:50)</a></li>
+<li><a href="#p2codex-015-b2026-10-25-0700-016">検証集合の層追加 p2(Codex 015 (b)、2026-10-25 07:00、設計は 016 で確認中)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -480,4 +481,11 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <li>検証 <code>test_select_queries.py</code>(Spark、CPU、<code>logs/spark_select_queries_check.log</code>): 旧 3 実装(逐語コピー)と新関数を実データで照合 — 評価器 600 分子 ×(8, 16)差 0、builder 600 分子(8, 16)差 0、builder(8) と評価器(8) の行集合差 0、パイプライン経路(<code>eval_test_full3/test.parquet</code>、600 分子)旧新差 0、<strong>パイプライン(8) と評価器(8) の順序付き store 行 600/600 一致</strong>。判定 PASS。</li>
 <li>新 builder で <code>eval_test_full3</code> を再構築(max_spectra 8): <code>test.parquet</code> 2,107 行・全列同一、<code>exclude_rows_c1/exclude_identities_c2/solution.csv</code> 同一、<code>mask_c1/c2.json</code> は行集合同一(リスト順のみ差;パイプラインは集合として消費)。以後 builder は行リストをソートして出力(再構築で安定)。比較は <code>compare_eval_test_dirs.py</code>。</li>
 <li>2026-10-24 の sed 事故(filter がコメント化され 2,819 行の無効 test ファイル)の再発防止として、W7 の入力生成はこの関数と比較スクリプトで固定する。</li>
+</ul>
+<h2 id="p2codex-015-b2026-10-25-0700-016">検証集合の層追加 p2(Codex 015 (b)、2026-10-25 07:00、設計は 016 で確認中)</h2>
+<ul>
+<li>母集団調査 <code>strata_census.py</code>(store 全体、MSG 28,929 と開発済み identity 3,001 を除外 → 自由分子 237,009)。事実: 既存 A/B・locked は <code>p1_select.py</code> が <strong>[M+H]+ 正イオン spectra を持つ分子</strong>からのみ選ぶため、負イオンのみ・NH4 のみの分子は開発集合に 0。timsTOF を持つ自由分子は enveda-180(合成化学)のみ。</li>
+<li><code>p2_select.py</code>(seed 5、fold_identity 0、identity group を開発集合と排他、層間排他、dev2 = 各層先頭 100 / locked2 = 次の 100): C_np_crosslib(NP、参照 ≥20、≥2 ライブラリ;query ライブラリ = spectra 最多の NP ライブラリ)、D_np_single(NP、単一ライブラリ、参照 ≤2)、E_np_negonly(NP、負イオンのみ)、F_np_uncovered(NP、正イオンあり・[M+H]+/[M+Na]+ なし)、G_tims_crosslib(enveda-180 query、≥2 ライブラリ)。適格 identity group: E 649 / F 241 / C 284 / G 303 / D 2,016。</li>
+<li>出力: <code>eval_set2/p2_dev_molecules.csv</code>(500)、<code>locked_eval2/p2_locked_molecules.csv</code>(500、<strong>未開封</strong>)、<code>eval_set2/p2_select_manifest.json</code>。dev2 の test ファイル <code>eval_test_p2dev/</code>(共通 selector、max 8): 1,511 spectra / 500 分子;層別 query 平均本数 C 5.0 / D 1.35 / E 2.1 / F 2.2 / G 4.4、E は負イオン 100%。</li>
+<li>読みの規則(案、016 で確認): 層ごとに paired Δ と CI のみ報告、層の重み付けはしない。dev2 で手を加えた構成は locked2 で 1 回だけ最終確認。</li>
 </ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
