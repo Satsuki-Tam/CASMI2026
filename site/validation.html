@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 03:26 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 04:04 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -33,6 +33,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#w7-600-c2-2026-10-25-0056m1-runner">W7 本番 600 分子 C2 の再実行結果(2026-10-25 00:56、M1 構成、runner は再開ドライバ経由)</a></li>
 <li><a href="#c1-run_v3_c1-run_v3b_c12026-10-25-0050">評価器の C1 参照選択修正の効果(run_v3_c1 → run_v3b_c1、2026-10-25 00:50)</a></li>
 <li><a href="#m2xrank_v4b-blend21-50-parity2026-10-25-0141eval_test_50_m2xb">再登録候補 M2x(rank_v4b + blend21)の 50 分子 parity(2026-10-25 01:41、eval_test_50_m2xb)</a></li>
+<li><a href="#w7-600-m2x-blend21-test-eval_test_full32026-10-25-0358">W7 600 分子の再実行(M2x blend21、正しい test ファイル eval_test_full3、2026-10-25 03:58)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -398,4 +399,11 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <li><strong>合格</strong>(両 view)。候補集合は全分子一致、top-1・RR 一致 50/50、top-25 集合一致 C2 0.980 / C1 1.000、順序付き 0.940 / 0.960(保険 0.920 / 0.940)。</li>
 <li>パイプライン側の公式 MRR(50 分子): C2 main(blend21)0.628 / 固定 0.460、C1 main 0.794 / 固定 0.612(learned 単独の main は C2 0.662 / C1 0.818 だった = blend の開発集合でのコストと整合)。</li>
 <li><code>b1_pipeline --main blend21</code> と <code>b1_parity --main blend21</code> の実装一致を確認。</li>
+</ul>
+<h2 id="w7-600-m2x-blend21-test-eval_test_full32026-10-25-0358">W7 600 分子の再実行(M2x blend21、正しい test ファイル <code>eval_test_full3</code>、2026-10-25 03:58)</h2>
+<ul>
+<li>独立 forward(パイプライン自身の GL 実行)での parity(C2 view、600 分子): query 選択差 0、候補集合一致 599/599(残る 1 分子は候補ゼロの分子で両側一致)、FP・参照類似・ppm の差 0.0000、top-1 一致 598/599、RR 一致 598/599、top-25 集合 0.977 / 0.982、順序付き 0.925 / 0.912。forward 雑音 GL 最大 0.144、p99 1.35e-3。残る 1 分子の top-1 差は GL の実行間雑音による(共有キャッシュ parity で確認)。</li>
+<li>旧 600 分子 run の FAIL(query 選択差 18、候補集合差 27%)は builder 修正前の test ファイルによるもので、修正後は消えた。</li>
+<li>パイプライン側の公式 MRR(C2、fit 込み): main(blend21)0.616 / 固定 0.510(A 0.790 / 0.645、B 0.443 / 0.374)。</li>
+<li><strong>共有キャッシュでの機械的 parity(C2、600 分子、04:03): 合格</strong>。パイプラインの GL 出力を評価器側の順位付けに渡すと、main(blend21 + 欠損分岐)と保険の top-1・RR・top-25 集合・順序付き top-25 が <strong>599/599 で完全一致</strong>(候補ゼロの 1 分子を除く)。→ 提出パイプラインの論理は評価器と一致;独立 forward での差は GPU 実行間の雑音のみ。C1 view は 05:00 頃。</li>
 </ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
