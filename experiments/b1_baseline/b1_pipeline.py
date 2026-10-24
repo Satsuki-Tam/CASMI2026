@@ -417,6 +417,7 @@ def main():
             except Exception as e: log("GL failed:", repr(e))
         else:
             for name, pkg, script in (("gl", P["glacier"], "gl_runner.py"), ("ice", P["iceberg"], "ice_runner.py")):
+                if name == "ice" and args.w_ice == 0: log("ICE skipped (w_ice = 0)"); continue
                 out = f"{P['work']}/{name}_out.json"
                 subprocess.run([P["runner_python"], f"{pkg}/{script}", pkg, f"{P['work']}/b1_forward_in.json", out, "--device", dev, "--site", "none", "--budget", str(GL_BUDGET if name == "gl" else ICE_BUDGET)],
                                stdout=open(f"{P['work']}/{name}.log", "w"), stderr=subprocess.STDOUT)
