@@ -168,6 +168,7 @@ def main():
                 # ---- query spectra: selection library, test adducts, round-robin over adducts (same policy as the submission pipeline)
                 qrows = sorted(int(x) for x in ik_rows.get(mid, []) if lib_of_row[x] == lib and add_of_row[x] in ADDUCT_SHIFT)   # store-row order = tie-break
                 q = select_queries(qrows, a.max_spectra, lambda x: add_of_row[x], lambda x: float(ce_of_row[x]))   # shared policy (b1_common)
+                assert all(lib_of_row[x] == lib and add_of_row[x] in ADDUCT_SHIFT for x in q), (mid, lib, "query outside selection library / test adducts")
                 if not q: print("skip", mid, "no query spectra"); continue
                 qspec = []
                 for x in q:

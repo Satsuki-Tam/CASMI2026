@@ -77,3 +77,4 @@ if a.test:
     fails += n_bad_order + n_bad_cross
     print(f"pipeline path: {len(per)} molecules; legacy-vs-shared differ {n_bad_order}; pipeline(8) vs evaluator(8) ordered rows differ {n_bad_cross} (molecules in test but not in eval csv: {len(set(per) - set(feat_sel))})")
 print("SELECT_QUERIES TEST", "PASS" if fails == 0 else f"FAIL ({fails})")
+sys.exit(0 if fails == 0 else 1)

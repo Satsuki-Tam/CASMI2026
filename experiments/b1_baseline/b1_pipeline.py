@@ -274,6 +274,7 @@ def main():
             tm0 = time.time()
             known = [s for s in spectra if s["adduct"] in ADDUCT_SHIFT]          # test-file order = tie-break
             q = select_queries(known, MAX_Q, lambda s: s["adduct"], lambda s: s["ce"])   # shared policy (b1_common), same as the evaluator and the test builder
+            assert len(q) <= MAX_Q and all(s["adduct"] in ADDUCT_SHIFT for s in q)
             q = [dict(s, clean=clean_peaks(s["mz"], s["it"], s["prec"])) for s in q]
             if not q:                                         # unknown adducts only: fall back to [M+H]+ / [M-H]- by polarity
                 q = [dict(s, adduct=("[M+H]+" if s["mode"] == "positive" else "[M-H]-"), clean=clean_peaks(s["mz"], s["it"], s["prec"])) for s in spectra][:MAX_Q]

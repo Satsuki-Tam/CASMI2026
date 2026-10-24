@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 07:01 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 07:36 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -5613,4 +5613,181 @@ p1 + p2 + p3 = 1
 <p>読みの規則(案): 層ごとに paired Δ と CI のみ報告、層の重み付け(隠しクラス比率の推定)はしない。dev2 で手を加えた構成は locked2 で 1 回だけ最終確認(seed 4 の locked は凍結済み)。</p>
 <p><strong>Q1</strong> 層の定義・サイズ(各 100 × dev2/locked2)に異論・追加は。特に C と G の「query ライブラリ」の決め方(最多 spectra のライブラリ vs 乱択)。
 <strong>Q2</strong> D(参照 0)は B_nplib と重複が大きいので落として C/E/F/G を 150 ずつにする案はどうか。
-<strong>Q3</strong> E/F は forward が無いので learned ranker(GL/ICE 特徴を使う)の挙動が未定義域に入る。これらの層では「保険(固定 + libpri)」も同時に採点し、出力ポリシーの差として読む — で良いか。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<strong>Q3</strong> E/F は forward が無いので learned ranker(GL/ICE 特徴を使う)の挙動が未定義域に入る。これらの層では「保険(固定 + libpri)」も同時に採点し、出力ポリシーの差として読む — で良いか。</p></details><details><summary>回答(Codex)</summary><p><strong>結論：(c)の選択ロジック共通化は確認でき、E0比較へ進んでよい。ただし再構築の証跡と失敗時の終了処理には補修が必要。p2 の層追加には賛成だが、層を「分子全体の属性」だけでなく実際の query／残存参照で定義し直してから locked2 を固定する。Dは残し、現時点では各100を基本案とする。C/E/F/G各150への変更は勧めない。</strong></p>
+<p>確認はコード・ログ・母集団集計・dev2メタデータで行った。locked2 の行・ラベル・採点結果は参照していない。</p>
+<p><strong>(c) 完了報告の評価。</strong></p>
+<p><code>select_queries</code> を三経路が呼ぶことと、保存ログの次の結果は確認できた：評価器600分子×max_q=8/16の旧新一致、builderの8/16の行集合一致、パイプラインの旧新一致、パイプライン(8)と評価器(8)の順序付き store 行600/600一致。この範囲の挙動を変えない共通化として受理する。</p>
+<p>ただし、残っている <code>logs/spark_select_queries_check.log</code> の再構築比較は <strong>旧2,107行に対し新2,221行で DIFF</strong>。<code>spark_select_queries_check.sh:12</code> が <code>--max_spectra 16</code> を使っており、旧ファイルの8と条件が異なる。これは共通関数の退行を示す比較ではないが、「max8で全列同一」の証跡にもならない。別途max8で成功しているなら、その比較ログを保存する。現在、再構築先の scratch ディレクトリは残っていなかった。</p>
+<p>小さな修正として、同条件max8の再構築比較を脚本にし、<code>test_select_queries.py</code> と <code>compare_eval_test_dirs.py</code> は不一致・必須ファイル欠落で非0終了させる。現状は FAIL/DIFF を表示しても終了値が0になり得て、シェルも最後に <code>SELECT_CHECK_DONE</code> を出す。パイプを含めて失敗を伝播するようにする。</p>
+<p>なお、test adduct と query library のフィルタは今も呼出側にある。共通関数への入力条件を assert し、生成された query が割り当てたライブラリ・許可アダクトに属することも検査する。「ソートと選択を共通化した」ことと「前処理全体の事故を防げる」ことは分けて記述する。これを大きな改修には広げず、(a)と並行して補修すればよい。</p>
+<p><strong>Q1：層定義、query library、サイズ。</strong></p>
+<p>現行 <code>p2_select.py</code> は fold 0、既使用 identity group の除外、group単位の選択を行っている。dev2 の500行は500 groupで、MSGに属する別メンバーを持つ groupとの重複も今回の確認では0だった。方向はよい。一方、237,009は raw key 単位の母集団数で、そのまま選べる独立分子数ではない。選択manifestでは、既使用3,001 <strong>key</strong> が2,944 groupに対応している。</p>
+<p>fold 0・既使用group除外後、層間への割当て前の適格 group は C=304、D=2,188、E=649、F=241、G=338。文書末尾の C=284／G=303／D=2,016は、先に他層へ割り当てた group を除いた段階の数である。候補数には、どの段階の除外後かを付けて保存する。</p>
+<p>もっと重要なのは層の意味である。現在の dev2 に共通 selector(max8)を適用し、query と同極性の他ライブラリ参照をメタデータで数えると次のようになった。参照数は<strong>重複除外・MAX_REF前の上限</strong>であり、最終 usable 数ではない。</p>
+<table>
+<thead>
+<tr>
+<th>層（各N=100）</th>
+<th style="text-align: right;">queryに正イオンあり</th>
+<th style="text-align: right;">queryにH/Na正イオンあり</th>
+<th style="text-align: right;">同極性の他ライブラリ参照≥20</th>
+<th style="text-align: right;">同参照0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C_np_crosslib</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;"><strong>38</strong></td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td>D_np_single</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><strong>100</strong></td>
+</tr>
+<tr>
+<td>E_np_negonly</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">45</td>
+</tr>
+<tr>
+<td>F_np_uncovered</td>
+<td style="text-align: right;"><strong>94</strong></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">69</td>
+</tr>
+<tr>
+<td>G_tims_crosslib</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+<p>したがって、現在の C 全体を「参照多数の C1」とは呼べず、F の6分子は実際の query に正イオンがない。分子の別ライブラリにあるスペクトルの属性と、提出へ渡す query の属性が混ざっている。</p>
+<p>層は次の順で定めることを勧める。</p>
+<ul>
+<li><strong>C</strong>：NP系の query library 候補を列挙し、query側を除いた後に、同極性・重複除外・参照上限を適用してなお十分な参照が残る条件を作る。総数20本ではなく、実際に使う参照数を基準にする。学習融合のC1弱点を調べる主群は native forward が使えるものとし、使えないものは副群として分ける。条件変更後に適格数を数え直し、100×2を満たすために黙って条件を緩めない。</li>
+<li><strong>G</strong>：query library は <code>enveda-180</code> に固定する。ここでライブラリを乱択すると timsTOF query という目的が失われる。他ライブラリ参照の有無・同極性での可用性を記録し、少参照／多参照を分ける。</li>
+<li><strong>E/F</strong>：選択後の query で判定する。Eは負イオンのみ、Fは正イオンがありH/Na正イオンがない条件。Fは NH4／一段の水脱離など現proxyの対象と、K／その他の未対応条件も区別する。他ライブラリの参照にHがあること自体は、queryがHを欠く条件を無効にしない。</li>
+<li><strong>D</strong>：独立した真の参照がない群として残す。E/Fとの比較を明瞭にするなら、native forward が使える query を主な対照にする。参照がないのは「真の構造」であり、誤った候補への参照まで全部ないわけではない。</li>
+</ul>
+<p>Cの query library は、<strong>条件を満たすライブラリから、ライブラリ別の偏りを記録した固定seedの選択</strong>を推奨する。最多スペクトル方式は query を豊富にする一方、残す参照を減らし、特定の大規模ライブラリへ偏らせる。最多方式を残す場合でも、残存参照の条件を先に満たし、同数時の library 名等の tie-break を固定する。現在の <code>per_lib.sort("n", descending=True)</code> だけでは同数時の順序が固定されていない。</p>
+<p>「層間排他」の意味も明示する。現コードは選ばれた group の重複を防ぐが、層の条件自体は重なっている。例えばE/Fに選ばれなかった別の未被覆分子はC/Dへ入り得る。主ラベルを一つ付けても、参照数・query被覆・装置等の副ラベルを残す。複数query/viewを作る場合は同じ identity を同じ split に置き、bootstrap も identity 単位にする。</p>
+<p>母集団について、二つの補足がある。</p>
+<ol>
+<li><strong>「NPかつtimsTOFはパネル以外にない」は、現censusの定義では成立しない。</strong> 自由分子には <code>in_nplib &amp; has_timstof</code> が717 raw keyあり、参照≥20・複数libraryまで満たすものも310ある。fold 0・既使用除外後の C/G 交差は53 group。これは「NP系ライブラリへの収載」と「timsTOF測定」が共存するという意味で、天然物構造である証明ではない。既存のCOCONUT等の注釈と照合し、NPライブラリ所属・NP構造注釈・query装置を分ける。交差領域がないと決め付けて捨てない。</li>
+<li><strong>Parquetがないことは、priorを選択前に付けられない理由にならない。</strong> 既存処理は <code>pool_meta.parquet</code> の <code>pid</code> と <code>pool_lpmid.npy</code> 等を対応付けている。公式identityへ整列した注釈表を作る余地がある。<code>lpmid</code>、<code>lsid</code>、<code>lsynonyms</code>、合成指標<code>pop_public</code>を一律に「文献数」と呼ばない。欠損と真の0を分け、分位境界はdev側で固定する。事後層別から始めてもよいが、真がshortlistにある分子だけを集計して到達失敗を落とさない。</li>
+</ol>
+<p><strong>Q2：Dは落とさず、まず各100を基本にする。</strong></p>
+<p>「B_nplibと似た分布」と「同一identityの重複」は別であり、後者は既使用group除外で防ぐ。今回の D は参照0・native forwardありの対照を提供しており、E/Fの無forward条件との比較に意味がある。C2ではC/Gも真の参照を隠すが、query本数・参照への収載状況・prior・候補到達の分布まで同じにはならない。</p>
+<p>現在の F は適格241 groupしかなく、dev2 150＋locked2 150の300 groupは確保できない。query基準へ定義を直せば母集団が変わる可能性はあるが、再集計前に各150を約束しない。なお5層×100は各split500、4層×150は各split600なので、Dを削る案は総量も20%増える。</p>
+<p>各100は最初の層別診断には妥当。ただし100や150という数だけで±0.02を判別できるわけではない。例えば paired ΔRR の標準偏差が0.25なら、95%区間の半幅の目安は N=100で0.049、N=150で0.040。C1 usable が100未満ならさらに小さい標本になる。主要比較・保護する層・許容損失を開封前に決め、区間が広ければ未確定とする。</p>
+<p>現在の選択は「seed5とseed6で別々に抽出」ではなく、<strong>seed5の一つの並べ替えから先頭100をdev2、次100をlocked2</strong>である。この方式でよいので文書を実装に合わせる。seedが違うだけでは非重複は保証されない。manifestには候補数の各段階、実際の採用数、主／副層、query library方針、除外CSV・fold・census・selectorのhashとgroup交差チェックを残す。除外ファイルの読込失敗を黙ってスキップしない。</p>
+<p>すでに生成したファイルは暫定版として保存し、query基準の修正後に版を上げて選定・固定してよい。未開封の locked2 の成績を見ずに行う設計修正である。旧seed4の結果を新しい未使用評価として再利用しない。</p>
+<p><strong>Q3：出力ポリシーとして評価する方針に賛成。ただし現行 B1 は未定義動作ではない。</strong></p>
+<p>proxy offでGL被覆が閾値未満なら、現在の learned／blend の提出関数は<strong>学習器を呼ばず保険を返す</strong>。E/Fではまず <code>n_gl_finite</code>、coverage、<code>fallback_reason</code>、学習器呼出件数を記録し、本命と保険の順序付き出力が一致することを確認する。差0は「学習が無価値」ではなく、その分岐で使っていない結果である。生の ranker を強制適用する実験をするなら、提出ポリシーとは別の診断として表示する。</p>
+<p>E0全体との比較はこの条件でも有用。候補源・参照・prior・生成・merge が異なるためである。未到達や空候補も全Nに残す。DをC1として二重に数えず、C1の適格／usable／不可用件数と条件付き分母を明示する。層全体の提出ポリシー評価から不可用分子を落とさない。</p>
+<p>Fの実際にHを持たない、MSG非重複のqueryで行う<strong>同じquery・候補の proxy on/off比較は、それ自体が有効な利用条件の検証</strong>になる。実Hを隠す対応分子の対照は、代理化による情報損失や変換を切り分ける補助であり、Fの検証を始める必須の前置きにはしない。ただし対象adduct別に、proxy適用数・新たに採点できた数・RR差を記録する。proxyによって保険からlearned/blendへ移る効果も含めて評価する。MSG除外だけで E0 のrankerや別のforwardモデルまで未学習と見なさない。</p>
+<p><strong>E0担当へ：段階比較で必ず残す列。</strong></p>
+<p>基本形は「分子×viewの固定台帳」「分子×stageの要約」「各stageの出力候補／merge操作」の対応表にする。巨大な全DBの全スコア保存は不要だが、正解が消えた段階と、その理由が復元できることを必須とする。</p>
+<table>
+<thead>
+<tr>
+<th>表・目的</th>
+<th>必須の列／情報</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>同一入力と分離の確認</td>
+<td><code>run_id</code>, <code>system</code>, <code>split_role</code>, <code>stratum</code>, 副層flags, <code>molecule_id</code>, <code>official_identity</code>, <code>identity_group</code>, <code>view</code>, <code>query_lib</code>, 順序付きquery行IDまたはhash, <code>n_query</code>, adduct/polarity, CE有無・単位</td>
+</tr>
+<tr>
+<td>実装・学習重複の確認</td>
+<td>code/model/dataのhash、FP/ranker/GL/ICEごとの学習重複flag（不明はunknown）、reference maskのhash、C2で真の参照／train所属が残っていないことの監査値</td>
+</tr>
+<tr>
+<td>段階ごとの損失</td>
+<td><code>stage</code>, 入力／出力の候補行数と公式identity数、<code>truth_present</code>, <code>truth_rank</code>, <code>top1_identity</code>, 順序付き<code>top25_identities</code>, <code>rr25</code>, 空候補・失敗理由、所要時間</td>
+</tr>
+<tr>
+<td>候補の来歴と順位変化</td>
+<td><code>candidate_identity</code>, SMILES、DB／参照／生成の出典、生成なら親identity、FP・prior・lib・GL・ICE・ranker・最終score、有限値flag、shortlist所属、変更前後のrank、除外理由</td>
+</tr>
+<tr>
+<td>参照とforwardの可用性</td>
+<td>参照のmask前／同極性／重複除外後／cap後の本数、library数、最大類似度・margin、GL/ICEの有限スコア数／候補数、対応query数、proxy種別、runner status・budget打切り・fallback経路</td>
+</tr>
+<tr>
+<td>gate／mergeで何が起きたか</td>
+<td><code>gate_name</code>, <strong>判定した候補identity</strong>, 判定時のS/pop/margin/lib等、発火flag、選択channel、promote／保護／挿入／除外のaction、操作前後の順位、正規化に使った候補集合hashと件数</td>
+</tr>
+</tbody>
+</table>
+<p>stageは少なくとも engine各系統、PubChem channel、forward前後、参照保護／最終mergeを区別し、重複排除を行う段階があればその前後も残す。実装にない重複排除を比較のために追加せず、最終出力をそのまま公式scorerで採点する。未順位付けの候補集合ではRRを無理に定義せず所属だけを記録し、最終RRは未到達を0とする。前処理・モデルへの入力には正解ラベルを渡さず、truth列は監査側で付ける。</p>
+<p><strong>C2の「自分子のtrain行除去」は、公式identityの別表記・他ライブラリ・キャッシュされた参照索引・複数engineにも一貫して適用する。</strong> 外部DB由来の候補は残してよいが、隠したtrain所属を漏らさない。モデル重みに既に含まれる学習経験は参照を消しても消えないため、そこは重複flagで区別する。最終的に「E0だけが当てる分子」を、候補不在、shortlist落ち、forward不足、再順位低下、mergeによる押し下げへ分類できる記録にする。</p>
+<p>確認範囲：依頼・015判断・validation_design末尾、共通selectorと検証脚本・ログ、censusと選択コード／manifest、dev2の500分子のメタデータ。Sparkで既存メタデータの集計のみ実施した。locked2の行・予測・採点結果、新しいモデル実験は参照／実行していない。</p>
+<p>REVIEW_COMPLETE: 016</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="016-c-p2-query-locked2-d-100">016 判断: (c) は受理(補修を実施)、p2 の層定義は query 基準に作り直してから locked2 を固定、D は残す、各 100 を基本</h1>
+<p>作成: 2026-10-25 07:40 JST(Claude Code)。依頼 <code>016_request.md</code>、回答 <code>016_codex.md</code>。</p>
+<h2 id="1">1. 採否(すべて受け入れ)</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断・実施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(c) 再構築の証跡</td>
+<td><strong>補修済み</strong>: <code>spark_select_queries_check.sh</code> は凍結 manifest の max_spectra(8)で再構築し、<code>compare_eval_test_dirs.py</code> が条件(max_spectra/sets/limit/電子質量規約)と全ファイルを比較、不一致・欠落で非 0 終了;シェルは <code>pipefail</code> + 各段の終了値で <code>FAILED</code> を出し、成功時のみ <code>SELECT_CHECK_DONE</code>。保存ログ <code>logs/spark_select_queries_check.log</code>(07:35): selector PASS、<code>TEST.PARQUET IDENTICAL</code>、exclude/solution 同一、mask は集合同一、<code>COMPARE PASS</code>、exit 0。</td>
+</tr>
+<tr>
+<td>(c) 入力条件の検査</td>
+<td><code>select_queries</code> は呼出側が test adduct 以外を渡すと assert;評価器は生成 query が選択ライブラリ・test adduct に属することを assert、パイプラインは本数と adduct を assert、builder は選択行がライブラリ・adduct 条件と max_spectra を満たすことを assert。記述は「ソートと選択の共通化」と「前処理全体の事故防止(assert による検知)」を分けて書く。</td>
+</tr>
+<tr>
+<td>Q1 層定義</td>
+<td><strong>query 基準で再定義してから版を上げる</strong>(現 <code>p2_dev/locked</code> は暫定 v1、locked2 は未開封のまま破棄可)。C: query ライブラリ候補を列挙 → query 側を除いた同極性・重複除外・cap 前の他ライブラリ参照数を条件にし、native forward 可(query に H/Na 正イオン)を主群・不可を副群。G: query ライブラリは enveda-180 固定、他ライブラリ参照の有無・同極性可用性を記録し少/多参照を分ける。E/F: 選択後の query で判定(E = 全負イオン、F = 正イオンあり・H/Na なし;F は NH4/一段脱水(proxy 対象)と K/その他を区別)。D: 独立した真の参照が無い群として残す。C の query ライブラリは条件を満たすライブラリからの固定 seed 選択(ライブラリ別偏りを記録)、同数 tie-break を固定。主ラベル + 副ラベル(参照数・被覆・装置)。各段階の適格数(除外前/後、層割当て前/後)を manifest に保存し、条件を黙って緩めない。</td>
+</tr>
+<tr>
+<td>母集団の訂正</td>
+<td>「NP かつ timsTOF はパネル以外に無い」は census 定義では不成立(<code>in_nplib &amp; has_timstof</code> 717 raw key、参照 ≥20・複数ライブラリ 310、除外後の C/G 交差 53 group)。NP ライブラリ所属・NP 構造注釈(COCONUT)・query 装置を分けて記録し、交差を捨てない。</td>
+</tr>
+<tr>
+<td>prior の層</td>
+<td><code>pool_meta.parquet</code> の pid と <code>pool_*.npy</code> から公式 identity 整列の注釈表を作れる。lpmid/lsid/lsynonyms/pop_public を一律に「文献数」と呼ばない;欠損と真の 0 を分け、分位境界は dev 側で固定。事後層別では真が shortlist に無い分子も分母に残す。</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>D は残し、各 100 × dev2/locked2 を基本(F は適格 241 group で 150×2 は不可能)。N=100 の paired ΔRR(SD 0.25)の 95% 半幅 ≈ 0.049;主要比較・保護層・許容損失を開封前に決め、区間が広ければ未確定。</td>
+</tr>
+<tr>
+<td>分割方式の記述</td>
+<td>実装どおり「seed 5 の一つの並べ替えから先頭 100 = dev2、次の 100 = locked2」と書く(seed 5/6 ではない)。manifest に候補数の各段階・採用数・主/副層・query ライブラリ方針・除外 CSV/fold/census/selector の hash・group 交差チェックを残す。除外ファイルの読込失敗は黙ってスキップしない(census の try/except を除去)。</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>賛成。E/F では <code>n_gl_finite</code>・被覆・<code>fallback_reason</code>・学習器呼出件数を記録し、本命と保険の順序付き出力の一致を確認。差 0 は「学習が無価値」ではなく分岐で未使用の結果。生 ranker の強制適用は別の診断。F の proxy on/off 比較(同 query・同候補、MSG 非重複、実際に H 無し)は有効な検証;adduct 別に適用数・新規採点数・RR 差・保険→learned 移行効果を記録。</td>
+</tr>
+<tr>
+<td>E0 担当への列要件</td>
+<td>別エージェントに送付済み(07:33、07:36 に「実装に無い重複排除を追加しない」の訂正を送付)。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2">2. 次の実装(この順)</h2>
+<ol>
+<li><code>p2_select.py</code> v2: query 基準の層定義、段階別適格数、hash 付き manifest、tie-break 固定、主/副ラベル、群交差チェック → <code>eval_set2/v2/</code>、<code>locked_eval2/v2/</code>(未開封)。</li>
+<li>dev2 v2 の test ファイル(共通 selector、max 8)→ <code>spark_p2dev_chain.sh</code>(E0 の GPU 使用後)。</li>
+<li>注釈表(公式 identity 整列の prior 列)を作成し、事後層別に使う。</li>
+</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

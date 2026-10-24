@@ -127,6 +127,8 @@ def select_queries(items, max_q, adduct_of, ce_of):
     def ce_key(x):
         c = ce_of(x)
         return 0.0 if c is None or c != c else float(c)
+    bad = [adduct_of(x) for x in items if adduct_of(x) not in ADDUCT_SHIFT]
+    assert not bad, f"select_queries: non-test adducts passed by the caller: {sorted(set(bad))[:5]}"
     by_add = {}
     for x in sorted(items, key=lambda x: (adduct_of(x) != "[M+H]+", adduct_of(x), ce_key(x))):
         by_add.setdefault(adduct_of(x), []).append(x)

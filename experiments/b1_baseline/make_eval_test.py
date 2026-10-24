@@ -26,6 +26,8 @@ for r_, k_ in zip(sel["row"].to_list(), sel["inchikey14"].to_list()): rows_by_mo
 keep = set()
 for k_, rs in rows_by_mol.items(): keep.update(select_queries(sorted(rs), a.max_spectra, add_of.__getitem__, ce_of.__getitem__))
 sel = sel.filter(pl.col("row").is_in(sorted(keep)))
+assert sel.filter(~pl.col("adduct").is_in(list(ADDUCT_SHIFT)) | (pl.col("ingest_lib") != pl.col("lib"))).height == 0, "selected query outside the selection library / test adducts"
+assert sel.group_by("inchikey14").agg(pl.len()).filter(pl.col("len") > a.max_spectra).height == 0, "more than max_spectra queries for a molecule"
 rows = sorted(sel["row"].to_list())
 raw = pl.scan_parquet(f"{a.raw}/train.parquet").with_row_index("row").filter(pl.col("row").is_in(rows)).select(
     "row", "inchikey14", "ms2_mzs", "ms2_normalized_intensities", "precursor_mz", "adduct", "ionization_mode", "instrument_type", "collision_energy_ev", "collision_energy_orig", "collision_energy_orig_units").collect()
