@@ -9,7 +9,7 @@ mkdir -p "$RUN/work"
 echo "== $(date +%T) features for $EVAL -> $RUN sets $* [$FEAT_ARGS; runners $RUNNERS; forward scores seeded from $OLD_RUN]"
 .venv/bin/python -X utf8 experiments/b1_baseline/b1_features.py --eval_csv "$EVAL" --store data/processed/spectra_store --tier data/external/pubchem_tier \
   --pop data/external/pubchem_popularity --pool data/external/v2_pool/pool_meta.parquet --coco data/external/coconut --fold_safe data/external/fold_safe_fpnet \
-  --v3 data/external/v3_models/code --out "$RUN" --k 100 --workers 16 $FEAT_ARGS --sets "$@" > "$RUN/features.log" 2>&1
+  --v3 data/external/v3_models/code --out "$RUN" --k 100 --workers ${WORKERS:-16} $FEAT_ARGS --sets "$@" > "$RUN/features.log" 2>&1
 echo "== $(date +%T) features exit $? : $(grep -a '^saved\|^done' "$RUN/features.log" | tr '\n' ' ' | cut -c1-200)"
 for S in "$@"; do
   IN="$RUN/b1_runner_${S}_in.json"
