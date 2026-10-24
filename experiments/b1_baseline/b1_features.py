@@ -26,7 +26,7 @@ import numpy as np, pandas as pd, polars as pl
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from b1_common import ADDUCT_SHIFT, TEST_ADDUCTS, POSITIVE, ELECTRON, clean_peaks, entropy_similarity
 
-PPM, LAM, MAX_REF = 10.0, 0.15, 24
+PPM, LAM, MAX_REF, DUP_SIM = 10.0, 0.15, 24, 0.98   # DUP_SIM: a reference this similar to a query at the same precursor is the same acquisition (re-deposit), not an independent measurement
 
 
 def _init(v3, fs):
@@ -205,6 +205,7 @@ def main():
                 pop = comp["lsid"] + comp["lpmid"] + 0.5 * comp["lsynonyms"] + 1.0 * (comp["np"] != 0) + 0.5 * ((comp["src_mask"].astype(np.int64) & 1) != 0) + 0.5 * np.log1p(np.maximum(comp["lotus_refs"], 0))
                 # ---- library similarity for train-structure candidates (once per (candidate, reference)); scenario masks
                 lib_c1 = np.zeros(n_u); lib_c2 = np.zeros(n_u); lib_same_c1 = np.zeros(n_u); lib_same_c2 = np.zeros(n_u); nref_c1 = np.zeros(n_u, int); nref_c2 = np.zeros(n_u, int)
+                n_dup = 0
                 ref_cache = {}
                 for ci, k in enumerate(keys):
                     pk = rep[k]["pkey"]
@@ -222,6 +223,12 @@ def main():
                             sh = ELECTRON if (lib_of_row[x] == "enveda-180" and mode_of_row[x] == "positive") else 0.0
                             mz, it = spectrum(x, sh); ref_cache[x] = clean_peaks(mz, it, float(prec_of_row[x]) - sh)
                         rmz, rit = ref_cache[x]
+                        # duplicate acquisition (same spectrum re-deposited): same precursor within 5 mDa and near-identical cleaned peaks
+                        dup = False
+                        for s in qspec:
+                            if abs(s["prec"] - (float(prec_of_row[x]) - (ELECTRON if (lib_of_row[x] == "enveda-180" and mode_of_row[x] == "positive") else 0.0))) < 0.005 and s["mode"] == mode_of_row[x]:
+                                if entropy_similarity(s["clean"][0], s["clean"][1], rmz, rit) >= DUP_SIM: dup = True; break
+                        if dup: n_dup += int(is_truth_cand); continue
                         for s in qspec:
                             if s["mode"] != mode_of_row[x]: continue
                             sim = entropy_similarity(s["clean"][0], s["clean"][1], rmz, rit); same = add_of_row[x] == s["adduct"]
@@ -262,7 +269,7 @@ def main():
                 rows_out.append(dict(set=set_name, molecule=mid, group=r.group, lib=lib, n_query=len(qspec), adducts="|".join(sorted(M_by_add)), n_adducts=len(M_by_add),
                                      ce_known=float(np.mean([s["ce"] is not None for s in qspec])), n_window_structures=len(smiles), n_unique=n_u, n_unique_train=int(in_train.sum()),
                                      truth_in_window=bool(truth_raw_in_window), truth_in_shortlist=bool(truth_key in best), n_shortlist=len(best),
-                                     lib_max_c1=float(lib_c1.max()), lib_max_c2=float(lib_c2.max()), truth_other_lib_refs=truth_other_lib_refs, c1_possible=truth_other_lib_refs > 0,
+                                     lib_max_c1=float(lib_c1.max()), lib_max_c2=float(lib_c2.max()), truth_other_lib_refs=truth_other_lib_refs, c1_possible=truth_other_lib_refs > 0, n_truth_dup_refs=int(n_dup),
                                      truth_lib_sim_c1=float(lib_c1[[keys.index(k) for k in keys if rep[k]["pkey"] == truth_key][0]]) if any(rep[k]["pkey"] == truth_key for k in keys) else None,
                                      seconds=time.time() - tm0))
                 if (n_i + 1) % 20 == 0 or n_i == len(ms) - 1:
