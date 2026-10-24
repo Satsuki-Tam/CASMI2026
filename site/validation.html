@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 04:54 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 05:06 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -34,6 +34,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#c1-run_v3_c1-run_v3b_c12026-10-25-0050">評価器の C1 参照選択修正の効果(run_v3_c1 → run_v3b_c1、2026-10-25 00:50)</a></li>
 <li><a href="#m2xrank_v4b-blend21-50-parity2026-10-25-0141eval_test_50_m2xb">再登録候補 M2x(rank_v4b + blend21)の 50 分子 parity(2026-10-25 01:41、eval_test_50_m2xb)</a></li>
 <li><a href="#w7-600-m2x-blend21-test-eval_test_full32026-10-25-0358">W7 600 分子の再実行(M2x blend21、正しい test ファイル eval_test_full3、2026-10-25 03:58)</a></li>
+<li><a href="#locked-2026-10-25-0504seed-4ab-300strict-scorer-experimentsb1_baselinelocked_open_v5">locked 開封の結果(2026-10-25 05:04、seed 4、A/B 各 300、strict、公式 scorer 複製;experiments/b1_baseline/locked_open_v5/)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -408,4 +409,67 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <li><strong>共有キャッシュでの機械的 parity(C2、600 分子、04:03): 合格</strong>。パイプラインの GL 出力を評価器側の順位付けに渡すと、main(blend21 + 欠損分岐)と保険の top-1・RR・top-25 集合・順序付き top-25 が <strong>599/599 で完全一致</strong>(候補ゼロの 1 分子を除く)。→ 提出パイプラインの論理は評価器と一致;独立 forward での差は GPU 実行間の雑音のみ。C1 view は 05:00 頃。</li>
 <li><strong>C1 view(04:48〜04:51)</strong>: 独立 forward では top-1 598/599、RR 597/599(main)、top-25 集合 0.977、順序付き 0.913(GL 雑音 最大 0.144、p99 1.3e-3);<strong>共有キャッシュでは 599/599 完全一致(PASS)</strong>。両 view で機械的一致を確認 → Codex 014 の開封条件を満たす。</li>
 <li><strong>locked 開封(1 回)を 04:53:16 に開始</strong>(<code>spark/jobs/locked_open_v5.sh</code>、manifest: git e949a4a、評価器 sha 3aa42a62…、rank_v2 a84fe3ff…、rank_v4b 237710b6…、registered_main = M1 learned / M2x blend21、保険 τ0.9)。結果は <code>experiments/b1_baseline/locked_open_v5/</code>。</li>
+</ul>
+<h2 id="locked-2026-10-25-0504seed-4ab-300strict-scorer-experimentsb1_baselinelocked_open_v5">locked 開封の結果(2026-10-25 05:04、seed 4、A/B 各 300、strict、公式 scorer 複製;<code>experiments/b1_baseline/locked_open_v5/</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>set / view</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">M1 learned(登録 main)</th>
+<th style="text-align: right;">M1 固定</th>
+<th style="text-align: right;">M2x blend21(登録 main)</th>
+<th style="text-align: right;">M2x learned</th>
+<th style="text-align: right;">M2x 固定</th>
+<th><strong>REGISTERED: M2x blend21 − M1 learned</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A C2</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">0.804</td>
+<td style="text-align: right;">0.735</td>
+<td style="text-align: right;">0.811</td>
+<td style="text-align: right;">0.814</td>
+<td style="text-align: right;">0.719</td>
+<td><strong>+0.007 [−0.016, +0.030]</strong></td>
+</tr>
+<tr>
+<td>B C2</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">0.388</td>
+<td style="text-align: right;">0.362</td>
+<td style="text-align: right;">0.380</td>
+<td style="text-align: right;">0.375</td>
+<td style="text-align: right;">0.365</td>
+<td><strong>−0.008 [−0.028, +0.013]</strong></td>
+</tr>
+<tr>
+<td>B C1</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">0.957</td>
+<td style="text-align: right;">0.644</td>
+<td style="text-align: right;">0.933</td>
+<td style="text-align: right;">0.947</td>
+<td style="text-align: right;">0.614</td>
+<td><strong>−0.023 [−0.087, +0.040]</strong></td>
+</tr>
+<tr>
+<td>A C1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.708</td>
+<td style="text-align: right;">0.778</td>
+<td style="text-align: right;">0.833</td>
+<td style="text-align: right;">0.792</td>
+<td style="text-align: right;">0.769</td>
+<td>+0.125(n=4、判断に使わない)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>学習 − 固定(locked): M1 A +0.069 [+0.039, +0.100]、B +0.026 [+0.007, +0.047];M2x A +0.096 [+0.063, +0.128]、B +0.010 [−0.012, +0.032]。M2x blend21 − M2x learned: A −0.003、B +0.005、B C1 −0.013。</li>
+<li><strong>採用規則の判定(凍結規則どおり)</strong>: C2 の差は A +0.007 / B −0.008 でいずれも |差| &lt; 0.01 かつ方向不一致;C1 の差は −0.023(点推定が許容損失 0.02 を超え、下側 CI −0.087 で保護は宣言できない)→ <strong>M2x は本命に昇格しない(未確定、両候補保持)</strong>。機械的不一致は無い(W7 両 view で共有キャッシュ一致)ので、Codex 014 の区分では「性能未確定」= 比較目的の提出は可。</li>
+<li>読み: locked 集合(開発集合と同じ体制)では M2x と M1 は同等。M2x を推す根拠はパネル体制(クラス 1)だけで、locked はそれを測れない(C1 は 50 分子、他ライブラリ参照のみ)。LB 0.322(M1)との対比では、locked の「学習 − 固定 +0.07」が本番で消えた事実が残る。</li>
+<li>開封後に規則・候補・τ を変更しない。保険 τ0.9 の locked 値: M1 A 0.729 / B 0.362 / B-C1 0.789、M2x A 0.710 / B 0.365 / B-C1 0.792。</li>
 </ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
