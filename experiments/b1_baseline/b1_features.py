@@ -34,6 +34,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity
 
 PPM, SHORTLIST_LAM, MAX_REF, DUP_SIM, K_LIB, LIB_MIN = 10.0, 0.15, 24, 0.98, 20, 0.2
+MAX_HEAVY_FORWARD = 100   # structures above this are not sent to the forward models (GLACIER rejects them; ICEBERG crashed a CUDA context)
 
 
 def _init(v3, fs):
@@ -67,6 +68,14 @@ def _okey(smiles):
         except Exception:
             out.append(None)
     return out
+
+
+def heavy_ok(smiles):
+    try:
+        from rdkit import Chem
+        m = Chem.MolFromSmiles(smiles); return m is not None and m.GetNumHeavyAtoms() <= MAX_HEAVY_FORWARD
+    except Exception:
+        return False
 
 
 def rank_of(scores, idx):
@@ -312,7 +321,7 @@ def main():
                                          **{n: float(comp[n][i]) for n in comp}, pop_public=float(pop[i])))
                 runner.append(dict(mid=mid, spectra=[dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
                                                           ce_ev=[s["ce"]] if s["ce"] is not None else None, ce_orig=None, ce_units="eV" if s["ce"] is not None else None) for s in qspec],
-                                   cands=[smiles[rep[keys[max(idxs, key=lambda j: np.nan_to_num(fpu[j], nan=-1e18))]]["i"]] for idxs in best.values()]))
+                                   cands=[s_ for s_ in (smiles[rep[keys[max(idxs, key=lambda j: np.nan_to_num(fpu[j], nan=-1e18))]]["i"]] for idxs in best.values()) if heavy_ok(s_)]))
                 truth_other_lib_refs = int(sum(1 for x in key_rows.get(truth_key, []) if lib_of_row[x] != lib))
                 tb = best.get(truth_key, [])
                 rows_out.append(dict(set=set_name, molecule=mid, group=r.group, lib=lib, identity_group=int(getattr(r, "identity_group", -1)), n_query=len(qspec), adducts="|".join(sorted(M_by_add)), n_adducts=len(M_by_add),
