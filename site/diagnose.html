@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 14:58 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 15:00 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-c2-strict">1. 漏斗(C2 視点、strict)</a></li>
@@ -26,6 +26,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#5">5. 層別</a></li>
 <li><a href="#6-codex-008">6. 含意 — 次の一手の候補(Codex 008 で優先順位を議論)</a></li>
 <li><a href="#7-shortlist-1510">7. 追補: shortlist 取りこぼしの内訳(15:10)</a></li>
+<li><a href="#8-lambdarank-1500">8. 追補: LambdaRank の特徴追加の予備比較(15:00、開発集合のみ)</a></li>
 </ul>
 </div>
 </div><h1 id="b1-2026-10-24">B1 失敗モード診断(2026-10-24 午後)</h1>
@@ -287,4 +288,44 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li>取りこぼした真はすべて文献人気度 pop &gt; 0 の既知化合物で、FP 順位は中央値 400〜500 位。<strong>FP の K を 200〜300 に増やしても回収は 1〜3 割</strong>で、K=1000 でも 7 割。</li>
 <li>したがって「FP の K を増やす」より <strong>prior 単独の枝(pop 上位 K2 ≈ 50)を shortlist に足す</strong>方が費用対効果が高い見込み(これらの真は窓内で pop 上位に入っている可能性が高い。窓全体での pop 順位は特徴表に無いので、b1_features に shortlist 監査モードを足して Spark で測る)。</li>
 <li>A(timsTOF)では到達可能な真の FP 順位は 90% 点で 20 位、取りこぼし 12 分子はすべて特徴表に行が無い(FP・prior・参照のどの枝にも入らなかった)。</li>
+</ul>
+<h2 id="8-lambdarank-1500">8. 追補: LambdaRank の特徴追加の予備比較(15:00、開発集合のみ)</h2>
+<p>学習 = run1_v2(A/B)と run_c1_v2(B)の fit 群(300 identity 群)、評価 = 同 eval 群(297 分子; B の ICE は未採点)。固定規則 S(2,1,0.5) との strict 差(C2)と C1 視点の MRR。</p>
+<table>
+<thead>
+<tr>
+<th>特徴集合</th>
+<th>C2 strict(LambdaRank / 固定)</th>
+<th>Δ strict [95% CI]</th>
+<th>C1 MRR(LambdaRank / 固定)</th>
+<th>選ばれた設定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v2(28 特徴)</td>
+<td>0.496 / 0.451</td>
+<td><strong>+0.045 [+0.019, +0.073]</strong></td>
+<td>0.843 / 0.461</td>
+<td>leaves 7, lr 0.1</td>
+</tr>
+<tr>
+<td>v3(v2 + 信頼度・順位・窓サイズ 12 特徴)</td>
+<td>0.476 / 0.451</td>
+<td>+0.026 [−0.000, +0.053]</td>
+<td>0.765 / 0.461</td>
+<td>leaves 15, lr 0.03</td>
+</tr>
+<tr>
+<td>v3 + 単調制約</td>
+<td>0.489 / 0.451</td>
+<td>+0.038 [+0.016, +0.061]</td>
+<td>0.817 / 0.461</td>
+<td>leaves 15, lr 0.1</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>300 群規模では <strong>特徴を増やすと悪化</strong>(v3 は gap_gl に重要度が集中し過学習)。単調制約は一部を回復するが v2 に届かない。Codex 007 の W9 懸念どおりで、特徴追加は学習データが 1,000 群規模になってから再検討する。</li>
+<li>v2 の LambdaRank は C1 視点で 0.84(参照のみ 0.89、libpri 0.73〜0.80 より高い)= 参照優先の判断を学習している。コード: <code>b1_rank_train.py --feats {v2,v3} [--monotone]</code>(既定 v2、<code>b1_rankfeats.FEATSETS</code>)。</li>
 </ul></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
