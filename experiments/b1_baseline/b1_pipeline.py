@@ -47,10 +47,11 @@ def paths(args):
                     pool=first("casmi26-v2-pool/pool_meta.parquet", "pool_meta.parquet"), fold_safe=os.path.dirname(first("fpnet_fold0.pt")),
                     v3=os.path.dirname(os.path.dirname(first("casmi26-v3-models/code/casmi/fpnet.py", "v3_models/code/casmi/fpnet.py"))),
                     glacier=os.path.dirname(first("gl_runner.py")), iceberg=os.path.dirname(first("ice_runner.py")), work="/kaggle/working", store=None, runner_python=None)
-    R = r"C:\kaggle\CASMI"
+    R = os.environ.get("CASMI_ROOT", r"C:\kaggle\CASMI" if os.name == "nt" else os.path.expanduser("~/CASMI2026"))
+    runner_py = f"{R}/.venv-ice/Scripts/python.exe" if os.name == "nt" else f"{R}/.venv-ice/bin/python"
     return dict(train=f"{R}/data/raw/train.parquet", tier=f"{R}/data/external/pubchem_tier", pop=f"{R}/data/external/pubchem_popularity", pool=f"{R}/data/external/v2_pool/pool_meta.parquet",
                 fold_safe=f"{R}/data/external/fold_safe_fpnet", v3=f"{R}/data/external/v3_models/code", glacier=f"{R}/data/external/glacier", iceberg=f"{R}/data/external/iceberg",
-                work=args.out, store=f"{R}/data/processed/spectra_store", runner_python=f"{R}/.venv-ice/Scripts/python.exe")
+                work=args.out, store=f"{R}/data/processed/spectra_store", runner_python=runner_py)
 
 
 # ------------------------------------------------------------------------------------------------------------ workers
@@ -172,7 +173,7 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--test", default=None); ap.add_argument("--out", default="experiments/b1_baseline/pipeline_local"); ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--no_forward", action="store_true"); ap.add_argument("--workers", type=int, default=0); ap.add_argument("--folds", default="0")
     args = ap.parse_args(); P = paths(args); os.makedirs(P["work"], exist_ok=True); T0 = time.time(); log = lambda *x: print(f"[b1 {time.time()-T0:7.0f}s]", *x, flush=True)
-    test_path = args.test or ("/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/test.parquet" if KAGGLE else r"C:\kaggle\CASMI\data\raw\test.parquet")
+    test_path = args.test or ("/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/test.parquet" if KAGGLE else os.path.join(os.path.dirname(P["train"]), "test.parquet"))
     workers = args.workers or max(2, (os.cpu_count() or 4) - 1)
     import torch
     sys.path.insert(0, P["v3"])
