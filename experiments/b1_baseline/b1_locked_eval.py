@@ -53,9 +53,12 @@ def scores_for(view, g, mid, gl, ice, gl_ok, ice_ok, c, M, tau, margin, min_gl_c
     # switch (Codex 012 (c)): one output function -- library priority fires or GL cover short -> insurance list, otherwise the learned list
     # blend (2026-10-25 01:05, hedge found with the probe): z(learned) and z(fixed) within the molecule's candidates, 2:1 and 1:1; the GL-cover
     # fallback (main = insurance) is kept, i.e. blend = z(ins) + z(S) there
+    # blend definition unified with the submission pipeline (Codex 013): GL cover short -> the insurance list itself (no blending of the
+    # insurance with the fixed rule); otherwise w*z(learned) + z(S) with S = the fixed rule WITHOUT library priority
     zm, zs = z(np.asarray(main, float)), z(np.asarray(S, float))
+    blend21 = (2 * zm + zs) if gl_cover_ok else ins; blend11 = (zm + zs) if gl_cover_ok else ins
     out = {}
-    for name, sc in (("learned", main), ("insurance", ins), ("fixed", S), ("switch", ins if fire else main), ("blend21", 2 * zm + zs), ("blend11", zm + zs)):
+    for name, sc in (("learned", main), ("insurance", ins), ("fixed", S), ("switch", ins if fire else main), ("blend21", blend21), ("blend11", blend11)):
         order = np.argsort(-np.asarray(sc, float), kind="stable")[:25]; out[name] = [str(g.smiles.values[i]) for i in order]
     return out, dict(gl_cover_ok=bool(gl_cover_ok), gl_cover=float(np.isfinite(glv).mean()), ice_cover=float(np.isfinite(icv).mean()))
 

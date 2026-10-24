@@ -220,3 +220,11 @@ C1(参照あり)と C2(参照なし)の間には本質的なトレードオフ�
 † probe(fit 群込み)、採点はすべて修正表上。eval C2 は 4 モデルとも 0.515〜0.529 で雑音内、C1 は v5b が最良。パネルの v5a/b は 02:20 頃。
 
 blend(z(learned)+z(fixed))の frozen 台帳 paired 差(dev tune+eval): blend21 − learned = A C2 −0.008 [−0.021, +0.005]、B C2 +0.004 [−0.012, +0.019]、B C1(41)−0.057 [−0.121, +0.001](固定比 +0.303)。パネル(probe): rank_v4b blend21 C1 0.891 / C2 0.911(learned 0.737 / 0.882)、rank_v3 blend21 0.812 / 0.938(learned 0.430 / 0.934)。切替規則(GL 不足 or 参照優先発火 → 保険)は A C2 −0.015 [−0.028, −0.004] で利得なし → 不採用。**M2′ の既定案 = rank_v4b + blend21**(`b1_pipeline --main blend21`、保険 τ0.9)。再登録用 `spark/jobs/locked_open_v5.sh`(M1 凍結対照 = run_locked_v2b + rank_v2、M2x = run_v3b_locked + rank_v4b)を配置、Codex 013 の回答後に 1 回だけ実行。
+
+### 13.7 Codex 013 後の確定事項(02:15)
+
+- **候補**: M2x = rank_v4b + blend21(GL のみ、proxy off、保険 τ0.9)を比較用候補として固定。修正表で再学習した rank_v5a/b はパネル C1/C2 で v4b を下回り(v5a 0.676 / 0.870、v5b 0.652 / 0.860 vs v4b 0.737 / 0.882)、eval 群限定でも v5b − v4b = A/C2 −0.038 [−0.072, −0.005] → 不採用。
+- **blend の欠損分岐を三経路で統一**: GL 被覆不足 → 保険リストそのまま、被覆あり → 2·z(learned)+z(S_plain)。
+- **proxy はパネルで利得なし**(rank_v4b、C2): NH4/H2O proxy で被覆が増えた 16 分子の固定 RR 0.891 → 0.834(−0.056 [−0.200, +0.062])、learned +0.056(ns)、提出関数 −0.075。負イオン proxy は固定 0.809 → 0.737 で有害。パネルの非被覆分子は FP+prior だけで RR 0.89 と易しく、公開系の利得条件を再現できない → 朝の既定版は off、実測 NH4 + [M+H]+ 両方を持つ MSG 非重複分子での検証を次段に。
+- **W7 600 の FAIL の原因は古い test ファイル**: `eval_test_full/test.parquet`(10-24 18:31)は builder 修正(float32 丸め・決定的 round-robin)より前の生成物。>8 スペクトル分子 18 件の query 選択差(ppm 差 7.9、真の所属差 1)と、同一スペクトル 573 分子の FP 差(最大 13、float64 ピーク vs float32 store)を説明。現行 builder は評価器と同じ選択を返すことを確認。M2x(blend21)で test を再生成して 600 分子の機械的一致を再実行中(`eval_test_full2`)。
+- **W7 の読み替え**: 提出パイプラインの論理不一致は見つかっていない。残る違いは GPU 実行間の forward 雑音(別報告)。

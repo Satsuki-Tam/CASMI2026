@@ -18,7 +18,7 @@ mols = pl.read_csv(a.eval_csv).filter(pl.col("set").is_in(a.sets))
 if a.limit: mols = pl.concat([mols.filter(pl.col("set") == s_).head(a.limit) for s_ in a.sets])
 meta = pl.read_parquet(f"{a.store}/spec_meta.parquet")
 keys = pl.read_parquet(os.path.join(os.path.dirname(a.store), "train_scorer_keys.parquet")).select("inchikey14", "normalized_smiles").unique("inchikey14")
-sel = meta.join(mols.select("molecule", "lib"), left_on="inchikey14", right_on="molecule", how="inner").filter((pl.col("ingest_lib") == pl.col("lib")) & pl.col("adduct").is_in(list(ADDUCT_SHIFT)))
+sel = meta.join(mols.select("molecule", "lib"), left_on="inchikey14", right_on="molecule", how="inner")   # raw inchikey14, exactly as b1_features builds ik_rows (2026-10-25 check).filter((pl.col("ingest_lib") == pl.col("lib")) & pl.col("adduct").is_in(list(ADDUCT_SHIFT)))
 # adduct round-robin per molecule, [M+H]+ first, then by CE
 sel = sel.with_columns(pl.col("ce_mean").fill_null(0.0), (pl.col("adduct") != "[M+H]+").cast(pl.Int8).alias("not_mh"))
 # deterministic: within an adduct by CE then store row (b1_features sorts the same way), round-robin over adducts ([M+H]+ first, then by adduct name)

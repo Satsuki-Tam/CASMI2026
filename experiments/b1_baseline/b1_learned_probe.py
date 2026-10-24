@@ -76,9 +76,10 @@ for view in a.views:
             rec[f"r_switch{tau}_{mg}"] = rec[f"r_fguard{tau}_{mg}"] if (fire or not gl_ok) else rec["r_learned"]
         ins = np.where(lib >= 0.9, 100.0 + lib, S) if (lib.max() >= 0.9 and lib.max() - second >= 0.2) else S
         rec["r_pipeline"] = rec["r_learned"] if gl_ok else rank_of(ins, t)
-        # hedges between the learned and the fixed list (both z-scored within the molecule's candidates): equal blend and learned-heavy blend
+        # hedges between the learned and the fixed list (both z-scored within the molecule's candidates): equal blend and learned-heavy blend.
+        # Same missing-data branch as the submission pipeline (Codex 013): GL cover short -> the insurance list itself
         zp, zs = zlist(pred), zlist(S)
-        rec["r_blend11"] = rank_of(zp + zs, t); rec["r_blend21"] = rank_of(2 * zp + zs, t)
+        rec["r_blend11"] = rank_of(zp + zs, t) if gl_ok else rank_of(ins, t); rec["r_blend21"] = rank_of(2 * zp + zs, t) if gl_ok else rank_of(ins, t)
         rows.append(rec)
         if rec["r_fixed"] == 1 and rec["r_learned"] > 1:
             C = booster.predict(X, pred_contrib=True); lost_contrib.append(C[t, :-1] - C[top1, :-1]); lost_feats.append((X[t], X[top1]))

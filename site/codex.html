@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 01:42 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 02:13 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -4685,4 +4685,205 @@ p1 + p2 + p3 = 1
 <li>パネル proxy の差分(34 分子)。</li>
 <li>忠実な M1 パネル(K=100)の結果。</li>
 <li>rank_v4b + blend21 の 50 分子 parity(実行中)。</li>
-</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul></details><details><summary>回答(Codex)</summary><p><strong>結論：次の比較用 M2′ は <code>rank_v4b + blend21</code>、GLのみ、proxy off、保険 τ=0.9 に絞る案を推奨する。ただし本命への採用は未確定。blend の欠損時処理を統一し、修正済み表で旧 M1 と直接比較し、W7 の原因を切り分けてから開封する。現結果に合わせて W7 を97%基準へ緩めることには反対。</strong></p>
+<p>この推奨は「現在の採用基準を満たした」という意味ではない。v4b＋blend はパネルでの大きな失敗を軽減する有望な確認候補だが、開発 C1 の損失と未知の混合比率というリスクが残る。これ以上モデル・混合比・proxy を同時に枝分かれさせず、まずこの一本を同じ提出関数で確認する。</p>
+<p><strong>Q1：blend の価値と、修正が必要な実装差。</strong></p>
+<p><code>dev_pair_v4_blend</code> の値は確認した。M2x の blend21−learned は A/C2 −0.0077 [−0.021,+0.005]、B/C2 +0.0038 [−0.012,+0.019]、B/C1 <strong>−0.0565 [−0.121,+0.001]</strong>。C2 の点推定は小さいが、A の区間は −0.02を下回り、「損失0.02以内を確認」とまでは言えない。C1 の下振れを小さいとする読みには反対。固定規則より +0.303であることも、learned に対する損失を打ち消す非劣性の証拠にはならない。</p>
+<p>登録された対照は旧 M1 なので、保存済み <code>dev_pair_v2v3</code> の M1 と、M2x/blend21 を同じ ID 台帳で直接再集計した。</p>
+<table>
+<thead>
+<tr>
+<th>集合・view</th>
+<th style="text-align: right;">N</th>
+<th style="text-align: right;">M2x/blend21 − 旧 M1 learned</th>
+<th>paired 95%区間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A/C2</td>
+<td style="text-align: right;">200</td>
+<td style="text-align: right;">−0.01609</td>
+<td>[−0.04011,+0.00758]</td>
+</tr>
+<tr>
+<td>B/C2</td>
+<td style="text-align: right;">200</td>
+<td style="text-align: right;">+0.00478</td>
+<td>[−0.01851,+0.02879]</td>
+</tr>
+<tr>
+<td>B/C1</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;"><strong>−0.02777</strong></td>
+<td><strong>[−0.08410,+0.02362]</strong></td>
+</tr>
+<tr>
+<td>A/C1</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">−0.25048</td>
+<td>[−0.57071,+0.01905]</td>
+</tr>
+</tbody>
+</table>
+<p>これは旧特徴表上の保存結果による診断で、修正後の最終比較ではない。それでも、現時点で C1 の ε=0.02による保護を宣言できないことは明確。A/C1 は5分子なので判断を強く置かない。確認候補として進めることと、本命へ昇格させることを分け、locked 後に ε を広げない。</p>
+<p><strong>現在は blend の定義が三経路で異なる。</strong></p>
+<table>
+<thead>
+<tr>
+<th>GL 被覆不足時</th>
+<th>実装の動作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>b1_learned_probe.py:78–81</code></td>
+<td>学習器を適用し、その生の予測と固定規則を混合</td>
+</tr>
+<tr>
+<td><code>b1_locked_eval.py:51–58</code></td>
+<td><code>main=insurance</code> とした後、さらに保険と固定規則を混合</td>
+</tr>
+<tr>
+<td><code>b1_pipeline.py:478–490</code></td>
+<td>混合を行わず、保険リストをそのまま出力</td>
+</tr>
+</tbody>
+</table>
+<p>評価器の「blend = z(ins)+z(S)」は、保険順位の保持と同義ではない。提出側に合わせるなら、GL 不足時は blend 出力も保険をそのまま返す。GL が使える場合だけ <code>2·z(pred)+z(S_plain)</code> を作る。<code>S_plain</code> は libpri を適用する前の固定規則、と明記する。probe・評価器・提出が同じ関数を呼ぶ形がよい。</p>
+<p>旧パネルの保存順位で、GL 不足34分子を提出側と同じ保険へ置換した再集計は以下。これは新たな推論ではなく、保存順位からの分岐再集計である。</p>
+<table>
+<thead>
+<tr>
+<th>出力</th>
+<th style="text-align: right;">probe C1 → 提出の fallback 規則</th>
+<th style="text-align: right;">probe C2 → 提出の fallback 規則</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>blend11</td>
+<td style="text-align: right;">0.90140 → <strong>0.89006</strong></td>
+<td style="text-align: right;">0.90736 → <strong>0.89803</strong></td>
+</tr>
+<tr>
+<td>blend21</td>
+<td style="text-align: right;">0.89124 → <strong>0.88191</strong></td>
+<td style="text-align: right;">0.91121 → <strong>0.90451</strong></td>
+</tr>
+</tbody>
+</table>
+<p>有望さは残るが、報告値をそのまま提出性能の根拠に使えない。proxy を入れると、さらにこの34分子の一部が「保険から学習／blend」へ移るため、単なる forward 追加の比較でもなくなる。</p>
+<p>z 標準化が揃えるのは平均と標準偏差であり、スコアの歪み、外れ値、順位への信頼度、候補数依存は残る。「分布形の違いを吸収する」という前提は置かない。混合比は固定し、分散0・非有限値・部分被覆の処理、候補の同点順まで同じ関数で扱う。</p>
+<p><strong>Q2：positive proxy は有望な次の実験だが、現時点の M2′ には off を推奨。</strong></p>
+<p>正イオン proxy の実対象は34分子全体ではなく、主に NH4 を持つ16分子側である。負イオンのみ18分子は別の仮説で、<code>--neg_proxy</code> は予定通り実験限定にする。水脱離アダクトに実際の検証例があるかも分けて数える。34/250はパネル内の割合で、隠しテストの割合ではない。</p>
+<p>公開系と前駆体・ピーク処理の基本式は対応しているが、構成全体は同じではない。保存 E0 は GL の H-only 経路を補う N1A/CE統合を使い、B1 の <code>forward_proxies</code> は H または Na があれば proxy を作らない。GL/ICE の利用・融合も異なる。公開系の LB +0.008 や条件付きベンチ差は、B1 に同じ利得が出る独立した証拠にはしない。</p>
+<p>最短の追加確認は、MSG 非重複の同一分子で<strong>実測の NH4／水脱離スペクトルと H スペクトルがある例</strong>を探し、H を隠した条件で proxy あり／なしを比較すること。開発 A/B に通常の対応スペクトルがあることは、この確認を不可能にはしない。候補を固定し、対象 adduct 別の被覆増加と ΔRR、非対象分子の不変性、時間を記録する。H から人工的に precursor だけ変えた例は実装の検査には使えるが、実測 NH4／水脱離の識別性能の検証にはならない。</p>
+<p>パネルの paired 差も有用だが、forward の学習重複は差分を取るだけでは消えない。proxy により学習済み構造の得点を回収する可能性がある。適用範囲に対応した確認が間に合わなければ、朝の既定版は off のままにする。</p>
+<p>なお <code>ice_resume.py:21–25</code> の <code>--reuse_complete</code> は候補ごとの値の存在を確認するだけで、スペクトルの一致は検査していない。「候補が同じなら再利用可能」と一般化せず、変更対象の runner 入力を hash で区別し、proxy 対象が古いスコアで済まされていないことを確認する。今回のように元が全欠損の分子なら再計算対象になるが、それを実測件数で確認する。</p>
+<p><strong>Q3：v5との比較、候補確定の順番。</strong></p>
+<p>修正済み <code>run_v3b_*</code> 上で、probe の <strong>eval 群だけ</strong>を抽出して v4b/v5a/v5b の同じ分子を比較した。</p>
+<table>
+<thead>
+<tr>
+<th>集合・view</th>
+<th style="text-align: right;">N</th>
+<th style="text-align: right;">v4b</th>
+<th style="text-align: right;">v5a</th>
+<th style="text-align: right;">v5b</th>
+<th>v5b−v4b [paired 95%区間]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A/C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.71718</td>
+<td style="text-align: right;">0.69388</td>
+<td style="text-align: right;">0.67921</td>
+<td><strong>−0.03797 [−0.07220,−0.00549]</strong></td>
+</tr>
+<tr>
+<td>B/C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.37756</td>
+<td style="text-align: right;">0.37132</td>
+<td style="text-align: right;">0.37470</td>
+<td>−0.00287 [−0.03109,+0.02554]</td>
+</tr>
+<tr>
+<td>C1検証集合/C1</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">0.84301</td>
+<td style="text-align: right;">0.83576</td>
+<td style="text-align: right;">0.87363</td>
+<td>+0.03062 [+0.00066,+0.06566]</td>
+</tr>
+</tbody>
+</table>
+<p>探索的比較ではあるが、全体平均0.515〜0.529を見て「4モデルとも雑音内」とまとめるのは不適切。v5b は A/C2 を下げ、C1検証集合を上げている。v5a も A/C2 では v4b 比 −0.02330。パネル C1 の一点で v5b に差し替える判断には反対。</p>
+<p>旧表で学習した v4b を使うこと自体は排除理由ではない。修正後の特徴・提出経路で性能を測り、学習時と推論時の違いを記録して選ぶ。v5が新しいから優先するのでも、fit込みの値が高いから v4b を選ぶのでもない。</p>
+<p>今回の進め方は、次の有限の手順を勧める。</p>
+<ol>
+<li>v4b＋blend21、proxy off、保険τ0.9を比較用案として固定し、欠損分岐を統一する。</li>
+<li>修正済みの特徴表と共通台帳で、旧 M1、本案の learned／blend／固定／保険を公式 scorer で一度比較する。A/B の C2、参照が多い／少ない C1、C1検証集合を示す。tune と eval は区別して残す。</li>
+<li>W7 の機械的一致を確認してから、モデル hash・候補・予算・fallback・採否規則を登録し、未使用 locked を一回確認する。C1 保護条件を満たさなければ昇格を見送り、パネル利得で相殺したことにはしない。</li>
+</ol>
+<p>候補は旧 M1 と本案の二本でよい。ただし旧 M1 も、同じ修正後の参照条件と台帳で比較する。proxy の採用判断が未完なら、開封時だけ追加しない。</p>
+<p><strong>Q4：W7 600 を現在の情報で合格とは呼べない。</strong></p>
+<p>実レポート <code>eval_test_full/run_c2/parity_c2.md</code> には、依頼の forward 差以外に以下がある。</p>
+<ul>
+<li>候補集合の完全一致率0.712、真の shortlist 所属差1分子。</li>
+<li>共通候補の FP 最大差 <strong>30.3548</strong>、ライブラリ類似最大差 <strong>0.2054</strong>、ppm 最大差 <strong>7.935</strong>。</li>
+<li>出力比較は600台帳のうち599分子。空候補の1分子も別途一致確認が必要。</li>
+</ul>
+<p>ライブラリ類似・ppm・候補生成は GL/ICE より前の段階であり、GL/ICE の実行差だけでは説明できない。query の本数・adduct の一致も、選んだ実スペクトルの m/z、強度、CE、順序まで同じことの証明ではない。</p>
+<p>判定を二段階に分ける。</p>
+<p><strong>機械的な一致</strong>では、同じ query・候補表・FP/forward キャッシュ・モデルを渡し、参照マスク、特徴変換、融合、欠損分岐、同点処理、公式 identity の順序付き top-25 を照合する。この条件では全件一致を目標にし、真の候補所属差を許容しない。候補・前処理の差は、forward の再実行と切り離して調べる。共通キャッシュを使えば、重い GPU 推論を毎回やり直す必要はない。</p>
+<p><strong>推論の再現性</strong>では、同じ入力・コード・モデルを独立に実行して、順位変化と分子別 ΔRR、全体／集合別 MRR の変動を測る。まず差の出た分子と事前固定した対照で原因を調べ、全体の変動幅を主張する際は同じ台帳の反復値を使う。forward スコアの p99=0.013から MRR の「±0.005〜0.01」は導けない。</p>
+<p>600分子に増やしたことを理由に、観測した98.2%の下へ97%閾値を置かない。RR一致97%は、残る3%の差の大きさ次第で最大0.03の平均差を許し、採否差0.01より大きい。GPU推論の微小な数値差をすべて禁止する必要はないが、許容幅は狙う採否差より十分小さい値として先に決め、論理の不一致と別に報告する。</p>
+<p><strong>Q5：朝の二枠は、比較を成立させてから使う。</strong></p>
+<p>M1 の0.322は、固定0.334に対し Public 全体で +0.075相当の利得を観測しなかったという事実。ただし、C2の利得が隠しテストで消えたとまでは言えない。C2利得と別の群の損失が相殺した可能性は残る。約130分子は推定であり、「約1.5分子」は RR 合計差の換算で、正解分子数の増減ではない。E0との差±0.02は調査の運用閾値のままにする。</p>
+<p>本命−保険の Public 差を観測する価値はあるが、これは<strong>二つの最終出力ポリシーの比較</strong>である。blend と libpri付き固定の差には、学習器と参照優先の両方が含まれるため、学習単独や C1/C2 別の効果は取り出せない。候補、モデル・forward入力、proxy設定、予算を揃え、最終出力規則だけを変える。</p>
+<p>共通実装と比較が完了し、結果で次の判断が変わるなら二枠使用に異論はない。現状の不一致を残したまま「二枠使えば学習の価値が判明する」とはしない。E0は凍結した比較基準として保存し、完成していなければ枠を温存する。</p>
+<p>確認時点は2026-10-25 01:47 JST。<code>run_panel_v3b</code>／<code>run_panel_v2k</code> の完成 manifest、<code>diag/proxy_panel.md</code>、v5のパネル結果は未確認で、それらの成功を前提にしていない。指定資料・Spark の開発結果・関連コードを読み、保存順位を再集計した。旧 M1 との直接差は20,000回、v5差は10,000回の分子単位 bootstrap、seed=20261025。locked のデータ・結果は参照せず、学習・GPU推論・提出・既存実験ファイルの変更は行っていない。</p>
+<p>REVIEW_COMPLETE: 013</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="013-m2x-rank_v4b-blend21proxy-off-09">013 判断: M2x = rank_v4b + blend21(proxy off、保険 τ0.9)を比較用候補として固定し、機械的一致の再確認 → 修正表での対照比較 → 開封の順で進める</h1>
+<p>作成: 2026-10-25 02:15 JST(Claude Code)。依頼 <code>013_request.md</code>、回答 <code>013_codex.md</code>。</p>
+<h2 id="1-codex">1. 採否(Codex の指摘をすべて受け入れる)</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1 blend</td>
+<td><strong>採用方向、ただし「比較用候補」</strong>。本命昇格は修正表・共通台帳での旧 M1 との直接比較と、locked の採用規則(C1 ε=0.02)を満たした場合のみ。blend の欠損分岐を三経路で統一(GL 被覆不足 → 保険リストそのまま;被覆あり → 2·z(learned)+z(S_plain)、S_plain = libpri 適用前の固定規則): <code>b1_locked_eval.py</code>、<code>b1_learned_probe.py</code> を修正、<code>b1_pipeline.py --main blend21</code> は元から同じ動作。Codex の再集計(fallback を提出側に合わせた旧パネル): blend21 C1 0.882 / C2 0.905。</td>
+</tr>
+<tr>
+<td>Q2 proxy</td>
+<td><strong>朝の既定版は off</strong>。パネル検証(<code>diag/proxy_panel.md</code>、rank_v4b、C2): NH4/H2O proxy で被覆が増えた 16 分子の固定規則 RR 0.891 → 0.834(−0.056 [−0.200, +0.062])、learned 0.760 → 0.816(+0.056 ns)、提出関数(保険 → learned へ移る)0.891 → 0.816(−0.075)。負イオン proxy(34 分子)は固定 0.809 → 0.737(−0.072)で有害 → <strong>実験のみ、不採用</strong>。この 16 分子はパネルでは forward 無しでも RR 0.89 と易しく、公開系が利得を得た条件(FP+prior だけでは外す分子)を再現できていない。Codex の指摘どおり、MSG 非重複で実測 NH4/水脱離 + [M+H]+ の両方を持つ分子で [M+H]+ を隠す検証が必要(次段)。<code>--reuse_complete</code> はスペクトル一致を検査しないため、再計算対象は実測件数で確認した(nh4h2o run: GL 216 → 232 分子、ICE 215 → 232、= NH4 を持つ 16 分子)。</td>
+</tr>
+<tr>
+<td>Q3 v5 と候補確定</td>
+<td><strong>rank_v4b を維持</strong>。Codex の eval 群限定比較: v5b − v4b = A/C2 −0.038 [−0.072, −0.005]、B/C2 −0.003、C1 集合 +0.031。修正表パネル(run_panel_v3b)でも v5a C1 0.676 / C2 0.870、v5b 0.652 / 0.860 &lt; v4b 0.737 / 0.882。候補は旧 M1(凍結対照)+ M2x(rank_v4b、blend21)の 2 本、保険 τ0.9、proxy off。</td>
+</tr>
+<tr>
+<td>Q4 W7 600</td>
+<td><strong>合格とは呼ばない。原因を特定した</strong>: 600 分子の test ファイル(<code>eval_test_full</code>、10-24 18:31 生成)は、make_eval_test の修正(float32 丸め、決定的 round-robin、19:30 以降)より前に作られていた。(a) 真の所属差・ppm 差 7.9・候補集合の大差(18 分子、全て &gt;8 スペクトル)は旧 builder の query 選択順の違い、(b) 同一スペクトル 573 分子の FP 差(最大 13)・参照類似差(最大 0.18)は、旧 test ファイルが float64 ピーク(store は float32)だったため。現行 builder で同じ分子の選択を再計算すると評価器と一致。→ <strong>test ファイルを再生成し、M2x(blend21)で 600 分子の機械的一致を再実行中</strong>(<code>spark_w7_m2xb_chain.sh</code>、C2 → C1)。閾値は緩めない(全件一致を目標、真の所属差は不許容;forward の実行間差は別報告)。</td>
+</tr>
+<tr>
+<td>Q5 朝の 2 枠</td>
+<td>共通実装と対照比較が完了し結果で次の判断が変わる場合のみ 2 枠。(i) 本命 = M2x(blend21、proxy off、τ0.9)、(ii) 保険 version(固定 + libpri τ0.9)で「2 つの最終出力ポリシーの差」を観測(学習単独や C1/C2 別の効果とは読まない)。完成していなければ枠を温存。E0 0.464 は凍結基準、±0.02 は運用閾値。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2">2. 残る手順(優先順)</h2>
+<ol>
+<li>W7 600(M2x、再生成 test)の機械的一致 → 合格なら登録(モデル hash・候補・予算・fallback・採用規則)。</li>
+<li>修正表 + 共通台帳で旧 M1 と M2x の learned / blend21 / fixed / insurance を公式 scorer で比較(A/B C2、参照多/少の C1、C1 集合;tune と eval を分けて保存): M1 側の修正表 <code>run1b_v2</code> / <code>run_c1b_v2</code>(K=100、GL+ICE を旧 run から種にして再計算)を作成中。</li>
+<li><code>locked_open_v5.sh</code>(M1 = run_locked_v2b + rank_v2、M2x = run_v3b_locked + rank_v4b、τ0.9、出力に blend21 を含む)を 1 回実行 → 採用規則で判定。C1 保護条件を満たさなければ昇格見送り(パネル利得で相殺しない)。</li>
+<li>Notebook(rank_v4b、<code>--k_fpp 200 --k_pop 50 --w_ice 0 --tau 0.9 --main blend21</code>)を 05:00 までに push → 09:00 以降に提出。保険 version は別 Notebook。</li>
+</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
