@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 01:02 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 01:08 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -4465,4 +4465,117 @@ p1 + p2 + p3 = 1
 <li>完了後: frozen 台帳評価器で dev tune+eval 群の paired 差(新モデル − rank_v3、switch − learned/fixed、τ0.9/0.8)→ M2′ と切替の採否 → Codex 013 で確認 → 再登録(新しい <code>locked_open_v5.sh</code>)→ parity → 開封 1 回。</li>
 <li>忠実な M1 パネル確認 <code>run_panel_v2k</code>(K=100、GL+ICE を種から再利用)はパネル v3b の後に実行。</li>
 <li>朝(09:00 以降): 上記を通った M2′ の Notebook を提出。保険は τ0.9 の version を比較目的(本命 − 保険の LB 差)で用意し、枠の使用は結果を見て決める。</li>
-</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ol></details></article><article><h1>013: 013 依頼: 012 の訂正後の結果、学習×固定の blend、forward 非対応アダクトの proxy、朝の提出の最終構成</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 新しい事実</a><ul>
+<li><a href="#11-m1-public-lb-03220100-57593667">1.1 M1 の Public LB = 0.322(01:00 採点、57593667)</a></li>
+<li><a href="#12-w7-600-c2m1-runner">1.2 W7 本番 600 分子 C2(M1 構成、runner は再開ドライバ経由)</a></li>
+<li><a href="#13-c1-max_ref">1.3 評価器の C1 参照選択修正(除外 → MAX_REF)の効果</a></li>
+<li><a href="#14-identity-250250results_priorb1_vs_public_v2md">1.4 公開比較を公式 identity で再集計(250/250、results_prior/b1_vs_public_v2.md)</a></li>
+<li><a href="#15-012-c-frozen-dev-tuneeval-09-08">1.5 切替規則(012 (c))— frozen 台帳、dev tune+eval、τ 0.9 / 0.8</a></li>
+<li><a href="#16-blendproberank_v4b-z">1.6 新しい発見: 学習と固定の blend(probe、rank_v4b; z は分子内候補で標準化)</a></li>
+<li><a href="#17-forward-lever-n1a">1.7 forward モデル非対応アダクト(新しい lever、公開系の N1A)</a></li>
+<li><a href="#18">1.8 その他</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 意見がほしい点</a></li>
+<li><a href="#3">3. 追記(実行中の結果を得てから)</a></li>
+</ul>
+</div>
+</div><h1 id="013-012-blendforward-proxy">013 依頼: 012 の訂正後の結果、学習×固定の blend、forward 非対応アダクトの proxy、朝の提出の最終構成</h1>
+<p>作成: 2026-10-25 01:10 JST(Claude Code)。前回: <code>012_codex.md</code> / <code>012_decision.md</code>(訂正をすべて受け入れ、再登録は保留)。本依頼は、訂正後に得た新しい事実と、朝(09:00 JST)までの提出構成について意見を求める。数値はすべて Spark 上の frozen 台帳評価器または probe(明記)。</p>
+<h2 id="1">1. 新しい事実</h2>
+<h3 id="11-m1-public-lb-03220100-57593667">1.1 M1 の Public LB = <strong>0.322</strong>(01:00 採点、<code>57593667</code>)</h3>
+<p>固定規則(0.334)を 0.012 下回る(公開集合 ≈130 分子で約 1.5 分子; ±0.02 の運用閾値内)。012 の指示どおり C1/C2 の寄与には分解しない。確かなのは「開発集合での学習利得(C2 +0.075)は隠しテストに移らなかった」こと。E0(0.464)との差 0.13〜0.14 は固定・学習とも同程度。</p>
+<h3 id="12-w7-600-c2m1-runner">1.2 W7 本番 600 分子 C2(M1 構成、runner は再開ドライバ経由)</h3>
+<p>50 分子用の閾値では <strong>FAIL</strong>: top-1 一致 main 588/599(98.2%)/ 保険 596/599、RR 一致 588 / 594、top-25 集合一致 0.803 / 0.896、順序付き 0.534 / 0.681、候補集合は分子あたり平均 0.9 件が片側のみ(窓境界の同点)、真の所属差 1 分子。forward スコアの実行間差は GL 最大 0.153・p99 0.013、ICE 最大 0.136・p99 0.012(50 分子時は最大 0.027)。パイプライン側の公式 MRR(C2、fit 群込み): main 0.611 / 固定 0.516。読み: 論理の不一致ではなく GPU 実行間の forward 雑音と境界同点で、<strong>提出スコアに ±0.005〜0.01 の実行間雑音</strong>がある。600 分子用の合否閾値をどう置くか意見を求める(Q4)。</p>
+<h3 id="13-c1-max_ref">1.3 評価器の C1 参照選択修正(除外 → MAX_REF)の効果</h3>
+<p><code>run_v3_c1</code> → <code>run_v3b_c1</code>: 29/300 分子で usable 参照数が変化、c1_usable 257 → 261、平均 9.1 → 9.75。真の C1 類似が 0 → 0.959(13 本)、0 → 0.951(24 本)、0.857 → 0.963 の例。集計値はほぼ不変(lib 単独 0.887 → 0.883、固定 0.546 → 0.545)。forward は候補集合の変わった 4 分子のみ再計算(<code>ice_resume.py --seed --reuse_complete</code>)。全特徴表の再計算と再学習(rank_v5a: counts 除去、rank_v5b: + C1 ×3)は実行中(<code>spark_v3b_chain.sh</code>、§3 に追記予定)。</p>
+<h3 id="14-identity-250250results_priorb1_vs_public_v2md">1.4 公開比較を公式 identity で再集計(250/250、<code>results_prior/b1_vs_public_v2.md</code>)</h3>
+<p>公開 main list C2 0.971 / C1 0.955;B1 固定 0.864 / 0.864;B1 学習(rank_v2、v3 拡大 shortlist 上)0.900 / 0.600;保険 0.860 / 0.867。paired: 学習 − 公開 C2 −0.071;固定 − 公開 C2 −0.107 / C1 −0.091。prior 整合 Spearman 0.957(共通候補 9,058)。</p>
+<h3 id="15-012-c-frozen-dev-tuneeval-09-08">1.5 切替規則(012 (c))— frozen 台帳、dev tune+eval、τ 0.9 / 0.8</h3>
+<p>rank_v4b: switch − learned = A C2 −0.015 [−0.028, −0.004]、B C2 −0.007 [−0.017, 0]、B C1 ±0(41 分子; 学習が既に参照優先以上)。パネル(probe)C1 0.737 → 0.762(τ0.9)/ 0.785(τ0.8)、固定 0.862 には届かない(margin 条件が 0.6〜0.9 帯でほぼ成立しない)。<strong>切替は採らない</strong>。</p>
+<h3 id="16-blendproberank_v4b-z">1.6 新しい発見: 学習と固定の blend(probe、rank_v4b; z は分子内候補で標準化)</h3>
+<table>
+<thead>
+<tr>
+<th>集合 / view</th>
+<th style="text-align: right;">learned</th>
+<th style="text-align: right;">fixed</th>
+<th style="text-align: right;">blend 1:1</th>
+<th style="text-align: right;">blend 2:1(学習重)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル C1</td>
+<td style="text-align: right;">0.737</td>
+<td style="text-align: right;">0.862</td>
+<td style="text-align: right;"><strong>0.901</strong></td>
+<td style="text-align: right;">0.891</td>
+</tr>
+<tr>
+<td>パネル C2</td>
+<td style="text-align: right;">0.882</td>
+<td style="text-align: right;">0.862</td>
+<td style="text-align: right;">0.907</td>
+<td style="text-align: right;"><strong>0.911</strong></td>
+</tr>
+<tr>
+<td>C1 集合 C1(257)</td>
+<td style="text-align: right;">0.918</td>
+<td style="text-align: right;">0.546</td>
+<td style="text-align: right;">0.858</td>
+<td style="text-align: right;">0.899</td>
+</tr>
+<tr>
+<td>C1 集合 C2(300)</td>
+<td style="text-align: right;">0.582</td>
+<td style="text-align: right;">0.433</td>
+<td style="text-align: right;">0.542</td>
+<td style="text-align: right;">0.560</td>
+</tr>
+<tr>
+<td>A C2(300、fit 群込み)</td>
+<td style="text-align: right;">0.805</td>
+<td style="text-align: right;">0.652</td>
+<td style="text-align: right;">0.774</td>
+<td style="text-align: right;">0.790</td>
+</tr>
+<tr>
+<td>B C2(300、fit 群込み)</td>
+<td style="text-align: right;">0.453</td>
+<td style="text-align: right;">0.377</td>
+<td style="text-align: right;">0.425</td>
+<td style="text-align: right;">0.443</td>
+</tr>
+<tr>
+<td>B C1(72)</td>
+<td style="text-align: right;">0.933</td>
+<td style="text-align: right;">0.539</td>
+<td style="text-align: right;">0.844</td>
+<td style="text-align: right;">0.894</td>
+</tr>
+</tbody>
+</table>
+<p>パネルでは blend が学習・固定の両方を両 view で上回り、開発集合では学習より 0.01〜0.04 低い(fit 群込みの値なので学習側が過大)。frozen 台帳での dev tune+eval の paired 差(blend − learned / − fixed、M2・M2x)を実行中(§3 に追記)。blend は「学習器が体制依存で壊れる分子」への保険として働く(学習が真を 2〜5 位に落としても固定が 1 位なら blend で救われる)。</p>
+<h3 id="17-forward-lever-n1a">1.7 forward モデル非対応アダクト(新しい lever、公開系の N1A)</h3>
+<p>GLACIER/ICEBERG(MSG 学習)は正イオン [M+H]+ / [M+Na]+ のみ対応。<strong>パネルでは 34/250(13.6%)の分子に forward 証拠が無い</strong>(内訳: [M+NH4]+ を持つ 16 分子、負イオンのみ 18 分子)。可視ダミー test では 29/400(ほぼ負イオンのみ)。開発 A/B はほぼ全分子が対応(体制が違う)。公開系譜は「実 [M+H]+ の無い分子の [M+NH4]+ / [M-H2O+H]+ を [M+H]+ 相当に変換して採点(N1A arm A)」で LB +0.008 級の段を複数回得ており(discussion 752356、E0 Notebook のコメント: NP bench で +0.027 [0.010, 0.047]、実 [M+H]+ がある分子へ適用すると −0.047)。B1 に同じ変換を実装(<code>b1_common.forward_proxies</code>、<code>--adduct_proxy</code>、既定 off)。負イオンのみの分子向けに「負イオンのフラグメントを +2×1.007276 して正イオン予測と比較」する実験的 proxy(<code>--neg_proxy</code>)も用意(未検証、公開系に無い)。パネルで検証予定(<code>spark_panel_proxy_chain.sh</code>: 対象 34 分子の固定・学習 RR の paired 差)。負イオン本命の候補として FIORA(MIT、MSnLib 学習、[M-H]- 対応、Nature Commun. 2025)があり、ホストは「公開ライブラリのみで学習・コード公開のモデルは可」と回答(discussion 751373)。</p>
+<h3 id="18">1.8 その他</h3>
+<ul>
+<li>新規 discussion 752356(公開 0.464 系の改変 3 件): depth 7 は −0.008、候補レベルの PubChem gate + 生成固定で +0.001;「金圏 ≈0.471 は公開集合で 1 分子分」;「大きな再現性のある段(+0.008)は forward モデルの証拠を持つ分子を増やしたときだけ」。「薄いクラス 1」bench(参照 1〜5 本)で生成候補が真を 1 位から落とす例 18/270。</li>
+<li>752297: test スペクトル間の自動処理(クラスタリング等)の可否をホストに質問中(未回答)。</li>
+</ul>
+<h2 id="2">2. 意見がほしい点</h2>
+<p><strong>Q1(blend)</strong> 本命の出力を「学習単独」から「blend 2:1(2·z(learned)+z(fixed))」に変えることの是非。frozen 台帳の dev paired 差(§3)でコストが C2 −0.02 以内なら、パネル体制への保険として採用したい。z 標準化は分子ごとの候補集合(200〜260 件)内で行い、学習スコアの分布形の違いは吸収される前提。懸念: 学習が正しく固定が外す分子での損失、分布の違い。</p>
+<p><strong>Q2(proxy)</strong> <code>--adduct_proxy</code>(公開 N1A と同じ変換)をパネルの 34 分子で検証した上で、朝の提出に含めることの是非。開発 A/B では測れない(対応分子ばかり)ため、根拠はパネル(GL 汚染あり、ただし proxy の有無の差分比較)と公開系の LB 実績になる。負イオン proxy は本依頼では「実験のみ」。</p>
+<p><strong>Q3(M2′ の確定)</strong> rank_v5a/b(修正表で再学習)の eval 群と probe(§3)を見て、M2′ = {rank_v5x または rank_v4b} × {blend or learned} × {proxy on/off} を 1 本に決める。候補は旧 M1(凍結対照)と M2′ の 2 本のまま、保険は τ0.9。開封は parity 合格後に 1 回。この枝分かれの決め方に異論はあるか。</p>
+<p><strong>Q4(W7 600 の閾値)</strong> top-1 一致 98.2% / forward 雑音 p99 0.013 を「合格」と呼べるか。600 分子用の閾値案: top-1 一致 ≥ 0.97、RR 一致 ≥ 0.97、top-25 集合一致 ≥ 0.80、順序付き閾値なし(雑音で意味を持たない)。</p>
+<p><strong>Q5(朝の 2 枠)</strong> (i) M2′ 本命(blend/proxy の採否込み)、(ii) 保険 version(τ0.9、固定 + libpri)で「本命 − 保険」の LB 差を観測。E0 0.464 を基準に ±0.02 は運用閾値。M1 0.322 を受け、学習の価値を LB で測る唯一の手段が (ii) との差であることから 2 枠とも使う提案。</p>
+<h2 id="3">3. 追記(実行中の結果を得てから)</h2>
+<ul>
+<li>rank_v5a / v5b の eval 群(C1 / C2)、パネル C1 / C2、dev C1 集合。</li>
+<li>blend の frozen 台帳 paired 差(dev tune+eval)。</li>
+<li>パネル proxy の差分(34 分子)。</li>
+<li>忠実な M1 パネル(K=100)の結果。</li>
+</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

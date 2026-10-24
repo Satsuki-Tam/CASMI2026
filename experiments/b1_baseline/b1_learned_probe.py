@@ -76,6 +76,9 @@ for view in a.views:
             rec[f"r_switch{tau}_{mg}"] = rec[f"r_fguard{tau}_{mg}"] if (fire or not gl_ok) else rec["r_learned"]
         ins = np.where(lib >= 0.9, 100.0 + lib, S) if (lib.max() >= 0.9 and lib.max() - second >= 0.2) else S
         rec["r_pipeline"] = rec["r_learned"] if gl_ok else rank_of(ins, t)
+        # hedges between the learned and the fixed list (both z-scored within the molecule's candidates): equal blend and learned-heavy blend
+        zp, zs = zlist(pred), zlist(S)
+        rec["r_blend11"] = rank_of(zp + zs, t); rec["r_blend21"] = rank_of(2 * zp + zs, t)
         rows.append(rec)
         if rec["r_fixed"] == 1 and rec["r_learned"] > 1:
             C = booster.predict(X, pred_contrib=True); lost_contrib.append(C[t, :-1] - C[top1, :-1]); lost_feats.append((X[t], X[top1]))
@@ -83,7 +86,7 @@ for view in a.views:
     for c in [c for c in V.columns if c.startswith("r_")]: V[c.replace("r_", "rr_", 1)] = V[c].map(rr)
     md += [f"## view {view}: {nall} molecules, truth in shortlist {len(V)} (strict MRR over {nall}; GL fallback molecules {int((~V.gl_ok.astype(bool)).sum())})", "",
            "| ranking | MRR (strict) | top-1 |", "|---|---:|---:|"]
-    for c in ["rr_learned", "rr_pipeline", "rr_fixed", "rr_lib"] + [f"rr_{k}{tau}_{mg}" for k in ("guard", "fguard", "switch") for tau, mg in GUARDS] + [f"rr_{k}" for k in ABL]:
+    for c in ["rr_learned", "rr_pipeline", "rr_fixed", "rr_lib", "rr_blend11", "rr_blend21"] + [f"rr_{k}{tau}_{mg}" for k in ("guard", "fguard", "switch") for tau, mg in GUARDS] + [f"rr_{k}" for k in ABL]:
         md.append(f"| {c[3:]} | {V[c].sum() / nall:.3f} | {(V[c] == 1).sum() / nall:.3f} |")
     md.append("")
     ins_col = f"rr_fguard{GUARDS[0][0]}_{GUARDS[0][1]}"; sw_col = f"rr_switch{GUARDS[0][0]}_{GUARDS[0][1]}"
