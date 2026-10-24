@@ -9,6 +9,7 @@ SRC = os.path.join(ROOT, "experiments", "b1_baseline")
 files = {n: open(os.path.join(SRC, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py", "b1_rankfeats.py")}
 import argparse
 ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--model", default=os.path.join(SRC, "rank", "lambdarank.txt"), help="LambdaRank model to embed ('' = none -> fixed rule)")
+ap.add_argument("--emit", default="main", choices=["main", "insurance"], help="which list becomes submission.csv (one Kaggle submission per kernel version)")
 ap.add_argument("--pipeline_args", default="", help="extra b1_pipeline.py arguments, e.g. '--k_short 200 --k_pop 50 --w_ice 0'")
 A = ap.parse_args()
 model = A.model
@@ -37,7 +38,8 @@ else:
 import rdkit; print('rdkit', rdkit.__version__, flush=True)
 ''')
 cells.append(f'''PIPELINE_ARGS = {json.dumps(A.pipeline_args.split())}
-''' + '''import subprocess, sys, time, json, os
+EMIT = {json.dumps(A.emit)}   # 'main' = the pipeline's main list is submission.csv; 'insurance' = the fixed rule + library priority list is submission.csv (separate kernel version per Kaggle submission)
+''' + '''import subprocess, sys, time, json, os, shutil
 t0 = time.time()
 cmd = [sys.executable, '-X', 'utf8', '/kaggle/working/b1/b1_pipeline.py', '--out', '/kaggle/working'] + PIPELINE_ARGS
 print('running', ' '.join(cmd), flush=True)
@@ -48,6 +50,9 @@ with open('/kaggle/working/b1_pipeline.log', 'w') as lf:
     rc = p.wait()
 print('pipeline rc', rc, f'{time.time()-t0:.0f}s', flush=True)
 assert os.path.exists('/kaggle/working/submission.csv'), 'submission.csv missing'
+if EMIT == 'insurance':
+    os.replace('/kaggle/working/submission.csv', '/kaggle/working/submission_main.csv'); shutil.copy('/kaggle/working/submission_fixed.csv', '/kaggle/working/submission.csv')
+    print('EMIT insurance: submission.csv = fixed rule + library priority (main list kept as submission_main.csv)', flush=True)
 import pandas as pd
 sub = pd.read_csv('/kaggle/working/submission.csv'); samp = pd.read_csv('/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/sample_submission.csv')
 assert len(sub) == len(samp) and set(sub.molecule_id) == set(samp.molecule_id), (len(sub), len(samp))
