@@ -1,5 +1,5 @@
 {
- "headline": "方針: 自前ベースライン B1(計算は DGX Spark のみ)。10/25 深夜: パネル診断で登録済み候補の学習融合がクラス 1(参照あり)で崩壊することを発見(C2 学習行が真の参照を隠すため「参照あり = 偽」を学習)。Codex 012 の訂正: パネル run は v3 拡大 shortlist、公開比較は 250/250 で再集計、評価器の C1 参照選択に順序バグ(提出パイプラインと不一致)→ 修正して全特徴表を再計算中。再登録は再学習と切替規則の比較の後。locked は未開封。",
+ "headline": "方針: 自前ベースライン B1(計算は DGX Spark のみ)。10/25 深夜: 学習融合のクラス 1 崩壊を発見 → 原因(C2 学習行の参照隠し)を特定 → counts 除去 + C1 ×3(rank_v4b)と、学習と固定の blend で軽減。Codex 012/013 の訂正(パネル構成、公開比較 250/250、評価器の C1 参照選択バグ、blend 欠損分岐、W7 の古い test ファイル)をすべて反映。M1 LB 0.322(固定 0.334)。比較用候補 M2x = rank_v4b + blend21(proxy off、保険 τ0.9)を 600 分子で機械的一致を確認中 → locked 開封(1 回)→ 朝の提出。",
  "kpi": {
   "目標 (Public LB)": "0.480 以上(金圏)、理想 0.500",
   "現在の最高 Public LB": "0.464 (E0, 公開系譜の再現) / 自前 B1 固定規則 0.334 / **M1(学習融合 rank_v2)0.322**(01:00 採点、固定 −0.012 = 公開集合で約 1.5 分子)",
@@ -28,36 +28,53 @@
    "eta": "完了"
   },
   {
-   "state": "run",
-   "name": "特徴表の再計算(C1 参照選択修正、spark_v3b_chain.sh)",
-   "detail": "run_v3b_c1 → run_v3b_eval → run_v3b_p1 → rank_v5a/b 再学習 + probe → run_v3b_locked → run_panel_v3b → run_locked_v2b。forward スコアは旧 run を種に差分のみ再計算",
-   "eta": "stage 2 01:45 / 全体 02:45 頃"
-  },
-  {
    "state": "done",
    "name": "再登録候補の W7 parity / 開発 paired 差",
    "detail": "M2x(rank_v4b)parity 合格(C2 0.662 / C1 0.818 on 50)。dev tune+eval: M2x − M2 A C2 +0.005 [−0.012, +0.022]、B C2 −0.019 [−0.041, +0.002]、B C1 +0.027。M1x − M1 A C2 −0.028 [−0.048, −0.009]",
    "eta": "完了"
   },
   {
-   "state": "run",
-   "name": "W7 本番 600 分子 C2 再実行(M1 構成、再開ドライバ経由)",
-   "detail": "GL 598/599 済、ICE 410/599",
-   "eta": "00:55 頃"
+   "state": "done",
+   "name": "Codex 013 回答と判断(01:47 / 02:15)",
+   "detail": "M2x = rank_v4b + blend21 を比較用候補に固定。v5a/b 不採用、proxy off、blend 欠損分岐の統一、W7 600 の原因特定(古い test ファイル)",
+   "eta": "完了"
   },
   {
    "state": "done",
-   "name": "M1(57593667)の採点",
-   "detail": "12:08 提出 → 01:00 採点 0.322。固定規則 0.334 を 0.012 下回る(±0.02 の運用閾値内)。Codex 012 の指示どおり C1/C2 の寄与には分解しないが、学習融合の開発集合での利得(+0.075)が隠しテストに移らなかったことは確か",
-   "eta": "完了"
+   "name": "忠実な M1 パネル(K=100)",
+   "detail": "rank_v2 C1 0.599 / C2 0.918(固定 0.856 / 0.852)。クラス 1 崩壊は候補構成に依存しない",
+   "eta": "02:15 完了"
+  },
+  {
+   "state": "run",
+   "name": "W7 600 分子の機械的一致(M2x blend21、再生成 test)",
+   "detail": "C2 → C1。候補集合・真の所属・top-1・RR の全件一致を目標",
+   "eta": "C2 03:05 頃"
+  },
+  {
+   "state": "run",
+   "name": "M1 対照の修正表(run1b_v2 / run_c1b_v2)と最終比較(dev_pair_final)",
+   "detail": "共通台帳で旧 M1 と M2x の learned / blend21 / fixed / insurance を公式 scorer で比較",
+   "eta": "03:10 頃"
+  },
+  {
+   "state": "wait",
+   "name": "Codex 014(開封前の登録確認)",
+   "detail": "W7 と最終比較の結果を添えて依頼 → 回答後に locked_open_v5.sh を 1 回実行",
+   "eta": "03:30 頃"
+  },
+  {
+   "state": "wait",
+   "name": "Notebook push(M2x 本命 + 保険 version)",
+   "detail": "rank_v4b 埋め込み、--main blend21、--tau 0.9;保険は --emit insurance。05:00 までに push、09:00 以降に提出",
+   "eta": "03:45 頃"
   }
  ],
  "next": [
-  "v3b 特徴表 → rank_v5a/b → probe → frozen 台帳評価器で dev paired 差(新 − rank_v3、switch − learned/fixed、τ0.9/0.8)→ M2′ と切替の採否",
-  "Codex 013 で確認 → 再登録(`locked_open_v5.sh`)→ 50 分子 parity → locked 開封 1 回(M1 凍結対照 + M2′)",
-  "M2′ Notebook を 05:00 までに push → 09:00 以降に提出。保険 version(τ0.9)は比較目的を決めて用意",
-  "忠実な M1 パネル確認(run_panel_v2k、K=100)と W7 C2 再実行の結果を記録",
-  "朝の進捗報告(docs/progress_2026-10-25_morning.md)"
+  "W7 600(C2)合格 + 最終比較 → Codex 014 → locked 開封(1 回)→ 採用規則で判定",
+  "Notebook 2 version を push(本命 blend21 / 保険)→ 09:00 以降に提出(枠の使用は結果次第)",
+  "朝の進捗報告の確定(E0 との差 0.13 の分解、次段 = E0 を自前分子で実行する移植)",
+  "次段: 実測 NH4 + [M+H]+ を持つ MSG 非重複分子での proxy 検証、FIORA(負イオン)の検討、C1-all view の取得独立性監査"
  ],
  "pages": [
   [

@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 02:23 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 02:25 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -4886,4 +4886,85 @@ p1 + p2 + p3 = 1
 <li>修正表 + 共通台帳で旧 M1 と M2x の learned / blend21 / fixed / insurance を公式 scorer で比較(A/B C2、参照多/少の C1、C1 集合;tune と eval を分けて保存): M1 側の修正表 <code>run1b_v2</code> / <code>run_c1b_v2</code>(K=100、GL+ICE を旧 run から種にして再計算)を作成中。</li>
 <li><code>locked_open_v5.sh</code>(M1 = run_locked_v2b + rank_v2、M2x = run_v3b_locked + rank_v4b、τ0.9、出力に blend21 を含む)を 1 回実行 → 採用規則で判定。C1 保護条件を満たさなければ昇格見送り(パネル利得で相殺しない)。</li>
 <li>Notebook(rank_v4b、<code>--k_fpp 200 --k_pop 50 --w_ice 0 --tau 0.9 --main blend21</code>)を 05:00 までに push → 09:00 以降に提出。保険 version は別 Notebook。</li>
-</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ol></details></article><article><h1>014: 014 依頼: 開封前の登録確認(M2x = rank_v4b + blend21)と、朝の提出可否</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 登録内容(開封前に固定)</a></li>
+<li><a href="#2-013">2. 013 の手順の結果</a><ul>
+<li><a href="#21-blend">2.1 blend の欠損分岐の統一</a></li>
+<li><a href="#22-w7-600">2.2 W7 600 の原因と再実行</a></li>
+<li><a href="#23-proxy">2.3 proxy</a></li>
+<li><a href="#24-m1-k100glicerun_panel_v2k">2.4 忠実な M1 パネル(K=100、GL+ICE、run_panel_v2k)</a></li>
+<li><a href="#25-m1-vs-m2x-3">2.5 修正表・共通台帳での旧 M1 vs M2x(実行中 → §3)</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 追記(結果)</a></li>
+<li><a href="#4">4. 意見がほしい点</a></li>
+</ul>
+</div>
+</div><h1 id="014-m2x-rank_v4b-blend21">014 依頼: 開封前の登録確認(M2x = rank_v4b + blend21)と、朝の提出可否</h1>
+<p>作成: 2026-10-25 02:30 JST(Claude Code)。前回 <code>013_decision.md</code>(採否はすべて受け入れ)。本依頼は、013 の手順 1〜3 の結果を提示し、locked 開封(1 回)と朝の提出の可否を確認するもの。§3 は結果が出た時点で追記する。</p>
+<h2 id="1">1. 登録内容(開封前に固定)</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>M1(凍結対照)</th>
+<th>M2x(比較用候補)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>shortlist / forward</td>
+<td>v2: FP100 ∪ FP+prior100 ∪ 参照20、GL + ICE</td>
+<td>v3: FP100 ∪ FP+prior200 ∪ 参照20 ∪ prior50、GL のみ</td>
+</tr>
+<tr>
+<td>学習器</td>
+<td><code>rank_v2/lambdarank.txt</code>(28 特徴、sha a84fe3ff…)</td>
+<td><code>rank_v4b/lambdarank.txt</code>(23 特徴 = v2_noice − lib_nref − in_train、C1 fit 群 ×3、sha 237710b6…)</td>
+</tr>
+<tr>
+<td>本命の出力</td>
+<td>learned(登録当時のまま)</td>
+<td><strong>blend21 = 2·z(learned) + z(S_plain)</strong>(GL 被覆 &lt; 0.5 なら保険リスト)</td>
+</tr>
+<tr>
+<td>保険</td>
+<td>S(2,1,0.5) + libpri(0.9, 0.2)</td>
+<td>S(2,0,0.5) + libpri(0.9, 0.2)</td>
+</tr>
+<tr>
+<td>locked 特徴表</td>
+<td><code>run_locked_v2b</code>(修正済み C1 参照選択、GL/ICE は旧 run から種)</td>
+<td><code>run_v3b_locked</code>(同)</td>
+</tr>
+<tr>
+<td>提出パイプライン引数</td>
+<td>—</td>
+<td><code>--k_fpp 200 --k_pop 50 --w_ice 0 --tau 0.9 --main blend21 --gl_budget 14000 --deadline_s 30000</code></td>
+</tr>
+<tr>
+<td>proxy</td>
+<td>off</td>
+<td>off</td>
+</tr>
+</tbody>
+</table>
+<p>採用規則(010 のまま): A/B 別の paired C2 差(M2x blend21 − M1 learned)、M2x の C1 損失 ≤ 0.02(下側 CI &gt; −0.02 で保護)、保護下で C2 差 &lt; 0.01 なら実測時間の短い方、方向不一致なら未確定で両候補保持。開封後に規則を変えない。開封スクリプト <code>spark/jobs/locked_open_v5.sh</code>(manifest に git HEAD・sha256・runner 状態を記録、再実行拒否)。</p>
+<h2 id="2-013">2. 013 の手順の結果</h2>
+<h3 id="21-blend">2.1 blend の欠損分岐の統一</h3>
+<p><code>b1_locked_eval.py</code> / <code>b1_learned_probe.py</code> / <code>b1_pipeline.py --main blend21</code> で同一(GL 被覆不足 → 保険リストそのまま;被覆あり → 2·z(learned)+z(libpri 前の固定規則))。</p>
+<h3 id="22-w7-600">2.2 W7 600 の原因と再実行</h3>
+<p>旧 <code>eval_test_full/test.parquet</code>(10-24 18:31)は builder 修正(float32 丸め・決定的 round-robin)前の生成物: &gt;8 スペクトル分子 18 件の query 選択差、同一スペクトル 573 分子の FP 差(float64 ピーク vs float32 store)を説明。現行 builder は評価器と同じ選択を返す(TXFHOGSJIZXREA 等で確認)。再生成 <code>eval_test_full2</code>(2,819 スペクトル / 600 分子)で M2x(blend21)の 600 分子機械的一致を実行中(C2 → C1)。結果は §3。</p>
+<h3 id="23-proxy">2.3 proxy</h3>
+<p>パネルで利得なし(013 判断 §1)。off。</p>
+<h3 id="24-m1-k100glicerun_panel_v2k">2.4 忠実な M1 パネル(K=100、GL+ICE、<code>run_panel_v2k</code>)</h3>
+<p>rank_v2 の C1 0.599 / C2 0.918(固定 0.856 / 0.852、参照単独 0.911)→ クラス 1 崩壊は候補構成に依存しない。公開 main list との差(250 分子): 固定 − 公開 = C2 −0.118 / C1 −0.099。</p>
+<h3 id="25-m1-vs-m2x-3">2.5 修正表・共通台帳での旧 M1 vs M2x(実行中 → §3)</h3>
+<p>M1 側の修正表 <code>run1b_v2</code>(eval_set、K=100、GL+ICE 種あり)/ <code>run_c1b_v2</code>(C1 集合)を計算中。完了後、dev tune+eval と C1 集合で learned / blend21 / fixed / insurance を公式 scorer で比較(<code>dev_pair_final</code>, <code>dev_pair_final_c1set</code>)。</p>
+<h2 id="3">3. 追記(結果)</h2>
+<p>(W7 600 M2x の一致表、dev_pair_final の paired 差を追記)</p>
+<h2 id="4">4. 意見がほしい点</h2>
+<p><strong>Q1</strong> §3 の結果が「W7 機械的一致: 候補集合・真の所属・top-1・RR が全件一致(forward 雑音による順序差は別報告)」「dev C2 で M2x blend21 − M1 learned が −0.02 を下回らない」「C1 集合で M2x blend21 が M1 learned に対し下側 CI &gt; −0.02 でないとしても固定・保険を上回る」を満たしたら、<code>locked_open_v5.sh</code> を実行してよいか。満たさない項目があった場合の扱い(開封せず M1 のみ提出 / 開封して記録のみ)。
+<strong>Q2</strong> 朝の 2 枠: (i) M2x 本命(blend21)、(ii) 同じ Notebook 構成の <code>--emit insurance</code> version(submission.csv = 固定 + libpri τ0.9)で「2 つの最終出力ポリシーの差」を観測。locked の結果が M2x 不採用でも、(i) を「比較用」として提出する価値はあるか(E0 0.464 との差で読む)。
+<strong>Q3</strong> 公開 LB の約 130 分子で 1 分子 ≈ 0.0077。本命 − 保険の差が ±0.02 以内なら「差なし」と読む運用でよいか。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
