@@ -1,0 +1,124 @@
+{
+ "bins_from": "experiments/b1_baseline/eval_set/p1_molecules.csv",
+ "boundaries": {
+  "lsid": [
+   0.693359375,
+   1.38671875,
+   2.302734375
+  ],
+  "lpmid": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "lsynonyms": [
+   0.693359375,
+   1.0986328125,
+   1.38671875
+  ],
+  "lotus_refs": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "pop_public": [
+   1.0400390625,
+   1.93603515625,
+   3.1396484375
+  ]
+ },
+ "eval_csvs": [
+  "experiments/b1_baseline/eval_set/p1_molecules.csv",
+  "experiments/b1_baseline/eval_c1/p1_molecules.csv",
+  "experiments/b1_baseline/panel_np250/p1_molecules.csv",
+  "experiments/b1_baseline/eval_set2/v2/p2_molecules.csv",
+  "experiments/b1_baseline/locked_eval2/v2/p2_molecules.csv"
+ ],
+ "coverage": [
+  {
+   "eval_csv": "experiments/b1_baseline/eval_c1/p1_molecules.csv",
+   "set": "B_nplib",
+   "n": 300,
+   "pool_coverage": 0.947
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/eval_set/p1_molecules.csv",
+   "set": "A_timstof",
+   "n": 300,
+   "pool_coverage": 0.997
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/eval_set/p1_molecules.csv",
+   "set": "B_nplib",
+   "n": 300,
+   "pool_coverage": 0.973
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/eval_set2/v2/p2_molecules.csv",
+   "set": "C_np_crosslib",
+   "n": 100,
+   "pool_coverage": 0.97
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/eval_set2/v2/p2_molecules.csv",
+   "set": "D_np_single",
+   "n": 100,
+   "pool_coverage": 0.96
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/eval_set2/v2/p2_molecules.csv",
+   "set": "E_np_negonly",
+   "n": 100,
+   "pool_coverage": 0.98
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/eval_set2/v2/p2_molecules.csv",
+   "set": "F_np_uncovered",
+   "n": 100,
+   "pool_coverage": 0.94
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/eval_set2/v2/p2_molecules.csv",
+   "set": "G_tims_crosslib",
+   "n": 100,
+   "pool_coverage": 0.99
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/locked_eval2/v2/p2_molecules.csv",
+   "set": "C_np_crosslib",
+   "n": 100,
+   "pool_coverage": 0.98
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/locked_eval2/v2/p2_molecules.csv",
+   "set": "D_np_single",
+   "n": 100,
+   "pool_coverage": 0.96
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/locked_eval2/v2/p2_molecules.csv",
+   "set": "E_np_negonly",
+   "n": 100,
+   "pool_coverage": 0.98
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/locked_eval2/v2/p2_molecules.csv",
+   "set": "F_np_uncovered",
+   "n": 100,
+   "pool_coverage": 0.97
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/locked_eval2/v2/p2_molecules.csv",
+   "set": "G_tims_crosslib",
+   "n": 100,
+   "pool_coverage": 0.99
+  },
+  {
+   "eval_csv": "experiments/b1_baseline/panel_np250/p1_molecules.csv",
+   "set": "P_np250",
+   "n": 250,
+   "pool_coverage": 0.936
+  }
+ ],
+ "pop_public_formula": "lsid + lpmid + 0.5*lsynonyms + 1[np!=0] + 0.5*1[src_mask&1] + 0.5*log1p(max(lotus_refs,0)) (b1_features)"
+}
