@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 08:49 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 08:54 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -43,6 +43,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 </li>
 <li><a href="#e0-merge-cells14pye0-0750">E0 の最終 merge 規則(cells/14.py、E0 比較の読みのために記録、07:50)</a></li>
 <li><a href="#dev2-v2-m2x-run_p2dev_v3rank_v4bw_ice-0probe0845">dev2 v2 の速報(M2x 構成の特徴表 run_p2dev_v3、rank_v4b・w_ice 0、probe、08:45;チェーンの登録評価は後続)</a></li>
+<li><a href="#gl-rankerrank_v4b_nogl-fallback-0851probe-csv-lib_max-09-lib">GL なし ranker(rank_v4b_nogl)と fallback 分岐の比較(08:51;probe の分子別 CSV、保険は lib_max ≥ 0.9 → lib 順位の近似)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -649,4 +650,116 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 </table>
 <ul>
 <li>読み(速報、CI 未計算): (1) <strong>GL 不足 → 保険(固定 + libpri)の fallback は、forward の無い層 E/F で learned より大きく劣る</strong>(C1 で −0.30、C2 で −0.04〜−0.07)。既存の開発集合 A/B は [M+H]+ を持つ分子のみなので fallback 分岐は一度も検証されていなかった(パネルでのみ発動し、そこでは learned のクラス 1 崩壊が重なって保険が有利に見えた)。隠しテストでは被覆なし 29/400。(2) <strong>G(timsTOF query + 他ライブラリ参照)では lib のみ 0.876 ≫ learned 0.652(C1)</strong>: 参照が少なく装置が違う条件で learned が参照を信用しない — 隠しテストのクラス 1 条件に最も近い層で 0.22 の差。C(NP、参照多数)では learned ≈ lib(0.916 vs 0.957)。(3) C2 では lib のみは無力(0.06〜0.13)で learned が最良。→ Codex 017 で「fallback の出力ポリシー(保険 → learned)」と「G 型のクラス 1 の救済(参照の信用度を装置/参照数で条件付け)」を議論する。</li>
+<li>追記 D_np_single(C2 のみ;C1 は定義上 usable 参照 0): 100 分子、<strong>truth が shortlist に入るのは 42/100</strong>、learned 0.269 / pipeline 0.269 / 固定 0.237 / lib 0.065。参照の無い稀な NP 分子では shortlist 到達(候補生成・FPNet 上位 200)が最大の損失源で、順位付けの改善余地は小さい。E0 の PubChem チャネル・候補窓がここで何を拾うかを段階表で確認する。</li>
+</ul>
+<h2 id="gl-rankerrank_v4b_nogl-fallback-0851probe-csv-lib_max-09-lib">GL なし ranker(rank_v4b_nogl)と fallback 分岐の比較(08:51;probe の分子別 CSV、保険は lib_max ≥ 0.9 → lib 順位の近似)</h2>
+<table>
+<thead>
+<tr>
+<th>集合 / view</th>
+<th>GL 被覆</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">rank_v4b(GL 欠損のまま)</th>
+<th style="text-align: right;">GL なし ranker</th>
+<th style="text-align: right;">固定</th>
+<th style="text-align: right;">lib のみ</th>
+<th style="text-align: right;">保険(近似)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル C1</td>
+<td>なし</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">0.680</td>
+<td style="text-align: right;"><strong>0.402</strong></td>
+<td style="text-align: right;">0.809</td>
+<td style="text-align: right;">0.877</td>
+<td style="text-align: right;"><strong>0.824</strong></td>
+</tr>
+<tr>
+<td>パネル C1</td>
+<td>あり</td>
+<td style="text-align: right;">216</td>
+<td style="text-align: right;">0.746</td>
+<td style="text-align: right;">0.490</td>
+<td style="text-align: right;">0.870</td>
+<td style="text-align: right;">0.914</td>
+<td style="text-align: right;">0.876</td>
+</tr>
+<tr>
+<td>パネル C2</td>
+<td>なし</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">0.749</td>
+<td style="text-align: right;">0.707</td>
+<td style="text-align: right;">0.809</td>
+<td style="text-align: right;">0.112</td>
+<td style="text-align: right;"><strong>0.809</strong></td>
+</tr>
+<tr>
+<td>E_np_negonly C1</td>
+<td>なし</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;"><strong>0.856</strong></td>
+<td style="text-align: right;">0.790</td>
+<td style="text-align: right;">0.220</td>
+<td style="text-align: right;">0.926</td>
+<td style="text-align: right;">0.616</td>
+</tr>
+<tr>
+<td>E_np_negonly C2</td>
+<td>なし</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">0.405</td>
+<td style="text-align: right;"><strong>0.483</strong></td>
+<td style="text-align: right;">0.310</td>
+<td style="text-align: right;">0.174</td>
+<td style="text-align: right;">0.306</td>
+</tr>
+<tr>
+<td>F_np_uncovered C1</td>
+<td>なし</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;"><strong>0.866</strong></td>
+<td style="text-align: right;">0.833</td>
+<td style="text-align: right;">0.396</td>
+<td style="text-align: right;">0.896</td>
+<td style="text-align: right;">0.667</td>
+</tr>
+<tr>
+<td>F_np_uncovered C2</td>
+<td>なし</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">0.490</td>
+<td style="text-align: right;">0.490</td>
+<td style="text-align: right;">0.424</td>
+<td style="text-align: right;">0.157</td>
+<td style="text-align: right;">0.424</td>
+</tr>
+<tr>
+<td>G_tims_crosslib C1</td>
+<td>あり</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">0.640</td>
+<td style="text-align: right;">0.454</td>
+<td style="text-align: right;">0.644</td>
+<td style="text-align: right;">0.886</td>
+<td style="text-align: right;">0.640</td>
+</tr>
+<tr>
+<td>G_tims_crosslib C2</td>
+<td>あり</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">0.770</td>
+<td style="text-align: right;">0.621</td>
+<td style="text-align: right;">0.657</td>
+<td style="text-align: right;">0.068</td>
+<td style="text-align: right;">0.589</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>GL なし ranker は fallback 分岐の答えではない: パネルの未被覆 34 分子で保険より −0.42(C1)/ −0.10(C2)。E/F では rank_v4b・GL なしともに保険を上回る(+0.17〜+0.24)。母集団差は消えない。</li>
+<li>共通要因の読み: パネル(timsTOF query・他装置参照)と G(同条件、合成化学)で learned が lib より大きく劣り、公開 NP ライブラリ query(E/F/B/C、参照と同系の装置)では learned が参照を活かす。装置不一致で参照類似度が 0.6〜0.85 帯に落ちる体制を ranker が学習していない(A_timstof の C1 行は 7 分子)。fallback 政策の変更よりも、この体制の学習行追加(G 型)か類似度の装置条件付けが本筋。隠しテストの未被覆 29 分子はパネル型(timsTOF)なので、当面 fallback は保険のままにする。</li>
 </ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

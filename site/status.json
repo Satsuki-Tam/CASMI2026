@@ -82,10 +82,10 @@
    "eta": "dev2 完了後 1〜2 時間"
   },
   {
-   "state": "running",
+   "state": "done",
    "name": "GL なし ranker(fallback 分岐用候補、rank_v4b_nogl)",
-   "detail": "dev2 速報: GL 不足 → 保険の fallback は E/F で learned より −0.3(C1)、パネルの 34 分子では逆に保険が +0.14。GL 特徴を除いて同じ表で学習した ranker を E/F/G/C・パネル・A/B で probe(Codex 017 提案 1)",
-   "eta": "09:10 頃"
+   "detail": "不採用: パネル未被覆 34 分子で保険 0.824 に対し 0.402(C1)。E/F では rank_v4b・GL なしとも保険を +0.17〜+0.24 上回るが、隠しテストの未被覆 29 分子はパネル型(timsTOF)なので fallback は保険のまま。共通要因は timsTOF query + 他装置参照(類似度 0.6〜0.85 帯)の体制を ranker が学習していないこと",
+   "eta": "08:51 完了"
   },
   {
    "state": "running",

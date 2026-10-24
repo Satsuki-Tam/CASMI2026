@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 08:49 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 08:54 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -5795,6 +5795,7 @@ p1 + p2 + p3 = 1
 <li><a href="#1-dev2-v2-m2x-run_p2dev_v3rank_v4bw_ice-0probeci">1. dev2 v2 の速報(M2x 構成の特徴表 run_p2dev_v3、rank_v4b、w_ice 0、probe;登録評価はチェーン完了後。CI 未計算)</a></li>
 <li><a href="#2-run_panel_v3brank_v4b-ab-probe-csvgl-lib_max-09-lib">2. 同じ量をパネル(run_panel_v3b、rank_v4b)と A/B で見る(probe の分子別 CSV、GL 被覆の有無で分割;保険は lib_max ≥ 0.9 → lib 順位、それ以外 → 固定の近似)</a></li>
 <li><a href="#3">3. 提案(優先順、意見を求める)</a></li>
+<li><a href="#4-0855-1-gl-ranker">4. 追記(08:55): 提案 1 の GL なし ranker を実測した</a></li>
 </ul>
 </div>
 </div><h1 id="017-dev2-v2-2-gl-fallback-timstof-query-1">017 依頼: dev2 v2 の速報が示す 2 つの問題(GL 不足 fallback の出力ポリシー、timsTOF query のクラス 1)への対処順序</h1>
@@ -5993,4 +5994,6 @@ p1 + p2 + p3 = 1
 <li><strong>lib の信用度を条件付けする guard</strong>(装置不一致・参照少のときに τ を下げる等)は、2 の学習で解決しない場合の次善。</li>
 <li>E0 自前実行の段階表が出たら、上記の層(E/F/G/パネル fallback)で E0 がどう振る舞うか(E0 は forward 不在でも engine と PubChem チャネルを持つ)を先に見る。</li>
 </ol>
-<p><strong>Q1</strong> 1 と 2 の順序と、1 の比較の保護集合・許容損失の置き方。<strong>Q2</strong> 2 の候補源(fold 0 の残り 133 group vs fold 制約の緩和)。<strong>Q3</strong> 速報の probe 値(CI なし、特徴表ベース)を朝の報告に載せるときの表現。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p><strong>Q1</strong> 1 と 2 の順序と、1 の比較の保護集合・許容損失の置き方。<strong>Q2</strong> 2 の候補源(fold 0 の残り 133 group vs fold 制約の緩和)。<strong>Q3</strong> 速報の probe 値(CI なし、特徴表ベース)を朝の報告に載せるときの表現。</p>
+<h2 id="4-0855-1-gl-ranker">4. 追記(08:55): 提案 1 の GL なし ranker を実測した</h2>
+<p><code>rank_v4b_nogl</code>(同じ表・drop、GL 列を除く 20 特徴)をパネル・E/F/G で probe した(<code>docs/validation_design.md</code> 末尾の表)。<strong>パネルの未被覆 34 分子で保険(近似)0.824 に対し GL なし 0.402(C1)、0.809 に対し 0.707(C2)</strong> — 提案 1 は不採用が妥当。E/F では rank_v4b(GL 欠損のまま)・GL なしの両方が保険を +0.17〜+0.24 上回る。共通要因は「timsTOF query + 他装置参照(類似度 0.6〜0.85 帯)」の体制を ranker が学習していないことと読む(G と パネルで一致、公開 NP ライブラリ query では learned ≥ lib)。→ 提案 2(G 型の C1 学習行追加)と 3(類似度の装置条件付け)の順序・設計に意見を集中してほしい。fallback は当面保険のまま(隠しテストの未被覆 29 分子はパネル型)。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
