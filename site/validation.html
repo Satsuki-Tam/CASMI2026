@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 00:20 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 00:26 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -29,6 +29,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#w7-600-m1-scorer-2224">W7 本番(600 分子、M1 構成、提出パイプライン自体を公式 scorer 複製で採点; 22:24)</a></li>
 </ul>
 </li>
+<li><a href="#2026-10-25-0030-codex-012">候補の再登録(2026-10-25 00:30 起案、Codex 012 の回答後に確定、開封前)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -344,4 +345,37 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 </tr>
 </tbody>
 </table>
-<p>C1 代理では、学習融合はパイプラインの中でも固定規則より +0.09(600 分子、fit 群を含む開発集合)。eval 群だけでも +0.08。</p></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>C1 代理では、学習融合はパイプラインの中でも固定規則より +0.09(600 分子、fit 群を含む開発集合)。eval 群だけでも +0.08。</p>
+<h2 id="2026-10-25-0030-codex-012">候補の再登録(2026-10-25 00:30 起案、Codex 012 の回答後に確定、開封前)</h2>
+<p><strong>理由</strong>: パネル診断(<code>docs/b1_diagnostic_2026-10-24.md</code> §13)で、登録済み候補の学習融合(M1 = rank_v2、M2 = rank_v3)が C1 view(真に他ライブラリ参照あり)で固定規則を 0.26〜0.43 下回ることが判明した。原因は学習行の 78% を占める C2 view で「真の参照を全て隠す」構成のため、学習器が「参照を持つ候補 = 偽」(lib_nref / in_train、および prior との交互作用)を学んだこと。開発集合の C1 は真の参照が少なく類似が中程度のため、この偏りが見えなかった。</p>
+<p><strong>新候補</strong>(011 判断 §4 の「候補数を増やさず、新版・保険・比較規則を開封前に再登録」に従う):</p>
+<table>
+<thead>
+<tr>
+<th>登録</th>
+<th>shortlist / forward</th>
+<th>学習器</th>
+<th>保険</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1x(旧 M1 の置換)</td>
+<td>v2: FP100 ∪ FP+prior100 ∪ 参照20、GL + ICE(<code>run_locked_v2</code>)</td>
+<td><code>rank_v4g</code>(v2 特徴 28 − lib_nref − in_train = 26、C1 fit 群 ×3、sha 7c1f4af6…)</td>
+<td>S(2,1,0.5) + libpri(<strong>0.8</strong>, 0.2)</td>
+</tr>
+<tr>
+<td>M2x(旧 M2 の置換)</td>
+<td>v3: FP100 ∪ FP+prior200 ∪ 参照20 ∪ prior50、GL のみ(<code>run_v3_locked</code>)</td>
+<td><code>rank_v4b</code>(v2_noice 25 − 2 = 23、C1 fit 群 ×3、sha 237710b6…)</td>
+<td>S(2,0,0.5) + libpri(<strong>0.8</strong>, 0.2)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>保険の τ を 0.9 → 0.8 に変更する根拠: 分子別 ΔRR(<code>diag/libpri_delta_*.md</code>)で C1 集合 +0.156〜0.164(損失 ≤ 1 分子)、B +0.039〜0.047、パネル +0.023;C2 損失 A −0.019〜−0.023、B −0.006〜−0.009、パネル −0.022。C2 view で lib_max ≥ 0.8 の最良一致が真であることは一度もないため損失は純粋な誤昇格だが、C1 側の救済が大きい。</li>
+<li>採用規則は 010 のまま(C2 は A/B 別の paired 差、M2x の C1 損失 ≤ 0.02、保護下で C2 差 &lt; 0.01 なら実測時間の短い方)。旧登録(<code>spark/jobs/locked_open.sh</code>)は保存し、開封は新登録(<code>spark/jobs/locked_open_v4.sh</code>、出力 <code>locked_open_v4/</code>)で 1 回のみ。</li>
+<li>開封前条件: 両候補の 50 分子 W7 parity 合格(<code>spark_parity_v4_chain.sh</code>、実行中)、開発 tune+eval 群での旧候補との直接 paired 差(<code>dev_pair_v4_m1</code> / <code>dev_pair_v4_m2</code>、実行中)の記録、Codex 012 の回答。</li>
+<li>開発集合(eval 群、strict)での新旧比較: M1 → M1x: C1 0.824 → 0.833、C2 0.525 → 0.501;M2 → M2x: C1 0.830 → 0.833、C2 0.529 → 0.527。パネル C1: M1 0.588 → M1x 0.699、M2 0.430 → M2x 0.737(固定 0.862、lib 単独 0.908);パネル C2: 0.900 → 0.886、0.934 → 0.882。単調制約(参照は上げる方向のみ)の 3 変種はパネル C1 を 0.80〜0.86 に戻すが C2 を 0.67〜0.69 に崩すため不採用。</li>
+</ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
