@@ -15,7 +15,7 @@ for mode in c2 c1; do
   $PY -X utf8 $B/b1_pipeline.py --test $E/test.parquet --out $E/run_$mode --workers 12 --folds 0 --mask_json $E/mask_$mode.json --solution $E/solution.csv --rank_model $B/rank_v2/lambdarank.txt --tau 0.9 > $E/run_$mode.log 2>&1
   rc=$?; echo "== $(date +%T) exit $rc : $(grep -a 'OFFICIAL\|Traceback\|Error' $E/run_$mode.log | tail -2 | cut -c1-300)"
   [ $rc = 0 ] && [ -s $E/run_$mode/b1_candidates.parquet ] || { echo "PARITY50 FAILED: pipeline $mode"; exit 1; }
-  $PY -X utf8 $B/b1_parity.py --dump $E/run_$mode/b1_candidates.parquet --features_run $B/run1_v2 --view $mode --solution $E/solution.csv --out $E/run_$mode/parity_$mode.md       --pred_main $E/run_$mode/submission.csv --pred_fixed $E/run_$mode/submission_fixed.csv --stage_stats $E/run_$mode/b1_stage_stats.csv --model $B/rank_v2/lambdarank.txt --w_ice 1 --tau 0.9 --margin 0.2 --min_gl_cover 0.5 2>&1 | cut -c1-240
+  $PY -X utf8 $B/b1_parity.py --dump $E/run_$mode/b1_candidates.parquet --features_run $B/run1_v2 --view $mode --solution $E/solution.csv --out $E/run_$mode/parity_$mode.md       --pred_main $E/run_$mode/submission.csv --pred_fixed $E/run_$mode/submission_fixed.csv --stage_stats $E/run_$mode/b1_stage_stats.csv --model $B/rank_v2/lambdarank.txt --w_ice 1 --tau 0.9 --margin 0.2 --min_gl_cover 0.5 --pipe_work $E/run_$mode 2>&1 | cut -c1-240
   prc=${PIPESTATUS[0]}; echo "parity $mode exit $prc"; [ $prc = 0 ] || PARITY_FAIL=1
   echo "-- eval_scores: $(tr -d '\n ' < $E/run_$mode/eval_scores.json | cut -c1-400)"
 done

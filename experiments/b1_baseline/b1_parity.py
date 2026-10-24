@@ -16,7 +16,9 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE); sys
 ap = argparse.ArgumentParser(); ap.add_argument("--dump", required=True); ap.add_argument("--features_run", required=True); ap.add_argument("--view", choices=["c1", "c2"], required=True)
 ap.add_argument("--solution", required=True); ap.add_argument("--out", required=True); ap.add_argument("--pred_main", default=None); ap.add_argument("--pred_fixed", default=None)
 ap.add_argument("--stage_stats", default=None); ap.add_argument("--model", default=None); ap.add_argument("--w_ice", type=float, default=1.0); ap.add_argument("--tau", type=float, default=0.9)
-ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5); ap.add_argument("--top25_min_share", type=float, default=0.95); a = ap.parse_args()
+ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
+ap.add_argument("--top25_set_min_share", type=float, default=0.95, help="top-25 identical as SETS (strict criterion)"); ap.add_argument("--top25_min_share", type=float, default=0.85, help="ordered top-25 identical (tail order is subject to forward-score run-to-run noise)")
+ap.add_argument("--pipe_work", default=None, help="pipeline output dir with gl_out.json / ice_out.json: measures forward-score differences vs the evaluator run"); a = ap.parse_args()
 D = pd.read_parquet(a.dump); D["molecule"] = D["molecule"].astype(str)
 Fall = pd.concat([pd.read_parquet(p) for p in sorted(glob.glob(f"{a.features_run}/b1_features_*.parquet"))], ignore_index=True); Fall["molecule"] = Fall["molecule"].astype(str)
 Mall = pd.concat([pd.read_csv(p) for p in sorted(glob.glob(f"{a.features_run}/b1_molecules_*.csv"))], ignore_index=True); Mall["molecule"] = Mall["molecule"].astype(str); Mall = Mall.set_index("molecule")
@@ -77,7 +79,7 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
         try: ok = json.load(open(p + ".meta.json")).get("status") in ("ok", "partial")
         except Exception: ok = False
         return (json.load(open(p)) if ok else {}), ok
-    stats = dict(n=0, top1_main=0, top1_ins=0, rr_main=0, rr_ins=0, top25_main=0, top25_ins=0, fallback_eval=0)
+    stats = dict(n=0, top1_main=0, top1_ins=0, rr_main=0, rr_ins=0, top25_main=0, top25_ins=0, set25_main=0, set25_ins=0, fallback_eval=0)
     truth_of = dict(zip(S.molecule_id, S.smiles))
     for s_name, Fs in F.groupby("set"):
         gl, gl_ok = load("gl", s_name); ice, ice_ok = load("ice", s_name)
@@ -102,17 +104,30 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
             t = truth_of[mid]
             stats["n"] += 1
             stats["top1_main"] += ev_main[0] == pp_main[0]; stats["top1_ins"] += ev_ins[0] == pp_ins[0]
-            stats["top25_main"] += ev_main == pp_main; stats["top25_ins"] += ev_ins == pp_ins
+            stats["top25_main"] += ev_main == pp_main; stats["top25_ins"] += ev_ins == pp_ins; stats["set25_main"] += set(ev_main) == set(pp_main); stats["set25_ins"] += set(ev_ins) == set(pp_ins)
             stats["rr_main"] += metric.per_molecule_reciprocal_rank(t, pm_of[mid].split(";")) == metric.per_molecule_reciprocal_rank(t, [str(g.smiles.values[i]) for i in np.argsort(-main, kind="stable")[:25]])
             stats["rr_ins"] += metric.per_molecule_reciprocal_rank(t, pf_of[mid].split(";")) == metric.per_molecule_reciprocal_rank(t, [str(g.smiles.values[i]) for i in np.argsort(-ins, kind="stable")[:25]])
     n = max(stats["n"], 1)
     md += ["", f"## output agreement on {stats['n']} molecules (model {os.path.basename(a.model)}, w_ice {a.w_ice:g}, libpri({a.tau},{a.margin}), GL fallback < {a.min_gl_cover:g})", "",
-           "| output | top-1 identical | RR identical | ordered top-25 identical (official identities) |", "|---|---:|---:|---:|",
-           f"| main (learned + fallback) | {stats['top1_main']}/{n} | {stats['rr_main']}/{n} | {stats['top25_main']}/{n} ({stats['top25_main']/n:.3f}) |",
-           f"| insurance (fixed + libpri) | {stats['top1_ins']}/{n} | {stats['rr_ins']}/{n} | {stats['top25_ins']}/{n} ({stats['top25_ins']/n:.3f}) |", f"evaluator-side GL fallbacks: {stats['fallback_eval']}"]
+           "| output | top-1 identical | RR identical | top-25 identical as sets | ordered top-25 identical (official identities) |", "|---|---:|---:|---:|---:|",
+           f"| main (learned + fallback) | {stats['top1_main']}/{n} | {stats['rr_main']}/{n} | {stats['set25_main']}/{n} ({stats['set25_main']/n:.3f}) | {stats['top25_main']}/{n} ({stats['top25_main']/n:.3f}) |",
+           f"| insurance (fixed + libpri) | {stats['top1_ins']}/{n} | {stats['rr_ins']}/{n} | {stats['set25_ins']}/{n} ({stats['set25_ins']/n:.3f}) | {stats['top25_ins']}/{n} ({stats['top25_ins']/n:.3f}) |", f"evaluator-side GL fallbacks: {stats['fallback_eval']}"]
+    if a.pipe_work:   # forward-score run-to-run differences (the pipeline's own runners vs the evaluator run's stored scores)
+        for model in ("gl", "ice"):
+            pw = os.path.join(a.pipe_work, f"{model}_out.json")
+            if not os.path.exists(pw): continue
+            P = json.load(open(pw)); diffs = []
+            for s_name, Fs in F.groupby("set"):
+                ref, _ok = load(model, s_name)
+                for mid in Fs.molecule.unique():
+                    for smi, val in (P.get(mid) or {}).items():
+                        r_ = (ref.get(mid) or {}).get(smi)
+                        if val is not None and r_ is not None: diffs.append(abs(float(val) - float(r_)))
+            if diffs: d_ = np.array(diffs); md.append(f"forward-score noise {model}: {len(d_)} pairs, |diff| max {d_.max():.2e}, mean {d_.mean():.2e}, p99 {np.percentile(d_, 99):.2e}")
     if stats["top1_main"] < n: fails.append(f"main top-1 differs for {n - stats['top1_main']} molecules")
     if stats["top1_ins"] < n: fails.append(f"insurance top-1 differs for {n - stats['top1_ins']} molecules")
     if stats["rr_main"] < n or stats["rr_ins"] < n: fails.append(f"RR differs (main {n - stats['rr_main']}, insurance {n - stats['rr_ins']} molecules)")
+    if stats["set25_main"] / n < a.top25_set_min_share or stats["set25_ins"] / n < a.top25_set_min_share: fails.append(f"top-25 sets identical below {a.top25_set_min_share:.2f} (main {stats['set25_main']/n:.3f}, insurance {stats['set25_ins']/n:.3f})")
     if stats["top25_main"] / n < a.top25_min_share or stats["top25_ins"] / n < a.top25_min_share: fails.append(f"ordered top-25 identical below {a.top25_min_share:.2f} (main {stats['top25_main']/n:.3f}, insurance {stats['top25_ins']/n:.3f})")
 else:
     md += ["", "(output agreement not run: --pred_main/--pred_fixed/--model not given)"]
