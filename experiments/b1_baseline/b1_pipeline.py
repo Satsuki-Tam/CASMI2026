@@ -195,6 +195,10 @@ def main():
     ap.add_argument("--exclude_rows", default=None, help="evaluation: JSON list of spectra-store rows never used as references (the query acquisitions) -> class-1 proxy")
     ap.add_argument("--exclude_identities", default=None, help="evaluation: JSON list of official keys whose references are removed and whose train membership is hidden -> class-2 proxy")
     ap.add_argument("--solution", default=None, help="evaluation: CSV with molecule_id,smiles; scores the submission with the official scorer replica")
+    ap.add_argument("--mask_json", default=None, help="evaluation: per-molecule masks {molecule_id: {ids: [...], rows: [...], same_lib: {identity, lib}}} (same conventions as b1_features)")
+    ap.add_argument("--gl_budget", type=int, default=GL_BUDGET); ap.add_argument("--ice_budget", type=int, default=ICE_BUDGET)
+    ap.add_argument("--deadline_s", type=int, default=0, help="wall-clock deadline since start; runner budgets are capped at deadline - elapsed - 900 s (0 = off)")
+    ap.add_argument("--min_gl_cover", type=float, default=0.5, help="learned fusion only when GL scored at least this fraction of a molecule's candidates (else the fixed rule)")
     args = ap.parse_args(); P = paths(args); os.makedirs(P["work"], exist_ok=True); T0 = time.time(); log = lambda *x: print(f"[b1 {time.time()-T0:7.0f}s]", *x, flush=True)
     test_path = args.test or ("/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/test.parquet" if KAGGLE else os.path.join(os.path.dirname(P["train"]), "test.parquet"))
     workers = args.workers or max(2, (os.cpu_count() or 4) - 1)
@@ -261,7 +265,8 @@ def main():
         log(f"library index: {len(key_rows):,} official identities with reference spectra")
         EXCL_ROWS = set(json.load(open(args.exclude_rows))) if args.exclude_rows else set()
         EXCL_IDS = set(json.load(open(args.exclude_identities))) if args.exclude_identities else set()
-        if EXCL_ROWS or EXCL_IDS: log(f"EVALUATION MODE: {len(EXCL_ROWS)} reference rows and {len(EXCL_IDS)} identities masked")
+        MASK = json.load(open(args.mask_json)) if args.mask_json else {}
+        if EXCL_ROWS or EXCL_IDS or MASK: log(f"EVALUATION MODE: global masks {len(EXCL_ROWS)} rows / {len(EXCL_IDS)} identities; per-molecule masks for {len(MASK)} molecules")
         for n_i, (mid, spectra) in enumerate(mols.items()):
             tm0 = time.time()
             known = [s for s in spectra if s["adduct"] in ADDUCT_SHIFT]
@@ -322,9 +327,10 @@ def main():
                     if p["trow"] < 0: p["trow"] = tier_row[i]
                     if p["pid"] < 0: p["pid"] = pool_pid[i]; p["pkey"] = pool_key[i]
                     if np.isfinite(fp[i]) and fp[i] > p["fp"]: p["fp"] = float(fp[i])
-            if EXCL_IDS:
+            mk = MASK.get(str(mid), {}); excl_ids = EXCL_IDS | set(mk.get("ids", [])); excl_rows = EXCL_ROWS | set(int(x) for x in mk.get("rows", [])); same_lib = mk.get("same_lib")
+            if excl_ids:
                 for k in list(rep):
-                    if rep[k]["pkey"] in EXCL_IDS:
+                    if rep[k]["pkey"] in excl_ids:
                         if rep[k]["trow"] < 0 and not rep[k]["coco"]: del rep[k]      # a library-only structure would not exist as a candidate for a novel molecule
                         else: rep[k]["train"] = False
             keys = list(rep); n_u = len(keys)
@@ -343,8 +349,9 @@ def main():
             lib = np.zeros(n_u); lib_same = np.zeros(n_u); nref = np.zeros(n_u, int)
             for ci, k in enumerate(keys):
                 pk = rep[k]["pkey"]
-                if not rep[k]["train"] or pk is None or pk not in key_rows or pk in EXCL_IDS: continue
-                rrows = [int(x) for x in key_rows[pk] if x not in EXCL_ROWS]
+                if not rep[k]["train"] or pk is None or pk not in key_rows or pk in excl_ids: continue
+                rrows = [int(x) for x in key_rows[pk] if x not in excl_rows]
+                if same_lib and pk == same_lib.get("identity"): rrows = [x for x in rrows if lib_of_row[x] != same_lib.get("lib")]   # class-1 view: references from other libraries only (as b1_features)
                 kept = []
                 for x in rrows:                                       # duplicate acquisitions of a query spectrum are not independent references
                     if x not in ref_cache:
@@ -404,6 +411,9 @@ def main():
     # ---- forward models: weakest library match first
     runner.sort(key=lambda it: it["lib_max"]); items = [dict(mid=it["mid"], spectra=it["spectra"], cands=it["cands"]) for it in runner]
     json.dump(items, open(f"{P['work']}/b1_forward_in.json", "w"))
+    def _budget(b):
+        if args.deadline_s > 0: b = min(b, int(args.deadline_s - (time.time() - T0) - 900))
+        return max(300, int(b))
     GL, ICE = {}, {}
     if not args.no_forward and items:
         if KAGGLE:
@@ -413,15 +423,15 @@ def main():
             except Exception as e: log("site preseed failed (runner will try its own install):", repr(e))
             if args.w_ice == 0: log("ICE skipped (w_ice = 0)")
             else:
-              try: ICE = ice_fuse.run_ice(P["iceberg"], items, workdir=f"{P['work']}/ice_work", device=dev, budget_s=ICE_BUDGET, site=f"{P['work']}/ice_site", extra_args=["--any-rdkit"]); log("ICE done")
+              try: ICE = ice_fuse.run_ice(P["iceberg"], items, workdir=f"{P['work']}/ice_work", device=dev, budget_s=_budget(args.ice_budget), site=f"{P['work']}/ice_site", extra_args=["--any-rdkit"]); log("ICE done")
               except Exception as e: log("ICE failed:", repr(e))
-            try: GL = gl_fuse.run_gl(P["glacier"], items, workdir=f"{P['work']}/gl_work", device=dev, budget_s=GL_BUDGET, site=f"{P['work']}/ice_site", wheels=os.path.join(P["iceberg"], "wheels"), extra_args=["--any-rdkit"]); log("GL done")
+            try: GL = gl_fuse.run_gl(P["glacier"], items, workdir=f"{P['work']}/gl_work", device=dev, budget_s=_budget(args.gl_budget), site=f"{P['work']}/ice_site", wheels=os.path.join(P["iceberg"], "wheels"), extra_args=["--any-rdkit"]); log("GL done")
             except Exception as e: log("GL failed:", repr(e))
         else:
             for name, pkg, script in (("gl", P["glacier"], "gl_runner.py"), ("ice", P["iceberg"], "ice_runner.py")):
                 if name == "ice" and args.w_ice == 0: log("ICE skipped (w_ice = 0)"); continue
                 out = f"{P['work']}/{name}_out.json"
-                subprocess.run([P["runner_python"], f"{pkg}/{script}", pkg, f"{P['work']}/b1_forward_in.json", out, "--device", dev, "--site", "none", "--budget", str(GL_BUDGET if name == "gl" else ICE_BUDGET)],
+                subprocess.run([P["runner_python"], f"{pkg}/{script}", pkg, f"{P['work']}/b1_forward_in.json", out, "--device", dev, "--site", "none", "--budget", str(_budget(args.gl_budget if name == "gl" else args.ice_budget))],
                                stdout=open(f"{P['work']}/{name}.log", "w"), stderr=subprocess.STDOUT)
                 try: (GL if name == "gl" else ICE).update(json.load(open(out))); log(f"{name} done")
                 except Exception as e: log(f"{name} output missing:", repr(e))
@@ -457,7 +467,9 @@ def main():
         top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
         if lib.max() >= args.tau and lib.max() - second >= args.margin: S = np.where(lib >= args.tau, 100.0 + lib, S); fused_stats["lib_priority"] += 1
         order = np.argsort(-S, kind="stable"); sub_fixed.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
-        if booster is not None:
+        gl_cover_ok = np.isfinite(g).sum() >= max(2, args.min_gl_cover * len(rows))
+        if booster is not None and not gl_cover_ok: fused_stats["fallback_gl_cover"] += 1
+        if booster is not None and gl_cover_ok:
             try:
                 mi = molinfo.get(str(mid), dict(n_query=1, ce_known=0.0))
                 X = feature_matrix(fp, g, ic, pop, [r["lsid"] for r in rows], [r["lpmid"] for r in rows], [r["lsynonyms"] for r in rows], [r["np"] for r in rows], [r["src_mask"] for r in rows],
@@ -470,7 +482,7 @@ def main():
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, w_ice=args.w_ice, tau=args.tau, margin=args.margin, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
@@ -485,7 +497,7 @@ def main():
             return official, so.assign(rr=[metric.per_molecule_reciprocal_rank(t_, str(p_).split(";")) for t_, p_ in zip(so.smiles, pred)])
         official, per = _score(df); official_fixed, per_fixed = _score(df_fixed)
         per = per.merge(per_fixed[["molecule_id", "rr"]].rename(columns={"rr": "rr_fixed"}), on="molecule_id", how="left"); per.to_csv(f"{P['work']}/eval_per_molecule.csv", index=False)
-        out_ = dict(official_mrr25=official, official_mrr25_fixed=official_fixed, learned_model=(model_path if booster is not None else None), n=len(per), masks=dict(rows=len(EXCL_ROWS), identities=len(EXCL_IDS)))
+        out_ = dict(official_mrr25=official, official_mrr25_fixed=official_fixed, learned_model=(model_path if booster is not None else None), n=len(per), masks=dict(rows=len(EXCL_ROWS), identities=len(EXCL_IDS), per_molecule=len(MASK)))
         for col in ("set", "group", "lib"):
             if col in per.columns: out_[f"by_{col}"] = {str(k): dict(main=round(float(g_.rr.mean()), 4), fixed=round(float(g_.rr_fixed.mean()), 4)) for k, g_ in per.groupby(col)}
         json.dump(out_, open(f"{P['work']}/eval_scores.json", "w"), indent=1)

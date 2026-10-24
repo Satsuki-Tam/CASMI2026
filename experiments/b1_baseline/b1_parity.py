@@ -1,23 +1,27 @@
-"""W7 parity test (Codex 007): the submission pipeline's candidate dump vs the evaluator's feature table on the same molecules and view.
+"""W7 parity test (Codex 007/009): the submission pipeline's candidate dump vs the evaluator's feature table on the same molecules and view,
+and -- when the pipeline's fixed-rule submission is given -- the agreement of the two paths' fixed-rule top-25 lists and per-molecule RR.
 
-Compared per molecule: the candidate sets (official scorer keys), whether the truth is in each, and on the common candidates the features
-both sides compute (fp, pop, library similarity of the view, in_tier / in_coconut / in_train flags, ppm error). Differences point at
-evaluation-vs-submission drift (W7); the official scores of the pipeline run itself are in its eval_scores.json.
-Usage: python b1_parity.py --dump <pipeline_out>/b1_candidates.parquet --features_run experiments/b1_baseline/run1_v2 --view c2 --solution <eval_test_set>/solution.csv --out <pipeline_out>/parity.md
+Compared per molecule: candidate sets (official scorer keys), truth membership, features both sides compute (fp, pop, library similarity
+of the view, in_tier / in_coconut / in_train, ppm error); with --pred_csv: top-1 agreement, |ΔRR| between the pipeline's fixed output and
+the evaluator's fixed rule S(2, w_ice, 0.5) (+ libpri tau/margin) computed from the feature table and the evaluator run's GL/ICE scores.
+Usage: python b1_parity.py --dump <pipeline_out>/b1_candidates.parquet --features_run experiments/b1_baseline/run1_v2 --view c2 --solution <eval_test>/solution.csv
+                           --out <pipeline_out>/parity_c2.md [--pred_csv <pipeline_out>/submission_fixed.csv --w_ice 1 --tau 0.9 --margin 0.2]
 """
-import argparse, glob, os
+import argparse, glob, json, os, sys
 import numpy as np, pandas as pd
+HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(HERE)), "src"))
 
 ap = argparse.ArgumentParser(); ap.add_argument("--dump", required=True); ap.add_argument("--features_run", required=True); ap.add_argument("--view", choices=["c1", "c2"], required=True)
-ap.add_argument("--solution", required=True); ap.add_argument("--out", required=True); a = ap.parse_args()
+ap.add_argument("--solution", required=True); ap.add_argument("--out", required=True); ap.add_argument("--pred_csv", default=None); ap.add_argument("--w_ice", type=float, default=1.0)
+ap.add_argument("--tau", type=float, default=0.9); ap.add_argument("--margin", type=float, default=0.2); a = ap.parse_args()
 D = pd.read_parquet(a.dump); D["molecule"] = D["molecule"].astype(str)
-F = pd.concat([pd.read_parquet(p) for p in sorted(glob.glob(f"{a.features_run}/b1_features_*.parquet"))], ignore_index=True)
+F = pd.concat([pd.read_parquet(p) for p in sorted(glob.glob(f"{a.features_run}/b1_features_*.parquet"))], ignore_index=True); F["molecule"] = F["molecule"].astype(str)
 S = pd.read_csv(a.solution); S["molecule_id"] = S["molecule_id"].astype(str)
 v = a.view
 keep = F[f"in_short_{v}"].astype(bool)
 if v == "c2": keep &= (F.in_tier | F.in_coconut | F.in_train_c2).astype(bool)
 F = F[keep]
-rows, diffs = [], []
+rows = []
 for _, s in S.iterrows():
     mid = s.molecule_id; truth = s.scorer_key if "scorer_key" in S.columns else None
     f = F[F.molecule == mid]; p = D[D.molecule == mid]
@@ -48,7 +52,38 @@ if "fp_absdiff_max" in R.columns:
            f"| ppm error abs diff max | {R.ppm_absdiff_max.max():.3f} |"]
 md += ["", "## by set", "", "| set | n | identical sets | Jaccard mean | truth in F | truth in P |", "|---|---:|---:|---:|---:|---:|"]
 for k, g in R.groupby("set"): md.append(f"| {k} | {len(g)} | {(g.jaccard == 1).mean():.3f} | {g.jaccard.mean():.3f} | {g.truth_in_f.mean():.3f} | {g.truth_in_p.mean():.3f} |")
+# ---- fixed-rule output agreement: the pipeline's fixed submission vs the evaluator's fixed rule from the feature table + the run's forward scores
+if a.pred_csv and os.path.exists(a.pred_csv):
+    from b1_evaluate import z, term
+    import metric
+    P = pd.read_csv(a.pred_csv); P["molecule_id"] = P["molecule_id"].astype(str); pred_p = dict(zip(P.molecule_id, P.smiles.astype(str)))
+    def load(model, s):
+        p = f"{a.features_run}/work/{model}_{s}.json"
+        try: ok = json.load(open(p + ".meta.json")).get("status") in ("ok", "partial")
+        except Exception: ok = False
+        return (json.load(open(p)) if ok else {}), ok
+    agree1 = []; drr = []; both = 0
+    for s_name, Fs in F.groupby("set"):
+        gl, gl_ok = load("gl", s_name); ice, ice_ok = load("ice", s_name)
+        if a.w_ice == 0: ice, ice_ok = {}, False
+        for mid, g in Fs.groupby("molecule", sort=False):
+            if mid not in pred_p or mid not in set(S.molecule_id): continue
+            g = g.reset_index(drop=True); fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float); lib = g[f"lib_sim_{v}"].values.astype(float)
+            glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
+            icv = np.array([np.nan if (ice.get(mid) or {}).get(sm) is None else float((ice.get(mid) or {}).get(sm)) for sm in g.smiles], float)
+            zgl = term(glv, gl_ok); zice = term(icv, ice_ok)
+            Sc = z(fp) + (2 * zgl if zgl is not None else 0) + (a.w_ice * zice if zice is not None else 0) + 0.5 * pop
+            top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
+            if lib.max() >= a.tau and lib.max() - second >= a.margin: Sc = np.where(lib >= a.tau, 100.0 + lib, Sc)
+            ev_top = [str(g.smiles.values[i]) for i in np.argsort(-Sc, kind="stable")[:25]]; pp = pred_p[mid].split(";")
+            truth_smi = S.set_index("molecule_id").loc[mid, "smiles"]
+            agree1.append(metric.inchikey14_identity(ev_top[0]) == metric.inchikey14_identity(pp[0]) if hasattr(metric, "inchikey14_identity") else ev_top[0] == pp[0])
+            drr.append(metric.per_molecule_reciprocal_rank(truth_smi, pp) - metric.per_molecule_reciprocal_rank(truth_smi, ev_top)); both += 1
+    if both:
+        drr = np.array(drr)
+        md += ["", f"## fixed-rule output agreement ({both} molecules; evaluator rule S(2,{a.w_ice:g},0.5)+libpri({a.tau},{a.margin}) from {a.features_run})", "",
+               f"top-1 identical: {np.mean(agree1):.3f} | mean RR(pipeline) − RR(evaluator): {drr.mean():+.4f} | molecules with |ΔRR| > 0: {int((np.abs(drr) > 1e-9).sum())}"]
 worst = R.sort_values("jaccard").head(10); cols = ["molecule", "set", "n_f", "n_p", "n_inter", "only_f", "only_p", "jaccard", "truth_in_f", "truth_in_p"]
 md += ["", "## largest disagreements", "", "| " + " | ".join(cols) + " |", "|" + "---|" * len(cols)] + ["| " + " | ".join(f"{r_[c]:.3f}" if isinstance(r_[c], float) else str(r_[c]) for c in cols) + " |" for _, r_ in worst.iterrows()]
 os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True); open(a.out, "w", encoding="utf-8").write("\n".join(md) + "\n"); R.to_csv(a.out.replace(".md", "_molecules.csv"), index=False)
-print("\n".join(md[:20]))
+print("\n".join(md[:24]))
