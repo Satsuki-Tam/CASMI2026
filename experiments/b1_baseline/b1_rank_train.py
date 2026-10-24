@@ -86,7 +86,13 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--runs", nargs="+", required=True); ap.add_argument("--out", default="experiments/b1_baseline/rank")
     ap.add_argument("--feats", default="v2", choices=sorted(FEATSETS), help="feature set (v2 = 28 features; v3 adds per-model confidence/rank/window features)")
     ap.add_argument("--monotone", action="store_true", help="monotone constraints (scores/similarities up, ranks/|ppm| down)")
-    a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); FE = FEATSETS[a.feats]
+    ap.add_argument("--drop", nargs="*", default=[], help="features removed from the set (e.g. lib_nref in_train: pure 'is a library compound' identity, see diag 2026-10-25 panel probe)")
+    ap.add_argument("--c1_repeat", type=int, default=1, help="replicate the class-1-view fit groups this many times (the C2 view hides every reference of the truth, so without "
+                    "re-weighting the ranker learns 'has references -> decoy' from the C2 majority)")
+    ap.add_argument("--c2_nolib", action="store_true", help="zero every library feature in the C2-view fit rows (the C2 view hides the truth's references, so there "
+                    "'has a reference' is a perfect negative label; with this flag the use of reference evidence is learned from the C1 rows only)")
+    a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); FE = [f for f in FEATSETS[a.feats] if f not in set(a.drop)]
+    print("features:", len(FE), "| dropped:", a.drop, "| c1_repeat:", a.c1_repeat, "| c2_nolib:", a.c2_nolib)
     data = pd.concat([load_run(*r.split(":"), feats=FE) for r in a.runs], ignore_index=True)   # RUN:eval_csv[:group_override]
     print("rows", len(data), "| molecules", data.molecule.nunique(), "| groups", data.groupby("group").molecule.nunique().to_dict(), "| views", data.groupby("view").molecule.nunique().to_dict())
     fit, tune, ev = (data[data.group == g].copy() for g in ("fit", "tune", "eval"))
@@ -97,6 +103,13 @@ def main():
     def groups_with_truth(d):
         has = d.groupby(["molecule", "view"]).is_truth.transform("max") > 0; return d[has]
     fit_t = groups_with_truth(fit)
+    if a.c2_nolib:
+        LIBF = [f for f in ("lib_sim", "lib_same", "lib_nref", "lib_margin", "lib_max_mol", "in_train", "lib_rank", "in_train_x_lib") if f in FE]
+        fit_t = fit_t.copy(); fit_t.loc[fit_t.view == "c2", LIBF] = 0.0; print("c2 fit rows: library features zeroed:", LIBF)
+    if a.c1_repeat > 1:
+        c1 = fit_t[fit_t.view == "c1"]
+        fit_t = pd.concat([fit_t] + [c1.assign(molecule=c1.molecule.astype(str) + f"#r{k}") for k in range(1, a.c1_repeat)], ignore_index=True)
+        print("fit groups after c1 replication:", fit_t.groupby(["molecule", "view"]).ngroups, "| c1 share:", round(float((fit_t.groupby(['molecule', 'view']).view.first() == 'c1').mean()), 3))
     def to_ds(d):
         d = d.sort_values(["molecule", "view"], kind="stable")
         sizes = d.groupby(["molecule", "view"], sort=False).size().values
@@ -119,7 +132,7 @@ def main():
     ev = ev.copy(); ev["pred"] = bst.predict(ev[FE].values)
     out = dict(selected=best, tune_fixed=base_tune, eval_lambdarank=mrr_of(ev, "pred"), eval_fixed=mrr_of(ev, "S_fixed"), eval_fixed15=mrr_of(ev, "S_fixed15"),
                importance=dict(zip(FE, [int(x) for x in bst.feature_importance("gain").round().astype(int)])), n_fit_rows=len(fit_t), n_fit_groups=int(fit_t.groupby(["molecule", "view"]).ngroups),
-               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone))
+               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat))
     # paired bootstrap on eval (per molecule-view)
     rows = []
     for (mid, view), g in ev.groupby(["molecule", "view"], sort=False):

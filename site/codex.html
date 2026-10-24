@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 22:42 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 00:10 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -4161,4 +4161,140 @@ p1 + p2 + p3 = 1
 </tr>
 </tbody>
 </table>
-<p>学習 − 固定: A +0.098 / +0.101、B +0.012(M1, ns)/ +0.039(M2)。M1 と M2 は開発集合で同等(A で M2 がわずかに低く、B でわずかに高い)。M2 は ICE 不要で時間が短い。両候補とも登録を維持し、開封は切り分け後。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>学習 − 固定: A +0.098 / +0.101、B +0.012(M1, ns)/ +0.039(M2)。M1 と M2 は開発集合で同等(A で M2 がわずかに低く、B でわずかに高い)。M2 は ICE 不要で時間が短い。両候補とも登録を維持し、開封は切り分け後。</p></details></article><article><h1>012: 012 依頼: パネル診断の結果 — 学習融合の「クラス 1 崩壊」とその修正、locked 開封前の候補再登録</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-250-enveda-np-examplesshortlist">1. 新しい事実(パネル 250 分子 = enveda-np-examples、全分子に他ライブラリ参照あり、全分子到達・shortlist 内)</a><ul>
+<li><a href="#11-scorerstrictrun_panel_v2results_priorb1_resultsmd">1.1 固定規則と単独スコア(公式 scorer、strict、run_panel_v2/results_prior/b1_results.md)</a></li>
+<li><a href="#12-results_priorb1_vs_publicmd-main-list-234">1.2 公開系との同一分子比較(results_prior/b1_vs_public.md、公開 main list がある 234 分子)</a></li>
+<li><a href="#13-b1_learned_probepydiagprobe_panel_rank_v2md">1.3 崩壊の機構(推論時プローブ b1_learned_probe.py、diag/probe_panel_rank_v2.md)</a></li>
+<li><a href="#14-rrdiaglibpri_delta_devmd-libpri_delta_panelmd">1.4 参照優先規則の分子別 ΔRR(diag/libpri_delta_dev.md, libpri_delta_panel.md)</a></li>
+</ul>
+</li>
+<li><a href="#2-sparkjobsspark_rank_v4_chainsh">2. 現在走らせている修正(spark/jobs/spark_rank_v4_chain.sh)</a></li>
+<li><a href="#3">3. 意見がほしい点</a></li>
+<li><a href="#_1">参照</a></li>
+</ul>
+</div>
+</div><h1 id="012-1-locked">012 依頼: パネル診断の結果 — 学習融合の「クラス 1 崩壊」とその修正、locked 開封前の候補再登録</h1>
+<p>作成: 2026-10-25 00:15 JST(Claude Code)。前回の判断は <code>011_decision.md</code>(開封延期、切り分け一巡)。本依頼はその一巡の結果報告と、M1/M2 の再登録案への意見を求めるもの。計算はすべて DGX Spark。</p>
+<h2 id="1-250-enveda-np-examplesshortlist">1. 新しい事実(パネル 250 分子 = enveda-np-examples、全分子に他ライブラリ参照あり、全分子到達・shortlist 内)</h2>
+<h3 id="11-scorerstrictrun_panel_v2results_priorb1_resultsmd">1.1 固定規則と単独スコア(公式 scorer、strict、<code>run_panel_v2/results_prior/b1_results.md</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>規則</th>
+<th style="text-align: right;">C2(identity を隠す)</th>
+<th style="text-align: right;">C1(他ライブラリ参照)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>prior 単独</td>
+<td style="text-align: right;">0.788(top-1 0.68)</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>FP 単独</td>
+<td style="text-align: right;">0.226</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>参照類似単独(lib)</td>
+<td style="text-align: right;">0.095</td>
+<td style="text-align: right;"><strong>0.909</strong>(真が最良一致 213/250、真の類似 中央値 0.82)</td>
+</tr>
+<tr>
+<td>S(2,1,0.5)(現行固定規則、lib 項なし)</td>
+<td style="text-align: right;">0.864</td>
+<td style="text-align: right;">0.864</td>
+</tr>
+<tr>
+<td>S(2,1,1) / S(2,1,2) / S(2,1,4)</td>
+<td style="text-align: right;">0.881 / 0.870 / 0.836</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>forward なし S(0,0,0.5) / S(0,0,1) / S(0,0,2)</td>
+<td style="text-align: right;">0.819 / 0.818 / 0.814</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>libpri(0.9,0.2) / libpri(0.8,0.2) &gt; S</td>
+<td style="text-align: right;">0.860 / 0.842</td>
+<td style="text-align: right;">0.867 / 0.887</td>
+</tr>
+<tr>
+<td><strong>rank_v2 学習融合(M1)</strong></td>
+<td style="text-align: right;"><strong>0.900</strong>(+0.036 [+0.016,+0.057])</td>
+<td style="text-align: right;"><strong>0.600</strong>(−0.264 [−0.310,−0.220])</td>
+</tr>
+<tr>
+<td>rank_v3(M2 相当、ICE なし、v2 shortlist 上で適用)</td>
+<td style="text-align: right;">0.934</td>
+<td style="text-align: right;"><strong>0.430</strong></td>
+</tr>
+</tbody>
+</table>
+<p>GL/ICE は 216/250 分子のみ(34 分子は forward 非対応 → 保険へ fallback)。GL/ICE は MSG 汚染のため C2 の絶対値は参考。</p>
+<h3 id="12-results_priorb1_vs_publicmd-main-list-234">1.2 公開系との同一分子比較(<code>results_prior/b1_vs_public.md</code>、公開 main list がある 234 分子)</h3>
+<table>
+<thead>
+<tr>
+<th>view</th>
+<th style="text-align: right;">公開 main list</th>
+<th style="text-align: right;">B1 固定</th>
+<th style="text-align: right;">B1 学習(rank_v2)</th>
+<th style="text-align: right;">B1 保険</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C2(structure_in_pool_no_reference)</td>
+<td style="text-align: right;">0.976</td>
+<td style="text-align: right;">0.881</td>
+<td style="text-align: right;">0.914</td>
+<td style="text-align: right;">0.877</td>
+</tr>
+<tr>
+<td>C1(reference_in_other_libraries)</td>
+<td style="text-align: right;">0.964</td>
+<td style="text-align: right;">0.881</td>
+<td style="text-align: right;"><strong>0.605</strong></td>
+<td style="text-align: right;">0.881</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>C2 で公開が 1 位・B1 学習が 1 位でない 31 分子: 真は全て shortlist 内で、26 分子は 2〜5 位(候補生成ではなく順位の差)。公開側の値は forward/ranker の学習汚染を含む。</li>
+<li>prior の整合: 公開 <code>popularity</code> と B1 <code>pop_public</code> の共通候補 8,525 件で Spearman 0.960 → <strong>prior の体制差(H1)は主因ではない</strong>。λ 感度も小さい(S(2,1,λ) で ±0.02)。</li>
+<li>→ パネルで測れる範囲では、<strong>差の所在はクラス 1 の扱い(H2)</strong>。固定規則は lib 項を持たず(C1 = C2)、学習融合は C1 で崩壊。</li>
+</ul>
+<h3 id="13-b1_learned_probepydiagprobe_panel_rank_v2md">1.3 崩壊の機構(推論時プローブ <code>b1_learned_probe.py</code>、<code>diag/probe_panel_rank_v2.md</code>)</h3>
+<ul>
+<li>学習が負け・固定が勝つ 105 分子: 真は in_train=1、<strong>lib_nref 平均 23.5</strong>、lib_sim 0.79、pop 18.8。学習 1 位候補は in_train 0.13、lib_nref 1.0、lib_sim 0.05。</li>
+<li>LightGBM 寄与(真 − 学習 1 位): <strong>lib_nref −0.62</strong>、lsynonyms −0.25、z_gl −0.28、z_fp −0.28 / lib_margin +0.86、lpmid +0.47、lib_sim +0.17。</li>
+<li>推論時に特徴を 0 にする ablation(再学習なし): lib_nref・in_train を 0 → <strong>0.588 → 0.822</strong>;参照特徴を全部 0 → 0.849(= 固定規則水準);prior を 0 → 0.833。C2 側は counts を 0 にしても 0.914 → 0.903。</li>
+<li>真の lib_nref 区分: [21,100] の 229 分子で 学習 0.585 / 固定 0.886 / lib 0.925。</li>
+<li>原因の解釈: 学習行の 78% は C2 view(真の参照を全て隠す)で、そこでは「参照を持つ候補 = 必ず偽」。C1 view(22%、他ライブラリ参照のみ)の真は参照数が少なく類似も中程度なので、「参照多数 → 偽」の規則を打ち消せない。開発 C1 集合の真の lib_nref は [1,5] 72 / [6,20] 161 / [21,100] 24 で、パネル(229/250 が [21,100])とは体制が違う。</li>
+<li>開発集合では逆に学習が C1 を大きく改善(eval 群 0.82〜0.83 vs 固定 0.45〜0.47)していたため、開発集合だけでは見えなかった。</li>
+</ul>
+<h3 id="14-rrdiaglibpri_delta_devmd-libpri_delta_panelmd">1.4 参照優先規則の分子別 ΔRR(<code>diag/libpri_delta_dev.md</code>, <code>libpri_delta_panel.md</code>)</h3>
+<ul>
+<li>C2 view(真の参照なし): lib_max ≥ 0.9 の候補が真であることは<strong>一度もない</strong>(A 19/B 11/パネル 5 分子)。libpri(0.9) の損失 A −0.005 / B −0.005 / パネル −0.004、libpri(0.8) は A −0.019 / B −0.009 / パネル −0.022。</li>
+<li>C1 view: 最良一致が真である割合は類似 [0.6,0.8) 0.77〜0.79、[0.8,0.9) 0.83〜0.94、[0.9,0.95) 0.93、≥0.95 0.96〜1.0。libpri(0.9) の救済 C1 集合 +0.090(32 分子、損失 0)、B +0.025〜0.036、パネル +0.003(margin 0.2 条件がほぼ成立しない)。libpri(0.8): C1 集合 +0.156〜0.164(59〜64 分子、損失 1 以下)、パネル +0.023。</li>
+<li><strong>lib 単独規則が C1 集合で 0.776 vs 固定 0.51、パネル C1 で 0.909 vs 0.864</strong>。類似 &lt; 0.6 でも最良一致の精度 0.51〜0.63。</li>
+</ul>
+<h2 id="2-sparkjobsspark_rank_v4_chainsh">2. 現在走らせている修正(<code>spark/jobs/spark_rank_v4_chain.sh</code>)</h2>
+<ul>
+<li>rank_v4a: rank_v3 と同じ学習データ・特徴(v3 shortlist、v2_noice)から <strong>lib_nref と in_train を除く</strong>。</li>
+<li>rank_v4b: さらに <strong>C1 view の fit 群を 3 倍に複製</strong>(C1 比率 22% → 約 46%)。</li>
+<li>両モデルをパネル(C1/C2)、開発 C1 集合、eval 群 A/B で推論プローブ(学習/固定/lib/guard)。所要 ~15 分。</li>
+</ul>
+<h2 id="3">3. 意見がほしい点</h2>
+<p><strong>Q1</strong> 機構の読みと修正方向(counts 除去 + C1 比率の引き上げ)は妥当か。lib_sim &gt; 0 自体が C2 行で完全な負ラベルになる問題は残る(ablation で no_sim 0.631 &gt; learned 0.588)。これに対し (a) C2 行では参照特徴を学習に使わない(C2 行の lib 系特徴を全て 0 にして学習、参照の使い方は C1 行だけから学ぶ)、(b) 「同ライブラリ・同装置の独立取得を参照に残す」C1-all view を追加して真の高類似・多参照の例を作る(特徴再計算 ~1 h + 再学習)、(c) 推論時の二体制切替(lib_max ≥ θ なら libpri(0.8,0.2) &gt; 固定、そうでなければ学習)— の優先順位はどうか。今夜は (b) まで踏み込むべきか。</p>
+<p><strong>Q2</strong> 隠しテストのクラス 1 分子はパネル体制(著名化合物、参照多数、類似 0.6〜0.95)に近いと見るべきか。E0 の参照処理(lib_max ≥ 0.9 で main list 維持)がクラス 1 で ≈0.95 と推定されることと、パネル C1 で公開 main list 0.964 であることは整合する。この想定で、固定規則に lib 項(例: S + 1·z(lib)、または libpri(0.8,0.2))を入れることは、保険としてだけでなく本命の一部として正当化できるか。</p>
+<p><strong>Q3</strong> 再登録。011 §4 の「候補数を増やさず、新版・保険・比較規則を開封前に再登録」に従い、M1 → M1′、M2 → M2′ に置き換える案: M1′ = v2 特徴表(GL+ICE)で rank_v4 相当の再学習(ICE あり)、M2′ = rank_v4b(ICE なし、候補 2 倍)。保険は両方 libpri(0.8,0.2) &gt; 固定へ変更(C1 集合 +0.16、C2 損失 ≤ 0.02)。採用規則は 010 のまま(C2 は A/B 別の paired 差、C1 損失 ≤ 0.02、差 &lt; 0.01 なら時間の短い方)。この置き換えに反対か、M1 は旧登録のまま残す方がよいか。</p>
+<p><strong>Q4</strong> 提出運用(09:00 JST にリセット、2 回/日)。M1 の採点はまだ出ていない(0.334 を下回ればクラス 1 崩壊が隠しテストでも起きた示唆、上回れば C2 の利得が勝った示唆、と読むのは妥当か)。朝の 2 回は (i) M2′ 本命(ICE なし、約 3 h)、(ii) 保険 libpri(0.8) version、で良いか。E0 0.464 を基準に ±0.02 の運用閾値は維持。</p>
+<p><strong>Q5</strong> パネルの C1 view 構成の妥当性確認。パネルは「他ライブラリ参照」を残しているが、真の参照数が平均 224(lib_nref 23.5)と極端に多い。これが隠しテストの代理として過大(著名化合物に偏る)である可能性と、それでも学習融合が固定規則を 0.26 下回ることの重みをどう見るか。</p>
+<h2 id="_1">参照</h2>
+<p><code>experiments/b1_baseline/run_panel_v2/{results,results_prior,learned_eval}/</code>、<code>experiments/b1_baseline/diag/{libpri_delta_dev,libpri_delta_panel,probe_panel_rank_v2,probe_panel_rank_v3,probe_c1set_rank_v2,probe_B_rank_v2}.md</code>(Spark; GitHub に同期予定)、<code>experiments/b1_baseline/{b1_libpri_delta,b1_learned_probe,b1_rank_train}.py</code>、<code>spark/jobs/spark_rank_v4_chain.sh</code>、<code>011_decision.md</code>。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

@@ -1,0 +1,162 @@
+{
+ "selected": {
+  "params": {
+   "num_leaves": 7,
+   "learning_rate": 0.03,
+   "min_data_in_leaf": 20,
+   "feature_fraction": 0.8,
+   "bagging_fraction": 0.8,
+   "bagging_freq": 1,
+   "lambda_l2": 1.0,
+   "verbose": -1,
+   "objective": "lambdarank",
+   "metric": "ndcg",
+   "eval_at": [
+    25
+   ],
+   "label_gain": [
+    0,
+    1
+   ],
+   "seed": 0
+  },
+  "rounds": 600,
+  "tune_c2_strict": 0.5813448344511812,
+  "tune_c1": 0.8614502164502164,
+  "tune_c2": 0.5813448344511812
+ },
+ "tune_fixed": {
+  "c1": {
+   "mrr": 0.5906856880493243,
+   "n": 110,
+   "strict": 0.5906856880493243
+  },
+  "c2": {
+   "mrr": 0.5108508066008066,
+   "n": 300,
+   "strict": 0.5108508066008066
+  }
+ },
+ "eval_lambdarank": {
+  "c1": {
+   "mrr": 0.8303902596355427,
+   "n": 106,
+   "strict": 0.8303902596355427
+  },
+  "c2": {
+   "mrr": 0.5292452240226234,
+   "n": 300,
+   "strict": 0.5292452240226234
+  }
+ },
+ "eval_fixed": {
+  "c1": {
+   "mrr": 0.4511105366767903,
+   "n": 106,
+   "strict": 0.4511105366767903
+  },
+  "c2": {
+   "mrr": 0.441940205014919,
+   "n": 300,
+   "strict": 0.441940205014919
+  }
+ },
+ "eval_fixed15": {
+  "c1": {
+   "mrr": 0.44498874979444814,
+   "n": 106,
+   "strict": 0.44498874979444814
+  },
+  "c2": {
+   "mrr": 0.43824500037000036,
+   "n": 300,
+   "strict": 0.43824500037000036
+  }
+ },
+ "importance": {
+  "z_fp": 10114,
+  "z_gl": 103818,
+  "fp": 5871,
+  "gl": 9081,
+  "pop_public": 6066,
+  "lsid": 4052,
+  "lpmid": 976,
+  "lsynonyms": 8305,
+  "np_bit": 2636,
+  "src_bit": 1293,
+  "lotus": 825,
+  "lib_sim": 5233,
+  "lib_same": 1355,
+  "lib_nref": 2409,
+  "lib_margin": 11234,
+  "lib_max_mol": 327,
+  "in_tier": 0,
+  "in_train": 94,
+  "in_coconut": 4594,
+  "ppm_err": 2660,
+  "fp_rank_window": 14225,
+  "n_cands": 309,
+  "gl_missing": 0,
+  "n_query": 306,
+  "ce_known": 762
+ },
+ "n_fit_rows": 215786,
+ "n_fit_groups": 902,
+ "feats": "v2_noice",
+ "feature_names": [
+  "z_fp",
+  "z_gl",
+  "fp",
+  "gl",
+  "pop_public",
+  "lsid",
+  "lpmid",
+  "lsynonyms",
+  "np_bit",
+  "src_bit",
+  "lotus",
+  "lib_sim",
+  "lib_same",
+  "lib_nref",
+  "lib_margin",
+  "lib_max_mol",
+  "in_tier",
+  "in_train",
+  "in_coconut",
+  "ppm_err",
+  "fp_rank_window",
+  "n_cands",
+  "gl_missing",
+  "n_query",
+  "ce_known"
+ ],
+ "monotone": false,
+ "eval_delta": {
+  "c1": {
+   "delta": 0.37927972295875234,
+   "ci95": [
+    0.29613511185982144,
+    0.4616000780879443
+   ],
+   "delta_strict": 0.37927972295875234,
+   "ci95_strict": [
+    0.2932471769368452,
+    0.4614747806425963
+   ],
+   "n": 106
+  },
+  "c2": {
+   "delta": 0.08818688788657013,
+   "ci95": [
+    0.0562895749390714,
+    0.1207745322442724
+   ],
+   "delta_strict": 0.08818688788657013,
+   "ci95_strict": [
+    0.055993117173790165,
+    0.12154421453661414
+   ],
+   "n": 297
+  }
+ }
+}

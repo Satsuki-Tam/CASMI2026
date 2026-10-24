@@ -1,0 +1,106 @@
+{
+ "manifest_file": "manifest.json",
+ "P_np250:ledger": {
+  "c2": 250,
+  "c1": 250,
+  "c1_usable_disagreements": 0
+ },
+ "P_np250:c2:M1:learned": {
+  "official_mrr25": 0.8996672161172162,
+  "ci95": [
+   0.8683741804029305,
+   0.928700847069597
+  ],
+  "n": 250,
+  "n_empty": 0,
+  "gl_fallback": 34,
+  "gl_cover_mean": 0.864
+ },
+ "P_np250:c2:M1:insurance": {
+  "official_mrr25": 0.859928048903281,
+  "ci95": [
+   0.8235221162394536,
+   0.894854974390075
+  ],
+  "n": 250,
+  "n_empty": 0,
+  "gl_fallback": 34,
+  "gl_cover_mean": 0.864
+ },
+ "P_np250:c2:M1:fixed": {
+  "official_mrr25": 0.863928048903281,
+  "ci95": [
+   0.8274972222866572,
+   0.8982703170582427
+  ],
+  "n": 250,
+  "n_empty": 0,
+  "gl_fallback": 34,
+  "gl_cover_mean": 0.864
+ },
+ "P_np250:c1:M1:learned": {
+  "official_mrr25": 0.599541087911057,
+  "ci95": [
+   0.5534861745847891,
+   0.6455774802566713
+  ],
+  "n": 250,
+  "n_empty": 0,
+  "gl_fallback": 34,
+  "gl_cover_mean": 0.864
+ },
+ "P_np250:c1:M1:insurance": {
+  "official_mrr25": 0.866928048903281,
+  "ci95": [
+   0.8305944442296609,
+   0.9015448112302215
+  ],
+  "n": 250,
+  "n_empty": 0,
+  "gl_fallback": 34,
+  "gl_cover_mean": 0.864
+ },
+ "P_np250:c1:M1:fixed": {
+  "official_mrr25": 0.863928048903281,
+  "ci95": [
+   0.8275008697099254,
+   0.8985090667846085
+  ],
+  "n": 250,
+  "n_empty": 0,
+  "gl_fallback": 34,
+  "gl_cover_mean": 0.864
+ },
+ "delta:P_np250:c2:M1: learned \u2212 fixed": {
+  "mean": 0.03573916721393502,
+  "ci95": [
+   0.015551378423777804,
+   0.056961080508758526
+  ],
+  "n": 250
+ },
+ "delta:P_np250:c2:M1: insurance \u2212 fixed": {
+  "mean": -0.004,
+  "ci95": [
+   -0.01,
+   0.0
+  ],
+  "n": 250
+ },
+ "delta:P_np250:c1:M1: learned \u2212 fixed": {
+  "mean": -0.2643869609922242,
+  "ci95": [
+   -0.3098901704096558,
+   -0.2198107102537985
+  ],
+  "n": 250
+ },
+ "delta:P_np250:c1:M1: insurance \u2212 fixed": {
+  "mean": 0.003,
+  "ci95": [
+   0.0,
+   0.009
+  ],
+  "n": 250
+ }
+}
