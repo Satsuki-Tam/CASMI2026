@@ -16,6 +16,10 @@ B=experiments/b1_baseline; PY=.venv/bin/python; OUT=$B/locked_open_v5
 fail() { echo "LOCKED_OPEN ABORTED: $*"; exit 1; }
 for d in $B/locked_open_v2v3 $B/locked_open_v4 $OUT; do [ -e $d/manifest.txt ] || [ -e $d/locked_results.json ] || [ -e $d/manifest.json ] && fail "$d already holds an opening record; the locked set is opened once (no re-run)"; done
 grep -q "V2B_LOCKED_DONE" logs/spark_v3b_chain.log 2>/dev/null || fail "corrected locked tables not finished (V2B_LOCKED_DONE missing)"
+# Codex 014: the opening is tied to the W7 mechanical pass of the version being opened (M2x blend21, 600 molecules, eval_test_full3, shared forward
+# cache: candidate sets, truth membership, top-1, RR, ordered top-25 and the missing-data branch must agree in BOTH proxies)
+for v in c2 c1; do f=$B/eval_test_full3/run_$v/parity_${v}_shared.md; [ -s $f ] && grep -q "^\*\*PARITY PASS\*\*" $f || fail "W7 shared-cache parity for $v not passed ($f)"; done
+for f in $B/eval_test_full3/run_c2/parity_c2.md $B/eval_test_full3/run_c1/parity_c1.md; do [ -s $f ] || fail "W7 independent-forward report missing ($f)"; done
 mkdir -p $OUT
 echo "evaluator sha256: $(sha256sum $B/b1_locked_eval.py | cut -c1-64)"
 for f in $B/run_locked_v2b/b1_features_A_timstof.parquet $B/run_locked_v2b/b1_features_B_nplib.parquet $B/run_v3b_locked/b1_features_A_timstof.parquet $B/run_v3b_locked/b1_features_B_nplib.parquet \
@@ -38,6 +42,6 @@ for S in A_timstof B_nplib; do repair $B/run_locked_v2b gl $S; repair $B/run_loc
   for r in run_locked_v2b run_v3b_locked; do for m in $B/$r/work/*.json.meta.json; do echo "$m $(tr -d '\n ' < $m | cut -c1-160)"; done; cat $B/$r/b1_features_manifest.json 2>/dev/null | tr -d '\n ' | cut -c1-300; echo; done
 } > $OUT/manifest.txt
 echo "manifest written: $OUT/manifest.txt"; head -14 $OUT/manifest.txt | cut -c1-160
-$PY -X utf8 $B/b1_locked_eval.py --eval_csv $B/locked_eval/p1_molecules.csv --cands M1:$B/run_locked_v2b:$B/rank_v2/lambdarank.txt:1 M2x:$B/run_v3b_locked:$B/rank_v4b/lambdarank.txt:0 --tau 0.9 --margin 0.2 --min_gl_cover 0.5 --out $OUT > $OUT/locked_open.log 2>&1
+$PY -X utf8 $B/b1_locked_eval.py --eval_csv $B/locked_eval/p1_molecules.csv --cands M1:$B/run_locked_v2b:$B/rank_v2/lambdarank.txt:1 M2x:$B/run_v3b_locked:$B/rank_v4b/lambdarank.txt:0 --main_of M1=learned M2x=blend21 --tau 0.9 --margin 0.2 --min_gl_cover 0.5 --out $OUT > $OUT/locked_open.log 2>&1
 rc=$?; echo "locked eval exit $rc"; grep -v Warning $OUT/locked_open.log | cut -c1-230
 if [ $rc = 0 ]; then echo "LOCKED_OPEN_DONE $(date +%T)"; else echo "LOCKED_OPEN FAILED rc=$rc (nothing scored unless validation passed; see $OUT/locked_open.log)"; exit $rc; fi

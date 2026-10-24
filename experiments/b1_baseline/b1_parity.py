@@ -17,6 +17,8 @@ ap = argparse.ArgumentParser(); ap.add_argument("--dump", required=True); ap.add
 ap.add_argument("--solution", required=True); ap.add_argument("--out", required=True); ap.add_argument("--pred_main", default=None); ap.add_argument("--pred_fixed", default=None)
 ap.add_argument("--stage_stats", default=None); ap.add_argument("--model", default=None); ap.add_argument("--w_ice", type=float, default=1.0); ap.add_argument("--tau", type=float, default=0.9)
 ap.add_argument("--main", default="learned", choices=["learned", "blend21", "blend11"], help="the pipeline's main-list rule to replicate (b1_pipeline --main)")
+ap.add_argument("--forward_from", default="evaluator", choices=["evaluator", "pipe"], help="GL/ICE scores for the evaluator-side ranking: 'evaluator' = the evaluator run's own forward "
+                "run (independent GPU run -> ordering noise), 'pipe' = the pipeline's gl_out/ice_out (shared cache -> MECHANICAL check, Codex 014: outputs must then agree exactly)")
 ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
 ap.add_argument("--top25_set_min_share", type=float, default=0.95, help="top-25 identical as SETS (strict criterion)"); ap.add_argument("--top25_min_share", type=float, default=0.85, help="ordered top-25 identical (tail order is subject to forward-score run-to-run noise)")
 ap.add_argument("--pipe_work", default=None, help="pipeline output dir with gl_out.json / ice_out.json: measures forward-score differences vs the evaluator run"); a = ap.parse_args()
@@ -76,7 +78,7 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
         if smi not in cache: cache[smi] = metric.canonicalize_smiles_to_ik14(smi)
         return cache[smi]
     def load(model, s):
-        p = f"{a.features_run}/work/{model}_{s}.json"
+        p = f"{a.pipe_work}/{model}_out.json" if (a.forward_from == "pipe" and a.pipe_work) else f"{a.features_run}/work/{model}_{s}.json"
         try: ok = json.load(open(p + ".meta.json")).get("status") in ("ok", "partial")
         except Exception: ok = False
         return (json.load(open(p)) if ok else {}), ok

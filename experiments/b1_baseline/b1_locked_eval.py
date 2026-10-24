@@ -73,13 +73,17 @@ def view_frame(F, M, mid, view):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--eval_csv", required=True); ap.add_argument("--cands", nargs="+", required=True, help="NAME:RUN:MODEL:W_ICE")
     ap.add_argument("--tau", type=float, default=0.9); ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
-    ap.add_argument("--out", required=True); ap.add_argument("--sets", nargs="*", default=["A_timstof", "B_nplib"]); a = ap.parse_args()
+    ap.add_argument("--out", required=True); ap.add_argument("--sets", nargs="*", default=["A_timstof", "B_nplib"])
+    ap.add_argument("--main_of", nargs="*", default=[], help="registered MAIN output per candidate, NAME=OUTPUT (default learned), e.g. M1=learned M2x=blend21; "
+                    "the paired difference of the registered mains is reported explicitly (Codex 014)")
+    a = ap.parse_args()
+    MAIN_OF = {kv.split("=")[0]: kv.split("=")[1] for kv in a.main_of}
     if os.path.exists(os.path.join(a.out, "locked_results.json")) or os.path.exists(os.path.join(a.out, "manifest.json")):
         print(f"REFUSED: {a.out} already holds an opening (locked_results.json / manifest.json); the locked set is opened once"); sys.exit(3)
     os.makedirs(a.out, exist_ok=True)
     import lightgbm as lgb
     # ------------------------------------------------------------------ phase 1: validate everything, score nothing
-    problems = []; manifest = dict(eval_csv=a.eval_csv, eval_csv_sha=sha(a.eval_csv), tau=a.tau, margin=a.margin, min_gl_cover=a.min_gl_cover, sets=a.sets, candidates=[], inputs={},
+    problems = []; manifest = dict(eval_csv=a.eval_csv, eval_csv_sha=sha(a.eval_csv), tau=a.tau, margin=a.margin, min_gl_cover=a.min_gl_cover, sets=a.sets, registered_main=MAIN_OF, candidates=[], inputs={},
                                    code={os.path.basename(p): sha(p) for p in (__file__, os.path.join(HERE, "b1_rankfeats.py"), os.path.join(HERE, "b1_evaluate.py"), os.path.join(os.path.dirname(os.path.dirname(HERE)), "src", "metric.py"))})
     ev = pd.read_csv(a.eval_csv); ev["molecule"] = ev["molecule"].astype(str)
     keys_p = os.path.join(os.path.dirname(os.path.dirname(HERE)), "data/processed/train_scorer_keys.parquet")
@@ -125,7 +129,7 @@ def main():
     print(f"validation passed: {len(cands)} candidates x {len(a.sets)} sets; manifest {a.out}/manifest.json", flush=True)
     # ------------------------------------------------------------------ phase 2: score (once)
     report = {"manifest_file": "manifest.json"}; md = ["# B1 locked evaluation (official scorer replica, frozen ledger)", "", "| set | view | candidate | output | official MRR@25 [95% CI] | no candidates | GL fallback |", "|---|---|---|---|---|---|---|"]
-    RR = {}
+    RR = {}; MOLS_OF = {}
     for s in a.sets:
         ledger = ev[ev.set == s].molecule.tolist(); sol_all = pd.DataFrame({"molecule_id": ledger, "smiles": [smi_of[m] for m in ledger]})
         usable = {c["name"]: {m: bool(data[(c["name"], s)]["M"].loc[m, "c1_usable"]) if m in data[(c["name"], s)]["M"].index else False for m in ledger} for c in cands}
@@ -137,6 +141,7 @@ def main():
             d = data[(c["name"], s)]
             for view in ("c2", "c1"):
                 mols = ledger if view == "c2" else c1_ledger; preds = {"learned": {}, "insurance": {}, "fixed": {}, "switch": {}, "blend21": {}, "blend11": {}}; n_fb = 0; covers = []
+                MOLS_OF[(s, view)] = list(mols)
                 for mid in mols:
                     g = view_frame(d["F"], d["M"], mid, view)
                     if len(g) == 0 or mid not in d["M"].index: continue
@@ -165,12 +170,16 @@ def main():
                 if c["name"] != ref:
                     pairs += [(f"{c['name']} − {ref} (learned)", (s, view, c["name"], "learned"), (s, view, ref, "learned")), (f"{c['name']} − {ref} (insurance)", (s, view, c["name"], "insurance"), (s, view, ref, "insurance")),
                               (f"{c['name']} − {ref} (switch)", (s, view, c["name"], "switch"), (s, view, ref, "switch")), (f"{c['name']} − {ref} (blend21)", (s, view, c["name"], "blend21"), (s, view, ref, "blend21")),
-                              (f"{c['name']} learned − {ref} insurance", (s, view, c["name"], "learned"), (s, view, ref, "insurance"))]
+                              (f"{c['name']} learned − {ref} insurance", (s, view, c["name"], "learned"), (s, view, ref, "insurance")),
+                              # the REGISTERED main outputs of the two candidates (Codex 014): this is the adoption-rule comparison
+                              (f"REGISTERED {c['name']} {MAIN_OF.get(c['name'], 'learned')} − {ref} {MAIN_OF.get(ref, 'learned')}", (s, view, c["name"], MAIN_OF.get(c["name"], "learned")), (s, view, ref, MAIN_OF.get(ref, "learned")))]
             for label, kx, ky in pairs:
                 x, y = RR.get(kx), RR.get(ky)
                 if x is None or y is None or len(x) != len(y): continue
                 dd = x - y; ci = boot(dd); report[f"delta:{s}:{view}:{label}"] = dict(mean=float(dd.mean()), ci95=ci, n=len(dd))
                 md.append(f"| {s} | {view} | {label} | {dd.mean():+.4f} | [{ci[0]:+.3f}, {ci[1]:+.3f}] | {len(dd)} |"); print(md[-1], flush=True)
+                if label.startswith("REGISTERED") and (s, view) in MOLS_OF and len(MOLS_OF[(s, view)]) == len(dd):   # per-molecule differences of the registered mains
+                    pd.DataFrame({"molecule": MOLS_OF[(s, view)], "rr_candidate": x, "rr_reference": y, "d": dd}).to_csv(f"{a.out}/registered_delta_{s}_{view}.csv", index=False)
     json.dump(report, open(f"{a.out}/locked_results.json", "w"), indent=1, default=str); open(f"{a.out}/locked_results.md", "w", encoding="utf-8").write("\n".join(md) + "\n"); print("saved", a.out)
 
 
