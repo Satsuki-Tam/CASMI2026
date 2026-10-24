@@ -10,3 +10,7 @@
 - Rules that avoided failures: scripts in LF (scp them, do not paste); long jobs detached with
   `setsid nohup <cmd> > log 2>&1 < /dev/null &` (never chain with `&&` after `cd`); results come back with `scp`/`git`.
 - GPU experiments after 2026-10-24 run here (user request); the PC's RTX 5070 Ti only finishes jobs that were already running.
+- GB10 CUDA bug: ICEBERG's `random_walk_pe` (sparse `coalesce` on batched DAG graphs with > 2,000 nodes) raised `cudaErrorIllegalAddress`
+  sporadically on natural-product sets (A ran fine). Workaround applied on the Spark copies of `data/external/{iceberg,glacier}/src/ms_pred/nn_utils/nn_utils.py`:
+  the sparse branch runs on CPU and the result is moved back to the GPU (`logs/patch_rwpe.py`). `spark/jobs/ice_resume.py` restarts a runner on the
+  unscored molecules after a crash and merges outputs (status partial/ok in the merged meta).
