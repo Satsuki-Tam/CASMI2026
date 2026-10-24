@@ -1,0 +1,163 @@
+{
+ "selected": {
+  "params": {
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "min_data_in_leaf": 20,
+   "feature_fraction": 0.8,
+   "bagging_fraction": 0.8,
+   "bagging_freq": 1,
+   "lambda_l2": 1.0,
+   "verbose": -1,
+   "objective": "lambdarank",
+   "metric": "ndcg",
+   "eval_at": [
+    25
+   ],
+   "label_gain": [
+    0,
+    1
+   ],
+   "seed": 0
+  },
+  "rounds": 300,
+  "tune_c2_strict": 0.5595193031606075,
+  "tune_c1": 0.9064646464646464,
+  "tune_c2": 0.5595193031606075
+ },
+ "tune_fixed": {
+  "c1": {
+   "mrr": 0.5906856880493243,
+   "n": 110,
+   "strict": 0.5906856880493243
+  },
+  "c2": {
+   "mrr": 0.5108508066008066,
+   "n": 300,
+   "strict": 0.5108508066008066
+  }
+ },
+ "eval_lambdarank": {
+  "c1": {
+   "mrr": 0.8326204276800107,
+   "n": 106,
+   "strict": 0.8326204276800107
+  },
+  "c2": {
+   "mrr": 0.5273836378999422,
+   "n": 300,
+   "strict": 0.5273836378999422
+  }
+ },
+ "eval_fixed": {
+  "c1": {
+   "mrr": 0.4511105366767903,
+   "n": 106,
+   "strict": 0.4511105366767903
+  },
+  "c2": {
+   "mrr": 0.441940205014919,
+   "n": 300,
+   "strict": 0.441940205014919
+  }
+ },
+ "eval_fixed15": {
+  "c1": {
+   "mrr": 0.44498874979444814,
+   "n": 106,
+   "strict": 0.44498874979444814
+  },
+  "c2": {
+   "mrr": 0.43824500037000036,
+   "n": 300,
+   "strict": 0.43824500037000036
+  }
+ },
+ "importance": {
+  "z_fp": 9808,
+  "z_gl": 155001,
+  "fp": 10461,
+  "gl": 27265,
+  "pop_public": 13187,
+  "lsid": 4814,
+  "lpmid": 2007,
+  "lsynonyms": 9110,
+  "np_bit": 5416,
+  "src_bit": 1587,
+  "lotus": 1437,
+  "lib_sim": 17359,
+  "lib_same": 3646,
+  "lib_margin": 33411,
+  "lib_max_mol": 5545,
+  "in_tier": 2,
+  "in_coconut": 3273,
+  "ppm_err": 3914,
+  "fp_rank_window": 14673,
+  "n_cands": 2394,
+  "gl_missing": 0,
+  "n_query": 1249,
+  "ce_known": 1484
+ },
+ "n_fit_rows": 307624,
+ "n_fit_groups": 1304,
+ "feats": "v2_noice",
+ "feature_names": [
+  "z_fp",
+  "z_gl",
+  "fp",
+  "gl",
+  "pop_public",
+  "lsid",
+  "lpmid",
+  "lsynonyms",
+  "np_bit",
+  "src_bit",
+  "lotus",
+  "lib_sim",
+  "lib_same",
+  "lib_margin",
+  "lib_max_mol",
+  "in_tier",
+  "in_coconut",
+  "ppm_err",
+  "fp_rank_window",
+  "n_cands",
+  "gl_missing",
+  "n_query",
+  "ce_known"
+ ],
+ "monotone": false,
+ "drop": [
+  "lib_nref",
+  "in_train"
+ ],
+ "c1_repeat": 3,
+ "eval_delta": {
+  "c1": {
+   "delta": 0.38150989100322036,
+   "ci95": [
+    0.30024802765967873,
+    0.46311534139817
+   ],
+   "delta_strict": 0.38150989100322036,
+   "ci95_strict": [
+    0.2992489626570018,
+    0.4630592619652893
+   ],
+   "n": 106
+  },
+  "c2": {
+   "delta": 0.08630649786365988,
+   "ci95": [
+    0.05524031415844281,
+    0.11866509308183197
+   ],
+   "delta_strict": 0.08630649786365988,
+   "ci95_strict": [
+    0.054993971912726106,
+    0.11862082030641337
+   ],
+   "n": 297
+  }
+ }
+}
