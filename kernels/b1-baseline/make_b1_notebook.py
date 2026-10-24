@@ -16,14 +16,19 @@ model = A.model
 if model and os.path.exists(model): files["lambdarank.txt"] = open(model, encoding="utf-8").read(); print("embedding model", model)
 else: print("no model embedded -> fixed rule")
 shas = {n: hashlib.sha256(v.encode()).hexdigest() for n, v in files.items()}
+# the kernel API rejects notebooks above ~1 MiB (400 on SaveKernel, 2026-10-25): embed the sources + model as one zlib/base64 blob
+import base64, zlib
+BLOB = base64.b64encode(zlib.compress(json.dumps(files).encode("utf-8"), 9)).decode("ascii")
+print(f"embedded blob {len(BLOB)/1e3:.0f} KB (raw {sum(len(v) for v in files.values())/1e3:.0f} KB)")
 
 cells = []
 cells.append(f'''"""B1 baseline (own pipeline) -- label-free retrieval + FPNet + library similarity + GLACIER/ICEBERG + fixed fusion.
 Sources embedded from experiments/b1_baseline (sha256 b1_common {shas['b1_common.py'][:12]}, b1_pipeline {shas['b1_pipeline.py'][:12]})."""
-import os, sys, glob, subprocess, time, json
+import os, sys, glob, subprocess, time, json, base64, zlib
 T0 = time.time()
 os.makedirs('/kaggle/working/b1', exist_ok=True)
-SOURCES = {json.dumps(files)}
+BLOB = {json.dumps(BLOB)}
+SOURCES = json.loads(zlib.decompress(base64.b64decode(BLOB)).decode('utf-8'))
 for name, text in SOURCES.items():
     open(f'/kaggle/working/b1/{{name}}', 'w', encoding='utf-8').write(text)
 print('sources written', list(SOURCES), flush=True)
