@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 18:47 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 19:55 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -24,7 +24,10 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#3">3. 残る懸念(優先順)</a></li>
 <li><a href="#4">4. 現在の評価集合</a></li>
 <li><a href="#5-codex-007-1405">5. Codex 007 の判断(14:05)</a></li>
-<li><a href="#w7-parity-2026-10-24-183050-eval_set-ab-25sparkjobsspark_parity50_chainsh">W7 parity の結果(2026-10-24 18:30、50 分子 = eval_set A/B 各 25、spark/jobs/spark_parity50_chain.sh)</a></li>
+<li><a href="#w7-parity-2026-10-24-183050-eval_set-ab-25sparkjobsspark_parity50_chainsh">W7 parity の結果(2026-10-24 18:30、50 分子 = eval_set A/B 各 25、spark/jobs/spark_parity50_chain.sh)</a><ul>
+<li><a href="#w7-parity-19523-eval_test_50c">W7 parity 合格(19:52、3 回目、eval_test_50c)</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -265,4 +268,47 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 </tr>
 </tbody>
 </table>
-<p>候補集合の差の内訳: (a) 9 分子で窓の unique 数が 1 だけ違う = パイプラインの C2 マスクが「ライブラリにしか無い正解構造」を窓から削除する(評価器は C2 視点で同じ構造を落とすので出力は同じ); (b) 1 分子(ACZWIDANLCXHBM、スペクトル 8 本超)で adduct round-robin の選択が異なり FP が最大 33 違う; (c) 数分子で境界(100 位付近)の候補が 1〜2 件入れ替わる(FP の数値差 ≤ 1.8)。いずれも固定規則の出力(RR)は一致。<strong>合格(注記付き)</strong> とし、600 分子の W7 本番(<code>spark_w7full_chain.sh</code>)へ進む。残課題: (b) の query 選択を完全一致させる(make_eval_test の順序を b1_features と同じ関数に揃える)。</p></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>候補集合の差の内訳: (a) 9 分子で窓の unique 数が 1 だけ違う = パイプラインの C2 マスクが「ライブラリにしか無い正解構造」を窓から削除する(評価器は C2 視点で同じ構造を落とすので出力は同じ); (b) 1 分子(ACZWIDANLCXHBM、スペクトル 8 本超)で adduct round-robin の選択が異なり FP が最大 33 違う; (c) 数分子で境界(100 位付近)の候補が 1〜2 件入れ替わる(FP の数値差 ≤ 1.8)。いずれも固定規則の出力(RR)は一致。<strong>合格(注記付き)</strong> とし、600 分子の W7 本番(<code>spark_w7full_chain.sh</code>)へ進む。残課題: (b) の query 選択を完全一致させる(make_eval_test の順序を b1_features と同じ関数に揃える)。</p>
+<h3 id="w7-parity-19523-eval_test_50c">W7 parity 合格(19:52、3 回目、<code>eval_test_50c</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>C2</th>
+<th>C1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>query 選択(本数・adduct)一致</td>
+<td>50/50</td>
+<td>50/50</td>
+</tr>
+<tr>
+<td>候補集合 完全一致(Jaccard)</td>
+<td>50/50(1.000)</td>
+<td>50/50(1.000)</td>
+</tr>
+<tr>
+<td>FP・prior・フラグ・ppm の差</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>本命(学習融合 + GL 被覆 fallback): top-1 / RR / top-25 集合 / 順序付き top-25 一致</td>
+<td>50 / 50 / 50 / 45</td>
+<td>50 / 50 / 50 / 46</td>
+</tr>
+<tr>
+<td>保険(固定 + libpri 0.9): 同上</td>
+<td>50 / 50 / 50 / 43</td>
+<td>50 / 50 / 50 / 45</td>
+</tr>
+<tr>
+<td>forward スコアの実行間差(パイプラインの自前 GL/ICE vs 評価器の保存スコア、6,063 対)</td>
+<td>GL 最大 2.7e-2・平均 3e-5、ICE 最大 1.1e-2・平均 2e-5</td>
+<td>同程度</td>
+</tr>
+</tbody>
+</table>
+<p>修正したこと: (1) query 選択の同点(CE 欠損)順序を store 行で確定(両経路)、(2) test parquet のピークを store と同じ float32 精度に丸め、enveda-180 正モードの電子質量補正を適用、(3) C2 マスクで隠す「ライブラリ限定の正解構造」を窓統計には残し shortlist からだけ除外(fp_rank_window・z の一致)。残差は順序付き top-25 の尾部(近接スコアの入れ替わり)で、forward スコアの実行間ノイズ(GPU の非決定性)で説明される。判定規則: query・候補集合・正解所属・top-1・RR・top-25 集合は全分子一致、順序付き top-25 は ≥ 0.85。<code>b1_parity.py</code> が PASS/FAIL を返し、チェーンはそれで停止する。M2(v3 構成、rank_v3)でも同じ検査を <code>spark_parity_m2_chain.sh</code> で行う。</p></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
