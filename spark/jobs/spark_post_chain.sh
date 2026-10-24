@@ -23,15 +23,18 @@ $PY -X utf8 $B/b1_diagnose.py --run $B/run1_v2 --eval_csv $B/eval_set/p1_molecul
 $PY -X utf8 $B/b1_diagnose.py --run $B/run_c1_v2 --eval_csv $B/eval_c1/p1_molecules.csv --sets B_nplib > $B/run_c1_v2/diagnose.log 2>&1; echo "diagnose run_c1_v2 exit $?"
 grep -a "^strict MRR\|^oracle\|^mean push\|^best library" $B/run1_v2/results/diagnose_B_nplib.md $B/run_c1_v2/results/diagnose_B_nplib.md | cut -c1-260
 echo "EVAL_FIX_DONE $(date +%T)"
-# ---- 2
+# ---- 2  (both sets: the GB10 CUDA crash also hit set A of the fit run; existing partial outputs are kept with --reuse)
 until grep -q "END experiments/b1_baseline/run_p1_v2" logs/b1_all_v2.log 2>/dev/null; do sleep 120; done
-st=$($PY -c "import json; print(json.load(open('$B/run_p1_v2/work/ice_B_nplib.json.meta.json')).get('status'))" 2>/dev/null); echo "== $(date +%T) run_p1_v2 ICE B status: $st"
-if [ "$st" != "ok" ]; then
-  IN=$B/run_p1_v2/b1_runner_B_nplib_in.filtered.json; [ -f $IN ] || IN=$B/run_p1_v2/b1_runner_B_nplib_in.json
-  .venv-ice/bin/python spark/jobs/ice_resume.py --python .venv-ice/bin/python data/external/iceberg/ice_runner.py data/external/iceberg $IN $B/run_p1_v2/work/ice_B_nplib.json -- --device cuda --site none --budget 7200 > $B/run_p1_v2/work/ice_B_resume.log 2>&1
-  echo "run_p1_v2 B ICE: $(grep -a '\[resume\] done' $B/run_p1_v2/work/ice_B_resume.log)"
-  $PY -X utf8 $B/b1_evaluate.py --run $B/run_p1_v2 --eval_csv experiments/p1_baseline/run1/p1_molecules.csv --sets A_timstof B_nplib > $B/run_p1_v2/evaluate.log 2>&1; echo "run_p1_v2 re-evaluate exit $?"
-fi
+repair_ice() {  # run_dir set -> 1 if a repair ran
+  local RUN=$1 S=$2 st
+  st=$($PY -c "import json; print(json.load(open('$RUN/work/ice_${S}.json.meta.json')).get('status'))" 2>/dev/null); echo "== $(date +%T) $RUN ICE $S status: $st"
+  [ "$st" = "ok" ] && return 1
+  local IN=$RUN/b1_runner_${S}_in.filtered.json; [ -f $IN ] || IN=$RUN/b1_runner_${S}_in.json
+  .venv-ice/bin/python spark/jobs/ice_resume.py --reuse --python .venv-ice/bin/python data/external/iceberg/ice_runner.py data/external/iceberg $IN $RUN/work/ice_${S}.json -- --device cuda --site none --budget 7200 > $RUN/work/ice_${S}_resume.log 2>&1
+  echo "$RUN ICE $S: $(grep -a '\[resume\] done' $RUN/work/ice_${S}_resume.log)"; return 0
+}
+RE=0; for S in A_timstof B_nplib; do repair_ice $B/run_p1_v2 $S && RE=1; done
+if [ $RE = 1 ]; then $PY -X utf8 $B/b1_evaluate.py --run $B/run_p1_v2 --eval_csv experiments/p1_baseline/run1/p1_molecules.csv --sets A_timstof B_nplib > $B/run_p1_v2/evaluate.log 2>&1; echo "run_p1_v2 re-evaluate exit $?"; fi
 grep -a "^## \|^| S(2,1,0.5) |" $B/run_p1_v2/results/b1_results.md | cut -c1-200
 # ---- 3
 sync_code
@@ -47,6 +50,7 @@ EOF
 echo "TRAIN_V2_DONE $(date +%T)"
 # ---- 4
 until grep -q "LOCKED_DONE" logs/spark_locked_chain.log 2>/dev/null; do sleep 120; done
+for S in A_timstof B_nplib; do repair_ice $B/run_locked_v2 $S || true; done
 echo "== $(date +%T) locked eval (seed 4)"
 $PY -X utf8 $B/b1_locked_eval.py --run $B/run_locked_v2 --eval_csv $B/locked_eval/p1_molecules.csv --model $B/rank_v2/lambdarank.txt > $B/run_locked_v2/locked_eval.log 2>&1; echo "locked eval exit $?"
 grep -v Warning $B/run_locked_v2/locked_eval.log | tail -14 | cut -c1-230

@@ -5,10 +5,17 @@ Usage: python ice_resume.py <runner.py> <pkg_dir> <in.json> <out.json> [--python
 import argparse, json, os, shutil, subprocess, sys, time
 
 ap = argparse.ArgumentParser(); ap.add_argument("runner"); ap.add_argument("pkg"); ap.add_argument("inp"); ap.add_argument("out")
-ap.add_argument("--python", default=sys.executable); ap.add_argument("--max_restarts", type=int, default=12); ap.add_argument("rest", nargs=argparse.REMAINDER)
+ap.add_argument("--python", default=sys.executable); ap.add_argument("--max_restarts", type=int, default=12)
+ap.add_argument("--reuse", action="store_true", help="seed from an existing <out.json> (keep molecules that already have scores; rerun only the others)")
+ap.add_argument("rest", nargs=argparse.REMAINDER)
 a = ap.parse_args(); t0 = time.time()
 items = json.load(open(a.inp)); order = [it["mid"] for it in items]; by_mid = {it["mid"]: it for it in items}
 merged = {}; skipped = []; head_fail = {}
+if a.reuse and os.path.exists(a.out):
+    try:
+        prev = json.load(open(a.out)); merged = {m: d for m, d in prev.items() if m in by_mid and d and any(v is not None for v in d.values())}
+        shutil.copy(a.out, a.out + ".before_resume.json"); print(f"[resume] reusing {len(merged)} scored molecules from {a.out}", flush=True)
+    except Exception as e: print("[resume] could not reuse existing output:", repr(e), flush=True)
 for attempt in range(a.max_restarts + 1):
     todo = [m for m in order if m not in merged and m not in skipped]
     if not todo: break
