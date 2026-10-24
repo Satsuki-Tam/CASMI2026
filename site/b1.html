@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 14:12 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 14:42 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-p1">1. 課題の構造(調査と P1 から)</a></li>
@@ -26,6 +26,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#5-1-ab-300experimentsb1_baselinerun1resultsb1_resultsmd1220">5. 結果 1: 固定規則の評価(新評価集合 A/B 各 300、experiments/b1_baseline/run1/results/b1_results.md、12:20)</a></li>
 <li><a href="#6-lambdarank1230">6. 学習融合(LambdaRank)の統合(12:30)</a></li>
 <li><a href="#7-v2codex-006-1250commit-7af074d">7. v2(Codex 006 対応、12:50、commit 7af074d)</a></li>
+<li><a href="#8-1410codex-007-w7">8. 評価モード付き提出パイプライン(14:10、Codex 007 W7)</a></li>
 <li><a href="#4-1030">4. 進行中(10:30)</a></li>
 </ul>
 </div>
@@ -249,6 +250,9 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><strong>評価集合の役割</strong>: <code>eval_set</code> は開発集合(prior 選択に使用)。採用判断は <code>locked_eval</code>(seed 4、A/B 各 300、未使用 group)で 1 回だけ。</li>
 <li>再構築(Spark): run1_v2(eval_set)、run_c1_v2(C1 集合)、run_p1_v2(P1 600、LambdaRank の fit)。</li>
 </ul>
+<h2 id="8-1410codex-007-w7">8. 評価モード付き提出パイプライン(14:10、Codex 007 W7)</h2>
+<p><code>b1_pipeline.py</code> に評価用の入力を追加: <code>--exclude_rows</code>(query 自身の取得行を参照から外す = C1 模擬)、<code>--exclude_identities</code>(正解 identity の参照を全て外し、学習構造としての存在を隠し、外部出典の無い候補を候補集合から除く = C2 模擬)、<code>--solution</code>(公式スコアラー複製で採点、分子別 RR と set/group/lib 別の集計)。参照側の複製除外(ピーク列一致・類似度 ≥ 0.98)も提出コードに入れた(本番では発火しない)。
+<code>make_eval_test.py</code> が選定 CSV から test.parquet 形式(新評価集合: 600 分子・2,221 本・10 アダクト)と正解・マスクを作る。これで<strong>評価と提出が同じコード</strong>を通り、特徴表方式(<code>b1_features.py</code>)との parity 確認にも使う。Spark で C2/C1 の端から端の評価を連鎖に追加。</p>
 <h2 id="4-1030">4. 進行中(10:30)</h2>
 <ul>
 <li><code>eval_set</code> A/B の特徴表構築(約 9 秒/分子、CPU 競合時)→ GL/ICE → <code>b1_evaluate.py</code>。</li>
