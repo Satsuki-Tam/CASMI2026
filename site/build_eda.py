@@ -49,48 +49,41 @@ def main():
     n_official = keys["scorer_ik14"].n_unique()
     parts = []
 
-    # ------------------------------------------------------------------ 1. the task in one picture: quercetin
-    smi_q = keys.filter(pl.col("inchikey14") == "REFJWTPEDVJJIY")["normalized_smiles"][0]
-    smi_m = keys.filter(pl.col("inchikey14") == "YXOLAZRVSSWPPT")["normalized_smiles"][0]
-
-    def spectra_of(ik, lib="riken", adduct="[M+H]+", inst="QTOF"):
-        rows = smeta.filter((pl.col("inchikey14") == ik) & (pl.col("ingest_lib") == lib) & (pl.col("adduct") == adduct) & (pl.col("instrument_type") == inst)).sort("ce_mean")
-        return rows
+    # ------------------------------------------------------------------ 1. the task in one picture: kaempferol vs luteolin (C15H10O6)
+    IK_A, IK_B, NAME_A, NAME_B, LIB, INST, CES = "IYRMWMYZSQPJKC", "IQPNAANSBPBGFQ", "ケンフェロール", "ルテオリン", "massbank", "LC-ESI-QTOF", (40.0, 50.0)
+    smi_a = keys.filter(pl.col("inchikey14") == IK_A)["normalized_smiles"][0]; smi_b = keys.filter(pl.col("inchikey14") == IK_B)["normalized_smiles"][0]
 
     def spec(row):
-        s, e = int(S_OFF[row]), int(S_OFF[row + 1]); return np.asarray(S_MZ[s:e], float), np.asarray(S_IT[s:e], float)
+        s_, e_ = int(S_OFF[row]), int(S_OFF[row + 1]); return np.asarray(S_MZ[s_:e_], float), np.asarray(S_IT[s_:e_], float)
 
-    rows_q = spectra_of("REFJWTPEDVJJIY"); rows_m = spectra_of("YXOLAZRVSSWPPT")
-    pick = {}
-    def richest(rows, ce):
-        # riken holds many replicate acquisitions per CE; take the one with the most fragment peaks below the precursor (display + similarity)
-        cand = rows.filter((pl.col("ce_mean") - ce).abs() < 0.6)
+    def richest(ik, ce):
+        # libraries hold replicate acquisitions per CE; take the one with the most fragment peaks below the precursor
+        rows = smeta.filter((pl.col("inchikey14") == ik) & (pl.col("ingest_lib") == LIB) & (pl.col("adduct") == "[M+H]+") & (pl.col("instrument_type") == INST) & ((pl.col("ce_mean") - ce).abs() < 0.6))
         best = None
-        for row, prec in zip(cand["row"].to_list(), cand["precursor_mz"].to_list()):
-            n = len(clean_peaks(*spec(int(row)), float(prec))[0])
-            if best is None or n > best[2]: best = (int(row), float(prec), n)
+        for row, prec in zip(rows["row"].to_list(), rows["precursor_mz"].to_list()):
+            c = clean_peaks(*spec(int(row)), float(prec))
+            if best is None or len(c[0]) > best[2]: best = (int(row), float(prec), len(c[0]), c)
         return best
-    for ce in (10.0, 20.0, 40.0):
-        bq, bm = richest(rows_q, ce), richest(rows_m, ce)
-        if bq and bm and bq[2] >= 5 and bm[2] >= 5: pick[ce] = (bq[0], bq[1], bm[0], bm[1])
-    fig, axes = plt.subplots(len(pick), 2, figsize=(11, 2.6 * len(pick)), sharex=True)
+
+    pick = {ce: (richest(IK_A, ce), richest(IK_B, ce)) for ce in CES}
+    pick = {ce: v for ce, v in pick.items() if v[0] and v[1]}
+    fig, axes = plt.subplots(len(pick), 2, figsize=(11, 2.8 * len(pick)), sharex=True)
     axes = np.atleast_2d(axes)
-    for i, (ce, (rq, pq, rm, pm)) in enumerate(pick.items()):
-        for j, (row, prec, name) in enumerate(((rq, pq, "ケルセチン"), (rm, pm, "モリン"))):
-            mz, it = spec(row); ax = axes[i, j]
-            ax.vlines(mz, 0, it / it.max(), color="#0b6e4f" if j == 0 else "#b45309", lw=1.2)
-            ax.axvline(prec, color="#999", ls="--", lw=0.8); ax.set_ylim(0, 1.08); ax.set_xlim(40, 330)
-            ax.set_title(f"{name}  [M+H]+  衝突エネルギー {ce:g} eV(QTOF、riken)", fontsize=10); ax.set_ylabel("相対強度")
+    for i, (ce, (ba, bb)) in enumerate(pick.items()):
+        for j, (bst, name) in enumerate(((ba, NAME_A), (bb, NAME_B))):
+            mz, it = spec(bst[0]); ax = axes[i, j]; keep = mz < bst[1] - 1.5
+            ax.vlines(mz[keep], 0, it[keep] / max(it[keep].max(), 1e-9), color="#0b6e4f" if j == 0 else "#b45309", lw=1.0)
+            ax.axvline(bst[1], color="#999", ls="--", lw=0.8); ax.set_ylim(0, 1.08); ax.set_xlim(40, 300)
+            ax.set_title(f"{name}  [M+H]+  衝突エネルギー {ce:g} eV({INST}、{LIB})", fontsize=10); ax.set_ylabel("相対強度")
     axes[-1, 0].set_xlabel("m/z(質量/電荷)"); axes[-1, 1].set_xlabel("m/z")
     fig.tight_layout(); fig_iso = png(fig)
-    # similarities: same molecule across CE vs isomers at the same CE
     sims = {}
     ces = sorted(pick)
-    cl = {ce: (clean_peaks(*spec(pick[ce][0]), pick[ce][1]), clean_peaks(*spec(pick[ce][2]), pick[ce][3])) for ce in ces}
     for a_, b_ in zip(ces, ces[1:]):
-        sims[f"ケルセチン {a_:g} eV vs ケルセチン {b_:g} eV(同じ分子、CE 違い)"] = entropy_similarity(*cl[a_][0], *cl[b_][0])
+        sims[f"{NAME_A} {a_:g} eV vs {NAME_A} {b_:g} eV(同じ分子、CE 違い)"] = entropy_similarity(*pick[a_][0][3], *pick[b_][0][3])
     for ce in ces:
-        sims[f"ケルセチン {ce:g} eV vs モリン {ce:g} eV(異性体、同じ CE)"] = entropy_similarity(*cl[ce][0], *cl[ce][1])
+        sims[f"{NAME_A} {ce:g} eV vs {NAME_B} {ce:g} eV(異性体、同じ CE)"] = entropy_similarity(*pick[ce][0][3], *pick[ce][1][3])
+    smi_q, smi_m = smi_a, smi_b
     sim_rows = "".join(f"<tr><td>{html.escape(k)}</td><td>{v:.3f}</td></tr>" for k, v in sims.items())
     parts.append(f"""
 <article><h1>1. この課題は何をするのか</h1>
@@ -98,12 +91,12 @@ def main():
 あわせて壊す前のイオンの m/z(プリカーサ)、イオン化の形(アダクト、例 [M+H]+ はプロトンが付いた形)、正負の極性、壊す強さ(衝突エネルギー、CE)が付きます。<br>
 <b>出力</b>はその分子の 2 次元構造(SMILES)を 25 件まで順位付けしたリスト。<b>評価</b>は MRR@25: 正解が 1 位なら 1 点、2 位なら 1/2、…、25 位なら 1/25、入っていなければ 0 点の平均です。
 構造の同一性は立体を除き、互変異性体(タウトマー)を正規化した InChIKey の先頭 14 文字で判定します。</p>
-<div class="grid"><div class="card">{mol_svg(smi_q, legend="ケルセチン C15H10O7(質量 302.0427)")}</div><div class="card">{mol_svg(smi_m, legend="モリン C15H10O7(質量 302.0427、ケルセチンの異性体)")}</div></div>
-<p>下の図は、学習データにある <b>ケルセチン</b>(左、ポリフェノールの一種)と、原子の組成がまったく同じ <b>モリン</b>(右)のスペクトルです。縦の線が破片、点線がプリカーサの位置。衝突エネルギーを上げると大きな破片が減り小さな破片が増えます。
-同じ分子なら CE が違っても共通する破片が多く、異性体どうしは一見似ていますが細部が違います。この「組成が同じで構造だけ違う候補を見分ける」ことが Class 2 の本質的な難しさです。</p>
+<div class="grid"><div class="card">{mol_svg(smi_q, legend="ケンフェロール C15H10O6(質量 286.0477)")}</div><div class="card">{mol_svg(smi_m, legend="ルテオリン C15H10O6(質量 286.0477、ケンフェロールの異性体)")}</div></div>
+<p>下の図は、学習データにある <b>ケンフェロール</b>(左、フラボノールの一種)と、原子の組成がまったく同じ <b>ルテオリン</b>(右、フラボン)のスペクトルです。縦の線が破片、点線がプリカーサの位置(プリカーサ付近は除いて表示)。衝突エネルギーを上げると大きな破片が減り小さな破片が増えます。
+異性体どうしのスペクトルは共通する破片が多く、下の表のとおり<b>同じ分子の CE 違いより異性体の方が似て見えることすらあります</b>。この「組成が同じで構造だけ違う候補を見分ける」ことが Class 2 の本質的な難しさで、質量だけでは手も足も出ません。</p>
 {fig_iso}
 <table style="max-width:640px"><tr><th>スペクトル類似度(エントロピー類似度、1 = 同一)</th><th>値</th></tr>{sim_rows}</table>
-<p class="small muted">質量だけでは異性体を区別できない(両方 302.0427)。PubChem には同じ組成の構造が数百〜数千あるため、スペクトルの「壊れ方」の情報で絞り込む必要がある。</p>
+<p class="small muted">質量だけでは異性体を区別できない(両方 286.0477)。PubChem には同じ組成の構造が数百〜数千あるため、スペクトルの「壊れ方」と構造の整合(指紋予測・順方向モデル)で絞り込む必要がある。</p>
 </article>""")
 
     # ------------------------------------------------------------------ 2. the data
