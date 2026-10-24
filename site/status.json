@@ -28,7 +28,12 @@
   {
    "state": "run",
    "name": "ICEBERG の GB10 CUDA クラッシュ対策と B 集合の ICE 再採点(Spark)",
-   "detail": "random_walk_pe の疎行列 coalesce が cudaErrorIllegalAddress を散発(天然物集合のみ)。疎行列部分を CPU で計算して GPU に戻す修正を Spark 側 ICEBERG/GLACIER に適用し、再開可能ドライバ spark/jobs/ice_resume.py で run1_v2 B → run_c1_v2 B を順に再採点中。完了後に A/B を再評価し、LambdaRank v2 の学習はそれを待つ。"
+   "detail": "random_walk_pe の疎行列 coalesce が cudaErrorIllegalAddress を散発(天然物集合のみ)。疎行列部分を CPU で計算して GPU に戻す修正を Spark 側 ICEBERG/GLACIER に適用し、再開可能ドライバ spark/jobs/ice_resume.py で run1_v2 B → run_c1_v2 B を順に再採点中。完了後に A/B を再評価し、LambdaRank v2 の学習はそれを待つ。 15:08 時点: run1_v2 B は 157/299 分子まで無事故で採点(従来は 44〜96 分子で落ちていた)。"
+  },
+  {
+   "state": "wait",
+   "name": "shortlist 再現率の監査(Spark、低優先度)",
+   "detail": "診断 D1 の追補: 取りこぼした真は pop>0 の既知化合物で FP 順位 ~400 位。真の窓内順位(FP / prior / FP+λ·prior)を記録する列を b1_features に追加し、FP top-K ∪ prior top-K3 の仮想 shortlist の再現率を eval_set A/B と C1 集合で測る(spark/jobs/spark_audit_chain.sh、ICE 修復後の再評価が終わってから開始)。"
   }
  ],
  "next": [
