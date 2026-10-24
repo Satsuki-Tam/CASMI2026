@@ -228,3 +228,16 @@ blend(z(learned)+z(fixed))の frozen 台帳 paired 差(dev tune+eval): blend21 �
 - **proxy はパネルで利得なし**(rank_v4b、C2): NH4/H2O proxy で被覆が増えた 16 分子の固定 RR 0.891 → 0.834(−0.056 [−0.200, +0.062])、learned +0.056(ns)、提出関数 −0.075。負イオン proxy は固定 0.809 → 0.737 で有害。パネルの非被覆分子は FP+prior だけで RR 0.89 と易しく、公開系の利得条件を再現できない → 朝の既定版は off、実測 NH4 + [M+H]+ 両方を持つ MSG 非重複分子での検証を次段に。
 - **W7 600 の FAIL の原因は古い test ファイル**: `eval_test_full/test.parquet`(10-24 18:31)は builder 修正(float32 丸め・決定的 round-robin)より前の生成物。>8 スペクトル分子 18 件の query 選択差(ppm 差 7.9、真の所属差 1)と、同一スペクトル 573 分子の FP 差(最大 13、float64 ピーク vs float32 store)を説明。現行 builder は評価器と同じ選択を返すことを確認。M2x(blend21)で test を再生成して 600 分子の機械的一致を再実行中(`eval_test_full2`)。
 - **W7 の読み替え**: 提出パイプラインの論理不一致は見つかっていない。残る違いは GPU 実行間の forward 雑音(別報告)。
+
+### 13.8 忠実な M1 パネル(K=100 shortlist、GL+ICE、`run_panel_v2k`、02:15)
+
+Codex 012 §1 の指摘(パネル run は v3 拡大 shortlist だった)を受け、M1 本番構成(FP100 ∪ FP+prior100 ∪ 参照20、`--k_fpp 100 --k_pop 0`)で再計算。真が shortlist に入る分子 248/250(拡大版 250/250)。
+
+| 出力(rank_v2 = M1) | C1(他ライブラリ参照) | C2(identity を隠す) |
+|---|---:|---:|
+| learned | **0.599** | 0.918 |
+| fixed S(2,1,0.5) | 0.856 | 0.852 |
+| 参照単独 | 0.911 | 0.116 |
+| blend21 / blend11 | 0.784 / 0.836 | 0.902 / 0.898 |
+
+拡大 shortlist での値(0.600 / 0.900)とほぼ同じ → **M1 のクラス 1 崩壊は候補構成に依存しない**。真の参照数 [21,100] の 229 分子で learned 0.589 vs fixed 0.874。rank_v4g(v2 系譜の修正版)は C1 0.720 / C2 0.877。公開 main list との差(250 分子、公式 identity): 固定 − 公開 = C2 −0.118 / C1 −0.099。
