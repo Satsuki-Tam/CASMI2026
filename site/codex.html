@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 01:08 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 01:22 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -4479,7 +4479,11 @@ p1 + p2 + p3 = 1
 </ul>
 </li>
 <li><a href="#2">2. 意見がほしい点</a></li>
-<li><a href="#3">3. 追記(実行中の結果を得てから)</a></li>
+<li><a href="#3">3. 追記</a><ul>
+<li><a href="#31-blend-frozen-paired-dev-tuneevalab-200c1-41-09-dev_pair_v4_blend0115">3.1 blend の frozen 台帳 paired 差(dev tune+eval、A/B 各 200、C1 41; τ0.9; dev_pair_v4_blend/、01:15)</a></li>
+<li><a href="#32">3.2 残り(実行中)</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div><h1 id="013-012-blendforward-proxy">013 依頼: 012 の訂正後の結果、学習×固定の blend、forward 非対応アダクトの proxy、朝の提出の最終構成</h1>
@@ -4572,10 +4576,68 @@ p1 + p2 + p3 = 1
 <p><strong>Q3(M2′ の確定)</strong> rank_v5a/b(修正表で再学習)の eval 群と probe(§3)を見て、M2′ = {rank_v5x または rank_v4b} × {blend or learned} × {proxy on/off} を 1 本に決める。候補は旧 M1(凍結対照)と M2′ の 2 本のまま、保険は τ0.9。開封は parity 合格後に 1 回。この枝分かれの決め方に異論はあるか。</p>
 <p><strong>Q4(W7 600 の閾値)</strong> top-1 一致 98.2% / forward 雑音 p99 0.013 を「合格」と呼べるか。600 分子用の閾値案: top-1 一致 ≥ 0.97、RR 一致 ≥ 0.97、top-25 集合一致 ≥ 0.80、順序付き閾値なし(雑音で意味を持たない)。</p>
 <p><strong>Q5(朝の 2 枠)</strong> (i) M2′ 本命(blend/proxy の採否込み)、(ii) 保険 version(τ0.9、固定 + libpri)で「本命 − 保険」の LB 差を観測。E0 0.464 を基準に ±0.02 は運用閾値。M1 0.322 を受け、学習の価値を LB で測る唯一の手段が (ii) との差であることから 2 枠とも使う提案。</p>
-<h2 id="3">3. 追記(実行中の結果を得てから)</h2>
+<h2 id="3">3. 追記</h2>
+<h3 id="31-blend-frozen-paired-dev-tuneevalab-200c1-41-09-dev_pair_v4_blend0115">3.1 blend の frozen 台帳 paired 差(dev tune+eval、A/B 各 200、C1 41; τ0.9; <code>dev_pair_v4_blend/</code>、01:15)</h3>
+<table>
+<thead>
+<tr>
+<th>set / view</th>
+<th>候補</th>
+<th>blend21 − learned</th>
+<th>blend21 − fixed</th>
+<th>blend11 − learned</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A C2 (200)</td>
+<td>M2x(rank_v4b)</td>
+<td>−0.008 [−0.021, +0.005]</td>
+<td>+0.098 [+0.061, +0.135]</td>
+<td>−0.018 [−0.037, +0.001]</td>
+</tr>
+<tr>
+<td>A C2 (200)</td>
+<td>M2(rank_v3)</td>
+<td>−0.006 [−0.023, +0.012]</td>
+<td>+0.095 [+0.062, +0.130]</td>
+<td>−0.021 [−0.042, 0.000]</td>
+</tr>
+<tr>
+<td>B C2 (200)</td>
+<td>M2x</td>
+<td>+0.004 [−0.012, +0.019]</td>
+<td>+0.024 [−0.001, +0.049]</td>
+<td>−0.007 [−0.027, +0.013]</td>
+</tr>
+<tr>
+<td>B C2 (200)</td>
+<td>M2</td>
+<td>−0.002 [−0.016, +0.011]</td>
+<td>+0.037 [+0.017, +0.059]</td>
+<td>−0.010 [−0.028, +0.006]</td>
+</tr>
+<tr>
+<td>B C1 (41)</td>
+<td>M2x</td>
+<td>−0.057 [−0.121, +0.001]</td>
+<td>+0.303 [+0.201, +0.407]</td>
+<td>−0.115 [−0.197, −0.040]</td>
+</tr>
+<tr>
+<td>B C1 (41)</td>
+<td>M2</td>
+<td>−0.095 [−0.176, −0.014]</td>
+<td>+0.238 [+0.159, +0.323]</td>
+<td>−0.162 [−0.264, −0.062]</td>
+</tr>
+</tbody>
+</table>
+<p>パネル(probe、rank_v3 = M2): blend11 C1 0.861 / C2 0.930、blend21 C1 0.812 / C2 0.938(learned 0.430 / 0.934、固定 0.862 / 0.862)。rank_v4b: blend11 0.901 / 0.907、blend21 0.891 / 0.911(learned 0.737 / 0.882)。
+→ blend21 は開発 C2 で learned と同等(差は ±0.02 内)、開発 C1 で −0.06〜−0.10(ただし固定より +0.24〜+0.30 上)、パネル C1 で +0.15〜+0.38。<strong>パネル体制への保険としての下振れは小さく、上振れが大きい</strong>。</p>
+<h3 id="32">3.2 残り(実行中)</h3>
 <ul>
 <li>rank_v5a / v5b の eval 群(C1 / C2)、パネル C1 / C2、dev C1 集合。</li>
-<li>blend の frozen 台帳 paired 差(dev tune+eval)。</li>
 <li>パネル proxy の差分(34 分子)。</li>
 <li>忠実な M1 パネル(K=100)の結果。</li>
 </ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
