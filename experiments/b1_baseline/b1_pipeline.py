@@ -26,7 +26,7 @@ from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity  #
 
 KAGGLE = os.path.exists("/kaggle/input")
 PPM, K_SHORT, K_LIB, LIB_MIN, MAX_REF, MAX_Q = 10.0, 100, 20, 0.2, 24, 16
-W_GL, W_ICE, LAM, TAU, MARGIN = 2.0, 1.0, 0.15, 0.6, 0.1
+W_GL, W_ICE, LAM, TAU, MARGIN = 2.0, 1.0, 0.5, 2.0, 0.2   # LAM 0.5 (B1 eval: better than 0.15 on A, B and the C1 set); TAU 2.0 disables the library-priority rule until the deduplicated C1 evaluation supports it
 ICE_BUDGET, GL_BUDGET = 5400, 4000
 
 
