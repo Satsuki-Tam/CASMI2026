@@ -46,16 +46,16 @@
    "eta": "07:15 頃"
   },
   {
-   "state": "wait",
+   "state": "done",
    "name": "Codex 015(開封結果の読みと朝の提出)",
-   "detail": "05:10 依頼予定",
-   "eta": "05:40 頃"
+   "detail": "2 提出は「2 つの最終出力ポリシーの比較」として了承。表現を訂正(同等 → 優劣未確定・昇格条件未達)。次段の順序 (c)→(a)→(b)→(d)",
+   "eta": "完了"
   }
  ],
  "next": [
-  "Codex 015 → 09:00 以降に提出: 本命(M2x blend21、比較用)と保険 version;LB は 2 つの最終出力ポリシーの差として読む",
-  "朝の進捗報告の確定(E0 との差 0.13 の分解、locked と LB の体制差、次段の提案)",
-  "次段: E0 を自前分子で実行(資産は Spark に 19 GB 配置済み、experiments/e0_offline/README.md)、query 選択の共通関数化、proxy の正しい検証、FIORA(許可待ち)"
+  "kernel 完走(07:15 頃)→ 09:00 以降に提出: 本命 casmi26-b1-baseline v4(M2x blend21)/ 保険 casmi26-b1-insurance v1。提出 ID・manifest・Public 値を記録",
+  "朝の進捗報告を確定(docs/progress_2026-10-25_morning.md)",
+  "次段: (c) query 選択の共通関数化 → (a) E0 を自前分子で実行(experiments/e0_offline/README.md、資産は Spark に配置済み)→ (b) 検証集合に層を追加、locked 2 の確保 → (d) proxy / FIORA"
  ],
  "pages": [
   [

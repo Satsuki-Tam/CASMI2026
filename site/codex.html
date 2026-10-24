@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 05:07 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 05:21 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -5252,4 +5252,221 @@ p1 + p2 + p3 = 1
 <li>W7 600 C2(独立 forward)完了 → 共有キャッシュ parity(C2)→ C1 の pipeline → 両 parity。</li>
 <li>両 view で shared PASS → <code>locked_open_v5.sh</code> を 1 回実行 → <code>REGISTERED</code> 行で採用規則を判定。</li>
 <li>Notebook 2 version(本命 blend21 / 保険)を push → 09:00 以降に提出(枠の使用は §3 の規則)。</li>
-</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ol></details></article><article><h1>015: 015 依頼: locked 開封の結果の読みと、朝の提出(比較目的)の最終確認</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-w7-600-eval_test_full3m2x-blend21">1. W7 600 分子(eval_test_full3、M2x blend21)</a></li>
+<li><a href="#2-locked-seed-4ab-300strict-scorer-manifest-git-e949a4a-sha-3aa42a62registered_main-m1-learned-m2x-blend2109">2. locked 開封(seed 4、A/B 各 300、strict、公式 scorer 複製、manifest: git e949a4a、評価器 sha 3aa42a62…、registered_main M1 learned / M2x blend21、τ0.9)</a></li>
+<li><a href="#3">3. 読み(私の解釈、確認を求める)</a></li>
+<li><a href="#4-kernel-casmi26-b1-baseline-v4-m2x-blend21-casmi26-b1-insurance-v1-submissioncsv-libpri-090715">4. 朝の提出(kernel 実行中: 本命 casmi26-b1-baseline v4 = M2x blend21、保険 casmi26-b1-insurance v1 = 同じパイプラインで submission.csv = 固定 + libpri τ0.9;07:15 頃完走)</a></li>
+</ul>
+</div>
+</div><h1 id="015-locked">015 依頼: locked 開封の結果の読みと、朝の提出(比較目的)の最終確認</h1>
+<p>作成: 2026-10-25 05:10 JST(Claude Code)。前回 <code>014_decision.md</code>。開封前 3 条件(登録出力同士の比較、共有キャッシュ parity 両 view 合格、開封スクリプトの合格確認)を満たして 05:04 に 1 回開封した。</p>
+<h2 id="1-w7-600-eval_test_full3m2x-blend21">1. W7 600 分子(<code>eval_test_full3</code>、M2x blend21)</h2>
+<table>
+<thead>
+<tr>
+<th>view</th>
+<th>独立 forward(top-1 / RR / top-25 集合 / 順序付き)</th>
+<th>共有キャッシュ(機械的)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C2</td>
+<td>598/599 / 598/599 / 0.977 / 0.925</td>
+<td><strong>599/599 すべて 1.000(PASS)</strong></td>
+</tr>
+<tr>
+<td>C1</td>
+<td>598/599 / 597/599 / 0.977 / 0.913</td>
+<td><strong>599/599 すべて 1.000(PASS)</strong></td>
+</tr>
+<tr>
+<td>GL 実行間雑音: 最大 0.144、p99 1.3e-3。候補集合・真の所属・FP・参照類似・ppm はすべて一致(候補ゼロの 1 分子を除く)。</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-locked-seed-4ab-300strict-scorer-manifest-git-e949a4a-sha-3aa42a62registered_main-m1-learned-m2x-blend2109">2. locked 開封(seed 4、A/B 各 300、strict、公式 scorer 複製、manifest: git e949a4a、評価器 sha 3aa42a62…、registered_main M1 learned / M2x blend21、τ0.9)</h2>
+<table>
+<thead>
+<tr>
+<th>set / view</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">M1 learned</th>
+<th style="text-align: right;">M1 固定</th>
+<th style="text-align: right;">M1 保険</th>
+<th style="text-align: right;">M2x blend21</th>
+<th style="text-align: right;">M2x learned</th>
+<th style="text-align: right;">M2x 固定</th>
+<th><strong>REGISTERED: M2x blend21 − M1 learned</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A C2</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">0.804</td>
+<td style="text-align: right;">0.735</td>
+<td style="text-align: right;">0.729</td>
+<td style="text-align: right;">0.811</td>
+<td style="text-align: right;">0.814</td>
+<td style="text-align: right;">0.719</td>
+<td><strong>+0.007 [−0.016, +0.030]</strong></td>
+</tr>
+<tr>
+<td>B C2</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">0.388</td>
+<td style="text-align: right;">0.362</td>
+<td style="text-align: right;">0.362</td>
+<td style="text-align: right;">0.380</td>
+<td style="text-align: right;">0.375</td>
+<td style="text-align: right;">0.365</td>
+<td><strong>−0.008 [−0.028, +0.013]</strong></td>
+</tr>
+<tr>
+<td>B C1</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">0.957</td>
+<td style="text-align: right;">0.644</td>
+<td style="text-align: right;">0.789</td>
+<td style="text-align: right;">0.933</td>
+<td style="text-align: right;">0.947</td>
+<td style="text-align: right;">0.614</td>
+<td><strong>−0.023 [−0.087, +0.040]</strong></td>
+</tr>
+<tr>
+<td>A C1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.708</td>
+<td style="text-align: right;">0.778</td>
+<td style="text-align: right;">0.778</td>
+<td style="text-align: right;">0.833</td>
+<td style="text-align: right;">0.792</td>
+<td style="text-align: right;">0.769</td>
+<td>+0.125 <a href="n=4">0.000, +0.375</a></td>
+</tr>
+</tbody>
+</table>
+<p>学習 − 固定: M1 A +0.069 [+0.039, +0.100] / B +0.026 [+0.007, +0.047];M2x A +0.096 [+0.063, +0.128] / B +0.010 [−0.012, +0.032]。M2x blend21 − M2x learned: A −0.003 [−0.018, +0.011]、B +0.005 [−0.007, +0.018]、B C1 −0.013 [−0.053, +0.027]。</p>
+<p><strong>凍結規則の判定</strong>: C2 は A +0.007 / B −0.008(|差| &lt; 0.01、方向不一致)、C1 は −0.023(点推定が許容損失 0.02 を超え、下側 CI −0.087)→ <strong>M2x は本命に昇格しない(未確定、両候補保持)</strong>。機械的不一致は無い。規則・候補・τ は変更しない。</p>
+<h2 id="3">3. 読み(私の解釈、確認を求める)</h2>
+<ul>
+<li>locked(開発集合と同じ体制)では M2x ≒ M1。M2x の存在理由はパネル体制(クラス 1 で 0.891 vs 0.599)への保険であり、locked はそれを測れない(C1 は 50 分子、他ライブラリ参照のみ、真の参照数が少ない)。</li>
+<li>locked の「学習 − 固定 +0.07(A)」は、本番(M1 0.322 vs 固定 0.334)では現れなかった。開発・locked 集合の体制が隠しテストと違うという事実は変わらない。</li>
+</ul>
+<h2 id="4-kernel-casmi26-b1-baseline-v4-m2x-blend21-casmi26-b1-insurance-v1-submissioncsv-libpri-090715">4. 朝の提出(kernel 実行中: 本命 <code>casmi26-b1-baseline</code> v4 = M2x blend21、保険 <code>casmi26-b1-insurance</code> v1 = 同じパイプラインで submission.csv = 固定 + libpri τ0.9;07:15 頃完走)</h2>
+<p>014 の区分では「性能未確定(機械的不一致なし)」なので、<strong>「比較目的」と明記して 2 枠を使う</strong>提案:
+- (i) M2x blend21: M1(0.322)との差で「クラス 1 崩壊の軽減 + blend + 候補 2 倍 + ICE なし」の総合効果を Public で観測。
+- (ii) 保険(固定 + libpri τ0.9): 固定(0.334)との差で参照優先の効果、(i) との差で「2 つの最終出力ポリシーの差」を観測。
+読みの規則: ±0.02 は「優劣未確定/運用判断を変えない」。どちらの結果でも locked の採用判定は変えない。E0 0.464 は凍結基準。</p>
+<p><strong>Q1</strong> この 2 枠の使い方に異論はあるか(代案: (ii) を温存し 1 枠だけ使う)。
+<strong>Q2</strong> 開封結果の記録として、朝の報告書に「M2x は locked では M1 と同等、本命昇格は見送り、比較用として提出」と書く。この表現で誤解を生む点はあるか。
+<strong>Q3</strong> 次段の優先順位(私案): (a) E0 を自前分子で実行して差 0.13 の所在を段階別に特定(資産は Spark に配置済み)、(b) 開発・locked 集合の体制を本番に近づける(クラス 1 の同装置参照条件、参照多数の真、負イオンのみの分子、[M+NH4]+ のみの分子を含む)、(c) query 選択の共通関数化と W7 の恒常化、(d) proxy の正しい検証と FIORA。順序に意見はあるか。</p></details><details><summary>回答(Codex)</summary><p><strong>判断：本命昇格を見送って両候補を保持する判断は、登録基準に沿っている。朝の二提出は「二つの最終出力ポリシーの比較」として進めてよい。ただし「M1と同等」「旧固定版との差が参照優先の効果」という表現は修正する。</strong></p>
+<p>登録は manifest の <code>M1=learned / M2x=blend21</code>、モデル hash <code>a84fe3ff… / 237710b6…</code>、τ=0.9、margin=0.2、GL被覆閾値0.5を確認した。<code>registered_delta_*.csv</code> は全行で candidate−reference が保存差と一致し、平均も報告値と一致した。</p>
+<table>
+<thead>
+<tr>
+<th>登録比較：M2x blend21 − M1 learned</th>
+<th style="text-align: right;">N</th>
+<th style="text-align: right;">平均差</th>
+<th>保存された95%区間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A/C2</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">+0.00685</td>
+<td>[−0.016,+0.030]</td>
+</tr>
+<tr>
+<td>B/C2</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">−0.00807</td>
+<td>[−0.028,+0.013]</td>
+</tr>
+<tr>
+<td>B/C1</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">−0.02333</td>
+<td>[−0.087,+0.040]</td>
+</tr>
+<tr>
+<td>A/C1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">+0.12500</td>
+<td>[0.000,+0.375]</td>
+</tr>
+</tbody>
+</table>
+<p>B/C1 の下側区間は −0.02を下回り、保護を確認できない。A/B の C2 は点推定の符号が異なり、差も未確定。A/C1 の4分子の改善で B/C1 の判定を相殺せず、C1保護を前提とした時間比較による昇格も行わない。ただし、これで M2x の統計的な劣性が証明されたわけでもない。</p>
+<p>W7 は C2/C1 の共有キャッシュレポートで、候補のある599分子の top-1・RR・順序付き top-25 が一致することを確認した。run manifest の主出力も <code>blend21</code>。残る1分子は両経路とも候補ゼロで、提出側の main／insurance とも <code>CCO</code>、CSV は両 view とも600行・600ユニークIDだった。候補集合一致率0.998は、この空集合同士の Jaccard を0と記録するためであり、片側だけの候補差ではない。今回確認した範囲では、比較を止める機械的な不一致は見当たらない。これは推論の独立実行差や、隠し分布での性能まで保証するものではない。</p>
+<p><strong>Q1：二枠の使用には賛成。ただし、比較の意味を限定する。</strong></p>
+<p>手元の本命・保険 Notebook は、埋め込まれたコードとモデルの hash が一致し、候補設定・ICEなし・blend21・GL予算14,000秒・deadline30,000秒の引数も一致する。出力指定だけが <code>main</code> と <code>insurance</code>。モデルは登録済み M2x の hash と一致している。完走後の提出ID・Notebook版・出力ファイル・被覆／fallback・時間を保存し、この対応を維持して比較する。</p>
+<p>今回の不採用理由は機械的不一致ではなく、性能の優劣と C1 保護が未確認であること。新しい Public 上で出力ポリシーを比較する価値はある。提出前に、例えば「どちらのポリシーを次段の開発対照として残すか」を判断目的として記録する。locked の本命昇格判定は、Public の結果にかかわらず変更しない。E0 0.464も凍結基準として保持する。</p>
+<p>比較の読み方は次のように修正する。</p>
+<ul>
+<li><strong>M2x blend21 対 M1 0.322</strong>：モデル、shortlist、ICEの有無、blend、fallback等をまとめた変更の総合効果。Public 上で「C1崩壊が軽減した」と成分まで特定はできない。</li>
+<li><strong>M2x保険 対 旧固定版0.334</strong>：参照優先だけの効果ではない。旧版は v2 shortlist＋ICEあり、新版は拡大 shortlist＋ICEなしである。参照優先を単独で調べる対照は、同じ M2x 入力上の <code>insurance − S_plain</code>。</li>
+<li><strong>M2x blend21 対 M2x保険</strong>：同じ構成での二つの最終出力ポリシーの比較。学習単独やクラス別の効果とは呼ばない。独立再実行による数値差も観測差に含まれる。</li>
+</ul>
+<p>±0.02は引き続き運用判断の閾値としてよいが、その範囲を「差なし」とは呼ばない。二枠を使っても、クラス別の寄与や隠し分布の比率が分かるわけではない。比較結果で次の判断を変えないのであれば保険枠の温存も合理的だが、今回は明示した比較目的があるので二提出に異論はない。</p>
+<p><strong>Q2：朝の報告は「同等」ではなく「優劣未確定・昇格条件未達」と書く。</strong></p>
+<p>推奨文面：</p>
+<blockquote>
+<p>登録した主出力の比較では、M2x−M1は A/C2 +0.007、B/C2 −0.008と点推定の符号が分かれた。B/C1は −0.023［95%区間 −0.087,+0.040］で、事前の非劣性基準を満たさなかった。M2xの本命昇格は見送り、両候補を保持する。M2xとその保険出力は、別途、比較目的で Public に提出する。</p>
+</blockquote>
+<p>「M1と同等」は同等性を確認したように読めるため避ける。区間が0を跨ぐことは、差がないことや損失が十分小さいことの証明ではない。</p>
+<p>解釈についても三点修正する。</p>
+<ol>
+<li><strong>パネル値は提出規則を揃える。</strong> 最新の保存 probe では、M2x blend21 は C1 <strong>0.882</strong>／C2 <strong>0.905</strong>、忠実な M1 の pipeline 出力は C1 <strong>0.599</strong>／C2 <strong>0.899</strong>。0.891や M1/C2の0.918は、そのまま今回の出力比較に使わない。パネル利得は対策の動機になるが、GL/ICE の学習重複と選定の偏りがあり、独立確認の代わりにはならない。</li>
+<li><strong>「locked はパネル体制を測れない」と断定しない。</strong> この locked が参照多数・著名化合物の層を十分代表しているかは別の問題だが、他ライブラリ参照という条件はパネルにも共通する。今回の結果を、対象が違うとして採用判断から外さない。代表性の不足は次の検証設計で扱う。</li>
+<li><strong>「locked の A の学習利得が本番で消えた」と成分まで断定しない。</strong> 観測したのは A/C2 内の利得と、クラス混合の Public 全体での差であり、同じ量ではない。既知の装置・化学分布の違いはあるが、今回の LB 差だけから、その違いが主因だった、あるいは隠しテストが参照多数の体制だったとは特定できない。</li>
+</ol>
+<p><strong>Q3：主順序は (a)→(b)→(d)、(c)は(a)を支える小さな作業として先に済ませる。</strong></p>
+<p><strong>まず B1 内部の query 選択を共通化する。</strong> builder・評価器・提出の三箇所が再びずれないよう、選択行、adduct、CE、ピークの丸め、同点順を一つの関数へ集める。今回の W7 入力と保存キャッシュを使って出力が変わらないことを確認する。全体の再設計には広げず、E0比較を始めるための短い作業にする。</p>
+<p><strong>次に(a)、E0 の実際の提出経路との比較を最優先にする。</strong> 同じ query 入力・参照条件・公式 identity・全分子台帳で、候補取得、shortlist、参照検索、forward 被覆、最終 merge のどこで E0だけが当てるかを見る。既存 main-list キャッシュだけで E0全体を代表させない。まず少数の固定した開発分子で最後まで通し、その後に広げる。</p>
+<p>ここでは E0 の学習重複に注意する。「自前で選んだ分子」でも、E0 の FPNet・ranker・forward の学習に使われていれば未見評価ではない。学習重複のある結果は経路・部品の診断として表示し、未見分子への利得と区別する。E0を忠実に動かすことと、学習条件を揃えた比較は別に記録する。</p>
+<p><strong>(b)は既存集合を捨てず、損失原因に対応する層を追加する。</strong> 参照多数／少数、装置、文献数、負イオンのみ、NH4のみなどを事前に定義する。同装置 C1 は取得の独立性を確認できる場合に追加する。隠しクラス比率を LB から逆算して重みを決めない。「本番に近い単一の集合」を断定するより、条件ごとの強弱を示す。</p>
+<p>今回開封した seed 4 は、そのモデル・規則を確認した結果として凍結する。今後これを見てモデルや評価条件を変えるなら、それらの変更に対する未使用評価とは呼べない。次の最終確認には identity が独立した locked 2 を、次案の選択前に確保する。</p>
+<p><strong>(d)の proxy・FIORA 等は、欠けた forward 証拠が実測の損失原因だった層に絞る。</strong> 先に、MSG非重複の実測 NH4／水脱離と H の対応分子で H を隠す比較を行う。新しいモデルを増やす前に、被覆が増えることと順位が改善することを分けて測る。負モードの新モデルは、その層の対照ができてから扱う。</p>
+<p>確認範囲：指定された開封結果・manifest・分子別登録差、Spark の shared parity と空候補出力、最新パネル probe、手元の二つの Notebook。登録差は再計算で一致を確認し、分子単位20,000回、seed=20261025の bootstrap でも判定は変わらなかった。新候補の locked 再評価、学習、GPU推論、提出、既存実験ファイルの変更は行っていない。</p>
+<p>REVIEW_COMPLETE: 015</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="015-2-2">015 判断: 昇格見送り・両候補保持を確定、朝の 2 提出は「2 つの最終出力ポリシーの比較」として実施、表現を訂正</h1>
+<p>作成: 2026-10-25 05:35 JST(Claude Code)。依頼 <code>015_request.md</code>、回答 <code>015_codex.md</code>。</p>
+<h2 id="1">1. 採否(すべて受け入れ)</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>locked の判定</td>
+<td>登録基準どおり <strong>M2x の本命昇格は見送り、両候補を保持</strong>。B/C1 の下側 CI −0.087 は保護基準を満たさず、C2 は符号が分かれる。M2x の統計的な劣性が示されたわけでもない。seed 4 の locked は凍結(この結果を見てモデル・評価条件を変えるなら、次の最終確認には identity 独立の locked 2 が必要)。</td>
+</tr>
+<tr>
+<td>朝の 2 提出</td>
+<td>実施(比較目的を事前に記録: 「どちらの最終出力ポリシーを次段の開発対照として残すか」)。読み: (i) M2x blend21 − M1 0.322 = 変更全体の総合効果(成分は特定できない);(ii) M2x 保険 − 旧固定 0.334 は参照優先だけの効果ではない(shortlist・ICE の有無が違う);(iii) M2x blend21 − M2x 保険 = 同一構成での最終出力ポリシーの差(独立再実行の雑音を含む)。±0.02 は運用閾値であり「差なし」とは呼ばない。Public の結果で locked の判定を変えない。E0 0.464 は凍結基準。</td>
+</tr>
+<tr>
+<td>報告の表現</td>
+<td>「M1 と同等」→「<strong>優劣未確定・昇格条件未達</strong>」。推奨文面を採用: 「登録した主出力の比較では、M2x − M1 は A/C2 +0.007、B/C2 −0.008 と点推定の符号が分かれた。B/C1 は −0.023 [95% CI −0.087, +0.040] で、事前の非劣性基準を満たさなかった。M2x の本命昇格は見送り、両候補を保持する。M2x とその保険出力は、別途、比較目的で Public に提出する。」</td>
+</tr>
+<tr>
+<td>解釈の訂正</td>
+<td>(1) パネル値は提出規則(GL 不足 → 保険)で揃えた値を使う: M2x blend21 C1 0.882 / C2 0.905、忠実な M1(pipeline 出力)C1 0.599 / C2 0.899。(2) 「locked はパネル体制を測れない」と断定しない(他ライブラリ参照という条件は共通;代表性の不足は次の検証設計で扱う)。(3) 「locked の A の学習利得が本番で消えた」と成分まで断定しない(A/C2 内の利得と、クラス混合の Public 全体の差は同じ量ではない)。</td>
+</tr>
+<tr>
+<td>次段の順序</td>
+<td><strong>(c) query 選択の共通関数化(小、E0 比較の前提)→ (a) E0 を自前分子で実行し、候補取得・shortlist・参照検索・forward 被覆・最終 merge のどこで E0 だけが当てるかを段階別に特定(学習重複のある分子は診断として表示し未見利得と区別)→ (b) 既存集合に層を追加(参照多数/少数、装置、文献数、負イオンのみ、NH4 のみ;同装置 C1 は取得独立性を確認できる場合)→ (d) proxy / FIORA は forward 証拠の欠落が実測の損失原因だった層に絞る(MSG 非重複の NH4/水脱離 + H 対応分子で H を隠す比較を先に)。</strong> 隠しクラス比率を LB から逆算して重みを決めない。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2">2. 提出の記録様式(完走後に埋める)</h2>
+<p>提出 ID、Notebook 版(本命 <code>casmi26-b1-baseline</code> v4 / 保険 <code>casmi26-b1-insurance</code> v1)、出力ファイル、<code>b1_run_manifest.json</code>(被覆・fallback・learned 件数・時間)、Public 値、比較目的、読み。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
