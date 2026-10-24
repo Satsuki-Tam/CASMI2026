@@ -25,11 +25,11 @@
 - 候補源の差(PubChemLite / ChEBI / 公開 pool)、取りこぼし: 未測定
 - 合計 ≈0.07〜0.13 → 差の大半は説明可能だが、**どれか 1 つを直しても E0 には届かない**。金圏にはクラス 1・クラス 2・被覆・候補源の全部で E0 と同等以上が必要。
 
-## 3. 進行中(Spark、01:10 時点)
-1. `spark_v3b_chain.sh`: 修正済み評価器で特徴表を再計算 → rank_v5a/b 再学習 → probe → locked 表 → パネル表 → M1 対照の locked 表(〜02:45)。
-2. blend の frozen 台帳 paired 差(dev tune+eval)。
-3. パネル proxy(2 構成)と忠実な M1 パネル(K=100)。
-4. Codex 013(blend / proxy / M2′ の確定 / W7 600 閾値 / 朝の 2 枠)。
+## 3. 進行中(Spark、02:15 時点)
+1. Codex 013 の判断(`reports/agent_review/013_decision.md`): 比較用候補 M2x = rank_v4b + blend21(GL のみ、proxy off、保険 τ0.9)。修正表で再学習した rank_v5a/b はパネルで v4b を下回り不採用。proxy はパネルで利得なし(off)。
+2. W7 600 分子の FAIL は古い test ファイル(builder 修正前)が原因と特定。test を再生成し、M2x(blend21)で 600 分子の機械的一致を再実行中(C2 → C1、`eval_test_full2`)。
+3. M1 対照の修正表(run1b_v2 / run_c1b_v2)を計算中 → 共通台帳で旧 M1 と M2x(learned / blend21 / fixed / insurance)を比較(`dev_pair_final`)。
+4. 忠実な M1 パネル(K=100)と locked 表(M1 対照)を計算中。
 
 ## 4. 朝の予定
 - M2′ を 1 本に確定(rank_v5x or v4b × blend × proxy)→ 50 分子 parity → locked 開封 1 回 → Notebook を push(〜05:00)→ 09:00 以降に本命を提出、2 枠目は保険 version(τ0.9)で「本命 − 保険」の LB 差を観測。
