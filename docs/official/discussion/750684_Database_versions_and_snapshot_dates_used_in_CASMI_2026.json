@@ -1,0 +1,14 @@
+{
+  "topic": {
+    "id": 750684,
+    "title": "Database versions and snapshot dates used in CASMI 2026",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/750684",
+    "postDate": "2026-10-19T13:59:18.322Z",
+    "authorName": "Chybgyz",
+    "authorUrl": "https://www.kaggle.com/chybgyz",
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi CASMI 2026 organizers,</p>\n<p>Could you please clarify the database versions and reference dates used for this competition?</p>\n<p>Training spectral libraries: Which release/version and download date were used for each of the 11 sources listed under ingest_lib in train.parquet? Is there a source manifest with this information?</p>\n<p>The three molecule groups: Which database snapshots or cutoff dates were used to distinguish:</p>\n<p>structures with publicly available reference MS/MS spectra;</p>\n<p>known structures in PubChem or COCONUT without public reference spectra;</p>\n<p>novel structures absent from PubChem?</p>\n<p>Subsequent updates: Are these categories fixed according to those snapshots, even if a structure or its reference spectra become publicly available later?</p>\n<p>I found publication dates for some public releases, but could not identify the exact versions used to prepare the competition data or the reference date for defining these groups.</p>\n<p>A table with source name, version, and snapshot/download date would help us make database comparisons reproducible and design appropriate validation sets.</p>\n<p>Thank you!</p>"
+  },
+  "comments": []
+}

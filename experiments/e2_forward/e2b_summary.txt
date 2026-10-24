@@ -1,0 +1,2 @@
+timstof_unseen: 200 molecules | truth in PubChem 191 | same-formula isomers in window: median 2622, p90 13139 | candidates median 100 | ~68,655 predictions | 532s
+np_unseen: 200 molecules | truth in PubChem 125 | same-formula isomers in window: median 1448, p90 9436 | candidates median 100 | ~36,886 predictions | 858s

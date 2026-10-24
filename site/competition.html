@@ -1,0 +1,569 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>コンペ概要</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="on">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 10:37 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-utc-2359">1. 日程(すべて UTC 23:59)</a></li>
+<li><a href="#2-data">2. タスク(公式 Data ページより)</a><ul>
+<li><a href="#_1">難易度クラス(公式)</a></li>
+</ul>
+</li>
+<li><a href="#3">3. データ</a><ul>
+<li><a href="#_2">隠しテストセット(公式)</a></li>
+<li><a href="#_3">列定義(公式 + 実データ確認)</a></li>
+<li><a href="#_4">出典ライブラリ(公式説明 + 実データ統計)</a></li>
+<li><a href="#testparquet">ローカル test.parquet の正体</a></li>
+</ul>
+</li>
+<li><a href="#4-mrr25">4. 評価指標: MRR@25(公式)</a></li>
+<li><a href="#5-rules">5. ルール(公式 Rules + ホスト回答)</a></li>
+<li><a href="#6-2026-10-24">6. 公開ソリューションの到達点(2026-10-24 時点)</a></li>
+<li><a href="#7">7. 検証設計と落とし穴(公式 + ディスカッションの知見)</a></li>
+<li><a href="#8">8. ローカル環境</a><ul>
+<li><a href="#_5">ディレクトリ構成</a></li>
+<li><a href="#_6">よく使うコマンド</a></li>
+</ul>
+</li>
+<li><a href="#9">9. 次のステップ案</a></li>
+</ul>
+</div>
+</div><h1 id="enveda-casmi-2026-molecule-id-from-mass-spectra">Enveda CASMI 2026 – Molecule ID From Mass Spectra: コンペ概要メモ</h1>
+<p>最終更新: 2026-10-24。公式ページ(Overview / Data / Rules など 11 ページ)とディスカッション全 119 スレッドは Kaggle 公式 API(competitions API の <code>list_competition_pages</code> / <code>list_competition_topics</code>、discussions API の <code>get_topic</code> / <code>list_comments</code>)で取得し、<code>docs/official/</code> に保存した。ディスカッションは投稿者名付きで保存し、運営側の発言にフラグを付けた: [HOST] = ピン留めスレッドの投稿者(David Healey = Enveda、Ashley Oldacre = Kaggle)、[Kaggle] = inversion(Kaggle 運営、告知とチュートリアル担当)、[Organizer] = Marie Killian(ルール・ライセンス質問に運営として回答。所属は投稿からは未確認)。取得スクリプト: <code>src/fetch_kaggle_info.py</code>(<code>--staff Name=Label</code> で追加のフラグ指定)。</p>
+<ul>
+<li>コンペ URL: https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra (competition id 143318)</li>
+<li>公式メトリック実装: https://www.kaggle.com/code/metric/casmi-mean-reciprocal-rank (ローカル複製: <code>src/metric.py</code>)</li>
+<li>公式チュートリアル(de novo Transformer): https://www.kaggle.com/code/inversion/casmi-denovo-tutorial-notebook</li>
+<li>主催: Enveda Therapeutics, Inc.(Boulder, CO の創薬企業)。CASMI = Critical Assessment of Small Molecule Identification(2012 年創設、2022 年まで学術チームが運営、許諾を得て名称を復活)</li>
+<li>種別: Featured / Code Competition。賞金総額 $50,000(1位 $16,000、2位 $12,000、3位 $9,000、4位 $7,000、5位 $6,000)</li>
+<li>参加チーム数: 3,877(2026-10-24 時点)。Public LB トップ 0.504、上位 20 位ラインが約 0.47</li>
+<li>公式ページの保存先: <code>docs/official/pages/</code>(data-description, Evaluation, rules, Timeline, Prizes, Code Requirements, Background, Description, abstract, Acknowledgements, foundational-rules)</li>
+</ul>
+<h2 id="1-utc-2359">1. 日程(すべて UTC 23:59)</h2>
+<table>
+<thead>
+<tr>
+<th>日付</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026-09-14</td>
+<td>開始</td>
+</tr>
+<tr>
+<td>2026-12-07</td>
+<td>エントリー締切(ルール承諾が必要)・チームマージ締切</td>
+</tr>
+<tr>
+<td>2026-12-14</td>
+<td>最終提出締切</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-data">2. タスク(公式 Data ページより)</h2>
+<p>LC-MS/MS(タンデム質量分析)のスペクトルから、低分子の <strong>2D 構造(SMILES)</strong> を予測する。</p>
+<ul>
+<li>対象分子: 「植物・哺乳類・微生物由来の天然試料に見られるような分子」= 確認済み天然物、推定天然物、天然物アナログ、自然界に存在しうる合成分子</li>
+<li>入力: 分子ごとに 1〜複数本の MS/MS スペクトル(フラグメント m/z と相対強度の配列)+ プリカーサ m/z、アダクト、極性、装置種、衝突エネルギー</li>
+<li>出力: <code>molecule_id</code> ごとに <strong>最大 25 個</strong> の候補 SMILES を確信度順に <code>;</code> 区切りで並べる</li>
+<li><strong>予測単位は分子(molecule_id)</strong> であり、スペクトル単位ではない。同一分子の複数スペクトル(異なる衝突エネルギー・アダクト)の証拠を 1 本のランキングに統合する</li>
+</ul>
+<h3 id="_1">難易度クラス(公式)</h3>
+<table>
+<thead>
+<tr>
+<th>クラス</th>
+<th>定義</th>
+<th>主な解法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 — 公開スペクトルライブラリにあり</td>
+<td>参照 MS/MS スペクトルが公開されており、学習スペクトルとの類似度で見つかる</td>
+<td>スペクトルライブラリ検索</td>
+</tr>
+<tr>
+<td>2 — 構造は既知、スペクトルなし</td>
+<td>公開スペクトルはないが、PubChem または天然物 DB COCONUT に構造がある</td>
+<td>構造 DB からの候補取得 + 再ランキング</td>
+</tr>
+<tr>
+<td>3 — 新規構造</td>
+<td>PubChem に存在しない。de novo 予測が必要</td>
+<td>de novo 構造生成</td>
+</tr>
+</tbody>
+</table>
+<p>「実際の複雑混合物を模すため、クラス分布とどの分子がどのクラスかはコンペ期間中は非公開」(公式)。コミュニティ推定はばらつきが大きく、クラス 1 が 10〜28%、クラス 2 が 20〜55%、クラス 3 が 30〜74%。ライブラリ検索のみの提出が Public LB 0.15 前後であることから、<strong>クラス 2/3 をどれだけ取れるかが勝負</strong>。</p>
+<h2 id="3">3. データ</h2>
+<p><code>data/raw/</code> に展開済み(zip 3.03 GB、Kaggle 上のファイル作成日時 2026-09-15 14:33 UTC)。9/15 に「水損失アダクトを追加した小規模更新があるので再ダウンロードを」というホスト告知があり、手元のファイルはその日時以降の版。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>サイズ</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>train.parquet</td>
+<td>3.03 GB</td>
+<td>2,539,608 スペクトル × 18 列。275,810 ユニーク inchikey14、277,566 ユニーク SMILES、51,291 分子式</td>
+</tr>
+<tr>
+<td>test.parquet</td>
+<td>4.8 MB</td>
+<td>1,213 スペクトル / 400 分子 × 12 列(<strong>ダミー</strong>。再実行時に隠しテストへ差し替え、サイズはほぼ同じ)</td>
+</tr>
+<tr>
+<td>sample_submission.csv</td>
+<td>44 KB</td>
+<td>400 行、<code>molecule_id,smiles</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_2">隠しテストセット(公式)</h3>
+<ul>
+<li>約 1,500 スペクトル / 約 400 分子、分子あたり 1〜16 スペクトル(中央値 3)、すべて Bruker timsTOF で測定</li>
+<li>単一同位体質量 157〜1,159 Da(中央値 348)</li>
+<li>最小限のクリーニングのみ: (a) 実測プリカーサ質量が構造+アダクトと矛盾するスペクトルを除外、(b) ベースピークが生カウント 1,000 未満のスペクトルをノイズとして除外、(c) プリカーサ + 2 Da を超えるピークを除去</li>
+<li>アダクトは 10 種: <code>[M+H]+</code>, <code>[M+NH4]+</code>, <code>[M-H2O+H]+</code>, <code>[M-2H2O+H]+</code>, <code>[M+Na]+</code>, <code>[M+K]+</code>, <code>[M-H]-</code>, <code>[M-H2O-H]-</code>, <code>[M+CH2O2-H]-</code>, <code>[M+Cl]-</code>(train にはもっと多い)</li>
+<li>Kaggle 運営(inversion)の回答: train と test、ダミー test と隠しテストの間で ID の重複はない(10/7)。隠しテストは 10/7 に「一部ピーク質量の電子質量分の誤差」を修正して差し替え、全提出が再採点された(運営告知)</li>
+<li>Public LB は隠しテストの一部(参加者推定で約 130 分子 ≒ 1/3)。1 分子で約 0.008 動くので 0.005 程度の差はノイズ</li>
+</ul>
+<h3 id="_3">列定義(公式 + 実データ確認)</h3>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>型</th>
+<th>意味</th>
+<th>test</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>molecule_id / spectrum_id</td>
+<td>str</td>
+<td>匿名の分子 ID / スペクトル ID(<strong>train には存在しない</strong>。公式 Data ページの「18 列」と整合。train は inchikey14 で分子をまとめる)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>ms2_mzs / ms2_normalized_intensities</td>
+<td>list[f64]</td>
+<td>フラグメント m/z と強度(ベースピーク = 1.0 に正規化、i 番目同士が対応)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>base_peak_intensity</td>
+<td>f64</td>
+<td>正規化前のベースピーク生強度(強いほどノイズが少ない傾向)。train では事前正規化済みライブラリで欠損(46%)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>adduct</td>
+<td>str</td>
+<td>プリカーサのアダクト(train は 121 種)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>ionization_mode</td>
+<td>str</td>
+<td>positive / negative</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>instrument_type</td>
+<td>str</td>
+<td>test は常に <code>timsTOF</code>。train は出典ごとの自由記述(83 種、欠損あり)。<code>enveda-180</code> と <code>enveda-np-examples</code> のみ timsTOF</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>precursor_mz</td>
+<td>f64</td>
+<td>実測プリカーサ m/z</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>collision_energy_ev</td>
+<td>list[f64]</td>
+<td>eV 換算の衝突エネルギー。<code>[20]</code> は単発、<code>[20, 40, 60]</code> は複数エネルギーをマージしたスペクトル。<strong>モデル入力にはこの列を使う</strong>(公式推奨)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>collision_energy_orig / _units</td>
+<td>str</td>
+<td>元の記録値と単位(eV / NCE / V / unknown)。NCE→eV は Thermo の公称式による近似</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>normalized_smiles</td>
+<td>str</td>
+<td><strong>正解ラベル</strong>。RDKit 標準化済み SMILES</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>inchikey / inchikey14</td>
+<td>str</td>
+<td>InChIKey と先頭 14 文字(<strong>スコアラーの鍵とは一致しないことがある</strong>、§4)</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>molecular_formula</td>
+<td>str</td>
+<td>中性分子の分子式</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>ingest_lib</td>
+<td>str</td>
+<td>出典ライブラリ(11 種)</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>adduct_orig</td>
+<td>str</td>
+<td>標準化前のアダクト表記</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>precursor_error_ppm</td>
+<td>f64</td>
+<td>実測プリカーサ m/z とラベル構造+アダクトから導かれる値の ppm 誤差。未クリーニングで <strong>ラベル品質指標</strong> を兼ねる</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>num_peaks</td>
+<td>i64</td>
+<td>ピーク数</td>
+<td>✗</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_4">出典ライブラリ(公式説明 + 実データ統計)</h3>
+<table>
+<thead>
+<tr>
+<th>ingest_lib</th>
+<th style="text-align: right;">スペクトル</th>
+<th style="text-align: right;">分子</th>
+<th>装置</th>
+<th style="text-align: right;">ピーク数中央値</th>
+<th>公式説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>enveda-180</td>
+<td style="text-align: right;">1,153,785</td>
+<td style="text-align: right;">182,941</td>
+<td>timsTOF</td>
+<td style="text-align: right;">138</td>
+<td>Enveda 公開データ。テストと同じ timsTOF で一貫した処理だが、化学は合成ドラッグライク化合物でテストとは別領域</td>
+</tr>
+<tr>
+<td>pluskal_ms2</td>
+<td style="text-align: right;">527,581</td>
+<td style="text-align: right;">46,821</td>
+<td>Orbitrap</td>
+<td style="text-align: right;">21</td>
+<td>Pluskal lab の MSnLib。商用スクリーニング化合物を複数 CE で一貫測定(単位 NCE)</td>
+</tr>
+<tr>
+<td>riken</td>
+<td style="text-align: right;">347,171</td>
+<td style="text-align: right;">15,892</td>
+<td>多様</td>
+<td style="text-align: right;">9</td>
+<td>RIKEN 公開ライブラリ。植物二次代謝物が中心。m/z 精度が小数 2 桁で ppm 誤差が見かけ上大きい</td>
+</tr>
+<tr>
+<td>gnps</td>
+<td style="text-align: right;">220,849</td>
+<td style="text-align: right;">45,750</td>
+<td>多様</td>
+<td style="text-align: right;">46</td>
+<td>GNPS コミュニティライブラリ。最大の天然物参照集だが最も不均質。CE 欠損</td>
+</tr>
+<tr>
+<td>massbank</td>
+<td style="text-align: right;">101,727</td>
+<td style="text-align: right;">9,180</td>
+<td>多様</td>
+<td style="text-align: right;">11</td>
+<td>MassBank コンソーシアム(キュレーション済み)</td>
+</tr>
+<tr>
+<td>mona</td>
+<td style="text-align: right;">92,416</td>
+<td style="text-align: right;">11,681</td>
+<td>多様</td>
+<td style="text-align: right;">57</td>
+<td>MassBank of North America(Fiehn Lab)</td>
+</tr>
+<tr>
+<td>spectraverse</td>
+<td style="text-align: right;">50,933</td>
+<td style="text-align: right;">9,631</td>
+<td>多様</td>
+<td style="text-align: right;">47</td>
+<td>公開ライブラリの調和集約(他にない小規模ライブラリを含む)。高質量側、CE ほぼ欠損</td>
+</tr>
+<tr>
+<td>msdial</td>
+<td style="text-align: right;">40,765</td>
+<td style="text-align: right;">9,127</td>
+<td>多様</td>
+<td style="text-align: right;">11</td>
+<td>MS-DIAL 付属の公開コレクション</td>
+</tr>
+<tr>
+<td>drug_plus</td>
+<td style="text-align: right;">2,545</td>
+<td style="text-align: right;">2,539</td>
+<td>不明</td>
+<td style="text-align: right;">108</td>
+<td>医薬品 LC-MS/MS DB。約 2,500 薬物、1 スペクトルずつ、CE 情報なし</td>
+</tr>
+<tr>
+<td>enveda-np-examples</td>
+<td style="text-align: right;">1,184</td>
+<td style="text-align: right;">250</td>
+<td>timsTOF</td>
+<td style="text-align: right;">141</td>
+<td><strong>テストに最も近いライブラリ</strong>。テストと同じ装置・同じパイプラインで処理した 250 の一般的な天然物。他ライブラリにも存在するよう意図的に選ばれている</td>
+</tr>
+<tr>
+<td>masaryk</td>
+<td style="text-align: right;">652</td>
+<td style="text-align: right;">416</td>
+<td>Orbitrap</td>
+<td style="text-align: right;">9</td>
+<td>RECETOX(Masaryk 大学)の標準品ライブラリ</td>
+</tr>
+</tbody>
+</table>
+<p>その他の分布(実データ):</p>
+<ul>
+<li>極性: positive 1,899,640 / negative 639,968</li>
+<li>主要アダクト: [M+H]+ 1.32M、[M-H]- 466k、[2M+Na]+ 190k、[M+Na]+ 178k、[2M+H]+ 92k、[M+CH2O2-H]- 83k、[2M-H]- 56k、[M+NH4]+ 53k、[M+Cl]- 28k、[M-H2O+H]+ 22k、[M+K]+ 19k。<strong>二量体アダクト(13%)はテストに存在しない</strong></li>
+<li>CE 単位: eV 1.37M / NCE 789k / unknown 325k / V 57k。CE リスト長 3 以上(マージ)が約 48 万行、CE 欠損 13%</li>
+<li>分子あたりスペクトル数: 中央値 6、90% 点 14、最大 1,468。複数ライブラリに登場する分子 28,113(約 10%)</li>
+<li>precursor_error_ppm: 中央値 1.5 ppm、95% 点 17 ppm、99% 点 2,884 ppm、|ppm|&gt;20 が 4.7%(riken の大半は精度起因で誤ラベルではない)</li>
+<li>同一構造のバイト一致重複スペクトル 57,642 行(ライブラリ間コピー)。公式は「完全重複は除去済み、同一化合物の独立測定は残る」としているが、実データでは残っている</li>
+</ul>
+<h3 id="testparquet">ローカル test.parquet の正体</h3>
+<p>1,213 スペクトルは <strong>すべて enveda-180 の行とビット一致</strong>(当方でも全件一致を確認、400 分子それぞれが train の 1 構造に対応)。合成ドラッグライク化合物で precursor m/z 245〜460、7 アダクト、CE は 20/40/60 eV 単発(75%)または 20,40,60 マージ(25%)、負モードは "-40" のように符号付き。ローカル test での自己評価は無意味(MRR 1.0)。隠しテストに含まれる条件(1,159 Da、10 アダクト、16 スペクトル/分子、水損失アダクト)はローカルに無いので、提出前に模擬データで動作確認する。</p>
+<h2 id="4-mrr25">4. 評価指標: MRR@25(公式)</h2>
+<pre><code>MRR@25 = (1/U) Σ_u 1/rank_u   (rank_u = 分子 u のリストで最初に正解した候補の順位。25 位以内に正解がなければ 0)
+</code></pre>
+<ul>
+<li>1 位 = 1.0、2 位 = 0.5、25 位 = 0.04。各分子に正解は 1 つなので最初の正解だけが数えられる</li>
+<li>正解判定(公式コード): <code>MolFromSmiles</code> → <strong><code>RemoveStereochemistry</code>(10/7 に追加、遡及適用)</strong> → <code>rdMolStandardize.TautomerEnumerator().Canonicalize</code>(<strong>RDKit 2026.03.3 固定</strong>) → <code>MolToInchiKey()[:14]</code> を比較。提出側と正解側に同じ関数を適用</li>
+<li>立体中心・互変異性体の違いは不問。例: グルコースの立体あり/なし SMILES はどちらも <code>WQZGKKKJIJFFOK</code> で一致</li>
+<li>重元素組成が異なる候補は即不一致(高速ゲート)。パースできない SMILES は不一致扱い</li>
+<li>提出ファイルの拒否条件: <code>molecule_id</code> / <code>smiles</code> 列欠落、空ファイル、どちらかの列に null、molecule_id の重複、26 個以上の候補。25 個未満は可、外れ候補のペナルティは順位を消費することのみ</li>
+<li><strong>train の <code>inchikey14</code> 列はスコアラーの鍵と一致しない</strong>(tautomer 正準化前)。全学習 SMILES 277,566 件で再計算すると 4,467 件(1.61%)で鍵が変わり、1,541 の鍵に複数の inchikey14 が併合される。候補の重複排除・正解照合・検証分割はすべて <strong>スコアラー鍵(<code>src/metric.canonicalize_smiles_to_ik14</code>)で行う</strong>。事前計算結果: <code>data/processed/train_scorer_keys.parquet</code></li>
+</ul>
+<h2 id="5-rules">5. ルール(公式 Rules + ホスト回答)</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>提出形式</td>
+<td>Kaggle Notebook のみ。CPU / GPU とも実行時間 <strong>9 時間以内</strong>、<strong>インターネット無効</strong>、出力は <code>submission.csv</code></td>
+</tr>
+<tr>
+<td>提出回数</td>
+<td>1 日 5 回。最終評価用に 2 件まで選択</td>
+</tr>
+<tr>
+<td>チーム</td>
+<td>最大 5 人。マージは 12/7 まで、合計提出数が上限以内であること</td>
+</tr>
+<tr>
+<td>データライセンス</td>
+<td>CC BY-NC 4.0(非商用・学術利用)。ホスト: train.parquet は公開ライブラリの集約なので実質オープンソース扱い、NC 条項はテストデータを想定したもの</td>
+</tr>
+<tr>
+<td>外部データ</td>
+<td>公開・無償・全参加者が平等にアクセスできるものは可(事前学習モデル含む)。<strong>10/17 ホスト告知: CC BY-NC など非商用条項付きのオープンデータも可</strong>。非公開・有償・プロプライエタリは不可。<strong>NIST ライブラリおよびその派生(学習済み重み含む)は禁止、使用した解は失格</strong></td>
+</tr>
+<tr>
+<td>入賞者の義務</td>
+<td>解法コード(学習・推論・環境説明)を <strong>MIT 等 OSI 承認ライセンス</strong> で公開、再現可能な詳細説明を提出。ライセンス非互換な入力データ・事前学習モデル自体の公開義務は免除(Rules 2.5.a.3)</td>
+</tr>
+<tr>
+<td>コード共有</td>
+<td>チーム外との私的共有は禁止。公開共有は Kaggle フォーラム/Notebook 上のみ(OSI ライセンス扱い)</td>
+</tr>
+<tr>
+<td>その他</td>
+<td>1 人 1 アカウント。テスト/検証データの手作業ラベル付けは禁止。学習データを私有クラウドで処理することは可(ホスト回答)</td>
+</tr>
+</tbody>
+</table>
+<p>ホストが利用可と明言したもの(ディスカッション 748270 の集約表): train.parquet とそれで学習したモデル・派生データセット、MassSpecGym とその学習モデル、GLACIER / ICEBERG(MassSpecGym 版重み)、DreaMS 重み、ChEBI / LIPID MAPS、CFM-ID 4、GNPS / MassBank / MoNA の新版、GNPS-NIST14-MATCHES、Enveda-180 の Zenodo 版、PubChem(サブセット提出可)、COCONUT。FRIGID の公式チェックポイント(CC BY-NC)も可だが、元の学習コードと許可データへのアクセスを提示して再現可能にすること。</p>
+<h2 id="6-2026-10-24">6. 公開ソリューションの到達点(2026-10-24 時点)</h2>
+<p>LB 上位(0.46〜0.50)はほぼすべて <strong>候補取得 → 多証拠スコアリング → 学習ランカー → 融合</strong> パイプラインの派生。</p>
+<table>
+<thead>
+<tr>
+<th>構成要素</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>候補プール</td>
+<td>学習構造 275k + COCONUT 2.0(約 46 万)= 約 71 万構造。中性質量 ±10 ppm 窓(空なら 30 ppm)。アダクト式でプリカーサ m/z → 中性質量(分子内の複数スペクトルの中央値)</td>
+</tr>
+<tr>
+<td>追加候補源</td>
+<td>PubChem 全体(約 1.06 億構造、質量ソート済み)、ChEBI + LIPID MAPS(約 10 万)、PubChemLite(約 39 万)</td>
+</tr>
+<tr>
+<td>ライブラリ検索</td>
+<td>スペクトルエントロピー類似度(Li et al. 2021)/ 修正コサイン。同極性・同アダクトで train 2.54M と照合</td>
+</tr>
+<tr>
+<td>アナログ伝播</td>
+<td>質量シフト ±200 Da のアナログ検索 → Tanimoto で候補へ伝播(クラス 2 用)</td>
+</tr>
+<tr>
+<td>指紋予測(FPNet)</td>
+<td>最大 16 スペクトル + メタデータ → 数千ビット部分構造指紋。<code>fpnet_full1</code>、fold-safe 版、A+B 版などが公開</td>
+</tr>
+<tr>
+<td>順方向モデル</td>
+<td>ICEBERG / GLACIER(Coley lab ms-pred、MassSpecGym 学習版)で候補からスペクトルを予測し実測と比較。同一分子式内の並べ替えに使用。GLACIER は [M+H]+ のみ</td>
+</tr>
+<tr>
+<td>MetFrag-lite</td>
+<td>1〜2 結合切断でフラグメント列挙、説明強度割合をスコア化(順方向モデルが使えない場合の代替)</td>
+</tr>
+<tr>
+<td>事前分布</td>
+<td>PubChem popularity prior(substance 記録数・PubMed 文献数の対数)、天然物 DB 所属、LOTUS 文献数</td>
+</tr>
+<tr>
+<td>ランカー</td>
+<td>LightGBM / HistGradientBoosting の複数シード・複数クラス重み平均、LambdaRank</td>
+</tr>
+<tr>
+<td>融合</td>
+<td>複数エンジンを Reciprocal Rank Fusion、スコアラー鍵で重複排除、空き枠は質量適合候補で埋める</td>
+</tr>
+</tbody>
+</table>
+<p>公開最高は約 0.464。Public LB トップ 0.504 との差は小さいが、ディスカッション「公開ノートブックの 0.43+ は一度も CV で検証されていない」(748068)が指摘するとおり、公開系譜の改善は約 130 分子の Public LB だけで採否が決まっており、Private で剥落するリスクがある。de novo 生成単体(公式チュートリアル Transformer)は 0.1〜0.28 程度。クラス 3 の改善は「ローカルでは改善するが LB に反映されない」という報告が複数(751300)。</p>
+<p>主要な公開データセット: <code>prvsiyan/coconut-casmi26-candidates</code>, <code>ahmedberatozer/casmi26-v4b-models</code>, <code>ahmedberatozer/casmi26-fpnet-full1</code>, <code>ahmedberatozer/casmi26-iceberg</code>, <code>ahmedberatozer/casmi26-glacier</code>, <code>ahmedberatozer/casmi26-pubchem-tier</code>, <code>dmitriigluzdov/casmi26-pubchem-popularity-prior</code>, <code>dmitriigluzdov/casmi26-fold-safe-fpnet</code>, <code>dmitriigluzdov/casmi26-identity-disjoint-validation-folds</code>, <code>dmitriigluzdov/casmi26-natural-product-panel-benchmark</code>, <code>sergiomalv/casmi-chebi-lmsd-structures</code>, <code>franciscoangulo/casmi26-pubchemlite-cc0-candidate-fingerprints</code>, <code>hengck23/hengck23-dreams-enveda-casmi26</code>, <code>metric/rdkit-2026-3-3-wheel</code>。</p>
+<p>公式 Data ページが挙げる外部リソース: MIST-CF / SIRIUS(分子式推定)、matchms(スペクトル処理)、MassIVE(ラベルなし生データ、自己教師あり事前学習向け)、GeMS / DreaMS(大規模ラベルなしコーパスと事前学習埋め込み)、FragHub(公開ライブラリの調和集約)。</p>
+<h2 id="7">7. 検証設計と落とし穴(公式 + ディスカッションの知見)</h2>
+<ol>
+<li>ローカル test.parquet は train の部分集合。評価には使えない(動作確認・時間計測のみ)</li>
+<li>ランダムなスペクトル分割では 97.7% の検証分子が train 側にもスペクトルを持つ。<strong>スコアラー鍵で分子単位に分割</strong>し、必要なら Bemis–Murcko 骨格単位でも分割する</li>
+<li><code>enveda-np-examples</code>(250 分子)は全 250 分子が他ライブラリに 55,599 スペクトル存在する。構造単位で除外し、除外後に完全一致検索が 0 件であることをアサートする</li>
+<li>クラス別シナリオで検証する: クラス 1 相当(他ライブラリにスペクトルあり)、クラス 2 相当(自分のスペクトルを全て除く)、クラス 3 相当(候補プールからも除く、または Tanimoto ≥ 0.7 の類似構造も除く)。ライブラリ検索のみで c1 ≈ 0.92、c2 ≈ 0.01、c3 = 0。ある参加者の構成例: ホールドアウト 1,250 構造(np-examples 250 + COCONUT 内の天然物 600 + COCONUT 外 400)、テストのスペクトル数分布・10 アダクトに合わせて 5 回サンプリング、ブートストラップで差の有意性を確認、再学習を伴う変更は複数シード平均で比較</li>
+<li>DB 経路の誤りは 98% が「同一分子式の異性体」。質量窓の幅(8.5 vs 10 ppm)はほぼ無関係で、<strong>構造異性体の識別</strong>が本質。同一分子式の異性体パネルが感度の高い開発指標になる</li>
+<li>「新規分子」シミュレーション(正解を DB から削除して回復できるか)は実際の未登録分子に対して約 3 倍楽観的。真に DB に無い分子で検証する</li>
+<li>キュレーション天然物 DB(ChEBI、LIPID MAPS、NPAtlas)は PubChem ∪ COCONUT 以上のカバレッジを与えず、所属フラグは公開ホールドアウトでは効くが LB では悪化した例あり</li>
+<li><code>precursor_error_ppm</code> の一律 10 ppm フィルタは riken(テストに近い化学)を半分失い性能が落ちる。桁違いの異常値のみ除外するかライブラリ別に扱う</li>
+<li>装置差: timsTOF のピーク数中央値 ~140〜230 だが、その 82% は相対強度 1% 未満。1% 床を適用すると train(14)と test(18)は同程度。前処理を揃え、ピーク数に左右されない類似度を使う</li>
+<li>正モード m/z に約 +0.5 mDa の系統誤差(enveda-180 のキャリブレーションが Na 原子質量を使用、電子質量分)。許容 0.01 Da 以上なら影響なし。隠しテストは 10/7 に修正済み</li>
+<li>CE 単位は eV / NCE / V 混在。<code>collision_energy_ev</code> は近似換算。負モードの元表記はマイナス符号付き</li>
+<li>アダクト式を正確に(例: [2M+Na]+ は Na を引いて 2 で割る)。隠しテストの 10 アダクトのうち <code>[M-H2O+H]+</code>, <code>[M-2H2O+H]+</code>, <code>[M-H2O-H]-</code> はローカル test に無い</li>
+<li>1 分子でも候補が空だと提出エラー。必ずフォールバック候補を入れる。公開パイプラインの GPU 段は再現性がなく同一コードで 0.437〜0.440 と揺れる</li>
+</ol>
+<h2 id="8">8. ローカル環境</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>マシン</td>
+<td>Windows 11、RTX 5070 Ti 16 GB(sm_120)、RAM 61.6 GB、ディスク空き 1.4 TB、16 論理コア</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>uv 管理の 3.11.16 仮想環境 <code>.venv</code>(Windows 側の <code>python</code> コマンドは Store エイリアスで動かないため <code>.venv\Scripts\python.exe</code> を使う)</td>
+</tr>
+<tr>
+<td>主要パッケージ</td>
+<td>rdkit 2026.03.3(スコアラーと同一)、torch 2.11.0+cu128(CUDA 動作確認済)、polars 2.0、pandas、pyarrow、lightgbm 4.7、numba、scikit-learn、matchms、pyteomics、jupyterlab。全リスト: <code>requirements-lock.txt</code></td>
+</tr>
+<tr>
+<td>Kaggle CLI</td>
+<td>2.2.5(<code>.venv\Scripts\kaggle.exe</code>、<code>~/.kaggle/credentials.json</code> で認証済み)</td>
+</tr>
+<tr>
+<td>文字コード</td>
+<td>Windows コンソールが cp932 のため <code>python -X utf8</code> で実行する(<code>-I</code> を付けると環境変数 PYTHONUTF8 は無視される)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_5">ディレクトリ構成</h3>
+<pre><code>C:\kaggle\CASMI
+├── .venv/                     Python 3.11 仮想環境
+├── data/
+│   ├── raw/                   train.parquet / test.parquet / sample_submission.csv(+ zip)
+│   ├── processed/             train_meta.parquet(ピーク配列を除いた 2.54M 行, 88 MB)
+│   │                          train_molecules.parquet(275,810 分子の集約)
+│   │                          test_meta.parquet, train_scorer_keys.parquet(277,566 SMILES のスコアラー鍵)
+│   └── external/              COCONUT 等の外部データ置き場
+├── src/
+│   ├── metric.py              公式 MRR@25 スコアラーのローカル複製 + 鍵正規化関数
+│   ├── make_meta.py           メタデータ parquet 作成
+│   ├── compute_scorer_keys.py 全学習 SMILES のスコアラー鍵を並列計算
+│   └── fetch_kaggle_info.py   公式ページ・メタデータ・ディスカッションを Kaggle API で取得
+├── docs/
+│   ├── competition_overview.md  このメモ
+│   └── official/              competition_meta.json, pages/*.md(公式 11 ページ), discussion_topics.json, discussion/*.md
+├── reference/kernels/         公開ノートブック 11 本(ipynb + 変換済み .md)
+├── notebooks/ models/ submissions/
+└── requirements-lock.txt
+</code></pre>
+<h3 id="_6">よく使うコマンド</h3>
+<pre><code class="language-powershell"># スクリプト実行(リポジトリルートで)
+.venv\Scripts\python.exe -I -X utf8 src\make_meta.py data\raw data\processed
+.venv\Scripts\python.exe -I -X utf8 src\metric.py                       # メトリックの自己テスト
+.venv\Scripts\python.exe -I -X utf8 src\fetch_kaggle_info.py enveda-CASMI26-molecule-id-mass-spectra docs\official --top 10
+# Kaggle 操作
+.venv\Scripts\kaggle.exe competitions leaderboard enveda-CASMI26-molecule-id-mass-spectra -s
+.venv\Scripts\kaggle.exe kernels pull &lt;user&gt;/&lt;slug&gt; -p reference\kernels\&lt;dir&gt; -m
+</code></pre>
+<h2 id="9">9. 次のステップ案</h2>
+<ol>
+<li><strong>検証基盤</strong>: スコアラー鍵による分子単位分割、クラス 1/2/3 を模した 3 シナリオ評価、<code>enveda-np-examples</code> 250 分子パネル、ブートストラップによる差の有意性判定</li>
+<li><strong>ベースライン再現</strong>: ライブラリ検索(エントロピー類似度)+ 中性質量窓候補(train + COCONUT)で c1 を確保しつつ、公開パイプライン(FPNet + ランカー + RRF)をローカルで動かして LB 0.46 付近を再現。ただし公開系譜は CV 未検証なので、各構成要素を自前の検証で採否判断する</li>
+<li><strong>独自改善の候補</strong>: timsTOF 特化の指紋予測モデルの自前学習(enveda-180 で事前学習 → 天然物ライブラリで微調整)、DreaMS / MIST 系埋め込み、同一分子式異性体の識別に特化したランカー、順方向モデルの適用範囲拡大、クラス 3 向けの制約付き生成(分子式制約 + アナログ編集、FRIGID 等)</li>
+<li><strong>提出運用</strong>: 9 時間・オフライン制約下で動く Notebook を早期に 1 本作り、隠しテスト条件(1,159 Da、10 アダクト、16 スペクトル/分子)を模したスモークテストを通す。最終提出 2 件の選び方(Public LB 依存を避ける)を事前に決める</li>
+</ol></article><p class='small muted'>原文: <code>docs/competition_overview.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

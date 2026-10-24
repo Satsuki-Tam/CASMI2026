@@ -1,0 +1,22 @@
+{
+  "topic": {
+    "id": 742463,
+    "title": "All submissions since Sep 16 fail or score 0 - hidden test rerun issue",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742463",
+    "postDate": "2026-09-22T06:27:05.308Z",
+    "authorName": "woldy",
+    "authorUrl": "https://www.kaggle.com/woldywei",
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>My full-pipeline notebooks have failed every submission since Sept 16 evening (previously scored fine, best 0.233), while the same kernel versions run cleanly interactively. Minimal kernels (passthrough, byte-exact train lookup, offline wheel installs + model loading) all score fine, so the rerun channel and attached datasets are healthy - only the full pipeline fails, now wrapped in fallbacks so it scores 0.000 instead of throwing. Since interactive runs on pinned inputs succeed, the difference is the hidden test itself. Could the hosts check the server-side rerun logs for my submissions (woldywei/casmi26-evidence-v12..v17)? Thanks!</p>"
+  },
+  "comments": [
+    {
+      "id": 3527496,
+      "authorName": "inversion",
+      "postDate": "2026-09-23T23:20:53.887Z",
+      "content": "<p>We are unable to provide individual support for unsuccessful runs. This is a list of things that might help.</p>\n<p><a href=\"https://www.kaggle.com/code-competition-debugging\" target=\"_blank\">https://www.kaggle.com/code-competition-debugging</a></p>"
+    }
+  ]
+}

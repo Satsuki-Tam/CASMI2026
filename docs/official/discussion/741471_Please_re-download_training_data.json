@@ -1,0 +1,23 @@
+{
+  "topic": {
+    "id": 741471,
+    "title": "Please re-download training data",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741471",
+    "postDate": "2026-09-15T14:38:40.492Z",
+    "authorName": "inversion",
+    "authorUrl": "https://www.kaggle.com/inversion",
+    "votes": 9,
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>There has been a small update to the training data, adding water loss adducts to some of the samples. It is recommended that you re-download the file.</p>"
+  },
+  "comments": [
+    {
+      "id": 3525373,
+      "authorName": "Abiram Bharathi S.A",
+      "postDate": "2026-09-17T16:13:17.003Z",
+      "content": "<p>I cant able to add The input file in kaggle notebook</p>"
+    }
+  ]
+}

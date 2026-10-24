@@ -1,0 +1,34 @@
+{
+  "topic": {
+    "id": 742789,
+    "title": "My submission is showing scoring... for last 3hrs is this normal?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742789",
+    "postDate": "2026-09-23T13:31:41.762Z",
+    "authorName": "Pratham",
+    "authorUrl": "https://www.kaggle.com/prathamaditya",
+    "commentCount": 3,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>submission.csv is running from last 3 hours.</p>"
+  },
+  "comments": [
+    {
+      "id": 3529285,
+      "authorName": "Moran Zavdi",
+      "postDate": "2026-09-27T20:35:51.757Z",
+      "content": "<p>ok, my is running 1 hour</p>"
+    },
+    {
+      "id": 3529282,
+      "authorName": "Victor Sung",
+      "postDate": "2026-09-27T20:07:59.210Z",
+      "content": "<p>My submissions also takes a few hours for this competition.</p>"
+    },
+    {
+      "id": 3527332,
+      "authorName": "sarathchi",
+      "postDate": "2026-09-23T14:31:13.533Z",
+      "content": "<p>Is your notebook running a big transformer job? </p>"
+    }
+  ]
+}

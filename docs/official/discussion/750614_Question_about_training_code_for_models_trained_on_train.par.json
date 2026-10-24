@@ -1,0 +1,22 @@
+{
+  "topic": {
+    "id": 750614,
+    "title": "Question about training code for models trained on train.parquet. ",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/750614",
+    "postDate": "2026-10-19T07:11:01.805Z",
+    "authorName": "Truthseeking",
+    "authorUrl": "https://www.kaggle.com/truthseeking",
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Question about training code for models trained on train.parquet. If a model is trained only on train.parquet and its weights are released without the training script, are those weights eligible for use in a prize-eligible solution?</p>"
+  },
+  "comments": [
+    {
+      "id": 3540995,
+      "authorName": "kenneth uchegbu",
+      "postDate": "2026-10-19T10:08:14.953Z",
+      "content": "<p>please does draft session have to be always turned on while working on your notebook on kaggle. I am asking because i always get timed out once it hits the max before the week runs out.</p>"
+    }
+  ]
+}

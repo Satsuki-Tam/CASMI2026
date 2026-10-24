@@ -1,0 +1,18 @@
+{"time": "2026-10-23 22:30", "kind": "event", "text": "コンペ理解・データ準備。公式ページと 119 ディスカッションを Kaggle API で取得(docs/official/)", "link": "competition.html"}
+{"time": "2026-10-24 00:30", "kind": "result", "text": "類似コンペ・論文調査レポート完成(93 KB、出典 257 件)。本質は Class 2 の同一分子式異性体識別と Class 3 の候補生成", "link": "research.html"}
+{"time": "2026-10-24 02:13", "kind": "submit", "text": "E0(公開最高系譜の再現)を提出", "link": "submissions.html"}
+{"time": "2026-10-24 03:30", "kind": "result", "text": "E1: 公開パイプラインの Class 2 性能は文献 prior に依存(同一分子式候補で指紋単独 top-1 7.7% vs prior 71%)。公開パネル 250 分子の 236 が MassSpecGym に含まれ、順方向モデルの公開評価は過大評価の恐れ", "link": "progress.html"}
+{"time": "2026-10-24 05:00", "kind": "result", "text": "E2b v2: 未使用分子で指紋モデルと GLACIER/ICEBERG は補完的(timsTOF 近傍デコイ FP 0.59 / GL 0.64 / 融合 0.74)", "link": "progress.html"}
+{"time": "2026-10-24 06:30", "kind": "result", "text": "E0 の Public LB 0.464(報告値を再現)。金圏下限 約 0.473、首位 0.504", "link": "submissions.html"}
+{"time": "2026-10-24 07:20", "kind": "decision", "text": "Codex 003: P1/P2 の最小版を一緒に進める。評価分子は開発に使った identity group を除外。固定 z 和 → LambdaRank の順", "link": "codex.html"}
+{"time": "2026-10-24 08:16", "kind": "event", "text": "P1: 未使用分子 600(timsTOF 300 / 天然物ライブラリ 300)を凍結。候補到達: A 296/300 が PubChem 窓内、B は外部 DB 存在 198、窓内 179", "link": "p1.html"}
+{"time": "2026-10-24 08:50", "kind": "result", "text": "P1 セット A: FP 0.465 → FP+GL 0.685(+0.221)。公開規則(上位 25 同一分子式 slot 再順位)の再現は 0.627", "link": "p1.html"}
+{"time": "2026-10-24 09:05", "kind": "result", "text": "ICE 完全版で訂正: この条件では ICE も有効(FP+ICE+GL 0.723)。E2b の『timsTOF で ICE 無効』は分子式既知の条件に限った結果", "link": "p1.html"}
+{"time": "2026-10-24 09:10", "kind": "decision", "text": "Codex 004: PC リスト模擬の候補条件を Notebook と一致させる、実関数で再現、評価器の 0.0 バグ修正、fallback 必須、期待値を予測しない", "link": "codex.html"}
+{"time": "2026-10-24 09:45", "kind": "decision", "text": "ユーザー判断: 公開ノートブックの局所修正で積む進め方はやめ、自前ベースライン B1 を構築。E4 は計測提出 1 回に限定", "link": "b1.html"}
+{"time": "2026-10-24 09:55", "kind": "result", "text": "P1 模擬 v2(候補条件一致・実関数): E0 規則 0.717 → K=100 全体 z(base)+2z(GL)+z(ICE) 0.766(A, +0.049)、0.487 → 0.534(B, +0.047)。A・B で方向一致", "link": "p1.html"}
+{"time": "2026-10-24 10:05", "kind": "decision", "text": "ユーザー指示: 暫定の到達目標は置かない。目標は金圏 0.480 以上(理想 0.500 以上)", "link": "index.html"}
+{"time": "2026-10-24 10:10", "kind": "decision", "text": "Codex 005: B1 設計に賛成。参照候補を shortlist に残す、C1 は独立 acquisition、FPNet fold 0 固定、E4 は両モデル全被覆のときだけ新融合、LB 差で原因を割り当てない", "link": "codex.html"}
+{"time": "2026-10-24 10:20", "kind": "event", "text": "B1 実装: アダクト変換(train で検証)、エントロピー類似度、スペクトルストア(9 秒)、統一候補表、固定規則評価、LambdaRank 学習、提出パイプライン(ローカル 3 分子で 1 位 3/3)", "link": "b1.html"}
+{"time": "2026-10-24 10:28", "kind": "event", "text": "B1 Notebook v1 を Kaggle へ push(公開テスト 400 分子で実行時間と動作を測る)", "link": "b1.html"}
+{"time": "2026-10-24 10:40", "kind": "event", "text": "GitHub リポジトリ(Satsuki-Tam/CASMI2026)とこのダッシュボードを作成", "link": "index.html"}

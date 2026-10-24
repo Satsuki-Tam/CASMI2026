@@ -1,0 +1,22 @@
+{
+  "topic": {
+    "id": 750612,
+    "title": "Clarification on pretrained weights and training code",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/750612",
+    "postDate": "2026-10-19T07:08:09.733Z",
+    "authorName": "Truthseeking",
+    "authorUrl": "https://www.kaggle.com/truthseeking",
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Clarification on pretrained weights and training code</p>\n<p>Following the discussion on train.parquet and open-source models: does the requirement to provide \"original training code and access to permitted training data\" apply to models trained exclusively on train.parquet? For example, if a competitor releases weights for an FPNet model trained only on train.parquet but does not release the training script, are those weights eligible for use in a winning solution?</p>"
+  },
+  "comments": [
+    {
+      "id": 3541157,
+      "authorName": "Marie Killian",
+      "postDate": "2026-10-19T16:26:44.700Z",
+      "content": "<p>No, the requirement applies to all weights, including competitor released weights trained on train.parquet. You need to have access to the original training code to include weights in your solution.</p>"
+    }
+  ]
+}

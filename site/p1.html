@@ -1,0 +1,557 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>P1 基準系: 設計と結果</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 10:37 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 評価分子(凍結、未使用)</a></li>
+<li><a href="#2">2. 候補の出典と段階</a></li>
+<li><a href="#3">3. 順位付けの部品</a></li>
+<li><a href="#4">4. 結果</a><ul>
+<li><a href="#41-run1p1_recall_summarytxt600-384">4.1 選定と候補到達(run1/p1_recall_summary.txt、600 分子、384 秒)</a></li>
+<li><a href="#42-atimstof-300-run1results_ap1_resultsmdgl-ice-results_a">4.2 セット A(timsTOF 300 分子)の漏斗と融合(run1/results_A/p1_results.md、GL 完了版。ICE 行は results_A/ の最終版を参照)</a></li>
+<li><a href="#43-notebook-pubchem-arun1results_apclist_a_timstofmd">4.3 公開 Notebook の PubChem 専用リスト規則の模擬(セット A、run1/results_A/pclist_A_timstof.md)</a></li>
+<li><a href="#44-e4kernelse4-pclistmake_e4py-e0-4">4.4 提出候補 E4(kernels/e4-pclist/、make_e4.py で E0 から 4 箇所だけ置換)</a></li>
+<li><a href="#45-b-np-300-run1results_finalp1_resultsmd">4.5 セット B(公開 NP ライブラリ 300 分子、run1/results_final/p1_results.md)</a></li>
+<li><a href="#46-v2codex-004-pool-rerank_multi-iceglstrictfresh">4.6 模擬 v2(Codex 004 対応: 候補条件 = 公式鍵が pool 全体に無い、実関数 rerank_multi、完了 ICE+GL、strict/fresh 併記)</a></li>
+<li><a href="#47-0945">4.7 方針転換(09:45、ユーザー判断)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div><h1 id="p1-2026-10-24">P1 基準系(ラベル非依存の候補取得 → 公式同一性で採点)— 2026-10-24 午前</h1>
+<p>Codex 003 で合意した「分子式も正解追加も使わない候補取得から公式採点までが動き、どの段で正解を失うか分かる基準系」の実装記録。
+結果の表は末尾(§4)に追記する。スクリプトは <code>experiments/p1_baseline/</code>、出力は <code>experiments/p1_baseline/run1/</code>。</p>
+<h2 id="1">1. 評価分子(凍結、未使用)</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>設計</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>セット A <code>A_timstof</code></td>
+<td>enveda-180(timsTOF、合成ライブラリ化学)の分子 300</td>
+</tr>
+<tr>
+<td>セット B <code>B_nplib</code></td>
+<td>gnps / riken / mona / massbank / msdial の天然物系ライブラリ分子 300</td>
+</tr>
+<tr>
+<td>共通条件</td>
+<td>正イオン [M+H]+ スペクトルを選定ライブラリ内に持つ。identity fold 0(FPNet fold 0 の学習に含まれない)。MassSpecGym 非掲載(raw InChIKey14 と公式 scorer key の両方で除外)。開発に使った分子(enveda-np-examples パネル 250、E2b/E2c の 400 分子)とその identity group を除外。identity group から 1 分子。</td>
+</tr>
+<tr>
+<td>選定時の質量フィルタ</td>
+<td>なし(ラベル由来の ppm フィルタは使わない。測定 precursor の中央値をそのまま使い、誤差は記録のみ)</td>
+</tr>
+<tr>
+<td>分割</td>
+<td>identity group 単位で fit / tune / eval の 3 等分(今回は全分子を同じ扱い。後の融合学習で使う)</td>
+</tr>
+<tr>
+<td>seed</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>選定結果: A は fold 0 の未使用 identity group 33,164 から 300、B は 4,621 から 300(gnps 275、mona 10、massbank 8、riken 4、msdial 3)。
+B は CE 既知が 5% しかない(E2b の B と同じ交絡)。本番は timsTOF・CE 既知なので、順方向モデルの B の値は化学の層別として読む。</p>
+<h2 id="2">2. 候補の出典と段階</h2>
+<p>候補取得は測定中性質量 ±10 ppm の窓(enveda-180 は電子質量補正後)。出典は 3 つで、来歴を別々に持つ。</p>
+<table>
+<thead>
+<tr>
+<th>出典</th>
+<th>内容</th>
+<th>同一性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>公開 v2 pool (<code>pool_meta.parquet</code>, 710,701)</td>
+<td>src 1 = 学習構造のみ 248,440、2 = COCONUT のみ 436,515、3 = 両方 25,746</td>
+<td>鍵は公式 scorer key と一致(学習構造 274,186 件で 100%)</td>
+</tr>
+<tr>
+<td>prvsiyan COCONUT (<code>coco_*</code>, 436,389)</td>
+<td>v2 pool の COCONUT と 390,918 件重複。<strong>学習構造を除いた COCONUT</strong>(pool src 3 の 25,746 件は含まれない)なので、学習分子である評価正解は決して含まれず、デコイ源としてのみ働く</td>
+<td>鍵は raw InChIKey14(公式鍵との一致 84%)。SMILES から計算し直す</td>
+</tr>
+<tr>
+<td>PubChem tier (<code>pc_*</code>, 105,875,489 行)</td>
+<td>公開パイプラインの PubChem 候補源</td>
+<td>raw 鍵で重複排除し、shortlist のみ公式鍵を計算</td>
+</tr>
+</tbody>
+</table>
+<p>段階(class-2 の模擬: 正解の「学習構造としての存在」は隠す):</p>
+<ol>
+<li><code>db_present_external</code> — 正解が COCONUT(pool src 2/3 または coco)か、PubChem tier の理論質量 ±2 mDa 窓に存在</li>
+<li><code>window_external</code> — 測定質量の ±10 ppm 窓内に外部 DB 由来で存在(raw 鍵一致、または同一分子式候補の公式鍵一致)</li>
+<li><code>truth_in_window_raw</code> — 3 出典を合わせた窓内(漏斗側の集計)</li>
+<li><code>truth_in_shortlist</code> — FPNet 上位 K=100 と z(FP)+0.15·prior 上位 K の和集合(公式鍵で重複排除)</li>
+<li>top-25 / top-1 — 融合規則ごと</li>
+</ol>
+<p><code>window_train</code>(学習構造としての窓内存在)は class-1 経路として別に記録し、順位付けでは正解の in_train フラグを偽にする。</p>
+<h2 id="3">3. 順位付けの部品</h2>
+<ul>
+<li>FPNet: <code>casmi26-fold-safe-fpnet</code> の fold 0 のみ(学習コード付き)。マージしたスペクトルから f·z。</li>
+<li>文献 prior: 公開 <code>casmi26-pubchem-popularity-prior</code>(tier 行・pool 行に整列)。pop_public = ln(1+SID) + ln(1+PMID) + 0.5·ln(1+synonyms) + 1.0·NP 所属 + 0.5·寄託源ビット + 0.5·ln(1+LOTUS refs)(公開ノートブック v18 の定義に合わせた)。COCONUT のみの候補は NP=1、他は 0。</li>
+<li>順方向モデル: GLACIER / ICEBERG(MassSpecGym 重み、評価分子は MSG 非掲載)を shortlist に対して実行。</li>
+<li>融合: z 和(z は shortlist 内)。prior 単独 / FP / FP+0.15 prior / FP+GL / FP+GL+prior / ICE 追加 / 2·GL。</li>
+</ul>
+<h2 id="4">4. 結果</h2>
+<h3 id="41-run1p1_recall_summarytxt600-384">4.1 選定と候補到達(<code>run1/p1_recall_summary.txt</code>、600 分子、384 秒)</h3>
+<table>
+<thead>
+<tr>
+<th>段階</th>
+<th style="text-align: right;">A timsTOF (300)</th>
+<th style="text-align: right;">B 公開 NP ライブラリ (300)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>測定 ppm 誤差</td>
+<td style="text-align: right;">err</td>
+<td style="text-align: right;">&gt; 10 ppm の分子</td>
+</tr>
+<tr>
+<td>PubChem tier 窓の構造数(中央値)</td>
+<td style="text-align: right;">10,182(同一分子式 2,638)</td>
+<td style="text-align: right;">5,279(同一分子式 695)</td>
+</tr>
+<tr>
+<td>pool 窓(うち外部 = COCONUT)/ coco 窓(中央値)</td>
+<td style="text-align: right;">111 (23) / 22</td>
+<td style="text-align: right;">28 (13) / 13</td>
+</tr>
+<tr>
+<td>測定 ppm 誤差の中央値</td>
+<td style="text-align: right;">+0.63</td>
+<td style="text-align: right;">−0.16</td>
+</tr>
+<tr>
+<td>db_present_external(COCONUT または PubChem tier に存在)</td>
+<td style="text-align: right;">296</td>
+<td style="text-align: right;">198(pool-COCONUT 58、tier 理論質量 191)</td>
+</tr>
+<tr>
+<td>window_external(測定 ±10 ppm 窓内に外部 DB 由来で存在)</td>
+<td style="text-align: right;">296</td>
+<td style="text-align: right;">179(tier 175、pool-COCONUT 42)</td>
+</tr>
+<tr>
+<td>window_train(学習構造として窓内、class-1 経路)</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">277</td>
+</tr>
+</tbody>
+</table>
+<p>A の正解はすべて PubChem にあり COCONUT には無い(合成ライブラリ化学)。B は正解の 1/3 が外部 DB に無く、さらに 19 分子が質量窓から外れる(23 分子が |誤差| &gt; 10 ppm)。
+公式鍵のタウトマー別名による到達は両セットで 0 件(raw 鍵一致で足りた)。
+B は本番(天然物・timsTOF)に化学は近いが、CE 既知が 4%、装置は Orbitrap 159 / ToF 79 / qTof 23。</p>
+<h3 id="42-atimstof-300-run1results_ap1_resultsmdgl-ice-results_a">4.2 セット A(timsTOF 300 分子)の漏斗と融合(<code>run1/results_A/p1_results.md</code>、GL 完了版。ICE 行は <code>results_A/</code> の最終版を参照)</h3>
+<p>窓: 中央値 10,184 構造(うち学習構造でないもの 10,092)。正解は 300/300 が窓内、FP の中央値順位 3、shortlist(平均 115 件)到達 292/300。FP top-1 が外れた 200 分子のうち 181(91%)は同一分子式異性体が首位で、FP 上位 25 の中央値 24 件が正解と同一分子式。分子式は FP が決め、残る課題は異性体識別。漏斗は 3.5 秒/分子(12 worker)。</p>
+<table>
+<thead>
+<tr>
+<th>規則(z は shortlist 内)</th>
+<th style="text-align: right;">MRR@25</th>
+<th style="text-align: right;">95% CI</th>
+<th style="text-align: right;">top-1</th>
+<th style="text-align: right;">hit@25</th>
+<th>Δ vs FP</th>
+<th>Δ vs FP+GL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>prior 単独(窓全体)</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">0.010</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>FP(fold-0 FPNet)</td>
+<td style="text-align: right;">0.465</td>
+<td style="text-align: right;">[0.422, 0.508]</td>
+<td style="text-align: right;">0.307</td>
+<td style="text-align: right;">0.913</td>
+<td></td>
+<td>−0.221</td>
+</tr>
+<tr>
+<td>FP + 0.15 prior</td>
+<td style="text-align: right;">0.486</td>
+<td style="text-align: right;">[0.442, 0.530]</td>
+<td style="text-align: right;">0.340</td>
+<td style="text-align: right;">0.927</td>
+<td>+0.021 [+0.009, +0.034]</td>
+<td></td>
+</tr>
+<tr>
+<td>GL 単独</td>
+<td style="text-align: right;">0.643</td>
+<td style="text-align: right;">[0.599, 0.688]</td>
+<td style="text-align: right;">0.520</td>
+<td style="text-align: right;">0.950</td>
+<td>+0.179</td>
+<td>−0.042 [−0.083, −0.000]</td>
+</tr>
+<tr>
+<td>z(FP)+z(GL)</td>
+<td style="text-align: right;">0.685</td>
+<td style="text-align: right;">[0.644, 0.727]</td>
+<td style="text-align: right;">0.543</td>
+<td style="text-align: right;">0.953</td>
+<td>+0.221 [+0.186, +0.257]</td>
+<td>—</td>
+</tr>
+<tr>
+<td>z(FP)+2z(GL)</td>
+<td style="text-align: right;">0.708</td>
+<td style="text-align: right;">[0.667, 0.748]</td>
+<td style="text-align: right;">0.573</td>
+<td style="text-align: right;">0.953</td>
+<td></td>
+<td>+0.023 [+0.003, +0.043]</td>
+</tr>
+<tr>
+<td>z(FP)+z(GL)+0.15 prior</td>
+<td style="text-align: right;">0.698</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.560</td>
+<td style="text-align: right;">0.957</td>
+<td></td>
+<td>+0.013 [+0.000, +0.026]</td>
+</tr>
+<tr>
+<td>z(FP)+z(GL)+0.5 prior</td>
+<td style="text-align: right;">0.716</td>
+<td style="text-align: right;">[0.676, 0.756]</td>
+<td style="text-align: right;">0.587</td>
+<td style="text-align: right;">0.967</td>
+<td></td>
+<td>+0.031 [+0.008, +0.054]</td>
+</tr>
+<tr>
+<td>公開規則の再現: base=z(FP)+0.15prior → 上位 25 の同一分子式 slot 再順位(GL)</td>
+<td style="text-align: right;">0.627</td>
+<td style="text-align: right;">[0.584, 0.670]</td>
+<td style="text-align: right;">0.477</td>
+<td style="text-align: right;">0.927</td>
+<td>+0.163</td>
+<td>−0.058 [−0.084, −0.034]</td>
+</tr>
+<tr>
+<td>同上 base=z(FP)</td>
+<td style="text-align: right;">0.609</td>
+<td style="text-align: right;">[0.567, 0.652]</td>
+<td style="text-align: right;">0.453</td>
+<td style="text-align: right;">0.913</td>
+<td>+0.144</td>
+<td>−0.077 [−0.102, −0.053]</td>
+</tr>
+<tr>
+<td>ICE 単独</td>
+<td style="text-align: right;">0.594</td>
+<td style="text-align: right;">[0.549, 0.637]</td>
+<td style="text-align: right;">0.453</td>
+<td style="text-align: right;">0.953</td>
+<td>+0.129</td>
+<td>−0.092 [−0.139, −0.045]</td>
+</tr>
+<tr>
+<td>z(FP)+z(ICE)+z(GL)</td>
+<td style="text-align: right;">0.723</td>
+<td style="text-align: right;">[0.683, 0.762]</td>
+<td style="text-align: right;">0.593</td>
+<td style="text-align: right;">0.967</td>
+<td>+0.258</td>
+<td><strong>+0.038 [+0.016, +0.060]</strong></td>
+</tr>
+<tr>
+<td>z(FP)+z(ICE)+z(GL)+0.15 prior</td>
+<td style="text-align: right;">0.737</td>
+<td style="text-align: right;">[0.697, 0.776]</td>
+<td style="text-align: right;">0.613</td>
+<td style="text-align: right;">0.967</td>
+<td>+0.272</td>
+<td>+0.052 [+0.029, +0.075]</td>
+</tr>
+<tr>
+<td>公開規則の再現(ICE+GL): base=z(FP)+0.15prior → 上位 25 同一分子式 slot 再順位</td>
+<td style="text-align: right;">0.686</td>
+<td style="text-align: right;">[0.644, 0.729]</td>
+<td style="text-align: right;">0.553</td>
+<td style="text-align: right;">0.927</td>
+<td>+0.222</td>
+<td>+0.001 [−0.025, +0.027]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ICE の訂正</strong>: E2b(分子式既知・100 候補)では ICE 追加は timsTOF で無効だったが、ラベル非依存の窓 → FP shortlist という本条件では ICE が GL と補完的に働く(FP+GL 0.685 → FP+ICE+GL 0.723)。公開規則でも ICE+GL 版(0.686)は GL 版(0.627)を大きく上回り、E0 が実際に使っている ICE+GL 版が比較基準になる。</p>
+<p>strict(学習構造としてしか到達できない正解を 0 とする)値は全規則で −0.008 程度(4 分子)。群別(fit/tune/eval, n=100): FP 0.460/0.451/0.483、FP+GL 0.669/0.676/0.711。</p>
+<h3 id="43-notebook-pubchem-arun1results_apclist_a_timstofmd">4.3 公開 Notebook の PubChem 専用リスト規則の模擬(セット A、<code>run1/results_A/pclist_A_timstof.md</code>)</h3>
+<p>公開 v18 の class-2 経路: PubChem 専用チャネルが pool に無い構造 K=25 件を z(f·z)+0.15·pop で並べ、GL/ICE は上位 25 内の同一分子式グループだけを slot 固定で再順位し、ゲートが base リストの slot 2,4,6,8,10(または 4,8,12,16,20)へ差し込む(S&gt;6 かつ pop≥5、または rel&gt;150 で先頭に昇格)。模擬は shortlist の in_train=False 構造を同じ base 順で並べて K で切り、同一リストに規則を適用。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">K</th>
+<th>規則</th>
+<th style="text-align: right;">MRR@25</th>
+<th>Δ vs 公開規則</th>
+<th>fit / tune / eval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">25</td>
+<td>base = z(FP)+0.15pop</td>
+<td style="text-align: right;">0.506</td>
+<td>−0.157</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-align: right;">25</td>
+<td>公開規則: 上位 25 同一分子式 slot 再順位(GL)</td>
+<td style="text-align: right;">0.663</td>
+<td>0</td>
+<td>0.655 / 0.652 / 0.680</td>
+</tr>
+<tr>
+<td style="text-align: right;">25</td>
+<td>全体 z(base)+z(GL)</td>
+<td style="text-align: right;">0.687</td>
+<td>+0.025 [+0.010, +0.040]</td>
+<td>0.690 / 0.664 / 0.708</td>
+</tr>
+<tr>
+<td style="text-align: right;">25</td>
+<td>全体 z(base)+2z(GL)</td>
+<td style="text-align: right;">0.729</td>
+<td>+0.067 [+0.044, +0.090]</td>
+<td>0.741 / 0.704 / 0.743</td>
+</tr>
+<tr>
+<td style="text-align: right;">60</td>
+<td>全体 z(base)+2z(GL)</td>
+<td style="text-align: right;">0.740</td>
+<td>+0.077 [+0.052, +0.103]</td>
+<td>0.739 / 0.714 / 0.767</td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td>全体 z(base)+z(GL)</td>
+<td style="text-align: right;">0.718</td>
+<td>+0.056 [+0.036, +0.078]</td>
+<td>0.706 / 0.699 / 0.750</td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td>全体 z(base)+2z(GL)</td>
+<td style="text-align: right;">0.746</td>
+<td>+0.083 [+0.056, +0.111]</td>
+<td>0.738 / 0.733 / 0.767</td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td>全体 z(base)+3z(GL)</td>
+<td style="text-align: right;">0.745</td>
+<td>+0.083</td>
+<td>0.733 / 0.734 / 0.768</td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td>全体 z(FP)+z(GL)+0.5pop</td>
+<td style="text-align: right;">0.747</td>
+<td>+0.084 [+0.058, +0.112]</td>
+<td>0.750 / 0.732 / 0.758</td>
+</tr>
+<tr>
+<td style="text-align: right;">25</td>
+<td><strong>公開規則(ICE+GL)= E0 の実際の規則</strong></td>
+<td style="text-align: right;">0.717</td>
+<td>+0.055</td>
+<td>0.702 / 0.709 / 0.741</td>
+</tr>
+<tr>
+<td style="text-align: right;">25</td>
+<td>全体 z(base)+2z(GL)+z(ICE)</td>
+<td style="text-align: right;">0.745</td>
+<td>+0.028 [+0.009, +0.049] vs 公開(ICE+GL)</td>
+<td>0.744 / 0.728 / 0.764</td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td>全体 z(base)+2z(GL)(GL のみ、E4 v1)</td>
+<td style="text-align: right;">0.746</td>
+<td>+0.029 [+0.001, +0.057] vs 公開(ICE+GL)</td>
+<td>0.738 / 0.733 / 0.767</td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td>全体 z(base)+z(GL)+z(ICE)</td>
+<td style="text-align: right;">0.763</td>
+<td>+0.045 [+0.026, +0.067] vs 公開(ICE+GL)</td>
+<td>0.756 / 0.750 / 0.782</td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td><strong>全体 z(base)+2z(GL)+z(ICE)(E4 v2)</strong></td>
+<td style="text-align: right;">0.766</td>
+<td>+0.049 [+0.021, +0.077] vs 公開(ICE+GL)</td>
+<td>0.757 / 0.768 / 0.774</td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td>全体 z(base)+2z(GL)+2z(ICE)</td>
+<td style="text-align: right;">0.769</td>
+<td>+0.052 [+0.023, +0.082] vs 公開(ICE+GL)</td>
+<td>0.765 / 0.764 / 0.780</td>
+</tr>
+</tbody>
+</table>
+<p>正解がリスト内にある率: K=25 0.923、K=60 0.947、K=100 0.970。読み取り: 公開規則の「上位 25・同一分子式・slot 固定」は同じ GL スコアを使う全体 z 和より 0.03〜0.08 低く、K を 100 にすると到達分も回収できる。GL 重みは 1.5〜3 で平坦。3 群すべてで方向が一致。</p>
+<h3 id="44-e4kernelse4-pclistmake_e4py-e0-4">4.4 提出候補 E4(<code>kernels/e4-pclist/</code>、make_e4.py で E0 から 4 箇所だけ置換)</h3>
+<p>v1(GL のみ、09:00 に Kaggle へ push、検証実行のみ)→ ICE 完全版の結果を受けて <strong>v2</strong> に改訂:</p>
+<ol>
+<li>PubChem 専用チャネルの K: 25 → 100。</li>
+<li>ICE/GL の入力に lib_max &lt; 0.9 の分子の PubChem リスト全件を追加(隠しテストで各 ≈7 万予測の追加見込み)。ICE_BUDGET 5400 → 7200 秒、GL_BUDGET 4000 → 5400 秒。</li>
+<li>PubChem リストの再順位: 上位 25 同一分子式 slot 再順位(ICE+GL)→ リスト全体の z(pc_fz) + 2·z(GL) + 1·z(ICE)。</li>
+<li>ゲート・slot・昇格、base リストの処理、後段の RRF/overlay は不変。</li>
+</ol>
+<p>粗い期待値: 公開 LB の class-2 分子が 4 割なら +0.012〜0.016(後段の RRF・slot で希釈されるため不確実)。提出判断は Codex 004 の回答とセット B の方向を見て行う。</p>
+<h3 id="45-b-np-300-run1results_finalp1_resultsmd">4.5 セット B(公開 NP ライブラリ 300 分子、<code>run1/results_final/p1_results.md</code>)</h3>
+<p>到達: 外部 DB 存在 198/300、測定窓内 179、3 出典合併の窓内 277(学習構造経由を含む)、shortlist 254、FP+GL top-25 227。脱落の内訳(FP+GL): 外部 DB に無い 102、質量窓外 19、shortlist 外 17、26 位以下 22。CE 既知は 9 分子のみ。</p>
+<table>
+<thead>
+<tr>
+<th>規則</th>
+<th style="text-align: right;">MRR@25(保持版)</th>
+<th style="text-align: right;">strict(到達不能 = 0)</th>
+<th>Δ vs FP+GL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP</td>
+<td style="text-align: right;">0.368</td>
+<td style="text-align: right;">0.176</td>
+<td>−0.162</td>
+</tr>
+<tr>
+<td>FP + 0.15 prior</td>
+<td style="text-align: right;">0.402</td>
+<td style="text-align: right;">0.222</td>
+<td></td>
+</tr>
+<tr>
+<td>GL 単独 / ICE 単独</td>
+<td style="text-align: right;">0.449 / 0.455</td>
+<td style="text-align: right;">0.281 / 0.270</td>
+<td></td>
+</tr>
+<tr>
+<td>z(FP)+z(GL)</td>
+<td style="text-align: right;">0.530</td>
+<td style="text-align: right;">0.302</td>
+<td>—</td>
+</tr>
+<tr>
+<td>z(FP)+z(ICE)+z(GL)</td>
+<td style="text-align: right;">0.545</td>
+<td style="text-align: right;">0.321</td>
+<td>+0.015 [−0.002, +0.032]</td>
+</tr>
+<tr>
+<td>z(FP)+z(ICE)+z(GL)+0.15 prior</td>
+<td style="text-align: right;">0.579</td>
+<td style="text-align: right;">0.362</td>
+<td>+0.049 [+0.026, +0.074]</td>
+</tr>
+<tr>
+<td>公開規則の再現(ICE+GL)</td>
+<td style="text-align: right;">0.510</td>
+<td style="text-align: right;">0.302</td>
+<td>−0.020 [−0.046, +0.006]</td>
+</tr>
+</tbody>
+</table>
+<h3 id="46-v2codex-004-pool-rerank_multi-iceglstrictfresh">4.6 模擬 v2(Codex 004 対応: 候補条件 = 公式鍵が pool 全体に無い、実関数 <code>rerank_multi</code>、完了 ICE+GL、strict/fresh 併記)</h3>
+<table>
+<thead>
+<tr>
+<th>セット</th>
+<th>規則</th>
+<th style="text-align: right;">MRR@25</th>
+<th style="text-align: right;">strict</th>
+<th style="text-align: right;">top-1</th>
+<th style="text-align: right;">hit@6</th>
+<th>Δ vs E0 規則</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>E0 規則(K=25、rerank_multi(ice,gl))</td>
+<td style="text-align: right;">0.717</td>
+<td style="text-align: right;">0.709</td>
+<td style="text-align: right;">0.600</td>
+<td style="text-align: right;">0.887</td>
+<td>0</td>
+</tr>
+<tr>
+<td>A</td>
+<td>K=100 全体 z(base)+2z(GL)+z(ICE)</td>
+<td style="text-align: right;">0.766</td>
+<td style="text-align: right;">0.758</td>
+<td style="text-align: right;">0.650</td>
+<td style="text-align: right;">0.923</td>
+<td>+0.049 [+0.022, +0.077]</td>
+</tr>
+<tr>
+<td>B</td>
+<td>E0 規則</td>
+<td style="text-align: right;">0.487</td>
+<td style="text-align: right;">0.262</td>
+<td style="text-align: right;">0.430</td>
+<td style="text-align: right;">0.573</td>
+<td>0</td>
+</tr>
+<tr>
+<td>B</td>
+<td>K=100 全体 z(base)+2z(GL)+z(ICE)</td>
+<td style="text-align: right;">0.534</td>
+<td style="text-align: right;">0.303</td>
+<td style="text-align: right;">0.463</td>
+<td style="text-align: right;">0.623</td>
+<td>+0.047 <a href="strict +0.042 [+0.017, +0.068]">+0.019, +0.075</a></td>
+</tr>
+</tbody>
+</table>
+<p>B では正解 38 件が pool の COCONUT 側にあり(Notebook では pool 経路)、PC リストの評価対象は 216 分子。E2b v1 と重複する 3 分子を除いた fresh 列は 0.482 → 0.529。</p>
+<h3 id="47-0945">4.7 方針転換(09:45、ユーザー判断)</h3>
+<p>公開ノートブックへの局所修正(E4 型)で改善を積む進め方は取らない。E4 v3 は「P1 の代理指標が LB に転移するか」の計測提出 1 回に限定し、以後は調査と P1 の結果に基づく自前ベースライン B1(統一候補表 + 学習順位付け)を構築する。設計は <code>reports/agent_review/005_request.md</code> §4。</p></article><p class='small muted'>原文: <code>docs/p1_baseline_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

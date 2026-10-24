@@ -1,0 +1,30 @@
+{
+  "topic": {
+    "id": 748799,
+    "title": "Is a model pretrained only on public MassIVE/GNPS data allowed if its authors monitored a NIST20 probe during pretraining?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/748799",
+    "postDate": "2026-10-13T05:00:59.945Z",
+    "authorName": "HIDEYO CHIBA",
+    "authorUrl": "https://www.kaggle.com/hideyochiba",
+    "commentCount": 2,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi organizers, a quick eligibility question about Discussion 744470 (NIST-trained solutions are disqualified).</p>\n<p>We are considering the self-supervised DreaMS backbone (Bushuiev et al., Nat. Biotechnol. 2025; weights on Zenodo 10997887, CC BY 4.0). Its pretraining data is GeMS only (public MassIVE/GNPS LC-MS/MS files). We would not use any of the released fine-tuned heads, since some of those were fine-tuned on NIST20/MoNA, and we would fine-tune only on train.parquet / MassSpecGym.</p>\n<p>One detail: during pretraining, the authors' code logged a validation metric computed by a separate linear probe trained on a NIST20+MoNA subset. The backbone itself received no gradients from NIST data (the probe ran under torch.no_grad), but the released checkpoint might have been chosen partly by looking at that metric.</p>\n<p>Would using this self-supervised backbone be considered \"using NIST\" under the rule? Thank you!</p>"
+  },
+  "comments": [
+    {
+      "id": 3537871,
+      "authorName": "David Healey",
+      "postDate": "2026-10-13T07:43:33.057Z",
+      "content": "<p>If the model weights aren't a derivative of NIST then they are not in violation of the nist license so should be fine.  </p>",
+      "replies": [
+        {
+          "id": 3537877,
+          "authorName": "HIDEYO CHIBA",
+          "postDate": "2026-10-13T07:57:17.610Z",
+          "content": "<p>Thank you very much, David, for the quick and clear answer!</p>\n<p>Just to confirm our understanding: we will use only the self-supervised DreaMS backbone (ssl_model.ckpt, pretrained on GeMS / public MassIVE data), which is not derived from NIST. We will not use any of the released fine-tuned heads, since some of those may have been trained on NIST20. Any further training on our side will use only the competition data and other permitted sources.</p>\n<p>Thanks again for clarifying, and for hosting this competition!</p>"
+        }
+      ]
+    }
+  ]
+}

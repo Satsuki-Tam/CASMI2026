@@ -1,0 +1,22 @@
+{
+  "topic": {
+    "id": 742274,
+    "title": "Clarification on scoring edge cases and novelty-class definitions",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742274",
+    "postDate": "2026-09-21T04:46:23.087Z",
+    "authorName": "Ghaisan K",
+    "authorUrl": "https://www.kaggle.com/ghaisank",
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi, thanks for hosting this competition. A few clarification questions so that local validation can match the official evaluation exactly:</p>\n<ol>\n<li><p>Empty entries in the prediction list. How does the evaluator treat an empty entry inside the semicolon-separated list, for example <code>A;;B</code>? Is <code>B</code> counted at rank 2 or rank 3? And does a trailing <code>;</code> count as a guess, or could such a row be rejected?</p></li>\n<li><p>Reference implementation of the metric. Would you be able to share the evaluation code, or a reference implementation, including the exact RDKit 2026.03.3 tautomer canonicalisation settings used before taking the InChIKey first block? That would let everyone reproduce the scoring precisely.</p></li>\n<li><p>Novelty classes and COCONUT. The data page defines class 2 as structures in PubChem or COCONUT, and class 3 as structures not in PubChem at all. Can a class 3 molecule be present in COCONUT (in COCONUT but not in PubChem), or is class 3 absent from both databases?</p></li>\n</ol>\n<p>Thank you!</p>"
+  },
+  "comments": [
+    {
+      "id": 3527095,
+      "authorName": "David Healey",
+      "postDate": "2026-09-23T00:04:32.497Z",
+      "content": "<p>Hi, and thank you for participating!</p>\n<ol>\n<li><p>Empty entries are discarded before ranks are assigned. A;;B is read as two guesses, so B is at rank 2, not rank 3. A trailing ; is not a guess and does not affect your score;</p></li>\n<li><p>The evaluation code is linked in the Overview section.  It is here: <a href=\"https://www.kaggle.com/code/metric/casmi-mean-reciprocal-rank\" target=\"_blank\">https://www.kaggle.com/code/metric/casmi-mean-reciprocal-rank</a>. </p></li>\n<li><p>Class 3 is absent from both PubChem and COCONUT.  </p></li>\n</ol>"
+    }
+  ]
+}

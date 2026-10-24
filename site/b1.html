@@ -1,0 +1,141 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B1 自前ベースライン: 設計</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 10:37 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-p1">1. 課題の構造(調査と P1 から)</a></li>
+<li><a href="#2-b1-codex-005">2. B1 の構成(Codex 005 の指摘を反映)</a></li>
+<li><a href="#3">3. 評価集合</a></li>
+<li><a href="#4-1030">4. 進行中(10:30)</a></li>
+</ul>
+</div>
+</div><h1 id="b1-2026-10-24-1030">B1: 自前ベースラインの設計(2026-10-24 10:30 版)</h1>
+<p>方針(ユーザー判断 09:45): 公開ノートブックへの局所修正で改善を積まず、調査と P1 の結果から自前のベースラインを作る。E4 v5 は P1 の代理指標が LB に転移するかを測る 1 回限りの計測提出。目標は金圏 0.480 以上(できれば 0.500 以上)。</p>
+<h2 id="1-p1">1. 課題の構造(調査と P1 から)</h2>
+<ul>
+<li>隠しテスト: 天然物 約 400 分子、timsTOF 約 1,500 スペクトル(1〜16 本/分子、中央値 3)、10 アダクト、157〜1,159 Da。Class 1(ライブラリに参照あり)/ 2(PubChem・COCONUT にある)/ 3(新規)の比率は非公開。</li>
+<li>Class 1 はライブラリ検索でほぼ解ける(公開系譜で 0.95 超)。Class 2 は「同一分子式異性体の識別」が本質で、P1 では fold-safe FPNet が分子式をほぼ決め(top-1 誤りの 91% が同一分子式)、GLACIER + ICEBERG の全体 z 和が異性体識別の主力(timsTOF 300 分子で FP 0.465 → 0.723)。文献 prior は窓全体では無力だが shortlist 上では小さく効く。</li>
+<li>公開系譜の構造的な弱点: PubChem 候補を slot(2,4,6,8,10,24)に差し込むため、Class 2 の正解は昇格されない限り最良でも 2 位。候補 25 件・同一分子式 slot 固定の再順位は、全体 z 和より 0.03〜0.08 低い(P1 模擬 v2、A・B で一致)。</li>
+</ul>
+<h2 id="2-b1-codex-005">2. B1 の構成(Codex 005 の指摘を反映)</h2>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th>内容</th>
+<th>状態</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>データ層</td>
+<td>学習スペクトルの mmap ストア(2.54M 本、<code>data/processed/spectra_store/</code>)、構造 → 行の索引、公式鍵 → 行の索引</td>
+<td>完了(<code>build_spectra_store.py</code>、9 秒)</td>
+</tr>
+<tr>
+<td>アダクト</td>
+<td>10 アダクトの中性質量変換と電子質量の扱いを <code>b1_common.py</code> に集約。train で検証(全アダクトで中央値 0 ppm 付近)</td>
+<td>完了</td>
+</tr>
+<tr>
+<td>候補取得</td>
+<td>観測アダクトごとに中性質量の中央値 → ±10 ppm 窓を PubChem tier・v2 pool(学習構造/COCONUT)・prvsiyan COCONUT で合併。raw 鍵で統合、出典フラグ、tier/pool 行(prior 用)</td>
+<td>完了(<code>b1_features.py</code>)</td>
+</tr>
+<tr>
+<td>FPNet</td>
+<td>fold 0 固定(評価分子は fold 0 = 未学習)。極性ごとにスペクトルを統合して logits、極性群の加重平均</td>
+<td>完了</td>
+</tr>
+<tr>
+<td>ライブラリ検索</td>
+<td>候補が学習構造なら、その参照スペクトル(同極性、最大 24 本)と全 query のエントロピー類似度。C1/C2 の 2 視点を同時に計算(C2: 正解の参照を全除去、C1: 選定ライブラリの参照のみ除去)</td>
+<td>完了。次段: 一致ピーク数、次点との差、複製参照(同一元スペクトル)の検出</td>
+</tr>
+<tr>
+<td>prior</td>
+<td>公開 popularity データセット(tier/pool 行整列)の構成要素を保持</td>
+<td>完了</td>
+</tr>
+<tr>
+<td>shortlist</td>
+<td>FP 上位 100 ∪ z(FP)+0.15·pop 上位 100 ∪ ライブラリ類似度上位 20(&gt; 0.2)。公式鍵で統合</td>
+<td>完了</td>
+</tr>
+<tr>
+<td>順方向モデル</td>
+<td>shortlist に GLACIER / ICEBERG(MSG 重み)。runner は [M+H]+/[M+Na]+ 正モードのみ対応</td>
+<td>runner 流用(<code>run_runners_b1.sh</code>)</td>
+</tr>
+<tr>
+<td>固定規則</td>
+<td>S = z(FP) + w_GL z(GL) + w_ICE z(ICE) + λ pop。参照一致が信頼条件(τ・次点差)を満たすときだけ参照候補を優先。欠損はモデル項を外す fallback</td>
+<td><code>b1_evaluate.py</code>(評価側)</td>
+</tr>
+<tr>
+<td>学習融合</td>
+<td>同じ特徴表で LambdaRank(fit で学習、tune で選択、locked eval で 1 回比較)</td>
+<td>次段</td>
+</tr>
+<tr>
+<td>提出 Notebook</td>
+<td>上記を 9 時間・オフラインで動かす。候補数・質量・スペクトル数で層別した 30〜50 分子を Kaggle 実環境で実測してから全体へ</td>
+<td>次段</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3">3. 評価集合</h2>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th>内容</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1 run1(A 300 / B 300)</td>
+<td>開発に使用済み(重み選定に使った)</td>
+<td>fit・診断</td>
+</tr>
+<tr>
+<td><code>eval_set</code>(A 300 / B 300、seed 2)</td>
+<td>v1/v2/P1 の identity group を除外。A は他ライブラリ参照 7 分子のみ(C1 不可)</td>
+<td>B1 の tune(fit/tune/eval の 3 群)</td>
+</tr>
+<tr>
+<td><code>eval_c1</code>(NP 300、seed 3、≥2 ライブラリ)</td>
+<td>C1 模擬が可能な天然物系分子(gnps 241、mona 26、massbank 18 ほか、CE 既知 16%)</td>
+<td>C1/C2 の両視点、参照検索の評価</td>
+</tr>
+<tr>
+<td>locked eval(未作成、A/B 各 300)</td>
+<td>設定確定後に 1 回だけ比較</td>
+<td>最終評価</td>
+</tr>
+</tbody>
+</table>
+<p>strict(到達不能な正解 = 0)を主指標、保持版は補助。N=300 で検出できる差は約 ±0.025〜0.03。</p>
+<h2 id="4-1030">4. 進行中(10:30)</h2>
+<ul>
+<li><code>eval_set</code> A/B の特徴表構築(約 9 秒/分子、CPU 競合時)→ GL/ICE → <code>b1_evaluate.py</code>。</li>
+<li><code>eval_c1</code> の選定完了後に同じ流れ。</li>
+<li>E4 v5 の可視実行 → ログ確認 → 計測提出(自動)。</li>
+</ul></article><p class='small muted'>原文: <code>docs/b1_baseline_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

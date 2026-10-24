@@ -1,0 +1,33 @@
+{
+  "topic": {
+    "id": 741815,
+    "title": "Question on test set: known vs novel molecules",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741815",
+    "postDate": "2026-09-17T16:18:48.348Z",
+    "authorName": "Tyree Jones393",
+    "authorUrl": "https://www.kaggle.com/tyreejones393",
+    "votes": 1,
+    "commentCount": 2,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi — competing as tyreejones393. Quick question on the brief: \"both known and novel molecules\" — am I reading right that part of the test set is structures absent from public libraries? If so, that sets the ceiling for pure retrieval approaches, which is useful to know going in. Appreciate you all putting this one on. Natural products is the right fight.</p>\n<p>Best,\nTyree</p>"
+  },
+  "comments": [
+    {
+      "id": 3525381,
+      "authorName": "Rishav Yadav",
+      "postDate": "2026-09-17T16:21:54.523Z",
+      "content": "<p>Yeah exactly, you got it right! Some of the test molecules are completely novel and not in any public database (not even in PubChem). So pure library search will definitely hit a ceiling at some point, and we'll need some de novo / generative approach to catch the rest. Best of luck!</p>",
+      "votes": 2,
+      "replies": [
+        {
+          "id": 3525385,
+          "authorName": "Tyree Jones393",
+          "postDate": "2026-09-17T16:36:19.730Z",
+          "content": "<p>Appreciate the straight answer — that's exactly what I needed going in. Confirms the build: retrieval where the library reaches, chemistry-first ranking where it doesn't. Good luck to you too.</p>",
+          "votes": 1
+        }
+      ]
+    }
+  ]
+}

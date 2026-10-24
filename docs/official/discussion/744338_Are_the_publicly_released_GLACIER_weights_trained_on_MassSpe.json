@@ -1,0 +1,37 @@
+{
+  "topic": {
+    "id": 744338,
+    "title": "Are the publicly released GLACIER weights trained on MassSpecGym eligible for a prize-eligible solution?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/744338",
+    "postDate": "2026-09-29T12:57:26.382Z",
+    "authorName": "Zero",
+    "authorUrl": "https://www.kaggle.com/benjason",
+    "commentCount": 3,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>The weights are publicly released by the official coleygroup/ms-pred repository as open-source MassSpecGym-trained GLACIER weights, and are separate from the NIST-trained checkpoints that require a NIST license.\nRepository: <a href=\"https://github.com/coleygroup/ms-pred\" target=\"_blank\">https://github.com/coleygroup/ms-pred</a>\nCould the organizers confirm that these MassSpecGym-trained GLACIER weights are compatible with the competition’s commercial-use / redistribution requirements?</p>"
+  },
+  "comments": [
+    {
+      "id": 3530126,
+      "authorName": "Barno Barno",
+      "postDate": "2026-09-29T16:02:57.343Z",
+      "content": "<p>Based on the hosts previous answer , i dont   see why not. MassSpecGym is allowed so is any model derived from that. <a href=\"https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742991#3527946\" target=\"_blank\">https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742991#3527946</a></p>",
+      "votes": 1
+    },
+    {
+      "id": 3530189,
+      "authorName": "David Healey",
+      "postDate": "2026-09-29T18:28:16.217Z",
+      "content": "<p>Yes, MassSpecGym is allowed, so is GLACIER</p>",
+      "replies": [
+        {
+          "id": 3530355,
+          "authorName": "Zero",
+          "postDate": "2026-09-30T02:58:51.413Z",
+          "content": "<p>ok thank you</p>"
+        }
+      ]
+    }
+  ]
+}

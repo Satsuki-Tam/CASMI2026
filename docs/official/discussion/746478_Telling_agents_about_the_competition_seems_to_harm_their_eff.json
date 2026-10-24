@@ -1,0 +1,14 @@
+{
+  "topic": {
+    "id": 746478,
+    "title": "Telling agents about the competition seems to harm their effort/performance/focus.",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/746478",
+    "postDate": "2026-10-07T08:00:37.104Z",
+    "authorName": "Luck^2",
+    "authorUrl": "https://www.kaggle.com/rlhjansen",
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>I notice that when I compile info for my agents on a competition they very quickly find the public notebooks and try to proceed form that, rather than build on the approaches I ask em to start out with, breaking continuity &amp; dare I anthropomorphise: breaks morale for them.</p>\n<p>how do you handle this issue</p>\n<p>This is more a general kaggle experience rather than something particular to this competition.</p>"
+  },
+  "comments": []
+}

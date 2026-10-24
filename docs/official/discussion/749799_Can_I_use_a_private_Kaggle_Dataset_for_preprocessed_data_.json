@@ -1,0 +1,30 @@
+{
+  "topic": {
+    "id": 749799,
+    "title": "Can I use a private Kaggle Dataset for preprocessed data?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/749799",
+    "postDate": "2026-10-16T01:42:22.406Z",
+    "authorName": "ujihash",
+    "authorUrl": "https://www.kaggle.com/ujihash",
+    "commentCount": 2,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi everyone,</p>\n<p>I have a quick question about the external data rules.</p>\n<p>I'm planning to use a publicly available dataset with a compatible license. However, preprocessing takes a long time, so I'd like to save the processed data as a <strong>private Kaggle Dataset</strong> and load it in my submission notebook.</p>\n<p>Is this allowed, or do I need to make the processed dataset public as well?</p>\n<p>Thanks!😀</p>"
+  },
+  "comments": [
+    {
+      "id": 3539822,
+      "authorName": "PC Jimmmy",
+      "postDate": "2026-10-16T15:27:08.163Z",
+      "content": "<p>You can use private dataset and have no need to make it public.</p>",
+      "replies": [
+        {
+          "id": 3540054,
+          "authorName": "ujihash",
+          "postDate": "2026-10-17T00:53:16.630Z",
+          "content": "<p>That's good to know! Thanks for clarifying!</p>"
+        }
+      ]
+    }
+  ]
+}

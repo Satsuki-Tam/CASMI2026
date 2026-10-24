@@ -1,0 +1,23 @@
+{
+  "topic": {
+    "id": 745758,
+    "title": "A question about the test set's composition rather than the metric: the assumption every class-3 estimate is linear in",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/745758",
+    "postDate": "2026-10-04T07:32:28.471Z",
+    "authorName": "Anh-Vu Mai-Nguyen",
+    "authorUrl": "https://www.kaggle.com/mainguyenanhvu",
+    "votes": 1,
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi, </p>\n<p>Community discussion has estimated the split of test molecules between </p>\n<ul>\n<li>(a) present in common structure databases, </li>\n<li>(b) present in the training spectra, </li>\n<li>and (c) absent from both, but I cannot find an official figure. </li>\n</ul>\n<p>Are you able to say roughly what fraction of the test molecules are not present in public structure databases? Even an order of magnitude would help us decide whether a de novo generation stage is worth building. </p>\n<p>Thanks.</p>"
+  },
+  "comments": [
+    {
+      "id": 3533332,
+      "authorName": "Marie Killian",
+      "postDate": "2026-10-05T21:59:42.670Z",
+      "content": "<p>We will not provide the breakdown of the test set, but our hope is that there are enough novel structures to make it worth working on them. </p>"
+    }
+  ]
+}

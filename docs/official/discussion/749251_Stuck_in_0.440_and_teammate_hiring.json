@@ -1,0 +1,125 @@
+{
+  "topic": {
+    "id": 749251,
+    "title": "Stuck in 0.440 and teammate hiring",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/749251",
+    "postDate": "2026-10-14T14:09:05.070Z",
+    "authorName": "Kino Lutor",
+    "authorUrl": "https://www.kaggle.com/kinolutor",
+    "votes": 2,
+    "commentCount": 16,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>plz;orz;plz help me !!!!!!!\nCould someone please help me understand why my public score keeps staying at 0.440, despite several changes to my pipeline?\nI’m building on the public E007 pipeline, with full attribution to the original authors. It combines spectral-library matching, fingerprint models, two ranking engines, PubChem/COCONUT candidates, and ICEBERG/GLACIER rescoring.\nHere is what I have tried:</p>\n<ul>\n<li>Metric-aware deduplication: RDKit 2026.03.3, tautomer canonicalization, stereochemistry removal, and InChIKey14 matching.</li>\n<li>Fusion shortlist expansion: comparing the inherited 40-candidate approach with an 80-candidate fusion window. However, some upstream lists are already truncated, so the effective candidate expansion may be limited.</li>\n<li>LambdaRank: replacing the second engine’s no-fingerprint classifier with a query-group-trained ranking model. A preliminary experiment improved conditional ranking on a held-out query-group split, but that comparison was against a single classifier, and cross-source structure overlap was not fully audited. It did not establish an end-to-end improvement.</li>\n<li>Simulator fallback: checking finite GLACIER/ICEBERG scores and using ICEBERG where GLACIER has no usable evidence.</li>\n<li>Candidate completion: filling unused slots from existing ranked overflow and engine candidates.</li>\n<li>Fragment explanations: candidate-conditioned bond cleavage, accurate fragment masses, adduct handling, element conservation, and neutral-loss annotations.</li>\n<li>Five experimental controls: baseline, single-bond fragments, single-bond fragment rarity, two-bond fragments, and mismatched same-adduct spectra.\nI also found implementation problems in the first five-control version: the baseline was accidentally routed through rescoring, the mismatched control did not use the same scoring function as the rarity treatment, and the rarity normalization could overreward a small number of weak matched peaks. I have prepared corrections, including restricting the single-bond arm to non-ring single bonds. These latest changes still need leaderboard validation.\nExecution itself seems healthy. A complete run processed all 400 public example molecules with no unprocessed placeholder rows. ICEBERG and GLACIER completed without prediction errors. That run took approximately 2 hours 38 minutes. I understand this is an execution check, not independent validation on the hidden test set.\nOne concern is that most changes only reorder existing candidates. Another is that the modified ranker contributes only 12% of the second engine’s internal blend. In the earlier fragment experiment, the 300-second budget also left 161/400 molecules using their upstream predictions.\nFor anyone working on a similar pipeline:</li>\n</ul>\n<ol>\n<li>Would you investigate candidate recall, ranking calibration, or simulator coverage first?</li>\n<li>How would you build a reliable structure-disjoint validation set while accounting for overlap in pretrained models?</li>\n<li>Have you found fragment rarity or deeper candidate shortlists helpful on weak-library queries?</li>\n<li>What diagnostics would distinguish “the correct structure is missing” from “it is present but ranked badly”?\nAny suggestions or pointers to relevant public discussions would be greatly appreciated. Thank you!!!\nAnyway,im hiring a teammate;so if you want to work in group;plz contact me!!</li>\n</ol>"
+  },
+  "comments": [
+    {
+      "id": 3538571,
+      "authorName": "Md Mobashir Rahman",
+      "postDate": "2026-10-14T14:13:44.447Z",
+      "content": "<ol>\n<li>The ranker</li>\n<li>The public notebooks dont deal with class-3 molecules. Looking at the scoreboard, I am guessing that nobody have yet made any progress in it.</li>\n</ol>",
+      "votes": 1,
+      "replies": [
+        {
+          "id": 3538905,
+          "authorName": "Kino Lutor",
+          "postDate": "2026-10-15T00:35:22.423Z",
+          "content": "<p>Is it necessary to deal with class-3 molecules?I haven't thought of that before</p>",
+          "replies": [
+            {
+              "id": 3538991,
+              "postDate": "2026-10-15T05:18:48.463Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3539036,
+      "authorName": "symmys",
+      "postDate": "2026-10-15T07:40:23.877Z",
+      "content": "<p>Would you please give me a detailed explanation of the fragment explanation?</p>",
+      "replies": [
+        {
+          "id": 3539046,
+          "authorName": "Kino Lutor",
+          "postDate": "2026-10-15T08:11:59.637Z",
+          "content": "<p>Thanks for asking. By “fragment explanation,” I mean checking whether fragments derived from a candidate SMILES can explain the observed MS/MS peaks.</p>\n<p>The current workflow is:</p>\n<ol>\n<li>Check precursor mass: Calculate the candidate’s exact mass and account for the reported adduct, such as <code>[M+H]+</code> or <code>[M-H]-</code>.</li>\n<li>Generate fragments:Break non-ring single bonds and calculate fragment compositions while preserving the parent’s atom counts. A separate experimental arm allows two bond cuts and limited hydrogen adjustments.</li>\n<li>Match peaks: Compare predicted fragment-ion masses with observed peaks using a tolerance of max(0.002 Da, 10 ppm). Record fragment formulas, neutral losses, mass errors, and unexplained peaks.</li>\n<li>Score candidates: Measure explained spectrum intensity. A rarity-weighted version gives more credit to peaks that fewer candidates can explain.</li>\n</ol>\n<p>Currently, this only reranks same-formula candidate groups without usable ICEBERG/GLACIER evidence. It preserves the existing Top-1 prediction. I also use mismatched same-adduct spectra as a negative control.</p>\n<p>These explanations are mass- and graph-consistent hypotheses, not confirmed fragmentation mechanisms. I haven’t established an independent validation gain yet. I’d appreciate suggestions on improving their chemical validity and ability to distinguish isomers.</p>",
+          "replies": [
+            {
+              "id": 3540041,
+              "authorName": "symmys",
+              "postDate": "2026-10-17T00:02:21.803Z",
+              "content": "<p>Thank you for your explanation. It seems that your fragment explanation method is conducted after the model infers the ranking for the reranking. But I wonder if the model performance will increase when it consider the chemical formula candidates of the fragment peak. I think this is the genuine way to explain the fragments.</p>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3538768,
+      "authorName": "Aryan Awasthi",
+      "postDate": "2026-10-14T19:18:14.880Z",
+      "content": "<p>Similar spot here (0.437–0.438 on the same lineage), so here’s what my own measurements say on your three questions:</p>\n<ol>\n<li><p>Recall vs ranking vs simulators. Reordering changes transfer to the LB much smaller than they look offline. On my structure-disjoint CV, a LambdaRank ranker with fragmentation features gained +0.14 MRR, while the LB moved +0.03–0.04 for the same steps. The one change that moved the 0.437 public pipeline at all was adding new candidates from an independent engine (my own spectrum→fingerprint MLP + ranker over PubChem/COCONUT), merged by reciprocal-rank fusion over metric identities with the source’s top-1 protected: 0.437 → 0.438. So I’d look at recall/diversity before more re-ranking.</p></li>\n<li><p>Structure-disjoint validation. I hold out structures (by InChIKey14) from all training libraries and keep the answer reachable only through PubChem (~5k–10k candidates per molecule). Two splits that behave very differently:</p></li>\n</ol>\n<p>250 enveda-np-examples structures (all have public spectra elsewhere)\n490 enveda-180 structures with no public spectra (class-2-like)</p>\n<p>Popularity puts the answer at #1 for 67% of the first split and ~0% of the second, so a library-only CV overrates any prior. For pretrained models I retrain my own with the same holdout excluded; I can’t audit the public FPNet banks the same way.</p>\n<ol>\n<li>Fragments. Yes, they help, but as a relative feature: explained intensity of 1–2 bond cuts (±2 H, 10 ppm), expressed as the gap to the best candidate in the same molecule, was my single most important ranker feature (no-public-spectra split 0.502 → 0.627). Two cautions from my side: your 300 s budget leaving 161/400 molecules unscored would hide most of the gain, and ranking with a different model than the ranker was trained on cost me ~0.02 LB.</li>\n</ol>\n<p>Write-up with the numbers: <a href=\"https://www.kaggle.com/code/aryanawasthiteykik/casmi26-gpu-fingerprint-fragmentation-ranker\" target=\"_blank\">https://www.kaggle.com/code/aryanawasthiteykik/casmi26-gpu-fingerprint-fragmentation-ranker</a></p>\n<p>Re teaming: I’d be open to it. I can bring an independent engine (GPU-trained fingerprint model + fragmentation/analog ranker, 0.272 alone, not derived from the public lineage) plus the validation splits above, which could complement your E007 work. Happy to talk if you’re interested.</p>",
+      "replies": [
+        {
+          "id": 3538902,
+          "authorName": "Kino Lutor",
+          "postDate": "2026-10-15T00:33:07.757Z",
+          "content": "<p>hi,yes i do use the LambadaRank ranker,Anyway,my last version ran all 400 molecules,with all rated,totally about 2h44m,it's still that point haha;I just want to know what may be in the hidden rating standard,About teaming,I'm really glad to cooperate with you,sir,im just green hands in this field,so plz give me your contact information so i can find you,thank you so much and looking forward to working together with you!</p>",
+          "votes": 1,
+          "replies": [
+            {
+              "id": 3539130,
+              "authorName": "Aryan Awasthi",
+              "postDate": "2026-10-15T12:02:48.490Z",
+              "content": "<p>haha same, I’m stuck around the same point too  most of the hidden test seems to be novel molecules, so re-ranking alone barely moves it.</p>\n<p>and yes let’s team up! I’ll send you a team merge request from the competition’s Team tab, just accept it from yours. once we’re in, let’s figure out how to split the 5 daily submissions so we don’t step on each other’s experiments</p>"
+            },
+            {
+              "id": 3539135,
+              "authorName": "Aryan Awasthi",
+              "postDate": "2026-10-15T12:10:20.357Z",
+              "content": "<p>once we’re teamed up we share 5 submissions/day right? I’ve got 5 lined up for tomorrow morning testing the 0.443 public base + my engine. could you hold off tomorrow, and from Saturday we split 3/2 or alternate days? also, which of your versions scored best? happy to compare notes. It'll probably push us further !</p>"
+            },
+            {
+              "id": 3539143,
+              "authorName": "Kino Lutor",
+              "postDate": "2026-10-15T12:28:48.377Z",
+              "content": "<p>OKOK,to be honest i'm now participating in a new competition,do you see that? NAME LLM project, how can i contact with you?</p>"
+            },
+            {
+              "id": 3539152,
+              "authorName": "Kino Lutor",
+              "postDate": "2026-10-15T12:51:05.530Z",
+              "content": "<p>I think we can chat more often, can you give me a way to contact with you at any time?And how to call you</p>"
+            },
+            {
+              "id": 3539153,
+              "authorName": "Aryan Awasthi",
+              "postDate": "2026-10-15T12:53:21.370Z",
+              "content": "<p>haha nice, a new comp! my discord is teykik, add me there, way easier than calling internationally, if discord doesn’t work for you (I know it’s blocked in some places), tell me what you use and we’ll figure something out. </p>"
+            },
+            {
+              "id": 3539162,
+              "authorName": "Kino Lutor",
+              "postDate": "2026-10-15T13:22:56.503Z",
+              "content": "<p>it's Ok now</p>"
+            },
+            {
+              "id": 3539635,
+              "authorName": "Kino Lutor",
+              "postDate": "2026-10-16T07:33:43.003Z",
+              "content": "<p>bro,plz accept my discord application.How you get out of the 0.440 point,you even reach to 0.443,plz tell me more🥲</p>"
+            },
+            {
+              "id": 3539688,
+              "authorName": "Kino Lutor",
+              "postDate": "2026-10-16T10:03:06.963Z",
+              "content": "<p>bro，you are crazy😬,how you do that,plz ,i really want to know</p>"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

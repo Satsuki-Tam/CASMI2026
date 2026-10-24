@@ -1,0 +1,26 @@
+{
+  "topic": {
+    "id": 745604,
+    "title": "Question on open-weight models: DreaMS",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/745604",
+    "postDate": "2026-10-03T11:18:16.629Z",
+    "authorName": "Truthseeking",
+    "authorUrl": "https://www.kaggle.com/truthseeking",
+    "commentCount": 2,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Question on open-weight models: DreaMS</p>\n<p>Hi David, a quick licence check on the DreaMS model (Bushuiev et al., Nat. Biotechnol. 2025). Its weights are published under CC BY 4.0 (Zenodo 10997887). It was pretrained on public GNPS spectra (GeMS) and fine-tuned on about 25k MoNA spectra. The paper states that no NIST20 spectra were used for training, but NIST20 was used to evaluate the fine-tuned embedding model.</p>\n<p>Is a model whose weights never trained on NIST, but whose checkpoint was evaluated on NIST20, acceptable under the NIST rule?\nIs DreaMS acceptable for final submissions given its MoNA fine-tuning data?\nThanks!</p>"
+  },
+  "comments": [
+    {
+      "id": 3533258,
+      "authorName": "Marie Killian",
+      "postDate": "2026-10-05T19:29:01.260Z",
+      "content": "<p>Thanks for clarifying! Yes, DreaMS weights are allowed.</p>"
+    },
+    {
+      "id": 3533344,
+      "postDate": "2026-10-05T22:41:54.620Z"
+    }
+  ]
+}

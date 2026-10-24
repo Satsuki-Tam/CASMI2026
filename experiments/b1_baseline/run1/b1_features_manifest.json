@@ -1,0 +1,11 @@
+{
+ "k": 100,
+ "lam": 0.15,
+ "ppm": 10.0,
+ "max_spectra": 8,
+ "max_ref": 24,
+ "fpnet": "ddf6eaaa8e541a16e3f0357ed30f0346e529054f75d5619aedb6024dcb1bd7f0",
+ "pool": "82b8c40315611289b9a4004b3af18d6d3402b3cd5baa4ee5723da07b7e2f6bb0",
+ "rdkit": "2026.03.3",
+ "seconds": 34
+}

@@ -1,0 +1,44 @@
+{
+  "topic": {
+    "id": 742082,
+    "title": "GPU quota (30 H/week) is not enough",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742082",
+    "postDate": "2026-09-19T17:25:48.008Z",
+    "authorName": "ممدوح",
+    "authorUrl": "https://www.kaggle.com/mamdouhbarkat",
+    "commentCount": 4,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>GPU quota (30 H/week) is not enough \nour competition is complicated\nI need to try a lot to improve my score\nplease if u can   </p>"
+  },
+  "comments": [
+    {
+      "id": 3526696,
+      "authorName": "Frenio Redeker",
+      "postDate": "2026-09-22T03:13:41.347Z",
+      "content": "<p>I think 30 h/week is very generous and I'm super grateful for Kaggle providing the compute for free. You can get an additional 20 h/week of TPU time if you use an accelerator agnostic framework.</p>",
+      "votes": 1
+    },
+    {
+      "id": 3526015,
+      "authorName": "Truthseeking",
+      "postDate": "2026-09-19T21:40:48.077Z",
+      "content": "<p>16 hr days may do it.  Keep going.  </p>",
+      "votes": -1
+    },
+    {
+      "id": 3526184,
+      "authorName": "Barno Barno",
+      "postDate": "2026-09-20T15:52:09.300Z",
+      "content": "<p>buy google colab , u get 15hr extra in kaggle on the 10$ plan. </p>",
+      "replies": [
+        {
+          "id": 3526238,
+          "authorName": "Truthseeking",
+          "postDate": "2026-09-20T19:02:44.713Z",
+          "content": "<p>Will try that, because Claude and codex £20 plan don’t cut it.  Have cline plan too.  We are restricted so much.  </p>"
+        }
+      ]
+    }
+  ]
+}

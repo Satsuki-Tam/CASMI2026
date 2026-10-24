@@ -1,0 +1,649 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ディスカッション精査</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="experiments.html" class="">実験</a><a href="research.html" class="on">調査</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 10:37 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-organizer-rulings-and-announcements-host-kaggle-statements-only">1. Organizer rulings and announcements (host / Kaggle statements only)</a><ul>
+<li><a href="#11-external-data-models-licences-chronological-first-hand-quotes">1.1 External data, models, licences — chronological, first-hand quotes</a></li>
+<li><a href="#12-test-set-metric-scorer-data-updates">1.2 Test set, metric, scorer, data updates</a></li>
+</ul>
+</li>
+<li><a href="#2-data-quirks-and-pitfalls-found-by-participants">2. Data quirks and pitfalls found by participants</a></li>
+<li><a href="#3-validation-insights">3. Validation insights</a><ul>
+<li><a href="#31-why-naive-cv-fails">3.1 Why naive CV fails</a></li>
+<li><a href="#32-validation-designs-people-trust">3.2 Validation designs people trust</a></li>
+<li><a href="#33-class-share-estimates-all-spec-lb-probed-mutually-inconsistent">3.3 Class-share estimates (all [SPEC], LB-probed, mutually inconsistent)</a></li>
+<li><a href="#34-where-the-mrr-goes-failure-taxonomies-class-2-condition">3.4 Where the MRR goes (failure taxonomies, class-2 condition)</a></li>
+<li><a href="#35-lb-noise-split-shrinkage">3.5 LB noise, split, shrinkage</a></li>
+</ul>
+</li>
+<li><a href="#4-method-insights-and-what-moved-the-leaderboard">4. Method insights and what moved the leaderboard</a><ul>
+<li><a href="#41-lb-reference-points-public">4.1 LB reference points (public)</a></li>
+<li><a href="#42-pipelines-described-in-detail">4.2 Pipelines described in detail</a></li>
+<li><a href="#43-other-method-threads">4.3 Other method threads</a></li>
+</ul>
+</li>
+<li><a href="#5-class-3-novel-structures">5. Class 3 (novel structures)</a></li>
+<li><a href="#6-isomer-discrimination">6. Isomer discrimination</a></li>
+<li><a href="#7-open-questions-and-disagreements">7. Open questions and disagreements</a></li>
+<li><a href="#8-ten-most-actionable-non-obvious-insights-for-a-gold-zone-048-public-score">8. Ten most actionable, non-obvious insights for a gold-zone (~0.48 public) score</a></li>
+</ul>
+</div>
+</div><h1 id="casmi-2026-enveda-kaggle-discussion-digest">CASMI 2026 (Enveda) — Kaggle discussion digest</h1>
+<p>Compiled 2026-10-24 from the complete local archive <code>C:\kaggle\CASMI\docs\official\discussion\</code> (all 119 forum topics as of 2026-10-23, each as .md + .json) plus the official pages (<code>data-description.md</code>, <code>Evaluation.md</code>, <code>rules.md</code>, <code>Code_Requirements.md</code>, <code>Timeline.md</code>). Nothing fetched from the web. Screenshots embedded in a few posts (hengck23's Claude-CoT and DreaMS probe results, Adarsh's dashboards) are not recoverable locally; deleted comments appear as "?".</p>
+<p>Legend: <strong>[FACT]</strong> = measured/observed by the poster or stated by hosts; <strong>[SPEC]</strong> = speculation/inference; <strong>[CONTRA]</strong> = contradicted by hosts or other participants. Dates are 2026 post dates. Thread ids in parentheses.</p>
+<p>Hosts/staff: David Healey [HOST, Enveda], Marie Killian [Organizer, Enveda], inversion [Kaggle], Ashley Oldacre [Kaggle].</p>
+<hr />
+<h2 id="1-organizer-rulings-and-announcements-host-kaggle-statements-only">1. Organizer rulings and announcements (host / Kaggle statements only)</h2>
+<h3 id="11-external-data-models-licences-chronological-first-hand-quotes">1.1 External data, models, licences — chronological, first-hand quotes</h3>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Who (thread)</th>
+<th>Ruling (key sentence)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>09-14</td>
+<td>Healey (741359)</td>
+<td>Welcome post (original): "Solutions built on data or tools that are not open source will not be eligible to win, and we reserve the right to disqualify any submission that does not comply or can't be reproduced with allowed data and tools." Edited 10-17: "Open source external data with noncommercial provisions are acceptable" (→ 750330).</td>
+</tr>
+<tr>
+<td>09-18</td>
+<td>Healey (741844)</td>
+<td>"The main question with model weights is whether the license for the data in question allows redistribution (even noncommercial redistribution) of derivatives like model weights. If so, then you should be fine to use it."</td>
+</tr>
+<tr>
+<td>09-18</td>
+<td>Healey (741857)</td>
+<td>"PubChem structures for retrieval are acceptable for prize-eligible solutions." 10-11: "Yes, submitting subsets of PubChem is fine for prize-eligible solutions."</td>
+</tr>
+<tr>
+<td>09-18/19</td>
+<td>Healey (741876)</td>
+<td>Competition training data may be uploaded to a private cloud (private Hugging Face), trained there, weights brought back: "Yes, you can do that."</td>
+</tr>
+<tr>
+<td>09-19</td>
+<td>Healey (741912)</td>
+<td>"Spectra generated from COCONUT structures with CFM-ID is fine; compliant with the external data policy." "LGPL-licensed runtime dependency is fine also." Obligations: "make sure all versions are documented to be reproducible" ("guidance for solution eligibility not legal advice").</td>
+</tr>
+<tr>
+<td>09-19</td>
+<td>Healey (742011)</td>
+<td>ChemBERTa: "Yes, chemberta is open source".</td>
+</tr>
+<tr>
+<td>09-20</td>
+<td>Healey (742193)</td>
+<td>"We can't blanket approve all open weights models. It should be fine as long as the open weight model is distributed in compliance with the license for the data it was trained on." 09-25 addendum: "Many datasets (MassSpecGym perhaps) are functionally open source and many prominent open source models train on them. These are fine for solutions, as are any models trained on this competitions train.parquet ... (enveda-np-examples we neglected to assign a specific license to but should also be considered open source)". "The most illustrative example of a dataset that would be restricted is NIST ... There are also fully commercial datasets like METLIN and those distributed by the mass spec companies (Thermo, Bruker, SciEx). Also to avoid."</td>
+</tr>
+<tr>
+<td>09-25</td>
+<td>Healey (742991)</td>
+<td>"For the purposes of solution eligibility, we consider MassSpecGym and models trained on it and released with permissive licenses as fair game." "what we had in mind to avoid are datasets like NIST, whose licenses aggressively restrict distribution of model weights (or proprietary commercial datasets like METLIN, or those distributed by the mass spectrometer companies). I am not aware of prominent open-sourced pretrained models that are trained on those datasets ... But if they do exist they would not be eligible."</td>
+</tr>
+<tr>
+<td>09-25</td>
+<td>Healey (742265)</td>
+<td>"any open source models trained on train.parquet are fair game. train.parquet is compiled from open source libraries and we are essentially just redistributing them with some minor touching up and normalization."</td>
+</tr>
+<tr>
+<td>09-25</td>
+<td>Healey (743236)</td>
+<td>Models trained on train.parquet "can be open-sourced ... the test data when it is released will be restricted to noncommercial use." Private Kaggle datasets (PubChem mass index, COCONUT table, train-derived library, weights) + rebuild scripts are "acceptable open-source-derived solutions".</td>
+</tr>
+<tr>
+<td>09-25</td>
+<td>Healey (743234)</td>
+<td>COCONUT despite NC sub-collections (FooDB): "Yes, COCONUT's own license is sufficient."</td>
+</tr>
+<tr>
+<td>09-27</td>
+<td>Healey (743774)</td>
+<td>CFM-ID 4 stock ESI models (trained on METLIN) and ISDB in-silico libraries: "CFM ID 4 is fine. It's published by a major lab in a major journal, so we'll proceed with the assumption that the authors had permission to distribute the weights."</td>
+</tr>
+<tr>
+<td>09-27</td>
+<td>Healey (743569)</td>
+<td>Enveda-180 Zenodo (21346580, CC BY 4.0): "Yes you can use the Zenodo release".</td>
+</tr>
+<tr>
+<td>09-29</td>
+<td>Healey (744470)</td>
+<td>"the NIST dataset is not permitted for solutions, any solution using or trained on NIST will be disqualified. It is not freely available and its license has restrictions on redistribution of itself or derivatives, including model weights."</td>
+</tr>
+<tr>
+<td>09-29</td>
+<td>Healey (744338)</td>
+<td>"Yes, MassSpecGym is allowed, so is GLACIER" (MassSpecGym-trained GLACIER/ICEBERG checkpoints in coleygroup/ms-pred; the NIST-trained ones are gated and banned).</td>
+</tr>
+<tr>
+<td>10-05</td>
+<td>Killian (745228)</td>
+<td>Current GNPS / MassBank 2026.03 / MoNA dumps: "Newer releases of public datasets are fine to use and CC BY-SA records are acceptable."</td>
+</tr>
+<tr>
+<td>10-05</td>
+<td>Killian (745604)</td>
+<td>"Yes, DreaMS weights are allowed."</td>
+</tr>
+<tr>
+<td>10-05</td>
+<td>Killian (745148)</td>
+<td>Zenodo Enveda-180 structures absent from train "likely were filtered out in the train.parquet preparation. Data in the Zenodo release of Enveda-180 are fine to use."</td>
+</tr>
+<tr>
+<td>10-05</td>
+<td>Healey (745841)</td>
+<td>"GLACIER/ICEBERG, DreaMS and ChEBI/LIPID MAPS are all fine." "the train.parquet file can be treated effectively as open-source and any model trained on it is fine, redistributed artifacts are fine. The noncommercial provision of the Kaggle data license is primarily to protect the test data". "the compliance check at the end can remove teams from the leaderboard entirely, not just disqualify from prizes."</td>
+</tr>
+<tr>
+<td>10-07/09</td>
+<td>Healey (745832)</td>
+<td>NIST-annotated community spectra: first "inclined to say yes, this would be a derivative of NIST", then: "I will make an exception ... if it was on GNPS well before the competition started (say, 6 months), and hasn't been taken down, its fair game." 10-09: "specifically GNPS-NIST14-MATCHES is allowed, because it has been in the GNPS open repository for many years ... Allowed for library matching and training. However, I believe NIST would consider any newly created such datasets to be derivatives and in violation of their license."</td>
+</tr>
+<tr>
+<td>10-09</td>
+<td>Healey (745072)</td>
+<td>"any datasets that are only noncommercial by inheriting from train.parquet are fine to use. As are the large molecule libraries like PubChem and COCONUT ... Our concerns about data are mostly about the proprietary datasets with very restrictive redistribution licenses, like NIST and the proprietary libraries from the mass spectrometer manufacturers." "we retain the option to disqualify any solutions that are not in compliance with the rules. This includes removal from the leaderboard." "developing your solutions on the datasets you have mentioned here [ahmedberatozer casmi26-v4b/v3/v2-pool/fpnet-full1] should be fine."</td>
+</tr>
+<tr>
+<td>10-13</td>
+<td>Healey (748065)</td>
+<td>Third-party weights without training code: "No, for now any winning solution needs to be able to be reproducible. If there's no way to retrain the weights ... that would be a problem." NC-labelled train-derived datasets: "solutions derived from open source datasets even with NC, are fine to use." Scope: "I believe the compliance check only applies to the selected submissions, but will clarify if otherwise".</td>
+</tr>
+<tr>
+<td>10-13</td>
+<td>Healey (748357)</td>
+<td>Models trained on MassSpecGym + CC0/CC BY libraries, and models trained on train.parquet released with the solution: "Yes those are all fine."</td>
+</tr>
+<tr>
+<td>10-13</td>
+<td>Healey (748363)</td>
+<td>CC-BY-NC-SA and "other"/unspecified-licence Kaggle datasets: "Those should be fine but feel free to ask about specific instances. For external data we're mostly worried about datasets with very restrictive redistribution licenses, like NIST".</td>
+</tr>
+<tr>
+<td>10-13</td>
+<td>Healey (748799)</td>
+<td>DreaMS SSL backbone whose checkpoint selection monitored a NIST20 linear probe: "If the model weights aren't a derivative of NIST then they are not in violation of the nist license so should be fine."</td>
+</tr>
+<tr>
+<td>10-13</td>
+<td>Killian (745615)</td>
+<td>"Open-source datasets with noncommercial licensing provisions are permitted ... A noncommercial license does not automatically make a solution ineligible for prizes or medals. All submissions must comply with the competition rules, regardless of whether a team is pursuing prizes or medals. Submissions found to be noncompliant may be disqualified and removed from the leaderboard. If a potential winner is disqualified, prize eligibility will be determined according to the competition's Foundational Rules."</td>
+</tr>
+<tr>
+<td>10-13</td>
+<td>Killian (748552)</td>
+<td>"Competitors are not limited to the external datasets that have been explicitly approved by name. Other publicly available datasets may be used, provided they comply with the competition's external-data rules and applicable licensing requirements. By definition, class 3 structures are not in PubChem at all and must be predicted de novo."</td>
+</tr>
+<tr>
+<td>10-13</td>
+<td>Killian (746430)</td>
+<td>FRIGID: "Yes, the official FRIGID checkpoints are allowed for prize-eligible solutions. Teams do not need to retrain the models themselves, but must provide the original training code and access to the permitted training data needed to reproduce the weights." 10-16: third-party mirrors (MS-GPT) allowed only "if these third-party mirrors comply with the licensing rules and you can provide the original training code and permitted training data to fully reproduce them".</td>
+</tr>
+<tr>
+<td>10-13</td>
+<td>Killian (748882)</td>
+<td><strong>Omnibus answer.</strong> Approved MassSpecGym / GLACIER / ICEBERG / DreaMS checkpoints: "it is sufficient to deliver the released checkpoint, a reference to the authors' original training code and permitted training data, and your own complete fine-tuning and inference code ... You do not need to re-run the pretraining. For DreaMS, the approval includes the self-supervised backbone provided the weights are not derived from NIST". Retraining a participant-shared architecture yourself with your code "is sufficient". "we reserve the right to check any and all submissions." TabPFN v2 and TabPFN 2.5+: "eligible under their non-commercial licenses provided you include a reference to the authors' original training code and permitted training data." PubChem CID-PMID / CID-Patent / CID-SID counts as ranking features: yes; "LOTUS and NPAtlas are also acceptable as structure sources".</td>
+</tr>
+<tr>
+<td>10-13</td>
+<td>Killian (745841)</td>
+<td>"A winning team must provide the training code actually used to produce the weights in the solution ... The team does not need to retrain the weights itself. A winning solution can include third party weights, including those shared by other competitors, provided the team supplies the training code and access to the permitted data needed to reproduce them. If the training code needed to reproduce those weights is unavailable, the weights would not meet the reproducibility requirement".</td>
+</tr>
+<tr>
+<td>10-14</td>
+<td>Killian (745072)</td>
+<td>"A team cannot use shared weights without the original training code. Alternatively, teams may retrain equivalent models themselves using permitted data and provide their own training code." Code in public Kaggle datasets under Rule 6.b: "Yes." "NPAtlas and HMDB are acceptable. NIST and NIST-derived models or datasets are not permitted except for previously approved sources." DiffMS/HMDB pretraining: fine.</td>
+</tr>
+<tr>
+<td>10-14</td>
+<td>Killian (742265)</td>
+<td>"For pretrained model weights, citing or linking the weights alone is not sufficient. The original training code and access to the permitted training data needed to reproduce them must also be available."</td>
+</tr>
+<tr>
+<td>10-14</td>
+<td>Killian (748882, to Jusamonix)</td>
+<td>Medal-only teams: "Third party weights that cannot be reproduced with the original training code and permitted training data are not allowed. All solutions must be reproducible to ensure fairness. We reserve the right to check all submissions and potentially remove from the competition those that do not abide by this rule." A shared fine-tuned DreaMS without its fine-tuning code: "No, a team cannot use the fine-tuned weights".</td>
+</tr>
+<tr>
+<td>10-14</td>
+<td>Killian (745134)</td>
+<td>ICEBERG PubChem atlas (predicted spectra for 91,424,208 PubChem structures from the NIST'23-trained ICEBERG; NIST'23 structures excluded): "The first reading applies. The atlas spectra are model outputs publicly offered by the authors and can be used." 10-16: ship "only the predicted spectra as a dataset, but include the code used to generate those spectra ... we do require that you provide sufficient documentation for reproducibility (training code and access to permitted data)."</td>
+</tr>
+<tr>
+<td>10-14</td>
+<td>Killian (749209)</td>
+<td>PubChem compound records as candidates: yes. "PubChem-derived statistics are permitted as ranking features. Any additional information gathered by following references in PubChem would depend on the licensing of that particular source." Offline snapshot as Kaggle Dataset: "acceptable. The dataset would need to be included with a prize-eligible solution but does not need to be public during the competition." PubChem containing test truths: "No [concern]. PubChem is an allowed resource."</td>
+</tr>
+<tr>
+<td>10-14</td>
+<td>Killian (749217)</td>
+<td>"The relevant question is whether NIST-derived data was used to train the weights." MassSpecGym Hub checkpoints: "Only checkpoints whose training data excludes NIST-derived spectra are allowed (except for the previously approved exception for GNPS-NIST14-MATCHES)." "Publicly released libraries (GNPS, MassBank, MoNA) can generally be used as distributed. However, competitors should avoid using data known to violate applicable licensing requirements". 10-16: DreaMS <code>ssl_model.ckpt</code>, official GLACIER-MSG, official ICEBERG-MSG (<code>gen</code>, <code>inten_contr</code>): "Yes, all of those are allowed." 10-16: "Any third-party derivatives (including fine-tuned models) must have the original training code and access to the permitted training data ... a third-party derivative whose recipe is unpublished and whose artifact carries no training record would not be permitted."</td>
+</tr>
+<tr>
+<td>10-14</td>
+<td>Killian (745832)</td>
+<td>"using molecular formulas for candidate structures as inputs to an eligible pretrained model is permitted."</td>
+</tr>
+<tr>
+<td>10-14</td>
+<td>Killian (748882)</td>
+<td>"Per compound counts calculated from publicly available PubChem data are permitted."</td>
+</tr>
+<tr>
+<td>10-16</td>
+<td>Killian (745841)</td>
+<td>"prior submissions that are not fully reproducible will not be eligible to win but will not disqualify your future submissions, provided those submissions are fully reproducible and eligible." 10-21 (748882): same, plus "If there is evidence that a team is knowingly using ineligible data and/or weights on unselected submissions, this may impact their eligibility." Weights whose training code is published later: "If the original training code and permissible training data is available for full reproducibility by the end of the competition, yes, those weights would be allowed."</td>
+</tr>
+<tr>
+<td>10-17</td>
+<td>Healey (750330, sticky)</td>
+<td>"we have decided to remove the restriction on noncommercial license open source data (for example, CC-BY-NC) ... External data that is not open source, is not freely available to all, or is proprietary remains against the rules ... NIST is not permitted, as it is not open or freely available and the data including derivatives such as model weights cannot be redistributed. ... we reserve the right to check all solutions for compliance and remove from the competition participants found in violation."</td>
+</tr>
+<tr>
+<td>10-19</td>
+<td>Killian (750252)</td>
+<td>DiffMS (MIT, Zenodo 15122968) and DualLGD (CC BY 4.0, Zenodo 20281201), pretrained on HMDB-containing structure lists: "Yes, these weights are allowed ... please make sure that, for any weights used, the original training code and access to permitted training data are available".</td>
+</tr>
+<tr>
+<td>10-19</td>
+<td>Killian (750612)</td>
+<td>Competitor-released FPNet weights trained only on train.parquet but without the training script: "No, the requirement applies to all weights, including competitor released weights trained on train.parquet. You need to have access to the original training code to include weights in your solution."</td>
+</tr>
+<tr>
+<td>10-19</td>
+<td>Killian (750461)</td>
+<td>Per-compound counts from PubChem FTP Extras (CID-SID, CID-PMID) as ranking features: "Yes, those are allowed."</td>
+</tr>
+<tr>
+<td>10-22</td>
+<td>Healey (751373)</td>
+<td>"Models trained only on public libraries [MS2DeepScore 2.0, FIORA-OS]: correct, allowed. SIRIUS / CSI:FingerID: correct, not allowed. Chemical language / graph models [pretrained on PubChem structures]: correct, allowed. We need the code that generates the intermediates as well. Yes PubChem Lite is fine." (The 10-20 MIT MIST checkpoints on Zenodo 23303289, MassSpecGym-trained, "aug" variant distilled from GLACIER-MSG, were asked about in the same thread and not explicitly answered; they fall under the MassSpecGym rule.)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Net reading.</strong> Allowed: MassSpecGym and MSG-trained GLACIER/ICEBERG/MIST, DreaMS SSL backbone, CFM-ID 4 (+ISDB), FRIGID official ckpts, DiffMS, DualLGD, MS2DeepScore 2.0, FIORA-OS, TabPFN v2/2.5, ChemBERTa and other PubChem-pretrained chemical LMs, the ICEBERG PubChem atlas as an in-silico library, COCONUT, PubChem (+subsets, PubChemLite, per-compound CID-PMID/Patent/SID counts), ChEBI, LIPID MAPS, NPAtlas, LOTUS, HMDB, Enveda-180 Zenodo, newer GNPS/MassBank/MoNA dumps, GNPS-NIST14-MATCHES, train.parquet-derived Kaggle datasets and shared code. Banned: NIST and anything trained on NIST (GrAFF-MS, NIST-ICEBERG/GLACIER, SIRIUS/CSI:FingerID), METLIN as data, vendor libraries, newly created NIST-match datasets. <strong>The binding constraint since 10-13 is reproducibility: every weight you load (including competitor-shared fpnet-full1, ranker tables, fine-tuned DreaMS) needs the training code actually used plus permitted data, and "the code that generates the intermediates as well"; otherwise retrain it yourself.</strong> The compliance check may remove non-prize teams from the leaderboard; earlier non-compliant submissions do not taint compliant final ones unless "knowingly" abusive.</p>
+<h3 id="12-test-set-metric-scorer-data-updates">1.2 Test set, metric, scorer, data updates</h3>
+<ul>
+<li><strong>Test-set facts (data page):</strong> ~1,500 spectra of ~400 molecules, 1–16 spectra/molecule (median 3), 100% Bruker timsTOF, monoisotopic mass 157–1,159 Da (median 348), 10 adducts, minimal cleaning (precursor-inconsistent spectra dropped, base peak &lt; 1,000 raw counts dropped, peaks &gt; precursor + 2 Da removed), class distribution hidden. Visible <code>test.parquet</code> is a dummy made of training spectra.</li>
+<li><strong>No ion mobility:</strong> "Its deliberately excluded; the test set has no CCS values." (Healey 09-27, 743368); "the test set does not include 1/K0 or CCS. It has the same columns as provided in test.parquet." (Killian 09-28, 743569).</li>
+<li><strong>Class definitions:</strong> "Class 3 is absent from both PubChem and COCONUT." (Healey 09-23, 742274); "By definition, class 3 structures are not in PubChem at all and must be predicted de novo." (Killian 10-13, 748552). Breakdown refused: "We will not provide the breakdown of the test set, but our hope is that there are enough novel structures to make it worth working on them." (Killian 10-05, 745758). Public/private split: "We are not revealing details ... participants should expect members of all three classes in both sets." (Killian 10-13, 748882). The LB page shows a 31%/69% public/private split (quoted by WEI ZIHE12 748882 and yves mouaha 750572) → ~125 public molecules if split by molecule.</li>
+<li><strong>09-15 Healey (741404):</strong> public LB "is calculated not on the contents of the test.parquet downloadable dummy file (which ... just contains a sample of Enveda-180 spectra ...) but rather on the public split of the Hidden test set provided to your submission notebook."</li>
+<li><strong>09-15 inversion (741471):</strong> "a small update to the training data, adding water loss adducts to some of the samples. It is recommended that you re-download the file."</li>
+<li><strong>09-19 inversion (741851):</strong> scoring notebook linked from the Evaluation page (<code>metric/casmi-mean-reciprocal-rank</code>).</li>
+<li><strong>09-23 Healey (742274) scorer edge cases:</strong> "Empty entries are discarded before ranks are assigned. A;;B is read as two guesses, so B is at rank 2, not rank 3. A trailing ; is not a guess and does not affect your score".</li>
+<li><strong>09-28 Killian (742265):</strong> "The live scorer is identical to the published casmi-mean-reciprocal-rank v13. It has not changed. We are investigating the concerns raised in the thread you referenced [742088: filler SMILES → 0.000]." P100 GPUs sunsetted (T4/other only). <strong>10-13 Killian (748882):</strong> "Adding valid, distinct guesses after an unchanged rank-1 guess will not lower that row's MRR score, provided the submission passes validation and is scored successfully."</li>
+<li><strong>09-30 Healey (744556):</strong> "Yes, solutions are stereo-stripped before canonicalization." (Yohann Roux had shown that the same molecule written with/without stereo gets different tautomer-canonical keys, KOJSSZPTECJRNW vs SRMRLHNLDDQJLJ, with RDKit 2026.03.3.) → <strong>10-07 inversion (746878):</strong> "The metric has been updated to RemoveStereochemistry. This will be applied retroactively within the next 12 hours, as well as to all future submissions."</li>
+<li><strong>Electron-mass fix:</strong> 09-29 Healey (743395) "Tracking down which test spectra were processed with this version." → 10-07 inversion (746954): "The rerun test data has been updated to fix a tiny (mass of an electron) error in some of peak masses. A rerun of all submissions will begin shortly". → 10-13 Killian (748882): <strong>"The electron-mass correction was applied only to the hidden test set (not the Enveda-180 data in train.parquet or the Enveda-180 Zenodo release). To apply the same correction to those datasets, subtract 0.000548 Da from positive-mode m/z values."</strong> → 10-14 inversion (749430): "All notebooks that were submitted before the update to the metric and the hidden test set have been rescored. You'll notice previous notebooks have slight changes to scores."</li>
+<li><strong>10-07 inversion (745715) on ID overlap:</strong> "There is no overlap in IDs between train and test, or between dummy test and rerun test. It's a relatively low-observation test set, so participants should be careful that they don't interpret noise with causation."</li>
+<li><strong>Support:</strong> no individual tracebacks for failed hidden reruns (inversion 09-23, 742463); both <code>test.parquet</code> and <code>sample_submission.csv</code> are replaced at rerun (PC Jimmmy, 745866). Java/Vulkan compute: "I don't know that anyone's done it. It might be possible?" (inversion, 741791).</li>
+<li>Rules: 5 submissions/day, 2 finals, teams ≤ 5, notebooks ≤ 9 h CPU or GPU, no internet; deadlines 12-07 (entry/merge) and 12-14 (final). Quota: 30 GPU h/week (+20 TPU h/week with an accelerator-agnostic framework, Frenio Redeker 742082).</li>
+</ul>
+<hr />
+<h2 id="2-data-quirks-and-pitfalls-found-by-participants">2. Data quirks and pitfalls found by participants</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Quirk</th>
+<th>Evidence / numbers</th>
+<th>Who (thread, date)</th>
+<th>Quality</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td><strong>Dummy test = enveda-180 rows copied byte-for-byte from train.</strong> All 1,213 visible spectra match train rows exactly (np.array_equal), all from enveda-180/timsTOF, 400/400 molecules resolvable (one id, m_6ebcf9, matches two structures); binned-cosine search returns 1.000 for every visible molecule vs median ~0.94 on a real holdout. Reported as a "leak" twice and downvoted: it is the documented placeholder.</td>
+<td>Reproduction scripts in both threads</td>
+<td>Nipon Sriwasut (741756, 09-17), Odim David Emeka (742278, 09-21); José Freitas (741404); host confirmed placeholder</td>
+<td>FACT (not a leak)</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td><strong>Anything keyed to the visible file is dead at grading.</strong> Static candidate artifacts filtered to the visible test's masses/formulas match nothing on the hidden set; the pipeline silently falls back to baseline (tell-tale: new feature scores identical to 3 decimals). Build mass-keyed sources live inside the scored run. Udam "lost two submissions" analysing the visible file.</td>
+<td></td>
+<td>interface kotian (744172, 09-28); Udam (743254)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td><strong>Never hard-code 400 molecules.</strong> The hidden test has a different molecule count; a failing assert in the last cell makes Kaggle silently score the previous <code>submission.csv</code> ("convincing but completely wrong probe result").</td>
+<td></td>
+<td>Antriksh Arya (749412, 10-14)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td><strong>Filler/unparseable guesses can zero the whole submission.</strong> Padding rows with junk SMILES scored 0.000 twice; single-real-guess rows scored as expected. Host: scorer is v13 and valid distinct appended guesses never lower a row "provided the submission passes validation". Locally v13 only consumes a rank for an unparseable guess, so the live 0.000 is a validation/exception failure → ship only RDKit-parseable SMILES.</td>
+<td></td>
+<td>Victor alexandre (742088, 09-19); Fernando Faria (742265); Killian (742265, 748882)</td>
+<td>FACT (mechanism SPEC)</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td><strong>Visible molecule_id → structure hard-coding appeared to raise LB</strong> (imranarif536 v44: 0.402 → 0.417; two dozen forks at 0.416–0.418; Patrick Chan, Raagav Anand "re-confirm"). Host: no ID overlap between dummy and rerun test → noise. Related: cleaning two leaks (FAISS self-match Tanimoto = 1.0 on train molecules; contaminated spectral bank) dropped a pipeline 0.133 → 0.094 and the author hypothesises public-test overlap with train structures — that is just class 1 being present.</td>
+<td></td>
+<td>Zihao Ou (745715, 10-03); inversion 10-07; Manuel lasarte León (750491, 10-18)</td>
+<td>CONTRA (host) / SPEC</td>
+</tr>
+<tr>
+<td>2.6</td>
+<td><strong>One-electron offset in positive-mode m/z of enveda-180</strong> (calibration used neutral Na 22.989769 instead of Na⁺ 22.989221 → references 0.55 mDa too heavy; fragments read 0.49 mDa higher in [M+H]⁺ than [M−H]⁻). Hidden test corrected 10-07; <strong>train enveda-180 and the Zenodo release are NOT corrected — subtract 0.000548 Da from positive-mode m/z there</strong> (host). Only matters below ~0.01 Da tolerance.</td>
+<td>Code + data check</td>
+<td>Bryce Hedelius (743395, 09-25); Killian (748882, 10-13)</td>
+<td>FACT (host-confirmed)</td>
+</tr>
+<tr>
+<td>2.7</td>
+<td><strong>Adduct labels: Enveda's are clean, the libraries' are not.</strong> 6.9% of NP-library rows (174,977 of 2,532,125) have a labelled-adduct neutral mass &gt; 10 ppm from the true structure; on a 40,000-row sample an alternative adduct explains 40.1%, and 12,043 of 16,037 rescues are <code>[M+CH2O2-H]-</code> (formate) mislabels — a GNPS/MassBank curation artefact. enveda-np-examples: 0 of 250 miss under the labelled adduct; GNPS-heavy holdout: 8 of 350 miss (7 rescuable). → No adduct re-hypothesis needed for the test; clean/down-weight formate mislabels when training. Amirah Alimi's "~40k corrupted rows fixed" (741359) is the same phenomenon, undocumented. Spot checks: row 57 <code>[M+Na]+</code> at 303.2319 vs ExactMolWt 302.2246 (really <code>[M+H]+</code>); precursors ≈ 2× mass labelled M; adduct <code>[Cat]2+</code> exists. <code>precursor_error_ppm</code> ships uncleaned as a label-quality signal (data page).</td>
+<td></td>
+<td>DancingLumberjack (742087, 09-19); nafspf (741641); Amirah Alimi (741359)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.8</td>
+<td><strong>Exact-duplicate spectra with conflicting labels:</strong> 22 row pairs (44 rows) with identical <code>ms2_mzs</code>/intensities, precursor, adduct, instrument and CE but different InChIKey14 — six pairs of constitutional isomers, always msdial vs riken (e.g. rows 1573990 Bergapten vs 2371049 Xanthotoxin, 13 peaks @19.5 eV). No host answer; no spectrum→accession crosswalk exists (asked again in 744446 and 751474). train.parquet SHA-256 <code>9423f90e…bcd98</code>.</td>
+<td></td>
+<td>Benedek Brandschott (744446, 09-29); Yanamii; fagbola peter (751474)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.9</td>
+<td><strong>Noise floor dominates the apparent train/test shift.</strong> Test median 230 raw peaks vs train 27; 93% of test peaks &lt; 1% rel. intensity (77% &lt; 0.1%); 1% floor → median 18 (test) vs 14 (train); 0.1% floor → 52. ~3% of peaks sit slightly above the precursor (isotope allowance).</td>
+<td>Visible dummy (enveda-180)</td>
+<td>starkhushi (741423, 741641); José (741404)</td>
+<td>FACT (dummy)</td>
+</tr>
+<tr>
+<td>2.10</td>
+<td><strong>Precursor peak present in only 56% of test spectra</strong> (within 0.01 Da) → metadata, not a peak. Multi-adduct neutral masses agree to median 1.3 ppm (p90 3.1 ppm; 108/400 visible molecules have &gt; 1 adduct).</td>
+<td></td>
+<td>starkhushi (741423, 741641)</td>
+<td>FACT (dummy)</td>
+</tr>
+<tr>
+<td>2.11</td>
+<td><strong>Mass window:</strong> 99% of timsTOF precursors within ~5 ppm; 8.5 → 10 ppm leaves candidate counts unchanged ("full of exact-mass isomers anyway"); ±8.5 ppm found best; a 10-ppm PubChem window holds ~5k–10k candidates, train+COCONUT ~83 (of which ~66 share the truth's formula).</td>
+<td></td>
+<td>Udam (743254); haideptry (741745); Aryan (748524); alex chilton (742055)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.12</td>
+<td><strong>Collision energy:</strong> negative mode stored as negative numbers in <code>collision_energy_orig</code> while <code>collision_energy_ev</code> is positive; <code>60</code>/<code>60.0</code>/<code>[60.0]</code> spellings; NCE→eV approximate. Weighted mean fragment m/z / precursor: 0.64 @20 eV, 0.44 @40, 0.36 @60; the merged 20/40/60 spectrum sits at 0.57 (low-energy-like). Only 24% of visible molecules have the full positive ladder (20, 40, 60 + merged) → don't assume a fixed ladder.</td>
+<td></td>
+<td>starkhushi (741423, 741641); Md Kishor Morol (744011)</td>
+<td>FACT (dummy)</td>
+</tr>
+<tr>
+<td>2.13</td>
+<td><strong>Train composition:</strong> 2,539,575 spectra / 275,810 structures / 51,291 formulas (5.4 structures per formula, long-tailed); enveda-180 = ~45% of spectra, 66% of structures, "a chemical island" (Jaccard overlap tiny); 1,154,969 timsTOF rows of which 1,153,785 are enveda-180 and the other 1,184 belong to the 250 np-examples structures → "fine-tune on timsTOF" = "fine-tune on enveda-180 chemistry". Train is 46% timsTOF / 30% Orbitrap; ~15 spellings of QTOF; 13% dimer adducts (<code>[2M+…]</code>, none in test); precursor m/z ranges 2 … ~2.4 million (parsing errors; drop outside ~50–2,000).</td>
+<td></td>
+<td>starkhushi (741423); DancingLumberjack (742055); Md Kishor Morol (744011)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.14</td>
+<td><strong>Visible vs hidden distribution:</strong> visible neutral masses 246–439 Da (median 327), hidden 157–1,159 (median 348); visible has only 7 of the 10 adducts, 79% <code>[M+H]+</code> / 16% <code>[M−H]−</code>; 276 molecules pos-only, 27 neg-only, 97 both → do not calibrate mass/adduct-dependent logic on the visible file.</td>
+<td></td>
+<td>starkhushi (741423); Md Kishor Morol (744011)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.15</td>
+<td><strong><code>inchikey14</code> in train ≠ scorer key.</strong> 2,904 of 66,490 NP-library structures (4.4%) change key under tautomer canonicalisation; they collapse to 63,449 (~1 in 22 has a twin); ~8% of holdout truths have a tautomer copy under another PubChem key. Local recipe matching the scorer: <code>MolFromSmiles</code> → remove stereo → <code>rdMolStandardize.TautomerEnumerator().Canonicalize</code> (RDKit 2026.03.3, default CleanupParameters: maxTautomers 1000, maxTransforms 1000, tautomerRemoveSp3Stereo True) → <code>MolToInchiKey[:14]</code>.</td>
+<td></td>
+<td>Tim (742042); Udam (743254); Burhan Çalık (741851); Yohann Roux (744556)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.16</td>
+<td><strong>Isotope peaks retained:</strong> log(obs M+1/M0) = 0.998·log(theory) − 0.083 (sd 0.251) for spectra with precursor &gt; 30% base peak at low CE → carbon count ±25%, usable for ~41% of molecules, +0.011 MRR only; M+2 suppressed ~9×. A halogen-isotope (³⁷Cl spacing) detector showed 100× separation against a half-integer-offset control but 8.5% precision against known structures (the control could not fail).</td>
+<td></td>
+<td>NeckBeard (743254); alex chilton (742055)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.17</td>
+<td><strong>Environment sensitivity:</strong> an unpinned copy of a 0.441 notebook scored 0.427 (Python 3.13 image vs the authors' 3.12/RDKit pins); pinning restored 0.441. GPU stages not bit-reproducible: identical code 0.437 vs 0.440; ranker seed alone ±0.006 (0.292 vs 0.298).</td>
+<td></td>
+<td>Aryan (749908, 748029); Victor alexandre (742088); starkhushi (742055)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.18</td>
+<td><strong>Zenodo Enveda-180 vs train:</strong> 816 InChIKey14 with standard-adduct spectra (3,193 spectra; 408 <code>[M+H]+</code>) absent from train (host: filtered during prep); ~2,900 more structures appear only with in-source-fragment adducts.</td>
+<td></td>
+<td>Zihao Ou (745148)</td>
+<td>FACT</td>
+</tr>
+<tr>
+<td>2.19</td>
+<td><code>molecule_id</code>/<code>spectrum_id</code> absent from train (18 columns); group by canonical InChIKey14. Data-page nit: "one of the seven above" although ten adducts are listed.</td>
+<td></td>
+<td>Abhishek Jain, Tim (742042)</td>
+<td>FACT</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-validation-insights">3. Validation insights</h2>
+<h3 id="31-why-naive-cv-fails">3.1 Why naive CV fails</h3>
+<ul>
+<li><strong>enveda-np-examples is not a holdout.</strong> Its 250 structures carry 55,599 spectra in 8 other libraries (riken, gnps, mona, massbank, pluskal_ms2, msdial, drug_plus, masaryk); holding out by <code>ingest_lib</code> or a random 2% structure split leaves them in the library → CV 0.33–0.37 vs LB 0.15–0.16. Test: run library search on the holdout and require zero exact InChIKey14 self-matches (best cosine 0.000). — haideptry (741597, 09-16); DancingLumberjack &amp; alex chilton (742055, 09-19) [FACT]</li>
+<li><strong>Fingerprint models that look better offline do nothing on LB:</strong> two FPNets with hard-negative top-1 0.694/0.640 on a random 2% structure split scored 0.330 vs 0.335 (worse) — near-identical molecules leak across random splits. — starkhushi (742055) [FACT]</li>
+<li><strong>Library molecules are too "popular".</strong> PubChem popularity puts the answer #1 for 67% of np-examples molecules but ~0% of enveda-180 molecules without public spectra (top-25: 99% vs 0.7%); a popularity prior gave +0.50 MRR locally but +0.075 on LB (0.146 → 0.221). — Aryan (748068, 748524) [FACT]. Same trap from the fusion side: locking the v4 engine's confident picks lifted np-examples validation 0.63 → 0.89 but LB 0.413 → 0.409 — "well-documented training structures ... do not behave like the test's class 2". — YahiaZakaria20 (745952) [FACT]</li>
+<li><strong>Curated-DB membership flags</strong> look great on public-library holdouts and hurt on LB. — Udam (743254) [FACT]</li>
+<li><strong>MassSpecGym memorisation:</strong> ICEBERG rerank +0.02 on class 2 overall, ≈0 on non-MSG structures. — Bull (748524) [FACT]</li>
+<li><strong>Spectra-per-molecule mismatch:</strong> public test copy averages 3.03 spectra/molecule, typical holdouts 4.3–5.0; one aggregation feature was worth +0.019 at own counts but +0.0065 ± 0.0033 count-matched (5 draws); mixing the two scales under-predicted a submission 4×; a single resampled draw is worth ±0.011 → average ≥ 5 draws; capping k at available spectra drags the realised mean (2.5 vs 3.03). — DancingLumberjack (742055) [FACT]</li>
+<li><strong>Novelty by deletion overstates reach ~3×</strong> vs truly absent molecules. — Udam (743254); echoed by Mansur, Bull (751300) [FACT]</li>
+<li><strong>Tuning on the evaluation panel inflated an effect 2.8×</strong> (+0.065 → +0.023 ± 0.007 on four held-out panels, t 3.45, n 1000; LB 0.341 → 0.336). — NeckBeard (743254) [FACT]</li>
+<li><strong>"AUC on a selected cohort is not MRR":</strong> a feature with 80.3% truth-above-isomer separation moved 4 molecules of 249; decoy controls must differ only in the tested property. — alex chilton (742055) [FACT]</li>
+<li><strong>Public-notebook lineage never CV-validated</strong> (0.373 → 0.436: two-engine fusion, popularity prior, <code>rel &gt; 250</code> PubChem promotion justified by <code># Skomuro LB 0.403 Rule</code>, dropping ICEBERG judged "+0.013" and "−0.015" in different versions, tail backfilling); fpnet_full1 trained on all of train so the pipeline can't be validated on held-out train. — Bull (748068, 10-10) [FACT]; "Most of our 'small improvements' on top of strong pipelines ended up slightly worse than the untouched version." — Aryan (749908)</li>
+</ul>
+<h3 id="32-validation-designs-people-trust">3.2 Validation designs people trust</h3>
+<ul>
+<li><strong>Bull (748524, 10-12; LB ~0.32):</strong> 1,250 held-out structures with all spectra from every library: 250 np-examples + 600 other-NP structures in COCONUT and not in MassSpecGym + 400 NP structures not in COCONUT (unreachable). Draw spectra per the test's spectra-per-molecule distribution, 10 test adducts only, 5 draws/structure (single draw ±0.01). Class simulation: C1 remove the truth's spectra only from the drawn library; C2 remove all its spectra; C3 also remove all spectra of structures with Tanimoto ≥ 0.7 and those structures from candidates. Bootstrap over structures (95% CI), seeds averaged (seed alone moves class-2 MRR ~0.02). Earlier: 425 + 170 structures × 3 draws ≈ 2,900 queries (748068).</li>
+<li><strong>Aryan Awasthi (748524, 749251):</strong> S1 = 250 np-examples; S2 = 490 enveda-180 structures with no public spectra (class-2-like); answers only reachable via PubChem (~5k–10k candidates); accept a change only if S2 improves; retrain own FP models with the holdout excluded ("I can't audit the public FPNet banks the same way"). Notebooks: <code>casmi26-validation-that-behaves-like-the-test</code>, <code>casmi26-the-popularity-prior-trap</code>, <code>casmi26-gpu-fingerprint-fragmentation-ranker</code>.</li>
+<li><strong>DancingLumberjack / alex chilton (742055):</strong> 250/249 held-out NP structures, class-2 condition = every spectrum of the structure removed from every library (asserted 0.0000 library route), resampled to the test's spectra-per-molecule distribution, failure taxonomy per query (see 3.4). Two independent pipelines reproduced each other's numbers almost exactly (55,599; 6 truths &gt; rank 25; median Tanimoto 0.48/0.49).</li>
+<li><strong>YahiaZakaria20 (745952):</strong> three masks on the public fusion pipeline — class 1 (other libraries' spectra stay) 0.933, class 2 (all spectra purged) 0.630, class 3 (structure also removed from engine pool, PubChem "already-in-pool" set and gate window) 0.347; exact CPU replay of the fusion stage from stage dumps reproduces kernel validation to 4 decimals (50-setting grids without GPU).</li>
+<li><strong>Udam (743254):</strong> two proxies (public-library class-2 holdout + timsTOF NP panel) that disagreed in both directions; same-formula isomer panel (truth + best wrong isomers, capped at a few dozen by first-stage rank) as a sensitive dev metric; require a change to hold on panels from several datasets and on full lists.</li>
+<li><strong>Tra Crew (751356, 10-23):</strong> a "mock scorer" from a few hundred held-out training molecules, calibrated against past submissions, "predict[ed] exactly the last 15 or so submission scores". Jake (751356): simulate types 1/2/3 by masking reference catalog / catalog membership.</li>
+<li><strong>Md Kishor Morol (744011):</strong> test-like slice (pos/neg ≈ 80/20, <code>[M+H]+</code>/<code>[M−H]−</code> dominant), split by InChIKey14, never by spectrum.</li>
+</ul>
+<h3 id="33-class-share-estimates-all-spec-lb-probed-mutually-inconsistent">3.3 Class-share estimates (all [SPEC], LB-probed, mutually inconsistent)</h3>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>C1</th>
+<th>C2</th>
+<th>C3</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>prvsiyan via haideptry (741597, 09-16)</td>
+<td>~16%</td>
+<td>~45%</td>
+<td>~39%</td>
+<td>Library-only LB 0.151 ÷ 0.92–0.93 class-1 MRR ⇒ 16%; class-2 arithmetic is internally inconsistent (0.094 ≈ f2 × 0.996 × 0.521 ⇒ 18%, not 45%).</td>
+</tr>
+<tr>
+<td>haideptry (741745, 09-17)</td>
+<td>10–15%</td>
+<td>45–55%</td>
+<td>30–40%</td>
+<td>"estimates, not ground truth"</td>
+</tr>
+<tr>
+<td>Victor alexandre (742088, 09-19)</td>
+<td>27.5% library twin correct</td>
+<td>—</td>
+<td>—</td>
+<td>Probe A2 (library twin only at rank 1) scored 0.275 ⇒ ~27% of public molecules are class 1 with a correct twin; perfect-rerank ceiling of his top-25 ≈ 0.40 ⇒ ~60% of public molecules unreachable by his pool.</td>
+</tr>
+<tr>
+<td>Bull (748524, 10-12)</td>
+<td>~28%</td>
+<td>~20%</td>
+<td>~52%</td>
+<td>Fitted from several LB scores with per-class CV MRR; weighted estimate 0.334 vs LB 0.322. Aryan's cosine-only estimate ~16% C1 (adduct mix uncontrolled).</td>
+</tr>
+<tr>
+<td>Antriksh (748029, 10-14), Aryan (749251)</td>
+<td></td>
+<td></td>
+<td>"almost half" / "most"</td>
+<td>consistent with Bull</td>
+</tr>
+<tr>
+<td>DancingLumberjack (742088)</td>
+<td></td>
+<td></td>
+<td></td>
+<td>With 16/45/39, retrieval-only ceiling = 0.61 (perfect pool and ranking); with measured class-2 ranking ≈ 0.44.</td>
+</tr>
+<tr>
+<td>MarvinTMB (746302, 10-09; LB #1 at 0.484)</td>
+<td></td>
+<td></td>
+<td></td>
+<td>"analytical estimate is around 0.76, with a more realistic maximum probably around 0.55" (class breakdown + extrapolation from own accuracies).</td>
+</tr>
+<tr>
+<td>Host position: breakdown withheld; all three classes present in both public and private sets.</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="34-where-the-mrr-goes-failure-taxonomies-class-2-condition">3.4 Where the MRR goes (failure taxonomies, class-2 condition)</h3>
+<ul>
+<li><strong>DancingLumberjack (742055):</strong> of 250 held-out NPs not ranked first: truth absent from candidates 4 (1.6%, +0.016 headroom; 2 formula mismatches, 1 outside ±10 ppm, 1 not in COCONUT); truth at ranks 2–25: 100 (40%, +0.274); truth &gt; 25: 6 (2.4%, +0.024) → <strong>ranking beats recall 17:1</strong>. The truth's analog score is already ~90% of the best candidate's (median), only 2% of failures are analog-poor; the winner is usually NOT a close analogue (median Tanimoto 0.48, 20% &gt; 0.7); 36 truths at rank 2, 23 at rank 3. Decomposition: rank-1 0.580, rank-2-only 0.070, ranks 3–25-only 0.051; truth in top 25 for 96%; 73% of ceiling extracted (742088).</li>
+<li><strong>alex chilton (742055):</strong> 249 NPs: shipped MRR 0.7315 → same-formula blockers removed 0.9869 → oracle 1.000 ⇒ <strong>perfect same-formula separation = 95.1% of the gap; everything else incl. recall = 0.013</strong>. In rank-2 cases 40 of 42 blockers have the exact formula and 69% a different Murcko scaffold.</li>
+<li><strong>Victor alexandre (742088), LB probes on a 0.324 analog-propagation/HistGBR fork:</strong> library twin only → 0.275; ranker's #2 only → 0.055; ranks 3–25 promoted → 0.059; so the top-25 holds the answer for ≈40% of public molecules and the pipeline extracts 81% of that ceiling (leaders at 0.36x ≈ 90% or a bigger pool); reordering ranks 2–25 by Tanimoto-to-twin tied at 0.324 while tail sets differed in ~90% of rows → blend signals.</li>
+<li><strong>Antriksh (749412), masked probes on E006 (0.440):</strong> engine-2 top-1 only where it disagrees with the final #1 → 0.023 (~3 public molecules), E006's #1 on those rows → 0.102 (~13); engine 1 and the PubChem channel hold ~1 buried answer each.</li>
+<li>Caveat on CV: held-out structures are 99.6% COCONUT-covered by construction, so CV cannot measure database coverage; the public test's ~40% reachability vs ~61% retrievable-in-principle (if 16/45) means ~21 points are "not in the pool or never ranked into it" (DancingLumberjack, 742088) [SPEC].</li>
+</ul>
+<h3 id="35-lb-noise-split-shrinkage">3.5 LB noise, split, shrinkage</h3>
+<ul>
+<li>Public ≈ 31% of ~400 molecules (~125–132; Bull, Antriksh, WEI ZIHE12, yves mouaha). One molecule miss → rank 1 ≈ +0.008 public (≈ 0.0025 full). SE of a difference between two submissions ≈ 0.016 (Udam) ⇒ &lt; ~0.03 end-to-end is invisible; others: &lt; 0.006 unmeasurable from one submission (DancingLumberjack), ±0.006 ranker seed (prvsiyan, Victor), ±0.003 GPU nondeterminism (Aryan), band 0.318–0.327 across several near-identical submissions (DancingLumberjack).</li>
+<li>Offline → LB shrinkage: direction transfers, size does not (Aryan: +0.14 CV ⇒ +0.03–0.04 LB; S2 0.502 → 0.627 ⇒ +0.03). Panel gains shrink by dilution (~1/3 of molecules isomer-limited) and overlap (Udam). Full-count CV +0.006 ⇒ LB +0.008 when scales are matched (DancingLumberjack).</li>
+<li>PubChem-only molecules in the test appear to be few: fixed-rank PubChem insertion +0.01–0.02 locally, LB 0.295 → 0.288 (Bull); PubChem as full source +0.002, tail-only +0.001 (DancingLumberjack) [FACT drops, SPEC inference].</li>
+</ul>
+<hr />
+<h2 id="4-method-insights-and-what-moved-the-leaderboard">4. Method insights and what moved the leaderboard</h2>
+<h3 id="41-lb-reference-points-public">4.1 LB reference points (public)</h3>
+<ul>
+<li>Library-only spectral search: <strong>0.151–0.158</strong> (prvsiyan/haideptry 741597; starkhushi 742055); train-only pipelines plateau ~0.15.</li>
+<li>starkhushi's ladder (742055): +COCONUT candidates ranked by analog propagation 0.223 → newer COCONUT release 0.243 → gated library term 0.250 → in-silico fragmentation channel 0.283; public prvsiyan pipeline 0.335; six variants 0.323–0.337.</li>
+<li>haideptry: 0.149 → 0.193 → 0.205 → 0.239 → <strong>0.339</strong> (top-1 on 09-17, 741745). Late-Sept plateau 0.32–0.34 for the analog-propagation + HistGBR family (742055, 742088, 743254); top of LB 0.36 on 09-19.</li>
+<li>Public fusion lineage (Ahmed Berat Özer v2/v3/v4b, fpnet-full1 → E006/E007/v7c forks): 0.373 → 0.413 (10-05) → <strong>0.436</strong> (10-10) → 0.440–0.443 (10-14) → 0.446+ → "reproducible 0.455 base" (yves mouaha 750572, 10-18). What separates 0.446+ from 0.443 per the public code: lower PubChem promotion threshold (<code>rel &gt; 150</code>), metric-identity-exact engine-2 rank-2 insert, CC-BY ChEBI/LMSD candidate set (Aryan 749908) [SPEC].</li>
+<li><strong>MarvinTMB 0.484</strong> (#1 on 10-09): "You do not need NIST or any additional data for a better score." (744470); realistic max ≈ 0.55 (746302).</li>
+<li>Independent engines: Aryan's own spectrum→fingerprint MLP + fragmentation/analog ranker 0.272 alone (749251); YahiaZakaria20 fork 0.413; Udam/NeckBeard ~0.34; Bull ~0.32.</li>
+</ul>
+<h3 id="42-pipelines-described-in-detail">4.2 Pipelines described in detail</h3>
+<p><strong>haideptry — 0.339 top-1 (741745, 09-17)</strong> [design self-reported]: Ch.1 exact library match (precursor filter, spectral entropy, cosine, reference peak matching); Ch.2 mass-shifted analog propagation ("one of the biggest improvements"): reference spectra within mass-shift windows (±CH₂, ±OH, ±hexose, other common modifications), <code>AnalogScore(c) = Σ_a Sim(q,a)^4 · Tanimoto(f_c, f_a)</code>; Ch.3 MetFrag-lite chemical heuristics (bond-dissociation reasoning, neutral-loss matching, substructure consistency, in-silico fragmentation) as filter/prior; Ch.4 FPNet: 6-layer transformer → logits for 6,930 fingerprint bits, candidate score <code>f_c · z</code> (Bernoulli log-likelihood, constant dropped → one matmul for tens of thousands of candidates); 31 features → HistGradientBoosting ensemble (4 seeds × 2 calibrated priors) → confidence gating → top-25. Did NOT work: blind PubChem isomer expansion; wide mass windows (±8.5 ppm best).</p>
+<p><strong>Udam Liyanage — ~30 submissions (743254, 09-25)</strong> [FACT]: ~98% of DB-route misses are same-formula isomers; mass window irrelevant on timsTOF; ChEBI/LIPID MAPS/NPAtlas add no coverage beyond PubChem ∪ COCONUT; curated-DB flags hurt LB; generated candidates have not paid off on LB "even when only inserted for molecules predicted to be novel"; 1 molecule ≈ 0.0025, GBDT seed ±0.007; structure-dependent evidence (in-silico fragmentation) is where gains were; fragmentation gains reached LB only when ≥ ~0.03 end-to-end; PubChem net-positive only with an isomer-capable ranker.</p>
+<p><strong>NeckBeard — MetFrag-lite ablation (743254, 09-29)</strong> [FACT; 241 np-examples isomer panel, paired t]: helped — 2-bond cleavages ×0.6 (+0.030, t 2.6), linear intensity vs sqrt (+0.017, t 2.0), 0.005 Da tolerance (+0.005), H shifts −2..+3 (+0.010); all four +0.065 tuned → <strong>+0.023 ± 0.007 held-out</strong> (gnps +0.031, riken +0.020, mona+msdial +0.039, massbank +0.008), LB 0.341 → 0.336. Did not help — hand-written bond-propensity weights (−0.002), 3-bond cleavages (−0.031, t −2.1), penalising fragments reachable many ways (−0.015), chance-baseline subtraction (~0): "parsimony helps and hand-written cleavage chemistry does not". Added PubChemLite CC0 (+385,760 structures beyond COCONUT; pool 712k → 1,074k) — result never reported.</p>
+<p><strong>alex chilton — seven isomer features, all null (742055, 09-21)</strong> [FACT; marginal vs shipped ranker, OOF control exactly +0.0000]: MetFrag-lite fragment channel +0.00367 (leave-one-out: whole channel +0.0025, "free to delete"); connectivity scoring +0.0000 (0/10 splits positive); formula/sub-formula gate +0.0000 (weight 0.0 in all 10 splits); collision-energy depth 80.3% isomer separation → 4 molecules of 249 move; S-CNLF base neutral loss (truth reaches its own base loss 45.4% vs decoys 18.6% but fails its own test 54.6%); ICEBERG as learned feature +0.0015 (&gt;100-candidate stratum); ring-cut infeasibility −0.00178. <strong>DreaMS</strong>: AUC 0.88 for same-molecule vs same-formula spectrum pairs in general, but on the actual blocked pairs the truth is closer in only 20 of 42 (51.9% different-scaffold, 40.0% near-twins) — "below chance"; caps any structure-encoder-vs-frozen-DreaMS approach. Some "traction with MIST" (FRIGID checkpoint component). Pool: NPAtlas +1,113 structures (0.16%), 45 in the 279–374 Da band, zero holdout truths; LOTUS 97.5% already contained.</p>
+<p><strong>starkhushi — fragmentation as a forced choice (742055, 09-22)</strong> [FACT]: among top-3-but-not-first cases (n 72), pick-one-of-three accuracy: explain−chance 0.292, ±1 H strict 0.250, ±2 H/0.01 Da 0.222, fewer fragment masses 0.181 — none above chance (0.333). Fine-tuning public FPNet on timsTOF: np-examples hard-negative top-1 0.459 → 0.491 (merged) / 0.433 → 0.464, LB 0.337 → 0.328. Derivative candidates (±O, ±CH₂, ±hexose, +acetyl, ±2H on strong analogs) fired on the hidden test and did nothing (0.337 → 0.335). Two-ranker engine (prvsiyan 0.65 + megayak 7-library ranker 0.35) 0.323.</p>
+<p><strong>Aryan Awasthi (748524, 749251, 748029, 749908; ~0.438–0.443)</strong> [FACT]: LambdaRank with in-silico fragmentation (explained intensity of 1–2 bond cuts, ±2 H, 10 ppm, <strong>expressed as the gap to the best candidate of the same molecule — single most important feature</strong>) S2 0.502 → 0.627, + analog features → 0.660; LB +0.03–0.04. Popularity prior +0.075 LB. "ranking with a different model than the ranker was trained on cost me ~0.02 LB". The only change that moved the 0.437 public pipeline: new candidates from an independent engine (own fingerprint MLP + ranker over PubChem/COCONUT) merged by RRF over metric identities with the source top-1 protected, 0.437 → 0.438 → later 0.443 with the engine-2 rank-2 insert. Pin the Docker image.</p>
+<p><strong>Antriksh Arya (749412, 10-14)</strong> [FACT]: insert engine 2's top-1 at rank 2 wherever it disagrees with the fused #1 (dedup by metric key): E006 0.440 → 0.442, v7c 0.441 → 0.443 (same +0.002 on two bases); swapping engine 2 into rank 1 → 0.403; inserting engine 1's top-1 at rank 3 neutral. Method: masked LB probes (one real guess per molecule + never-matching placeholder <code>CCO</code> elsewhere) to count which channel holds buried answers.</p>
+<p><strong>Kino Lutor (749251, 750241; E007 lineage stuck at 0.440)</strong> [FACT null results]: metric-aware dedup, fusion shortlist 40 → 80 (upstream lists already truncated), LambdaRank for engine 2 (only 12% of its blend), GLACIER→ICEBERG fallback, candidate completion, candidate-conditioned fragment explanations (non-ring single bonds, 2-bond arm, tolerance max(0.002 Da, 10 ppm), rarity weighting, mismatched same-adduct spectra as negative control) — no LB movement; a 300 s budget left 161/400 molecules on upstream predictions; full run 2 h 38 m. Md Mobashir Rahman: "The public notebooks dont deal with class-3 molecules ... nobody have yet made any progress in it."</p>
+<p><strong>YahiaZakaria20 (745952, 10-05; 0.413)</strong> [FACT]: on np-examples the v4 engine ranks the truth first 236/250 but the fused list keeps only 100; a second FPNet with the public recipe (0.548 vs 0.579 window MRR) adds ~0.002 in ensemble — "More of the same model is not where the next points are." FPNet recipe: BCE + hard negatives from the 10 ppm window, merge augmentation, bit-prior initialisation.</p>
+<p><strong>Truthseeking (744417, 09-29)</strong> [FACT]: library matching scores zero once whole structures are held out; PubChem contains the answer for ~96% of held-out spectra but leaves ~10,000 candidates each; single-bond fragmentation gives 16.7% top-25 vs 8.9% for a mismatched-spectrum control; 377-page experiment compendium published as a dataset.</p>
+<p><strong>Bull (748524, 748068, 751300; ~0.32)</strong>: COCONUT + training structures (no PubChem); ICEBERG +0.02 class 2 but ≈0 off-MSG; PubChem fixed-rank −0.007; class-3 work flat on LB.</p>
+<p><strong>Adarsh (743974, 745468)</strong>: CV 0.846 (class-1-like) / 0.584 (class-2-like), few truths outside top-25 → "the bottleneck is the ranker"; &gt;95% correct formula, wrong isomer; Claude Opus ranked the correct dihydroxy-anthraquinone last.</p>
+<h3 id="43-other-method-threads">4.3 Other method threads</h3>
+<ul>
+<li><strong>hengck23</strong>: train a forward SMILES→MS/MS predictor too (744343; GrAFF-MS is NIST-trained → banned; dMSdMol cycle-GAN prior art; Barno: past winners generated 1 TB+ synthetic data); DreaMS KNN retrieval demo and coverage probes vs MassSpecGym / enveda-180 / non-enveda-180 references (744893; results were images); Claude CoT → peaks → fragment formulas → assembly, "hard SIRIUS to neural SIRIUS", synthetic fragmentation data (745070); Enveda's MS2Mol / EnvedaDark (226 NPs absent from DBs) / MS2Prop / PRISM as hints of the target distribution; COCONUT, LOTUS, NPAtlas (745029). [SPEC]</li>
+<li><strong>RISHAV KUMAR (741984)</strong>: why no encoder-decoder (spectrum→SMILES)? Replies: generated SMILES may be invalid, rankers always output valid ones; but rankers cannot reach novel structures (kiro). Riya Dahal (742171): random forest worked better than other algorithms for them.</li>
+<li><strong>Mahou Lettuce (741659)</strong>: MRR incentive gap — rank 1 → 2 costs 0.5, a class-3 hit at rank 5 gains 0.2; octaviograu notebook ≈ 0.94 MRR / 0.99 R@25 class-1-like, 0.55 / 0.92 class-2-like, class-3 exactly 0; prvsiyan: PubChem isomers cut class-2 MRR 0.52 → 0.35 → "safe candidate augmentation" (confidence gating, calibrated fusion); asked hosts for class-stratified metric (no reply). [SPEC/analysis]</li>
+<li><strong>Candidate-source coverage (consolidated):</strong> COCONUT 2.0 covers ~99.6% of np-examples (prvsiyan); eight public collections (LOTUS v11, NPAtlas, COCONUT, PubChemLite, ChEBI, LIPID MAPS, HMDB, MassSpecGym) are 95.2–100% inside PubChem; union of COCONUT+PubChemLite+ChEBI+LIPID MAPS adds 2 of 2,000 held-out truths over PubChem; truth in the PubChem formula bucket 89.85% of the time on a train-derived set; LOTUS adds 0.0435% (+940 candidates), NPAtlas 0.0007% (+65) (Marco Pereira 748552); NPAtlas +1,113 structures, 0 truths (alex chilton); ChEBI/LIPID MAPS/NPAtlas add nothing beyond PubChem ∪ COCONUT (Udam); PubChemLite +385,760 beyond COCONUT (NeckBeard, effect unreported); Zenodo Enveda-180 +816 structures (drug-like). Shared assets: COCONUT 2.0 436k with Morgan/MACCS (Aryan 748540), COCONUT 2026-09 dump (Priyanshu 741607), 139K harmonised MassBank spectra incl. 648 CASMI 2012/2016 spectra (Samar Talwar 741874).</li>
+<li><strong>In-silico libraries now explicitly allowed:</strong> ICEBERG PubChem atlas (91.4M predicted spectra; ship only the used subset + generation code), CFM-ID 4 / ISDB predicted spectra, MSG-trained ICEBERG/GLACIER re-scoring — nobody has reported an LB gain from them yet; ICEBERG as a learned feature +0.0015 (alex chilton), ICEBERG rerank contested in public notebooks.</li>
+<li><strong>Negative results (consolidated):</strong> blind PubChem isomer expansion (haideptry; 0.335 → 0.205 quoted by NeckBeard; Bull −0.007; DancingLumberjack +0.001/+0.002 noise); wide mass windows; curated-DB membership flags (Udam); hand-written cleavage propensities, 3-bond cleavages, multiplicity penalties (NeckBeard); seven standalone isomer features incl. DreaMS similarity (alex chilton); fragmentation as forced choice (starkhushi); timsTOF/enveda-180 fine-tuning of FPNet (starkhushi −0.009); more FPNet seeds/banks (+0.002 or worse; starkhushi, YahiaZakaria20); locking confident engine picks (−0.004; YahiaZakaria20); derivative-candidate generation (starkhushi, Udam); RRF of a second engine (+0.001; Aryan); swapping engine-2 top-1 into rank 1 (−0.037; Antriksh); isotope carbon-count feature (+0.011; NeckBeard); popularity prior over-trusted (Aryan); LLM isomer ranking (Adarsh); more aggressive library matching (0.152 → 0.145; haideptry); "small improvements" on strong public pipelines generally slightly negative (Aryan 749908).</li>
+</ul>
+<hr />
+<h2 id="5-class-3-novel-structures">5. Class 3 (novel structures)</h2>
+<ul>
+<li><strong>Host framing:</strong> class 3 is absent from both PubChem and COCONUT; "our hope is that there are enough novel structures to make it worth working on them" (Killian 745758); all three classes in both LB splits.</li>
+<li><strong>Status reports (all null on LB):</strong> Bull (751300, 10-21): two weeks, local gains, LB flat; Mansur Nurmukhambetov: same, no longer trusts train-carved validation ("optimistic vs true novelty"), chasing recall; Tra Crew: one class-3 lever with "consistent tiny leaderboard gains" (+0.003–0.004), another possibly worth +0.007–0.010, GPU-limited; Md Mobashir Rahman (749251): nobody has made progress; Aryan (749251): "most of the hidden test seems to be novel molecules, so re-ranking alone barely moves it"; Udam (743254): generated candidates not paid off even when gated to predicted-novel molecules.</li>
+<li><strong>Kino Lutor (750241, 10-17)</strong> [FACT local, generation potential only]: on 130 molecules absent from the candidate DBs, the correct structure is first only 7 times, yet Engine 1's analog-edit generator could produce the correct structure for 100 of 130 when given suitable starting analogs; the default pipeline seeds from only the 6 closest known molecules — testing 12/20/30 parents, diverse vs nearest parents. Open: distinguishing generation failures from filtering/ranking losses.</li>
+<li><strong>Why it is hard under MRR (741659):</strong> one generated false positive displacing a confident rank-1 hit costs 0.5, more than several class-3 hits at rank 5 gain → generated candidates must enter only when retrieval has demonstrably failed (confidence gating, calibrated fusion); public pipelines protect the source top-1 for this reason (Aryan, Antriksh).</li>
+<li><strong>Ideas on the table:</strong> analog editing (±CH₂/±OH/±sugar/acetyl/2H on nearest library hits, formula-filtered) — tried by starkhushi (no LB effect) and planned by Aryan; substructure assembly / graph generation / contrastive spectrum–fingerprint learning (haideptry); fragment-formula annotation → assembly with synthetic fragmentation data (hengck23, 耶✌, symmys); encoder–decoder spectrum→SMILES with validity filtering (741984).</li>
+<li><strong>Allowed generators and known issues:</strong> FRIGID official checkpoints (NGBoost token-length predictor and feature file reportedly missing from the public release — Zorojuro 750401, unanswered), DiffMS (MIT; maintainers acknowledged a MIST-encoder reproducibility issue, GitHub #27 — 750444, unanswered), DualLGD (CC BY 4.0), MIST MIT checkpoints (Zenodo 23303289, 10-20), DreaMS backbone; formula-exact generation remains an open practical problem (750401). MS2Mol has no public weights.</li>
+<li><strong>Realistic expectation:</strong> class 3 ≈ 30–50% of molecules; each full-test hit at rank 1 ≈ +0.0025 (+0.008 public); the best demonstrated class-3 LB effect so far is +0.004. Retrieval-only ceiling ≈ 0.61 with 16/45/39 shares, ≈ 0.44 with realistic class-2 ranking (DancingLumberjack); MarvinTMB's realistic overall max ≈ 0.55.</li>
+</ul>
+<hr />
+<h2 id="6-isomer-discrimination">6. Isomer discrimination</h2>
+<ul>
+<li><strong>The problem is same-formula ranking, not formula or coverage:</strong> 98% of DB-route misses share the formula (Udam); 95.1% of the class-2 gap is same-formula separation (alex chilton); &gt;95% correct formula (Adarsh); ~66 of ~83 window candidates share the truth's formula in train+COCONUT, ~10,000 candidates in PubChem windows (alex chilton, Truthseeking); 40 of 42 rank-2 blockers have the exact formula and 69% a different Murcko scaffold; median Tanimoto(truth, winner) 0.48–0.49 (DancingLumberjack, alex chilton).</li>
+<li><strong>What has measured positive effect:</strong> in-silico fragmentation with explained intensity as a within-molecule relative feature in a learned ranker (Aryan S2 +0.125, LB +0.03; Udam; Truthseeking 16.7% vs 8.9% control); parsimony-weighted MetFrag-lite (fewest cleavages, 1-bond ≫ 2-bond, linear intensity, 0.005 Da, H −2..+3: NeckBeard +0.023 held-out); analog/Tanimoto propagation (haideptry; Aryan +0.033 S2); FPNet logit scoring (haideptry); GBDT/LambdaRank over ~30 features; diversity from an independent engine (Aryan +0.001–0.002; Antriksh +0.002).</li>
+<li><strong>What has measured null/negative effect:</strong> the same MetFrag-lite channel when measured marginally against an already strong ranker (+0.0025, alex chilton; forced-choice at chance, starkhushi) — i.e. fragmentation's value depends on how much the ranker already captures; connectivity scoring, formula/sub-formula gates, collision-energy depth, base-neutral-loss features, ring-cut infeasibility, ICEBERG feature, DreaMS similarity on blocked pairs (alex chilton); hand-written cleavage chemistry, 3-bond cuts (NeckBeard); popularity prior on non-library molecules (Aryan); LLM reasoning (Adarsh); CCS is unavailable (host).</li>
+<li><strong>Dev metric:</strong> same-formula isomer panel with paired t-tests across several libraries, never tuned on the evaluation panel; report marginal gain against the full ranker with an OOF control that reads +0.0000 (Udam, NeckBeard, alex chilton). "A real separation on a selected cohort, then nothing once it competes with the ranker's own probability."</li>
+<li><strong>Unvalidated ideas:</strong> fragment-formula annotation and plausibility given parent formula / CE / fragment population priors (Adarsh, hengck23, symmys); forward models (CFM-ID 4, ICEBERG-MSG, ICEBERG atlas) for candidate-spectrum comparison — allowed, value unproven on LB; contrastive spectrum–fingerprint learning (haideptry).</li>
+</ul>
+<hr />
+<h2 id="7-open-questions-and-disagreements">7. Open questions and disagreements</h2>
+<p><strong>Disagreements among participants</strong>
+- Class shares: 16/45/39 vs 28/20/52 vs 10–15/45–55/30–40; probe-based ~27% class 1 with a correct library twin (Victor). Host withholds the answer.
+- Ranking vs recall vs generation: CV taxonomies say ranking 17:1 (DancingLumberjack, alex chilton) — but their holdouts are 99.6% COCONUT-covered; LB probes say ~60% of public molecules are not in the top-25 at all (Victor) and the only LB movers on the 0.437+ lineage were new candidates (Aryan). Both camps agree isomer ranking is where class-2 points are and that nobody knows the class-3 share.
+- Does in-silico fragmentation help? Yes as a learned relative feature (Aryan, Udam, Truthseeking, NeckBeard +0.023) vs no marginal value against a strong ranker (alex chilton +0.0025, starkhushi at chance, NeckBeard LB flat).
+- PubChem in the pool: harmful when blind (haideptry; 0.335 → 0.205; prvsiyan class-2 0.52 → 0.35), noise-level when added (DancingLumberjack +0.001/+0.002), slightly harmful at fixed ranks (Bull −0.007), net-positive with an isomer-capable ranker (Udam), and promoted at rank 1 by the public notebooks (<code>rel &gt; 250</code> → <code>rel &gt; 150</code>, unvalidated). PubChemLite test (NeckBeard) unreported.
+- ICEBERG re-ranking: +0.013 vs −0.015 in public notebooks; +0.02 class 2 but 0 off-MSG (Bull); +0.0015 as a feature (alex chilton).
+- Visible molecule_id hard-coding: participants measured gains vs host "no overlap ... noise". [CONTRA]
+- enveda-np-examples as CV: contaminated/misleading (haideptry, Adarsh, YahiaZakaria20, Mark 751356) vs usable as one of several panels after InChIKey14-wide holdout (Bull, Udam, DancingLumberjack, alex chilton).
+- Reaching ~0.48 without extra data (MarvinTMB) vs suspicion of NIST use at the top (greySnow, 744470). [SPEC]</p>
+<p><strong>Unanswered or open questions to the hosts</strong>
+- Scope of compliance check: "selected submissions ... will clarify if otherwise" (Healey 748065) vs "we reserve the right to check any and all submissions" (Killian 748882); whether non-reproducible finals cost medals as well as prizes (Jusamonix 10-23, 748882; implicitly yes per 10-14 answer).
+- Whether an empty second final-submission slot is auto-filled by Kaggle (Marco Pereira 10-19, 748882).
+- ICEBERG atlas: shipping precomputed predictions from NIST-trained weights that a reviewer cannot retrain, or a membership list only (VUMANIAcom 10-17, 745134).
+- MassSpecGym's NIST-assisted filtering lineage (Chen Ken 10-16, 744470); the 10-20 MIT MIST checkpoints incl. the GLACIER-distilled "aug" variant (Oxazolidinone 751373).
+- fpnet-full1 / prvsiyan ranker features without training code (Truthseeking 10-21, 745072) — answered in principle by 750612 (not eligible unless retrained).
+- Are LB scores rounded or truncated to 3 decimals (WEI ZIHE12, 748882); public/private balancing and whether the hidden test has ~1,500 or ~2,500 spectra (htn, 745103).
+- Train provenance crosswalk (row → library accession/acquisition), duplicate-label rows, pinned scorer scriptVersionId (744446, 751474); DB snapshot/version dates used to define classes (750684).
+- FRIGID missing NGBoost token-length predictor; DiffMS corrected checkpoint; formula-exact generation (750401, 750444).
+- Rule 2.5.a.3 reading for inference-loaded NC weights (749397; moot after 10-17).
+- Request for class-stratified / macro-averaged metric (Mahou Lettuce 741659) — no response.</p>
+<p><strong>Noise-level threads</strong> (one line): team-up and beginner threads 740671, 742186, 743064, 744612, 745056, 745645, 745952 (also contains real numbers, used above), 746155, 749778, 750572, 750703, 751689, 751908; roadmap 741666; explorer 741548; "agents get distracted by public notebooks" 746478; GPU quota 742082; submission-time questions 742789; Java/Vulkan 741791; nonsense comments in 741876 and 742991.</p>
+<hr />
+<h2 id="8-ten-most-actionable-non-obvious-insights-for-a-gold-zone-048-public-score">8. Ten most actionable, non-obvious insights for a gold-zone (~0.48 public) score</h2>
+<ol>
+<li><strong>Match the scorer exactly and apply the electron fix to train.</strong> Metric key = stereo-stripped, tautomer-canonical InChIKey14 (RDKit 2026.03.3); the shipped <code>inchikey14</code> differs for 4.4% of NP structures and ~8% of truths have tautomer twins. The hidden test's positive-mode m/z were corrected by one electron mass; train enveda-180 and the Zenodo release were not — subtract 0.000548 Da there before any sub-0.01 Da matching (742042, 743254, 744556, 748882).</li>
+<li><strong>Treat the public LB as a ~125-molecule, ±0.016-SE instrument and never submit anything unparseable.</strong> One molecule ≈ 0.008; GPU/seed noise ±0.006; filler SMILES zeroed whole submissions twice; never hard-code 400 molecules (a failing assert silently rescores your previous file); pin the Docker image (unpinned copy lost 0.014) (748524, 743254, 742088, 749412, 749908).</li>
+<li><strong>Use masked LB probes to measure channels instead of guessing.</strong> One real guess per molecule + a never-matching placeholder (<code>CCO</code>) elsewhere tells you how many public molecules each engine/channel gets right (library twin 27.5%, ranker #2 5.5%, ranks 3–25 5.9%, engine-2 disagreements 3 vs 13); this is how the +0.002 "engine-2 top-1 at rank 2" fix was found and how the 0.40 reachability ceiling was measured (742088, 749412).</li>
+<li><strong>Validate on structures held out InChIKey14-wide from every library, resampled to 3 spectra/molecule, with a no-public-spectra split.</strong> Require zero library self-matches; library-based holdouts overrate popularity priors 7× and confident-pick locking (+0.26 local, −0.004 LB); count-mismatched CV mis-sizes effects 3–4×; average ≥ 5 draws and several seeds; accept a change only if the class-2-like (enveda-180-without-spectra) split improves (742055, 748524, 748068, 745952).</li>
+<li><strong>Class-2 points are same-formula ranking, so build structure-aware evidence as relative features inside a learned ranker</strong> — explained intensity of 1–2-bond cuts expressed as the gap to the best candidate of the same molecule (S2 0.502 → 0.627, LB +0.03), parsimony-weighted MetFrag-lite (1-bond ≫ 2-bond, no 3-bond, linear intensity, 0.005 Da, H −2..+3), analog propagation <code>Σ Sim^4 · Tanimoto</code> — and measure each marginally against the full ranker with an OOF control; standalone AUCs on selected cohorts have repeatedly translated to nothing (748524, 743254, 742055, 741745).</li>
+<li><strong>Diversity of candidates beats more of the same model.</strong> Extra FPNet seeds/banks add ≤ 0.002; fine-tuning on timsTOF (= enveda-180 chemistry) hurt; the only things that moved the 0.437–0.443 lineage were new candidates from an independent engine fused by RRF with the source top-1 protected, and inserting a second engine's top-1 at rank 2 (+0.002 on two bases). Never let a weaker engine take rank 1 (−0.037) (749251, 749412, 745952, 742055).</li>
+<li><strong>Candidate pool: COCONUT + training structures first; PubChem (or PubChemLite/ICEBERG atlas) only behind an isomer-capable ranker and gated promotion.</strong> Every public NP collection is 95–100% inside PubChem and adds ~0 truths beyond COCONUT; blind PubChem expansion cost 0.335 → 0.205 and prvsiyan's class-2 0.52 → 0.35; ±5–8.5 ppm suffices on timsTOF; Enveda's adduct labels are clean so skip adduct re-hypothesis on the test, but down-weight the ~12k formate mislabels when training (748552, 742055, 741745, 743254, 742087).</li>
+<li><strong>Do not inherit the public lineage blindly, and make every weight you keep reproducible.</strong> Its 0.373 → 0.455 gains were LB-picked without CV (two-engine fusion, popularity prior, <code>rel &gt; 250/150</code> PubChem promotion, ICEBERG on/off, tail backfill) and fpnet_full1 is trained on all of train; hosts now require the training code actually used for every weight, including competitor-shared ones and fine-tunes, plus the code that generates intermediates — otherwise retrain with your own published code (748068, 750612, 749217, 751373).</li>
+<li><strong>Exploit the allowed toolbox the forum has barely used:</strong> ICEBERG PubChem atlas (91M predicted spectra, usable as an in-silico library with generation code), CFM-ID 4/ISDB, MSG-trained ICEBERG/GLACIER/MIST, DreaMS SSL backbone (as a retrieval probe — though it is below chance on same-formula blocked pairs), MS2DeepScore 2.0, FIORA-OS, TabPFN, PubChem CID-PMID/Patent/SID counts, newer GNPS/MassBank/MoNA dumps and GNPS-NIST14-MATCHES, LOTUS/NPAtlas/HMDB; SIRIUS/CSI:FingerID and anything NIST-trained are out (745134, 743774, 751373, 748882, 745832).</li>
+<li><strong>Class 3 is 30–50% of the test and the only headroom, but protect retrieval while attacking it.</strong> Nothing has moved it on the LB beyond +0.004; deletion simulations overstate reach 3×; analog-edit generators can produce the truth for ~100/130 absent molecules locally yet rank it first 7 times — so the work is parent selection, formula-exact generation (FRIGID/DiffMS/DualLGD allowed), and gated insertion below confident DB hits, validated on molecules truly absent from all databases and on an isomer-aware ranker that can score generated decoys (750241, 741659, 743254, 751300, 748029).</li>
+</ol></article><p class='small muted'>原文: <code>research_notes/CASMI 2026 類似コンペ調査/discussion_digest.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

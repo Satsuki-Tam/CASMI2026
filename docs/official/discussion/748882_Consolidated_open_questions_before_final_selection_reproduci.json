@@ -1,0 +1,95 @@
+{
+  "topic": {
+    "id": 748882,
+    "title": "Consolidated open questions before final selection: reproducibility of official checkpoints, TabPFN / FRIGID, PubChem counts, scorer behaviour (yes/no is enough)",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/748882",
+    "postDate": "2026-10-13T13:02:08.662Z",
+    "authorName": "WEI ZIHE12",
+    "authorUrl": "https://www.kaggle.com/weizihe12",
+    "votes": 1,
+    "commentCount": 12,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hello hosts,</p>\n<p>Thank you for the detailed answers so far (748065, 745841, 742991). Below is a consolidated list of points that are still open across several threads, ordered by how much they affect solution design. A short yes/no on each is enough.</p>\n<p><strong>A. Reproducibility and compliance</strong></p>\n<ol>\n<li><p>Officially released checkpoints. You confirmed that the MassSpecGym-trained GLACIER/ICEBERG checkpoints (coleygroup/ms-pred) and DreaMS are fine. For these, is it sufficient for a winning team to deliver the exact released checkpoint, a pointer to the authors' public training code and data, and our own complete fine-tuning and inference code? Or must the team also re-run the pretraining itself? For DreaMS, does the approval refer to the self-supervised backbone (ssl_model.ckpt)?</p></li>\n<li><p>Retraining a shared architecture. Following 748065 (1): if a team retrains a participant-shared model architecture itself on allowed data, with code it delivers, and its two selected submissions use only those retrained weights, is that sufficient? And can you confirm that the compliance review covers only the two selected submissions?</p></li>\n</ol>\n<p><strong>B. Specific models and data</strong></p>\n<ol>\n<li><p>TabPFN. Is TabPFN v2 (Prior Labs License: Apache 2.0 with an attribution requirement; pretrained on synthetic tabular tasks only) eligible as a ranking component? Separately, are TabPFN 2.5 and later eligible, given that their weights carry a non-commercial license?</p></li>\n<li><p>FRIGID (746430, still open). Can the official FRIGID checkpoints on Zenodo (record 19685145, CC BY-NC 4.0; diffusion decoder plus MIST encoders) be used as released, or must they be retrained with the Apache-2.0 code on allowed data?</p></li>\n<li><p>PubChem-derived counts and natural-product databases. Does the PubChem approval (741857) also cover public CID-PMID, CID-Patent and CID-SID counts used as ranking priors, not only structure subsets? Are LOTUS and NPAtlas fine as structure sources under their own open licenses, without separate approval by name?</p></li>\n</ol>\n<p><strong>C. Data and scoring</strong></p>\n<ol>\n<li><p>Scorer behaviour (748029, still open). Under first-match MRR, appending valid, distinct guesses after an unchanged rank-1 guess should never lower a row's score. Is that guaranteed in the live scorer, or are there row-level timeouts, limits or validation steps that could make a longer list score lower?</p></li>\n<li><p>Electron-mass correction (746954). Was the correction applied to the hidden test also applied to train.parquet and to the public Enveda-180 Zenodo release, or only to the rerun test? Which ion modes and fields were affected, so that teams do not apply it twice?</p></li>\n<li><p>Public/private split. Without disclosing class proportions: is the 31% / 69% public/private split stratified in any way, for example by novelty class?</p></li>\n</ol>\n<p>Thank you!</p>"
+  },
+  "comments": [
+    {
+      "id": 3538425,
+      "authorName": "Jusamonix",
+      "postDate": "2026-10-14T07:00:10.583Z",
+      "content": "<p>Hi Marie or David,</p>\n<p>Thank you for the clarifications in 748065, 748882 and 745615. Four short follow-ups for teams that are NOT claiming a prize (leaderboard and medals only). A yes/no per item is enough.</p>\n<ol>\n<li><p>Reproducibility and medals. 748065 (1) and 748882 (A-2) say a winning solution must be reproducible, so third-party weights need the original training code and permitted training data. For a team that does not claim a prize, will its final leaderboard position or medal be affected if a selected submission uses third-party weights whose training code is not public?</p></li>\n<li><p>Scope of the final check. Does the compliance check cover only the two selected submissions (as you indicated in 748065 (3)), or all submissions? If only the selected ones, can non-selected submissions affect a team's standing?</p></li>\n<li><p>Fine-tuned DreaMS. Is a model fine-tuned on train.parquet from the self-supervised DreaMS backbone (ssl_model.ckpt, pretrained on GeMS/MassIVE only) covered by the approval in 748882 (A-1), even if the participant who shared it has not published the fine-tuning code?</p></li>\n<li><p>Code inside Datasets. Does Foundational Rule 6.b (public code sharing) also apply to code files inside a public Kaggle Dataset whose licence field says \"Other\"?</p></li>\n</ol>\n<p>Thank you!</p>",
+      "replies": [
+        {
+          "id": 3538755,
+          "authorName": "Marie Killian",
+          "postDate": "2026-10-14T18:59:49.600Z",
+          "content": "<p>Hi <a href=\"/jusaburohtohyama\" target=\"_blank\">@jusaburohtohyama</a> ! Thank you for asking for clarification.</p>\n<ol>\n<li>Third party weights that cannot be reproduced with the original training code and permitted training data are not allowed. All solutions must be reproducible to ensure fairness. We reserve the right to check all submissions and potentially remove from the competition those that do not abide by this rule.</li>\n<li>We reserve the right to check any and all submissions. </li>\n<li>No, a team cannot use the fine-tuned weights unless they can provide the original training code and access to the permitted data needed to reproduce them. </li>\n<li>Use of public competition datasets and code shared by other competitors (including code files inside public Kaggle Datasets) is allowed, provided they come from permissible sources and comply with applicable licensing requirements. For pretrained model weights, the original training code and access to the permitted training data needed to reproduce them must also be available.</li>\n</ol>",
+          "replies": [
+            {
+              "id": 3540182,
+              "authorName": "Jusamonix",
+              "postDate": "2026-10-17T09:02:31.523Z",
+              "content": "<p>Hi <a href=\"/mariekillian\" target=\"_blank\">@mariekillian</a>,</p>\n<p>Thank you for the clear answers. Three short follow-ups on how this will be applied at the end of the competition:</p>\n<ol>\n<li><p>If both of a team's two selected final submissions are reproducible, can the team's earlier, non-selected submissions that used non-reproducible weights still lead to the team being removed?</p></li>\n<li><p>If one selected submission is reproducible and the other is not, would only the non-compliant submission be disregarded, or would the whole team be removed?</p></li>\n<li><p>If the author of shared weights later publishes the original training code (trained only on permitted data), would those weights then be allowed?</p></li>\n</ol>\n<p>Thank you!</p>"
+            },
+            {
+              "id": 3542226,
+              "authorName": "Marie Killian",
+              "postDate": "2026-10-21T16:00:57.930Z",
+              "content": "<p>Hi <a href=\"/jusaburohtohyama\" target=\"_blank\">@jusaburohtohyama</a>! Hope these answers help:\n1, 2. At this point in the competition, prior submissions that are not fully reproducible will not be eligible to win but will not disqualify your future submissions, provided those submissions are fully reproducible and eligible. However we reserve the right to check any and all submissions. If there is evidence that a team is knowingly using ineligible data and/or weights on unselected submissions, this may impact their eligibility.</p>\n<ol>\n<li>If the original training code and permissible training data is available for full reproducibility by the end of the competition, yes, those weights would be allowed.</li>\n</ol>"
+            },
+            {
+              "id": 3543311,
+              "authorName": "Jusamonix",
+              "postDate": "2026-10-23T07:06:55.280Z",
+              "content": "<p>Hi <a href=\"/mariekillian\" target=\"_blank\">@mariekillian</a>,</p>\n<p>Thank you for the clarification. </p>\n<p>One follow-up: if a team's two final selected submissions are not fully reproducible, does this affect only prize eligibility, or also the team's final leaderboard ranking and medals?</p>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3538202,
+      "authorName": "Marie Killian",
+      "postDate": "2026-10-13T20:48:38.123Z",
+      "content": "<p>Thank you for asking for clarification! Here are answers to your questions:</p>\n<p>A. Reproducibility and compliance</p>\n<ol>\n<li>For the approved MassSpecGym, GLACIER/ICEBERG, and DreaMS checkpoints, it is sufficient to deliver the released checkpoint, a reference to the authors’ original training code and permitted training data, and your own complete fine-tuning and inference code because this provides the full resources to reproduce the weights if necessary. You do not need to re-run the pretraining. \nFor DreaMS, the approval includes the self-supervised backbone provided the weights are not derived from NIST or other prohibited data.</li>\n<li>Yes, retraining a participant-shared model architecture on permitted data and providing the training code is sufficient. Alternatively, existing third-party weights may be used if the original training code and permitted training data needed to reproduce them are provided.\nPlease note that we reserve the right to check any and all submissions.</li>\n</ol>\n<p>B. Specific models and data</p>\n<ol>\n<li>Yes, weights from TabPFN v2 and TabPFN 2.5 and later are eligible under their non-commercial licenses provided you include a reference to the authors’ original training code and permitted training data.</li>\n<li>Yes, the official FRIGID checkpoints are allowed with a reference to the authors’ public training code and data.</li>\n<li>Yes, the PubChem approval extends to publicly available CID-PMID, CID-Patent, and CID-SID counts used as ranking features, subject to any applicable source  licensing requirements. LOTUS and NPAtlas are also acceptable as structure sources under their respective open licenses.</li>\n</ol>\n<p>C. Data and scoring</p>\n<ol>\n<li>The live scorer uses first-match MRR and is identical to the published scorer (casmi-mean-reciprocal-rank v13). Adding valid, distinct guesses after an unchanged rank-1 guess will not lower that row’s MRR score, provided the submission passes validation and is scored successfully.</li>\n<li>The electron-mass correction was applied only to the hidden test set (not the Enveda-180 data in train.parquet or the Enveda-180 Zenodo release). To apply the same correction to those datasets, subtract 0.000548 Da from positive-mode m/z values. </li>\n<li>We are not revealing details of the public/private split, but participants should expect members of all three classes in both sets.</li>\n</ol>",
+      "replies": [
+        {
+          "id": 3538427,
+          "authorName": "WEI ZIHE12",
+          "postDate": "2026-10-14T07:02:24.673Z",
+          "content": "<p>Many thanks!!!</p>"
+        },
+        {
+          "id": 3538446,
+          "authorName": "WEI ZIHE12",
+          "postDate": "2026-10-14T08:03:06.837Z",
+          "content": "<p>Follow-up on the PubChem counts approval in this thread. Thank you for confirming that CID-PMID, CID-Patent and CID-SID counts are allowed as ranking features. To make sure we stay within \"applicable source licensing requirements\": the CID-PMID and CID-Patent files aggregate links from several upstream sources (PubChem depositors, MeSH, publishers, Google Patents under CC BY 4.0, and other depositors whose terms are not stated individually). We plan to use only per-compound counts (the number of linked PMIDs or patents per CID), computed once from the public PubChem FTP files, and to include only a table of these counts in a private Kaggle dataset read by our notebook. The table would contain no PMIDs, no patent numbers and no article or patent content, and our write-up would credit PubChem/NCBI and Google Patents. Is this acceptable for prize eligibility, or should we restrict the counts to particular link sources?</p>",
+          "replies": [
+            {
+              "id": 3538734,
+              "authorName": "Marie Killian",
+              "postDate": "2026-10-14T18:32:37.870Z",
+              "content": "<p>Per compound counts calculated from publicly available PubChem data are permitted. Any information gathered by following references in PubChem would depend on the licensing of that particular source.</p>"
+            },
+            {
+              "id": 3538940,
+              "postDate": "2026-10-15T02:41:41.013Z"
+            },
+            {
+              "id": 3538941,
+              "authorName": "WEI ZIHE12",
+              "postDate": "2026-10-15T02:42:22.440Z",
+              "content": "<p>Thank you!!!</p>"
+            }
+          ]
+        },
+        {
+          "id": 3538447,
+          "authorName": "WEI ZIHE12",
+          "postDate": "2026-10-14T08:09:10.143Z",
+          "content": "<p>Also, are public leaderboard scores rounded or truncated to three decimals?</p>"
+        }
+      ]
+    }
+  ]
+}

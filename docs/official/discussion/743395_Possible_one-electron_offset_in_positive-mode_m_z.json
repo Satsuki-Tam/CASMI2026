@@ -1,0 +1,24 @@
+{
+  "topic": {
+    "id": 743395,
+    "title": "Possible one-electron offset in positive-mode m/z",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/743395",
+    "postDate": "2026-09-25T22:31:53.607Z",
+    "authorName": "Bryce Hedelius",
+    "authorUrl": "https://www.kaggle.com/bhedelius",
+    "votes": 3,
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>In the Enveda-180 processing code, the positive-mode m/z calibrants are sodium formate clusters built as <code>SOME_POLYMER_UNIT_MZ * num + SODIUM_MAYBE_MZ</code> (<a href=\"https://github.com/enveda/enveda-180/blob/2fb7a301470d3ead68769e07bdf736749f67182f/data_processing/ms_prepper/calibration.py#L45\" target=\"_blank\">calibration.py, line 45</a>), with <code>SODIUM_MAYBE_MZ = 22.989769</code> (<a href=\"https://github.com/enveda/enveda-180/blob/2fb7a301470d3ead68769e07bdf736749f67182f/data_processing/ms_prepper/calibration.py#L14\" target=\"_blank\">line 14</a>).</p>\n<p>That is the mass of the neutral Na atom (<a href=\"https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=Na\" target=\"_blank\">NIST</a>). Subtracting one electron (0.55 mDa, <a href=\"https://physics.nist.gov/cgi-bin/cuu/Value?meu\" target=\"_blank\">CODATA</a>) gives Na⁺ = 22.989221 Da, so every positive cluster reference is 0.55 mDa too heavy. The negative-mode clusters use HCOO⁻ = 44.998203 Da, which correctly includes the electron.</p>\n<p>The released data is consistent with this. Fragment masses read 0.49 mDa higher in [M+H]⁺ spectra than in [M−H]⁻ spectra, and the gap is roughly the same at every m/z.</p>\n<p>If your peak matching tolerance is 0.01 Da or more, this won't affect you. It matters more for tight fragment-formula matching. Subtracting ~0.5 mDa from positive-mode MS2 m/z values corrects it.</p>\n<p>Could the organizers confirm whether the hidden test spectra went through the same calibration?</p>"
+  },
+  "comments": [
+    {
+      "id": 3530233,
+      "authorName": "David Healey",
+      "postDate": "2026-09-29T19:51:50.477Z",
+      "content": "<p>Thank you for your patience on this.  Tracking down which test spectra were processed with this version. </p>",
+      "votes": 2
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "topic": {
+    "id": 741857,
+    "title": "External structure databases for Class 2 retrieval: is a formula-filtered PubChem subset prize-eligible?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741857",
+    "postDate": "2026-09-17T20:06:04.190Z",
+    "authorName": "dead_signals_lab",
+    "authorUrl": "https://www.kaggle.com/deadsignalslab",
+    "votes": 2,
+    "commentCount": 4,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Question on external structure databases for candidate retrieval.</p>\n<p>The data description defines Class 2 as structures \"in PubChem or the natural-products database COCONUT, so it is reachable by database retrieval.\" COCONUT is CC0, so that side is clear.</p>\n<p>For PubChem, NCBI's policy page notes that some records carry depositor copyright and that NCBI cannot grant third-party redistribution rights. Since inference runs with internet disabled, any use of PubChem in a submission requires packaging a subset (e.g. formula-filtered structures / InChIKeys) as a Kaggle Dataset, i.e. redistributing it.</p>\n<p>Two questions for the hosts:</p>\n<ol>\n<li>Is a formula-filtered PubChem subset, packaged as a public Kaggle Dataset for offline retrieval, acceptable for a prize-eligible solution under the winner-license requirements?</li>\n<li>If not, should participants restrict candidate databases to CC0 / CC-BY sources such as COCONUT, ChEBI and LIPID MAPS?</li>\n</ol>\n<p>A clear answer either way would help everyone build compliant pipelines early rather than discovering an issue in December. Thanks!</p>"
+  },
+  "comments": [
+    {
+      "id": 3536677,
+      "authorName": "David Healey",
+      "postDate": "2026-10-11T02:06:28.277Z",
+      "content": "<p>Yes, submitting subsets of PubChem is fine for prize-eligible solutions. </p>",
+      "votes": 1
+    },
+    {
+      "id": 3525543,
+      "authorName": "David Healey",
+      "postDate": "2026-09-18T04:42:25.903Z",
+      "content": "<p>Yes, thank you for asking. PubChem structures for retrieval are acceptable for prize-eligible solutions.  </p>",
+      "votes": 1,
+      "replies": [
+        {
+          "id": 3536618,
+          "authorName": "Mazzutti",
+          "postDate": "2026-10-10T20:44:04.247Z",
+          "content": "<p>Follow-up on PubChem use, for a yes/no from the hosts.</p>\n<p>You confirmed above that PubChem structures are acceptable for retrieval. Does the same hold for PubChem's literature links, used as a ranking feature?</p>\n<p>Concretely: for each candidate structure we count the distinct PubMed IDs that PubChem links to it (the public CID-PMID file on the PubChem FTP site), and use that count as one term when ranking candidates. No text from the papers is used, only the count. The file is free, public, and equally available to all participants.</p>\n<p>Is a solution that uses these counts prize-eligible? Several public notebooks use a similar popularity prior, so a clear answer would help many teams before final selection.</p>"
+        }
+      ]
+    },
+    {
+      "id": 3525507,
+      "authorName": "ممدوح",
+      "postDate": "2026-09-17T22:45:06.403Z",
+      "content": "<p>i think it is not just a complexity, learning from top can make better world progress </p>"
+    }
+  ]
+}

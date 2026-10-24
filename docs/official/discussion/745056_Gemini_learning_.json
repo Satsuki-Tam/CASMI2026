@@ -1,0 +1,44 @@
+{
+  "topic": {
+    "id": 745056,
+    "title": "Gemini learning ",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/745056",
+    "postDate": "2026-10-02T00:11:29.789Z",
+    "authorName": "Naseem Akhtar",
+    "authorUrl": "https://www.kaggle.com/lailahaillahu1",
+    "commentCount": 4,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>What if I learn every concept from Gemini to go through this competition??</p>"
+  },
+  "comments": [
+    {
+      "id": 3531598,
+      "authorName": "nofreewill42",
+      "postDate": "2026-10-02T07:21:40.033Z",
+      "content": "<p>then you will probably have a better chance as if you didn't do this.\nyou might wanna use chatgpt and claude as well.</p>",
+      "replies": [
+        {
+          "id": 3531603,
+          "authorName": "Naseem Akhtar",
+          "postDate": "2026-10-02T07:32:06.337Z",
+          "content": "<p>Is Gemini not good enough?</p>",
+          "replies": [
+            {
+              "id": 3531607,
+              "authorName": "Naseem Akhtar",
+              "postDate": "2026-10-02T07:39:10.157Z",
+              "content": "<p>And from where did you learn everything about Data Science and Machine Learning?</p>"
+            },
+            {
+              "id": 3531744,
+              "authorName": "nofreewill42",
+              "postDate": "2026-10-02T14:43:09.713Z",
+              "content": "<p>I would use either Codex or Claude Code if I were you.\nI \"learned\" some things from my jobs mainly plus having random side-projects.</p>"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

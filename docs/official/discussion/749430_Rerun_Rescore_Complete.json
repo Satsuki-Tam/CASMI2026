@@ -1,0 +1,15 @@
+{
+  "topic": {
+    "id": 749430,
+    "title": "Rerun / Rescore Complete",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/749430",
+    "postDate": "2026-10-14T21:30:06.828Z",
+    "authorName": "inversion",
+    "authorUrl": "https://www.kaggle.com/inversion",
+    "votes": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>All notebooks that were submitted before the update to the metric and the hidden test set have been rescored. You'll notice previous notebooks have slight changes to scores.</p>"
+  },
+  "comments": []
+}

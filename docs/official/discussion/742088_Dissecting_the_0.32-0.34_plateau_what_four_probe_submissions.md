@@ -1,0 +1,42 @@
+# Dissecting the 0.32-0.34 plateau: what four probe submissions measured
+topic 742088 | by **Victor alexandre ** (https://www.kaggle.com/victor120956) | posted 2026-09-19 | votes 0 | comments 1 | https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742088
+
+Hi everyone —
+
+Like many of you, I plateaued around 0.32-0.34 with the analog-propagation + HistGBR ranker family. Instead of guessing what to improve, I spent four submissions as measurement probes (each a legal submission containing only real candidate SMILES, never filler). Sharing the numbers because they bound what any reranking trick can achieve.
+
+Setup. Fork of the public analog-propagation baseline (pool = train structures + COCONUT + ChEBI/LIPID MAPS, ~712k, ±8.5 ppm window, 31-feature ranker). Visible test = 400 molecules. MRR@25 metric.
+
+The probes:
+
+Probe    Submission content  Score   What it measures
+A2    only the library twin at rank 1 (1 guess)   0.275   twin correct in 110/400 rows (27.5%)
+B2    only the ranker's #2 candidate at rank 1 (1 guess)  0.055   ranker-#2 correct in 22/400
+C    only the original ranks 3-25, promoted (23 guesses) 0.059   ~24 answers live in ranks 3-25
+full    normal top-25   0.324   baseline
+What falls out:
+
+The perfect-rerank ceiling of this pipeline's top-25 is ≈ 0.40 on the visible test (~160/400 answers present somewhere in the 25). We extract 0.324 = 81% of it; public-LB leaders at 0.36x are extracting ~90%. So either their ordering is near-perfect, or their pool contains more answers (higher ceiling). Either way:
+
+Any experiment that only reorders the existing top-25 fights over at most +0.076. Pool quality is the bigger lever — consistent with the pool-size analysis in the analog-propagation notebook (bigger windows and blind PubChem expansion measurably hurt).
+
+Filler guesses poison a row (measured 0.000, twice). Padding a row with junk SMILES to reach 25 candidates scored the whole submission 0.000 — invalid entries appear to be counted as ranked guesses at the grader. Single-real-guess rows are safe (probes A2/B2 scored exactly as expected). If your submission scores a suspicious hard zero, check for unparseable or filler strings.
+
+Structural proximity ≠ learned probability, and they capture different answers. Reordering ranks 2-25 by Tanimoto-to-twin instead of ranker probability scored 0.324 again — an exact tie — yet the selected tail sets differed in ~90% of rows. Two different answer sets, same total. This is an argument for blending the signals rather than choosing one.
+
+Ranker seed noise is ±0.006. HistGBR with random_state=None gave 0.292 vs 0.298 on identical submissions (this is also noted in the analog-propagation notebook). Pin seeds and average; differences under ~0.01 on the LB are noise, not signal.
+
+Open question for the community: has anyone measured the "answer present in top-25" rate for an expanded pool? I'm trying to estimate how much of the missing ~60% is pool-limited (class 2 reachable by better retrieval) vs genuinely class 3.
+
+Good luck everyone — see you on the private LB.
+
+## Comments (1 top-level)
+
+- **DancingLumberjack** (2026-09-19, votes 0)
+  Your ceiling agrees with ours from the other direction. Taking the forum's class shares (16 / 45 / 39), a retrieval-only solution cannot exceed 0.16 + 0.45 = 0.61 even with a perfect pool and perfect ranking, and with our measured class-2 ranking we land near 0.44 — so your ~0.40 top-25 ceiling and that arithmetic are describing the same wall from opposite sides.
+  
+  One thing worth separating in your conclusion. We ran the same decomposition on held-out natural products under a class-2 condition (structure removed from every library, InChIKey14-wide): rank-1 0.580, rank-2 only 0.070, ranks 3–25 only 0.051, and the truth is in the top 25 for 96 % of queries — we extract 73 % of that ceiling. Our recall failures are 1.6 %. That looks like it contradicts you, and it does not: our held-out structures are 99.6 % COCONUT-covered by construction, so our CV literally cannot measure database coverage. Your 0.40 says the visible test's truths reach the list for ~40 % of molecules while ~61 % are retrievable in principle — the missing ~21 points are either not in the pool or never ranked into it, and a CV built from covered structures will never show it.
+  
+  On expanding the pool: we measured PubChem two ways. As a full candidate source it moved the leaderboard +0.002; restricted to the tail slots (16–25, leaving ranks 1–15 untouched) it moved +0.001. Both inside the resubmission noise. So at least for the 150–1,200 Da PubChem slice, "more candidates" did not convert into score for us — the extra structures are either outside that slice or beyond what our scorer can rank at ~6,000 candidates per query, where it reaches MRR 0.27 on its own.
+  
+  Which leaves the split you are asking about: of the mass your probes show missing, how much is class 3 (in no database, so no pool fixes it) versus class 2 that a better pool would reach. We do not know either, and it decides whether the next work is retrieval or generation.

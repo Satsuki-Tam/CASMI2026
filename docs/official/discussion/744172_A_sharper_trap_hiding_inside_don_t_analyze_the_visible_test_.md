@@ -1,0 +1,12 @@
+# A sharper trap hiding inside "don't analyze the visible test file
+topic 744172 | by **interface kotian** (https://www.kaggle.com/interfacekotian333) | posted 2026-09-28 | votes 0 | comments 0 | https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/744172
+
+Building on Udam's lessons-learned post above (the "don't analyze the visible test.parquet" warning), we hit a nastier variant of the same trap that cost us a full submission, and it's specific enough that it's easy to miss even if you already know the general warning.
+ The trap: if you build any candidate source as an offline static artifact that's filtered/keyed to the masses or
+ formulas found in the visible test.parquet, that artifact is dead weight at grading time. The hidden file substituted in at scoring is a completely different set of molecules, so a mass-filtered static lookup keyed to the placeholder's masses matches essentially nothing. Your pipeline doesn't crash and doesn't error; it just silently falls back to whatever your baseline does when that data source is empty, and you get your baseline score back with the "new feature" looking like it did nothing at all.
+ We only caught it because a fixed configuration scored identical to three decimal places against the exact baseline it should have clearly beaten a coincidence too precise to explain any other way. The fix: any data-source construction that depends on target masses/formulas has to happen live, inside the scored run, computed from whatever test file is actually present when the code executes, never precomputed from the visible placeholder file, even indirectly through a "prefetch" or cached lookup step.
+ If your score plateaus exactly at your no-extra-data baseline after adding some mass/formula-keyed external source, this might be why it's worth checking before concluding the data source itself doesn't help.
+ Also happy to compare notes with anyone working the candidate-generation-expansion angle, or team up if it makes sense, feel free to reply or DM.
+
+## Comments (0 top-level)
+

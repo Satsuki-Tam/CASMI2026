@@ -1,0 +1,15 @@
+{
+  "topic": {
+    "id": 741874,
+    "title": "[Dataset + Notebook] 139K harmonized MassBank spectra + fingerprints —  ready-to-use reference library for retrieval baselines",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741874",
+    "postDate": "2026-09-17T22:19:18.281Z",
+    "authorName": "Samar Talwar",
+    "authorUrl": "https://www.kaggle.com/samartalwar",
+    "votes": 3,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Packaged 139,744 MS/MS spectra (20,204 unique structures) from public MassBank\nrecords into one clean reference library for this competition — precursor m/z,\nadduct, ion mode, full peak lists, plus precomputed Morgan + MACCS fingerprints\nper structure. Includes 648 spectra from the actual CASMI 2012/2016 challenge\nsubsets.</p>\n<p>Useful if you're building spectral-matching or retrieval-based baselines and\ndon't want to write a MassBank parser from scratch.</p>\n<p>Dataset:  <a href=\"https://www.kaggle.com/datasets/samartalwar/casmi-2026-spectral-library-massbankharmonized\" target=\"_blank\"></a>\nNotebook (spectral-matching retrieval baseline + EDA): <a href=\"https://www.kaggle.com/code/samartalwar/notebook28db8539b3\" target=\"_blank\"></a></p>\n<p>The notebook's baseline correctly retrieves the true structure at rank #1 on\na held-out example — happy to extend with CCS/RT data if that'd be useful,\nlet me know.</p>"
+  },
+  "comments": []
+}

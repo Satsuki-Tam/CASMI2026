@@ -1,0 +1,54 @@
+{
+  "headline": "方針(10/24 09:45 ユーザー判断): 公開ノートブックの局所修正はやめ、調査と P1 の結果から自前ベースライン B1 を構築する。E4 v5 は P1 の代理指標が LB に転移するかを測る 1 回限りの計測提出。",
+  "kpi": {"目標 (Public LB)": "0.480 以上(金圏)、理想 0.500", "現在の最高 Public LB": "0.464 (E0, 公開系譜の再現)", "首位 / 金圏下限 (10/24 朝)": "0.504 / 約 0.473", "本日の残り提出": "4 回(E4 v5 提出後)"},
+  "jobs": [
+    {"state": "run", "name": "E4 v5 計測提出", "detail": "Kaggle 可視実行 → ログ検査 → 自動提出。hidden 採点は提出後 約 4.5 時間", "eta": "提出 10:50 頃、採点 15:30 頃"},
+    {"state": "run", "name": "B1 Notebook v1 検証実行", "detail": "公開テスト 400 分子で end-to-end の動作と実行時間を測る(kernel hayatetaf/casmi26-b1-baseline)", "eta": "2〜3 時間"},
+    {"state": "run", "name": "B1 特徴表(新評価集合 A/B 各 300)", "detail": "候補取得 → FPNet → ライブラリ類似度 → shortlist。完了後 GLACIER/ICEBERG → 固定規則の評価(C1/C2・strict)", "eta": "評価表 12:00 頃"},
+    {"state": "wait", "name": "B1 特徴表(C1 専用集合 300、P1 分子 600)", "detail": "C1(参照あり)の評価と LambdaRank の学習データ", "eta": "14:00 頃"}
+  ],
+  "next": [
+    "B1 固定規則の C1/C2 評価が出たら: 参照優先規則(τ・margin)と融合重みを tune 群で確定し、B1 Notebook v2 の既定値に反映",
+    "E4 v5 の LB が出たら: 方向のみ読む(増分は予測しない)。P1 の代理指標の扱いを Codex 006 で確認",
+    "B1 Notebook v1 の実行時間から Kaggle 9 時間予算の配分(FP 窓採点 / GL / ICE)を決める",
+    "LambdaRank(fit = P1 600 分子、tune = 新集合)が固定規則を tune 群で上回るか"
+  ],
+  "pages": [
+    ["experiments.html", "実験", "E0〜B1 の一覧と各実験の詳細ページ"],
+    ["research.html", "調査", "類似コンペ・ベンチマーク・論文、ディスカッション精査"],
+    ["codex.html", "Codex 議論", "依頼 → 回答 → 判断記録(000〜005)"],
+    ["submissions.html", "提出", "Public LB の履歴と読み方"],
+    ["competition.html", "コンペ概要", "課題・データ・評価・ルール"]
+  ],
+  "experiments": [
+    {"id": "E0", "question": "公開最高系譜(0.464 構成)を忠実に再現できるか(基準提出)", "result": "Public 0.464(報告値と一致)", "code": "kernels/baseline-v18/", "page": "progress.html", "state": "done"},
+    {"id": "E1", "question": "公開パイプラインの Class 2 性能は文献 prior に依存しているか(パネル replay)", "result": "同一分子式候補では指紋モデル単独 top-1 7.7% vs 文献 prior 71%。prior 依存", "code": "experiments/e1_panel/", "page": "progress.html", "state": "done"},
+    {"id": "E2b", "question": "学習に含まれない分子で、指紋モデルと順方向モデル(ICEBERG/GLACIER)は補完的か(分子式既知・100 候補)", "result": "timsTOF 近傍デコイ: FP 0.59 / GL 0.64 / 融合 0.74。補完的", "code": "experiments/e2_forward/", "page": "progress.html", "state": "done"},
+    {"id": "E2c", "question": "分子式も正解追加も使わない漏斗で順方向モデルは効くか", "result": "FP 0.446 → FP+GL 0.615(P1 で正式化)", "code": "experiments/e2_forward/e2c_*.py", "page": "progress.html", "state": "done"},
+    {"id": "P1", "question": "ラベル非依存の候補取得 → 公式同一性で採点する基準系で、どの段で正解を失い、どの融合が良いか", "result": "timsTOF 300: FP 0.465 → FP+ICE+GL 0.723。公開規則の形で 0.03〜0.08 を損失。模擬 v2: E0 規則 0.717 → K=100 全体 z 和 0.766(A)、0.487 → 0.534(B)", "code": "experiments/p1_baseline/", "page": "p1.html", "state": "done"},
+    {"id": "E4", "question": "P1 の代理指標の改善は LB に転移するか(公開 Notebook に 4 箇所置換、1 回限りの計測)", "result": "提出待ち(v5)", "code": "kernels/e4-pclist/make_e4.py", "page": "progress.html", "state": "run"},
+    {"id": "B1", "question": "自前ベースライン: 統一候補表 + ライブラリ類似度 + FPNet + GL/ICE + 固定融合 → LambdaRank", "result": "実装済み・評価中", "code": "experiments/b1_baseline/, kernels/b1-baseline/", "page": "b1.html", "state": "run"}
+  ],
+  "research": [
+    {"title": "類似コンペ・ベンチマーク・論文の統合調査", "page": "research_similar.html", "summary": "CASMI 6 回、MassSpecGym、Kaggle の化学・生物コンペ、検索・再順位コンペ、他プラットフォーム。本質は Class 2 の同一分子式異性体識別と Class 3 の候補生成。"},
+    {"title": "ディスカッション精査ダイジェスト(119 スレッド)", "page": "research_discussion.html", "summary": "ホスト発言の整理(hidden テストの構成、ルール、外部データの可否)、公開解法の系譜、未検証の主張。"},
+    {"title": "CASMI の歴史", "page": "research_casmi.html", "summary": "過去 6 回の課題設定・評価・勝因と失敗。"},
+    {"title": "MS/ML ベンチマーク", "page": "research_benchmarks.html", "summary": "MassSpecGym ほか、評価指標と漏れ(学習データ重複)の教訓。"},
+    {"title": "検索・再順位コンペの教訓", "page": "research_retrieval.html", "summary": "候補到達率と順位付けの分離、学習融合、検証設計。"}
+  ],
+  "submissions": [
+    {"when": "2026-10-24 02:13", "id": "E0 (57567821)", "what": "公開最高系譜の忠実再現(evgendvorkin V18 = Gluzdov 構成)", "public": 0.464, "note": "計測基準。報告値と一致し提出経路を確認"},
+    {"when": "2026-10-24 (予定 10:50)", "id": "E4 v5", "what": "E0 + PubChem リスト K 25→100、ICE/GL 全候補採点、全体 z 和(GL 2, ICE 1)、E0 規則への fallback", "public": "採点待ち", "note": "P1 では strict 差 A +0.049 / B +0.042。LB は方向のみ読み、増分は予測しない"}
+  ],
+  "docs": [
+    ["docs/progress_2026-10-24_night.md", "progress.html", "進捗報告 2026-10-24(深夜〜朝)"],
+    ["docs/p1_baseline_2026-10-24.md", "p1.html", "P1 基準系: 設計と結果"],
+    ["docs/b1_baseline_design.md", "b1.html", "B1 自前ベースライン: 設計"],
+    ["docs/competition_overview.md", "competition.html", "コンペ概要"],
+    ["reports/CASMI 2026 類似コンペ調査.md", "research_similar.html", "類似コンペ調査(統合レポート)"],
+    ["research_notes/CASMI 2026 類似コンペ調査/discussion_digest.md", "research_discussion.html", "ディスカッション精査"],
+    ["research_notes/CASMI 2026 類似コンペ調査/casmi_history.md", "research_casmi.html", "CASMI の歴史"],
+    ["research_notes/CASMI 2026 類似コンペ調査/ms_ml_benchmarks.md", "research_benchmarks.html", "MS/ML ベンチマーク"],
+    ["research_notes/CASMI 2026 類似コンペ調査/retrieval_rerank_competitions.md", "research_retrieval.html", "検索・再順位コンペ"]
+  ]
+}

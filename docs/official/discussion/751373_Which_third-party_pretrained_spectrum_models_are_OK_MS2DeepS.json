@@ -1,0 +1,34 @@
+{
+  "topic": {
+    "id": 751373,
+    "title": "Which third-party pretrained spectrum models are OK? (MS2DeepScore, FIORA, SIRIUS/CSI:FingerID)",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/751373",
+    "postDate": "2026-10-21T15:24:27.176Z",
+    "authorName": "Oxazolidinone",
+    "authorUrl": "https://www.kaggle.com/oxazolidinone",
+    "commentCount": 3,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Following up on the earlier clarification that any weights need the original training code plus permitted training data, could you confirm how this applies to a few commonly used open models and artifacts?</p>\n<ol>\n<li>Models trained only on public libraries (GNPS / MassBank / MoNA) with public training code, e.g. MS2DeepScore 2.0 or FIORA-OS: allowed?</li>\n<li>SIRIUS / CSI:FingerID: the training set isn't fully public and may include NIST, so I assume not allowed?</li>\n<li>Chemical language / graph models pretrained on PubChem structures only (no spectra), used just as a prior over candidates: allowed?</li>\n<li>For weights whose training code is public, is it enough to have the code and the permitted data, or does every intermediate file (e.g. a ranker's training table shipped in a public notebook) need to be reproducible bit-for-bit?</li>\n<li>PubChemLite (a CC BY 4.0 subset of PubChem) as a candidate source, with attribution: fine?</li>\n</ol>\n<p>Thanks, just want to make sure we don't build on something that gets disqualified later.</p>"
+  },
+  "comments": [
+    {
+      "id": 3543071,
+      "authorName": "David Healey",
+      "postDate": "2026-10-22T21:23:15.250Z",
+      "content": "<ol>\n<li>Models trained only on public libraries: correct, allowed</li>\n<li>SIRIUS / CSI:FingerID: correct, not allowed</li>\n<li>Chemical language / graph models correct, allowed</li>\n<li>We need the code that generates the intermediates as well</li>\n<li>Yes PubChem Lite is fine</li>\n</ol>"
+    },
+    {
+      "id": 3542486,
+      "authorName": "Satwik",
+      "postDate": "2026-10-22T00:52:22.177Z",
+      "content": "<p>I think a general rule to follow based on the hosts' previous comments is that both training data and training code need to be publicly available under a valid license for it to be eligible.</p>"
+    },
+    {
+      "id": 3542208,
+      "authorName": "Oxazolidinone",
+      "postDate": "2026-10-21T15:43:04.610Z",
+      "content": "<p>Follow-up question on one specific case: coleygroup released MIST checkpoints on Zenodo (record 23303289) on Oct 20 under MIT, with the training code public. They are trained on MassSpecGym; the \"aug\" variant additionally uses simulated spectra from GLACIER-MSG. I assume these are allowed on the same basis as the GLACIER/ICEBERG MassSpecGym weights, but wanted to confirm since the augmented one is partly distilled from another model. Thanks!</p>"
+    }
+  ]
+}

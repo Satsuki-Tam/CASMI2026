@@ -1,0 +1,35 @@
+{
+  "topic": {
+    "id": 745029,
+    "title": "Understanding the actual task ",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/745029",
+    "postDate": "2026-10-01T20:43:51.492Z",
+    "authorName": "hengck23",
+    "authorUrl": "https://www.kaggle.com/hengck23",
+    "votes": 22,
+    "commentCount": 3,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>In the commercial world, this is called “understanding your customer.” ChatGPT is quite good at doing market research.  </p>\n<p>I looked more closely at the competition description and focused on the phrase “natural product structures” from mass spectra. I then asked ChatGPT to investigate what Enveda is really interested in.  </p>\n<p>does this look familiar to our 3 class of test set??  </p>\n<p><img src=\"https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F113660%2F67079ccfbf9f08b6f78c88c1313876be%2FSelection_5051.png?generation=1790887376636859&amp;alt=media\" alt=\"\">\nHere are some Enveda papers/resources you should not miss:  </p>\n<ol>\n<li><p>Butler et al., “MS2Mol: A transformer model for illuminating dark chemical space from mass spectra.”\nTheir goal is de novo prediction of natural metabolites that are not present in existing databases.<br>\nThey also introduced EnvedaDark, a benchmark of 226 natural products that were absent from major databases.  </p></li>\n<li><p>MS2Prop: A machine learning model that directly predicts chemical properties from mass spectrometry data for novel compounds.  </p></li>\n<li><p>PRISM, Enveda’s current foundation model: \n<a href=\"https://enveda.com/news/pr-enveda-biosciences-announces-microsoft-collaboration-and-reveals-foundation-model-to-read-and-translate-chemistry/\" target=\"_blank\">https://enveda.com/news/pr-enveda-biosciences-announces-microsoft-collaboration-and-reveals-foundation-model-to-read-and-translate-chemistry/</a>  </p></li>\n<li><p><a href=\"https://www.bruker.com/en/landingpages/bdal/customer-insight-enveda.html\" target=\"_blank\">https://www.bruker.com/en/landingpages/bdal/customer-insight-enveda.html</a>  </p></li>\n<li><p><a href=\"https://pubs.acs.org/jnprdf/article/89/9/2436/5428694/Chemotaxonomic-Map-of-Labdane-Diterpenoids-in\" target=\"_blank\">https://pubs.acs.org/jnprdf/article/89/9/2436/5428694/Chemotaxonomic-Map-of-Labdane-Diterpenoids-in</a><br>\nexample of dark chemical prior<br>\n\"timsTOF is the combination of high-resolution MS + fast MS/MS + ion mobility, which fits complex natural-product profiling very well.\"</p></li>\n</ol>\n<p>There is much more information available. It may be worth asking your AI agent to research Enveda’s papers, platform, and view of natural-product chemical space.  </p>\n<p>Some useful natural-product structure databases to investigate are COCONUT, LOTUS, and NPAtlas.\nThe key point is that “natural product structures” may be a very important clue about the target distribution of this competition.  </p>\n<p>just my guess. take with a pinch of large grains of salt …</p>\n<p><img src=\"https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F113660%2F2f7d0d57a2a48702b886062bd9cd3f0a%2FSelection_5052.png?generation=1790888290521514&amp;alt=media\" alt=\"\"></p>\n<p><img src=\"https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F113660%2F5c9232ea1ba5e0d2e282d48b166c2cd0%2FSelection_5053.png?generation=1790888305059654&amp;alt=media\" alt=\"\"></p>"
+  },
+  "comments": [
+    {
+      "id": 3531535,
+      "authorName": "Raagav Anand",
+      "postDate": "2026-10-02T02:56:01.063Z",
+      "content": "<p>some of this i had but the articles were really interesting and helpful! thanks a lot</p>"
+    },
+    {
+      "id": 3531500,
+      "authorName": "Naseem Akhtar",
+      "postDate": "2026-10-02T00:27:16.917Z",
+      "content": "<p>Should we team up here . I am a data scientist and ML Engineer. </p>"
+    },
+    {
+      "id": 3531472,
+      "authorName": "Patrick Chan",
+      "postDate": "2026-10-01T23:03:11.033Z",
+      "content": "<p>Hi hengck23, Thanks for the interesting share! As usual, very good insights. Usually in specialized domains, customized transformers perform way better than large generalized model.</p>"
+    }
+  ]
+}

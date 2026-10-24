@@ -1,0 +1,22 @@
+{
+  "topic": {
+    "id": 742275,
+    "title": "External data rules: free pretrained checkpoints trained on NIST-derived spectra",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742275",
+    "postDate": "2026-09-21T04:47:00.376Z",
+    "authorName": "Ghaisan K",
+    "authorUrl": "https://www.kaggle.com/ghaisank",
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi, a question about Rule 2.6.a, which says external data must be \"publicly available and equally accessible … at no cost\".</p>\n<p>Several published MS/MS models release their pretrained checkpoints for free under permissive licences (MIT or Apache), but their training spectra came partly from NIST-derived collections (for example NPLIB1), which are not free to obtain.</p>\n<p>Are such checkpoints acceptable for use in a winning submission, given that the checkpoint itself is free and publicly available but part of the data it was trained on is not?</p>\n<p>Thank you!</p>"
+  },
+  "comments": [
+    {
+      "id": 3527137,
+      "authorName": "Frenio Redeker",
+      "postDate": "2026-09-23T02:10:55.337Z",
+      "content": "<p>My sense is that pretrained models published under MIT or Apache licenses are fine if their public release wasn't in itself in violation of the licenses of their underlying training data.</p>\n<p>Edit: Just pasting an exchange from a <a href=\"https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742193\" target=\"_blank\">different thread </a> below since it seems relevant.</p>\n<hr>\n<p>Rules on Open weights?</p>\n<p>Barno Barno:</p>\n<p>\"Are all open weights models fair game or does one have to check &amp; make sure if their training corpus/training data source is openly available ?\"</p>\n<p>David Healey (Competition Host):</p>\n<p>\"Good question. We can’t blanket approve all open weights models. It should be fine as long as the open weight model is distributed in compliance with the license for the data it was trained on.</p>\n<p>For example there are proprietary commercial mass spec data sets that restrict redistribution of themselves or derivatives like model weights. Publishing such model weights under an open source license would still be in violation.\"</p>"
+    }
+  ]
+}

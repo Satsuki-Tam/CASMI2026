@@ -1,0 +1,6 @@
+== B_nplib: N=300 | libs {'gnps': 241, 'mona': 26, 'massbank': 18, 'msdial': 10, 'riken': 5} | groups {'fit': 100, 'tune': 100, 'eval': 100} | CE known frac 0.08 | instruments {'Orbitrap': 180, 'qTof': 24, 'ESI-QFT': 16, 'ToF': 8, 'LC-ESI-QQ': 8}
+   measured ppm error: median +0.04, |err|>10 ppm: 36 molecules
+   window sizes (median): PubChem tier 6602 (same formula 1591); pool 61 (external 22); coco 20
+   STAGE db_present_external 274/300  [COCONUT(pool) 107, coco dataset 0, PubChem tier @exact 261]
+   STAGE window_external     243/300  [pool-COCONUT 82, coco 0, tier 234 (official-key fallback hits 1)]
+   STAGE window_train (class-1 route, masked later) 264/300 | window_any 264/300

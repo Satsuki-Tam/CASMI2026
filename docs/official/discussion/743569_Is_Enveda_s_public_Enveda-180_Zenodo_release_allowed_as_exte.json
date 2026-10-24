@@ -1,0 +1,44 @@
+{
+  "topic": {
+    "id": 743569,
+    "title": "Is Enveda's public Enveda-180 Zenodo release allowed as external data?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/743569",
+    "postDate": "2026-09-26T08:34:11.408Z",
+    "authorName": "michael duong",
+    "authorUrl": "https://www.kaggle.com/sellside",
+    "commentCount": 4,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi David / Enveda team,</p>\n<p>A short question on external data. Enveda's Enveda-180 spectral library is public on Zenodo (record 21346580, CC BY 4.0). Is it allowed as external data in a prize-eligible solution, both for training models and as a reference library at inference?</p>\n<p>Related to 743368: will the hidden evaluation spectra include precursor ion mobility (1/K0 or CCS), or keep the same columns as the provided test.parquet?</p>\n<p>Thank you.</p>"
+  },
+  "comments": [
+    {
+      "id": 3529232,
+      "authorName": "David Healey",
+      "postDate": "2026-09-27T17:51:51.837Z",
+      "content": "<p>Yes you can use the Zenodo release</p>",
+      "replies": [
+        {
+          "id": 3529356,
+          "authorName": "michael duong",
+          "postDate": "2026-09-28T01:54:59.577Z",
+          "content": "<p>Thanks David, that answers the first part. Could you also confirm the second question: will the hidden evaluation spectra include precursor ion mobility (1/K0 or CCS), or keep exactly the same columns as the provided test.parquet? Thank you.</p>",
+          "replies": [
+            {
+              "id": 3529651,
+              "authorName": "Marie Killian",
+              "postDate": "2026-09-28T17:37:18.837Z",
+              "content": "<p>No, the test set does not include 1/K0 or CCS. It has the same columns as provided in test.parquet.</p>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3529177,
+      "authorName": "PC Jimmmy",
+      "postDate": "2026-09-27T15:18:05.530Z",
+      "content": "<p>I was under the impression that the enveda-180 library is part of the train data now.  Have you found differences?  </p>\n<p>From the data page</p>\n<p><em>enveda-180    1,153,785   182,941 Enveda's published dataset, acquired on the same Bruker timsTOF as the test set. Consistent and instrument-matched, but the chemistry is synthetic drug-like screening compounds, a different region of chemical space from the test molecules.</em></p>"
+    }
+  ]
+}

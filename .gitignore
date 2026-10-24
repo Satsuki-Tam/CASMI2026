@@ -1,0 +1,33 @@
+# environments
+.venv/
+.venv-ice/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+lightning_logs/
+
+# data (downloaded / derived, GB scale) -- never committed
+data/
+models/
+submissions/
+
+# large experiment intermediates (runner inputs, shortlists, model outputs); results (md/json/csv) are kept
+experiments/**/*_in.json
+experiments/**/p1_items.json
+experiments/**/*.parquet
+experiments/**/work/
+experiments/**/smoke/
+experiments/**/pipeline_local/
+experiments/**/*.log
+experiments/**/*.txt.bak
+
+# Kaggle kernel outputs (downloaded run artefacts, GB scale)
+kernels/**/output*/
+kernels/**/*.download.log
+
+# local scratch
+*.tmp
+~$*
+experiments/**/ice_in_*.json
+experiments/**/candidates_top*.parquet
+experiments/**/*_work/

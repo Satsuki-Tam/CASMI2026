@@ -1,0 +1,19 @@
+{
+ "k": 100,
+ "lam_public": 0.15,
+ "ppm": 10.0,
+ "fpnet_checkpoint": "ddf6eaaa8e541a16e3f0357ed30f0346e529054f75d5619aedb6024dcb1bd7f0",
+ "fp_bits": "c3869e86449d6fed6e79e9655f8a7d35bd55c3138ecddfc1dae5072627e78677",
+ "pop_files": {
+  "lsid": "99f0de558e7a17e2a18a0f118228bcbfd50cdfefe31635488992585ff067de0c",
+  "lpmid": "ab8c8f7cb19cf23ebaa5ef8500c72ee8960987776db73d6d951489d394c7c4f2",
+  "lsynonyms": "7bf7c427d1746fb2c1eff7271c5bc81b47b740c74b99acbd2f1a95d838562504",
+  "np": "04cb9a14f4077b8cd396d54e2635c36a813c930bdfee5309c75b906291638a5f",
+  "src_mask": "1d72e2ceed72dc23f8ade42cffd052d21d1ffa59cca229c690bb55b0e9206589",
+  "lotus_refs": "8f3aa62dfc687441f361b6d7a69090ec97341bebba1ceeeb31db0527c0c53481"
+ },
+ "pool_meta": "82b8c40315611289b9a4004b3af18d6d3402b3cd5baa4ee5723da07b7e2f6bb0",
+ "rdkit": "2026.03.3",
+ "torch": "2.11.0+cu128",
+ "seconds": 2004
+}

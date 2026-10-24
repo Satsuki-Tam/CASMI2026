@@ -1,0 +1,4 @@
+set,molecule,group,lib,n_query,adducts,n_adducts,ce_known,n_window_structures,n_unique,n_unique_train,truth_in_window,truth_in_shortlist,n_shortlist,lib_max_c1,lib_max_c2,truth_other_lib_refs,c1_possible,truth_lib_sim_c1,seconds
+B_nplib,PDOVPCXLJIGWNJ,fit,gnps,1,[M+H]+,1,0.0,14423,12102,37,True,True,118,0.6716498604554848,0.6716498604554848,0,False,0.0,2.963860511779785
+B_nplib,UYDSWRORAHRACW,fit,gnps,3,[M+H]+|[M+Na]+,2,0.0,20868,7528,157,True,True,120,1.0,0.41377123444103825,15,True,1.0,6.675796031951904
+B_nplib,PNLYRFCYSJDWSN,fit,gnps,1,[M+H]+,1,0.0,14921,11634,217,True,True,123,1.0,0.22327006605538513,11,True,1.0,4.910077095031738

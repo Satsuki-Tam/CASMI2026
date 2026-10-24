@@ -1,0 +1,22 @@
+{
+  "topic": {
+    "id": 743236,
+    "title": "Delivering models trained on the Competition Data",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/743236",
+    "postDate": "2026-09-25T10:01:02.712Z",
+    "authorName": "Asir Can Aslan",
+    "authorUrl": "https://www.kaggle.com/asircanaslan",
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi, two questions about the winner's obligations.</p>\n<ol>\n<li><p>Model weights: our neural networks, LightGBM rankers and a reference spectral library are trained on or derived from the Competition Data (CC BY-NC 4.0). Rule 2.5.a says that for input data with an incompatible licence we do not need to grant an open-source licence. Should we deliver these weights to the Sponsor under MIT together with the code, or under that clause (code under MIT; weights and derived data delivered only to the Sponsor, not published)?</p></li>\n<li><p>Private datasets: our notebook uses private Kaggle datasets that we build in advance (a PubChem mass index, a COCONUT table, a reference library built from train.parquet, and the model weights). For the winner package, is it acceptable to share these datasets privately with the Sponsor, together with the scripts that rebuild them from the public sources? PubChem Extras files are updated continuously, so a rebuild would use a newer snapshot.</p></li>\n</ol>\n<p>Thank you!</p>"
+  },
+  "comments": [
+    {
+      "id": 3528347,
+      "authorName": "David Healey",
+      "postDate": "2026-09-25T23:00:04.337Z",
+      "content": "<ol>\n<li><p>The Competition Data in train.parquet is a compilation of open-source databases, and so models trained on it can be open-sourced.   Sorry for the licensing confusion on that; the <strong>test</strong> data when it is released will be restricted to noncommercial use. </p></li>\n<li><p>I'm not sure I fully understand the question, but the winning solutions should be open-sourced.  And the artifacts you describe seem acceptable open-source-derived solutions.</p></li>\n</ol>"
+    }
+  ]
+}

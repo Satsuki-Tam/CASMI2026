@@ -1,0 +1,58 @@
+{
+ "n_molecules": 200,
+ "median_candidates": 100.0,
+ "rules": {
+  "random": {
+   "mrr25": 0.03936297053464214,
+   "ci95": [
+    0.038231495864977455,
+    0.04081548589473024
+   ],
+   "top1": 0.0,
+   "hit25": 1.0,
+   "mrr25_truth_in_pubchem=True": 0.03950019065865767,
+   "n_truth_in_pubchem=True": 191,
+   "mrr25_truth_in_pubchem=False": 0.0364508545694238,
+   "n_truth_in_pubchem=False": 9
+  },
+  "ice": {
+   "mrr25": 0.8635615079365079,
+   "ci95": [
+    0.8224316468253969,
+    0.9011342757936508
+   ],
+   "top1": 0.795,
+   "hit25": 0.99,
+   "mrr25_truth_in_pubchem=True": 0.8618445109282803,
+   "n_truth_in_pubchem=True": 191,
+   "mrr25_truth_in_pubchem=False": 0.8999999999999999,
+   "n_truth_in_pubchem=False": 9
+  },
+  "gl": {
+   "mrr25": 0.8935972222222222,
+   "ci95": [
+    0.8589711805555554,
+    0.9268333333333332
+   ],
+   "top1": 0.835,
+   "hit25": 0.99,
+   "mrr25_truth_in_pubchem=True": 0.893237347294939,
+   "n_truth_in_pubchem=True": 191,
+   "mrr25_truth_in_pubchem=False": 0.9012345679012346,
+   "n_truth_in_pubchem=False": 9
+  },
+  "ice+gl": {
+   "mrr25": 0.8902500000000001,
+   "ci95": [
+    0.8558312500000002,
+    0.9233354166666667
+   ],
+   "top1": 0.82,
+   "hit25": 0.99,
+   "mrr25_truth_in_pubchem=True": 0.8897905759162303,
+   "n_truth_in_pubchem=True": 191,
+   "mrr25_truth_in_pubchem=False": 0.8999999999999999,
+   "n_truth_in_pubchem=False": 9
+  }
+ }
+}

@@ -1,0 +1,605 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>進捗報告 2026-10-24(深夜〜朝)</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 10:37 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#0">0. 要約</a></li>
+<li><a href="#1">1. 成果物の場所</a></li>
+<li><a href="#2">2. 実験結果</a><ul>
+<li><a href="#e1-250-replay">E1: 天然物パネル(250 分子)の replay</a></li>
+<li><a href="#e2-iceberg-glacier">E2: 順方向モデル(ICEBERG / GLACIER)による再スコアリングの診断</a></li>
+<li><a href="#e2b-massspecgym-v1codex-002-v2-v2">E2b: MassSpecGym 非収載分子での順方向モデル診断(v1。Codex 002 の指摘により v2 で修正・再実行済み。v2 の表を正とする)</a></li>
+<li><a href="#e2c-class-2-experimentse2_forwardfunnel">E2c: 端から端の Class 2 相当漏斗診断(分子式なし・正解追加なし、experiments/e2_forward/funnel/)</a></li>
+<li><a href="#p1-0800experimentsp1_baseline">P1: ラベル非依存の候補取得 → 公式同一性で採点する基準系(08:00〜、experiments/p1_baseline/)</a></li>
+<li><a href="#e0">E0: 公開最高系譜の忠実再現(基準提出)</a></li>
+<li><a href="#b1-1000experimentsb1_baseline-docsb1_baseline_designmd">B1: 自前ベースライン(10:00〜、experiments/b1_baseline/、設計 docs/b1_baseline_design.md)</a></li>
+</ul>
+</li>
+<li><a href="#3-codex">3. Codex との議論の要点</a></li>
+<li><a href="#4">4. 現時点の結論</a></li>
+</ul>
+</div>
+</div><h1 id="2026-10-24">2026-10-24 深夜〜朝の自律作業レポート</h1>
+<p>ユーザー指示: 類似コンペ調査の完了、ディスカッション精査、論文調査、本質的課題へのアプローチの実験と分析、裁量での提出、Codex との議論。暫定目標 Public LB 0.480。</p>
+<h2 id="0">0. 要約</h2>
+<ul>
+<li><strong>調査</strong>: 類似コンペ・ベンチマーク・論文の統合レポート(93 KB、出典 257 件)、全 119 ディスカッションスレッドの一次精査ダイジェスト(ホスト発言 40 件を日付付きで整理)、Codex との 3 往復(000〜002)を完了。先例は CASMI 6 回と MassSpecGym のみで、課題の本質は「Class 2 の同一分子式異性体の識別」と「Class 3 の候補生成」。公開最高系譜の積み上げは CV 未検証、入賞要件(全重みの学習コード提示)も未達。</li>
+<li><strong>提出</strong>: 公開最高系譜(0.464 構成)の忠実再現を E0 として提出(submission 57567821)→ <strong>Public LB 0.464</strong>(報告値を再現。金圏下限 約 0.473、首位 0.504)。設定だけを変えた 2 本目は、支持する比較が無いため提出せず(Codex も同意)。本日の残り提出 4 回。</li>
+<li><strong>実験の主結果</strong>: (1) パネル(E1)では公開パイプラインの Class 2 性能が文献 prior に依存していることを定量化。(2) 公開パネルの順方向モデル評価は MassSpecGym との重複(250 分子中 236)で過大評価の恐れがあると発見。(3) 学習に含まれない分子で、fold-safe 指紋モデルと GLACIER/ICEBERG が同一分子式異性体の識別で補完的であることを確認(timsTOF 近傍デコイ: FP 0.59、GL 0.64、融合 0.74。公式鍵・装置限定で再実行済み)。</li>
+<li><strong>P1 基準系(08:00〜09:10)</strong>: Codex 003 と合意した「分子式も正解追加も使わない候補取得 → 公式同一性で採点」の基準系を実装し、未使用の 600 分子(timsTOF 300、天然物ライブラリ 300)で実行。timsTOF では、1 万構造の窓から fold-0 FPNet で絞った shortlist に GLACIER を全体 z 和で融合すると MRR@25 0.465 → 0.685(2 倍重みで 0.708)。公開 Notebook の「上位 25 の同一分子式だけを slot 固定で再順位」規則を同じスコアで再現すると 0.627 で、規則の形だけで約 0.06〜0.08 を失っている。公開 Notebook の PubChem 専用リスト(K=25)の模擬では、E0 の規則(ICE+GL)0.717 に対し K=100 + 全体 z(base)+2z(GL)+z(ICE) が 0.766(+0.049 [+0.021, +0.077])で、fit/tune/eval の 3 群で一致。ICE はこの条件では有効(E2b の結論を訂正)。→ E0 から 4 箇所だけ置換した提出候補 <strong>E4 v2</strong> を作成(<code>kernels/e4-pclist/</code>)。提出は Codex 004 の回答とセット B の方向を確認してから判断(提出枠は 09:00 JST に 5 回へ更新)。</li>
+<li><strong>次の到達点</strong>(Codex 002 と合意): 評価と来歴の修正・凍結 → 学習コード付き FPNet + 凍結 GL の基準系 → 実際の shortlist 上の特徴表と学習融合 → GLACIER 適応の小規模試行 → 生成経路。「数日で 0.480」は断定せず、測定可能な到達点で管理する。</li>
+</ul>
+<h2 id="1">1. 成果物の場所</h2>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>パス</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>類似コンペ・ベンチマーク調査の統合レポート(日本語)</td>
+<td><code>reports/CASMI 2026 類似コンペ調査.md</code></td>
+</tr>
+<tr>
+<td>調査ノート(5 本、英語、出典リンク付き)</td>
+<td><code>research_notes/CASMI 2026 類似コンペ調査/*.md</code></td>
+</tr>
+<tr>
+<td>全 119 ディスカッションスレッド(投稿者名・運営フラグ付き)</td>
+<td><code>docs/official/discussion/*.md</code></td>
+</tr>
+<tr>
+<td>ディスカッション精査ダイジェスト</td>
+<td><code>research_notes/CASMI 2026 類似コンペ調査/discussion_digest.md</code></td>
+</tr>
+<tr>
+<td>Codex とのレビュー往復</td>
+<td><code>reports/agent_review/000_*.md</code>, <code>001_request.md</code>, <code>001_codex.md</code>, <code>001_decision.md</code></td>
+</tr>
+<tr>
+<td>実験 E1(パネル replay)</td>
+<td><code>experiments/e1_panel/e1_panel_replay.py</code>, <code>e1_results.json</code></td>
+</tr>
+<tr>
+<td>実験 E2(順方向モデル再スコアリング診断)</td>
+<td><code>experiments/e2_forward/</code></td>
+</tr>
+<tr>
+<td>提出用 Notebook(基準 E0)</td>
+<td><code>kernels/baseline-v18/</code>(Kaggle: <code>hayatetaf/casmi26-baseline-v18</code>、非公開)</td>
+</tr>
+<tr>
+<td>変更候補 Notebook(E3、未提出)</td>
+<td><code>kernels/e3-candidate/</code></td>
+</tr>
+<tr>
+<td>実験 P1(ラベル非依存の候補取得 → 公式同一性で採点する基準系、Codex 003 合意)</td>
+<td><code>experiments/p1_baseline/</code>(スクリプト・<code>run1/</code> 出力)、設計と結果: <code>docs/p1_baseline_2026-10-24.md</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="2">2. 実験結果</h2>
+<h3 id="e1-250-replay">E1: 天然物パネル(250 分子)の replay</h3>
+<p>データ: <code>dmitriigluzdov/casmi26-natural-product-panel-benchmark</code>。旧単一エンジン構成のキャッシュ(ICEBERG/GLACIER 導入前)。パネルは enveda-np-examples の 250 分子で、249/250 が COCONUT 収載の有名天然物。fpnet_full1 はこれらを学習に含む。</p>
+<p>主リスト(ランカー順)と popularity prior の比較。生成候補は位置固定(Notebook と同じ規則)。</p>
+<table>
+<thead>
+<tr>
+<th>シナリオ</th>
+<th style="text-align: right;">正解が候補にある分子</th>
+<th style="text-align: right;">ランカーのみ MRR</th>
+<th>pop mu=0.15 の差(95% 区間)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>他ライブラリに参照あり(Class 1 相当)</td>
+<td style="text-align: right;">250/250</td>
+<td style="text-align: right;">0.955</td>
+<td>+0.025 [+0.009, +0.043]</td>
+</tr>
+<tr>
+<td>参照スペクトルなし(Class 2 相当)</td>
+<td style="text-align: right;">250/250</td>
+<td style="text-align: right;">0.971</td>
+<td>+0.018 [+0.004, +0.034]</td>
+</tr>
+<tr>
+<td>pool から正解除外(Class 3 相当)</td>
+<td style="text-align: right;">99/250</td>
+<td style="text-align: right;">0.361</td>
+<td>±0(生成候補は固定のため不変)</td>
+</tr>
+</tbody>
+</table>
+<p>同一分子式 PubChem 候補(分子あたり中央値 882 件、正解分子式を既知とした条件付き評価)での順位付け:</p>
+<table>
+<thead>
+<tr>
+<th>スコア</th>
+<th style="text-align: right;">MRR@25</th>
+<th style="text-align: right;">top-1</th>
+<th style="text-align: right;">hit@25</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fold-safe 指紋モデル(パネル未学習)</td>
+<td style="text-align: right;">0.230</td>
+<td style="text-align: right;">7.7%</td>
+<td style="text-align: right;">73%</td>
+</tr>
+<tr>
+<td>A+B 指紋モデル(パネルを学習)</td>
+<td style="text-align: right;">0.422</td>
+<td style="text-align: right;">27%</td>
+<td style="text-align: right;">82%</td>
+</tr>
+<tr>
+<td>文献数 prior のみ(スペクトル不使用)</td>
+<td style="text-align: right;">0.817</td>
+<td style="text-align: right;">71%</td>
+<td style="text-align: right;">100%</td>
+</tr>
+<tr>
+<td>fold-safe + 0.25·文献数</td>
+<td style="text-align: right;">0.815</td>
+<td style="text-align: right;">71%</td>
+<td style="text-align: right;">99%</td>
+</tr>
+<tr>
+<td>A+B + 0.5·文献数</td>
+<td style="text-align: right;">0.871</td>
+<td style="text-align: right;">79%</td>
+<td style="text-align: right;">100%</td>
+</tr>
+</tbody>
+</table>
+<p>解釈: 指紋モデル単独では同一分子式異性体の識別が弱く、現行パイプラインの Class 2 性能は文献 prior に大きく依存している。文献の少ない分子(隠しテストに含まれうる仮説的天然物・アナログ)では指紋単独の弱さが露呈する。Codex の指摘どおり、このパネルは文献 prior に有利な偏りがあり、絶対値は本番に転移しない。</p>
+<h3 id="e2-iceberg-glacier">E2: 順方向モデル(ICEBERG / GLACIER)による再スコアリングの診断</h3>
+<p>設定: パネル 212 分子([M+H]+/[M+Na]+ 正モードスペクトルを持つもの)、同一分子式 PubChem 候補を fold-safe 指紋で順位付けした上位 200 件(37,180 候補)に対し、MassSpecGym 学習版 ICEBERG と GLACIER(公開 Kaggle bundle、RDKit 2025.03.6、ローカル RTX 5070 Ti)でスペクトルを予測しエントロピー類似度を算出。窓 40/100/200 と重み 0.5/1/2 で融合し、MRR@25 を比較。</p>
+<p>結果(パネル、ICEBERG 212 分子 37,180 候補を 1,067 秒、GLACIER を 623 秒で予測、RTX 5070 Ti):</p>
+<table>
+<thead>
+<tr>
+<th>基準順位</th>
+<th style="text-align: right;">窓</th>
+<th>再スコアリング</th>
+<th style="text-align: right;">MRR@25</th>
+<th style="text-align: right;">top-1</th>
+<th>基準との差(95% 区間)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fold-safe 指紋のみ</td>
+<td style="text-align: right;">—</td>
+<td>なし</td>
+<td style="text-align: right;">0.230</td>
+<td style="text-align: right;">7.7%</td>
+<td>—</td>
+</tr>
+<tr>
+<td>fold-safe 指紋のみ</td>
+<td style="text-align: right;">40</td>
+<td>z(fp)+z(ICE)+z(GL)</td>
+<td style="text-align: right;">0.387</td>
+<td style="text-align: right;">21.5%</td>
+<td>+0.157 [+0.127, +0.188]</td>
+</tr>
+<tr>
+<td>fold-safe 指紋のみ</td>
+<td style="text-align: right;">100</td>
+<td>z(fp)+z(ICE)+z(GL)</td>
+<td style="text-align: right;">0.419</td>
+<td style="text-align: right;">24.0%</td>
+<td>+0.189 [+0.156, +0.224]</td>
+</tr>
+<tr>
+<td>fold-safe 指紋のみ</td>
+<td style="text-align: right;">100</td>
+<td>ICE+GL のみ(fp 無視)</td>
+<td style="text-align: right;">0.469</td>
+<td style="text-align: right;">33.3%</td>
+<td>+0.239 [+0.188, +0.289]</td>
+</tr>
+<tr>
+<td>fold-safe 指紋のみ</td>
+<td style="text-align: right;">200</td>
+<td>z(fp)+z(ICE)+z(GL)</td>
+<td style="text-align: right;">0.450</td>
+<td style="text-align: right;">28.5%</td>
+<td>+0.220 [+0.182, +0.258]</td>
+</tr>
+<tr>
+<td>指紋 + 0.25·文献数</td>
+<td style="text-align: right;">—</td>
+<td>なし</td>
+<td style="text-align: right;">0.669</td>
+<td style="text-align: right;">55.7%</td>
+<td>—</td>
+</tr>
+<tr>
+<td>指紋 + 0.25·文献数</td>
+<td style="text-align: right;">40</td>
+<td>+z(ICE)+z(GL)</td>
+<td style="text-align: right;">0.752</td>
+<td style="text-align: right;">66.7%</td>
+<td>+0.082 [+0.051, +0.114]</td>
+</tr>
+<tr>
+<td>指紋 + 0.25·文献数</td>
+<td style="text-align: right;">100</td>
+<td>+z(ICE)+z(GL)</td>
+<td style="text-align: right;">0.750</td>
+<td style="text-align: right;">66.7%</td>
+<td>+0.081 [+0.050, +0.114]</td>
+</tr>
+<tr>
+<td>指紋 + 0.25·文献数</td>
+<td style="text-align: right;">200</td>
+<td>+z(ICE)+z(GL)</td>
+<td style="text-align: right;">0.749</td>
+<td style="text-align: right;">66.7%</td>
+<td>+0.079 [+0.048, +0.112]</td>
+</tr>
+</tbody>
+</table>
+<p>読み取り: (1) 順方向モデル 2 本の併用は単独より一貫して良い(窓 100 で ICE 単独 0.372、GL 単独 0.357、併用 0.419)。(2) 文献 prior が効いている状況では窓を 40 から広げても利得はほぼ無い(正解は既に上位 40 に入っているため)。文献 prior 無しの状況(文献の少ない分子)では窓 40→100→200 で +0.03、+0.03 と積み上がる。(3) 順方向モデル単独は文献 prior を下回る(パネルの偏り)。</p>
+<p><strong>重大な注意</strong>: パネル 250 分子のうち 236 分子が MassSpecGym に収載され(204 分子は MSG の train fold)、MSG 学習版 ICEBERG/GLACIER はこれらのスペクトルを学習済み。したがって上の数値は記憶による水増しを含み、未知分子への効果量としては使えない。これを受けて E2b(MSG 非収載の分子)を追加実施。</p>
+<h3 id="e2b-massspecgym-v1codex-002-v2-v2">E2b: MassSpecGym 非収載分子での順方向モデル診断(v1。Codex 002 の指摘により v2 で修正・再実行済み。v2 の表を正とする)</h3>
+<p>設定: (A) enveda-180 の identity fold 0 かつ MSG 非収載(MSG の元の InChIKey14 基準)かつ [M+H]+ スペクトルを持つ分子 200 件(合成化合物、主に timsTOF)、(B) gnps/riken/mona/massbank/msdial の MSG 非収載分子 200 件(公開ライブラリ由来の分子、他装置)。v1 の既知の欠陥(Codex 002): MSG 除外に公式鍵での漏れが少なくとも 2 件、セット A の入力に Orbitrap スペクトルが 13 本混入(2 分子)、候補の重複排除と正解判定が公式鍵でない、候補窓の中性質量に電子補正が未適用、ラベル由来の品質条件(|ppm|&lt;10)を使用、セット B の 75 分子は正解を強制追加(その群は難易度が異なる)。絶対値は参考値とし、v2 で再測定する。候補は PubChem tier の ±10 ppm 窓から正解と同一分子式のものを InChIKey14 で重複排除し、正解 + 最大 99 件をランダム抽出(正解が PubChem に無ければ明示的に追加)。正モード m/z には電子質量 0.000548 Da の補正を適用(運営の助言)。評価は順方向モデル単独の順位付け(ランダム基準との比較)。</p>
+<p>結果(各 200 分子、候補 = 正解 + 同一分子式異性体 99 件、順方向モデル単独の順位。MRR@25 と top-1、括弧は分子単位ブートストラップ 95% 区間):</p>
+<table>
+<thead>
+<tr>
+<th>セット</th>
+<th>デコイ</th>
+<th style="text-align: right;">ランダム</th>
+<th style="text-align: right;">ICEBERG</th>
+<th style="text-align: right;">GLACIER</th>
+<th style="text-align: right;">ICE+GL(z 和)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A: timsTOF 未知分子(enveda-180 fold 0、MSG 非収載)</td>
+<td>ランダム 99 件</td>
+<td style="text-align: right;">0.039</td>
+<td style="text-align: right;">0.864 [0.822, 0.901]、top-1 79.5%</td>
+<td style="text-align: right;"><strong>0.894 [0.859, 0.927]、top-1 83.5%</strong></td>
+<td style="text-align: right;">0.890、top-1 82.0%</td>
+</tr>
+<tr>
+<td>A: 同上</td>
+<td>正解に最も近い 99 件(Tanimoto 上位)</td>
+<td style="text-align: right;">0.039</td>
+<td style="text-align: right;">0.574 [0.523, 0.625]、top-1 40.5%</td>
+<td style="text-align: right;"><strong>0.640 [0.592, 0.689]、top-1 47.5%</strong></td>
+<td style="text-align: right;">0.629、top-1 45.0%</td>
+</tr>
+<tr>
+<td>B: 天然物ライブラリの MSG 非収載分子(gnps 173 ほか、他装置)</td>
+<td>ランダム 99 件</td>
+<td style="text-align: right;">0.088</td>
+<td style="text-align: right;">0.753、top-1 67.0%</td>
+<td style="text-align: right;">0.759、top-1 68.0%</td>
+<td style="text-align: right;"><strong>0.793 [0.744, 0.841]、top-1 73.0%</strong></td>
+</tr>
+<tr>
+<td>B: 同上</td>
+<td>近傍 99 件</td>
+<td style="text-align: right;">0.088</td>
+<td style="text-align: right;">0.591 [0.535, 0.649]、top-1 47.0%</td>
+<td style="text-align: right;">0.620 [0.566, 0.676]、top-1 49.0%</td>
+<td style="text-align: right;"><strong>0.649 [0.595, 0.703]、top-1 52.5%</strong></td>
+</tr>
+</tbody>
+</table>
+<p>同一候補集合での fold-safe FPNet(各分子を学習に含まない fold のモデル。E1 のパネル値とは候補集合が異なる)との比較:</p>
+<table>
+<thead>
+<tr>
+<th>セット</th>
+<th style="text-align: right;">FPNet</th>
+<th style="text-align: right;">GLACIER</th>
+<th style="text-align: right;">z(FP)+z(GL)</th>
+<th style="text-align: right;">z(FP)+2·z(GL)</th>
+<th style="text-align: right;">z(FP)+z(ICE)+z(GL)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A timsTOF、ランダム 99</td>
+<td style="text-align: right;">0.847 / 74.5%</td>
+<td style="text-align: right;">0.894 / 83.5%</td>
+<td style="text-align: right;"><strong>0.924 / 87.5%</strong></td>
+<td style="text-align: right;">0.914</td>
+<td style="text-align: right;">0.923</td>
+</tr>
+<tr>
+<td>A timsTOF、近傍 99</td>
+<td style="text-align: right;">0.589 / 41.5%</td>
+<td style="text-align: right;">0.640 / 47.5%</td>
+<td style="text-align: right;"><strong>0.736 / 59.0%</strong></td>
+<td style="text-align: right;">0.718</td>
+<td style="text-align: right;">0.714</td>
+</tr>
+<tr>
+<td>B 天然物、ランダム 99</td>
+<td style="text-align: right;">0.760 / 66.0%</td>
+<td style="text-align: right;">0.759 / 68.0%</td>
+<td style="text-align: right;"><strong>0.835 / 77.0%</strong></td>
+<td style="text-align: right;">0.827</td>
+<td style="text-align: right;">0.829</td>
+</tr>
+<tr>
+<td>B 天然物、近傍 99</td>
+<td style="text-align: right;">0.570 / 45.5%</td>
+<td style="text-align: right;">0.620 / 49.0%</td>
+<td style="text-align: right;"><strong>0.707 / 59.5%</strong></td>
+<td style="text-align: right;">0.695</td>
+<td style="text-align: right;">0.702</td>
+</tr>
+</tbody>
+</table>
+<p>読み取り: (1) MSG 学習版の順方向モデルは、(元の鍵基準で)学習に含まれない分子に対しても同一分子式異性体を識別する(ランダムデコイで top-1 約 80%、近傍デコイで約 45〜49%)。(2) 同じ候補集合では公平条件の FPNet も top-1 42〜75% で、GLACIER と同程度か少し弱い。E1 のパネル値 7.7% は候補 882 件・天然物・パネル固有の難しさによる値で、両者を「桁違い」とは言えない。(3) <strong>指紋と順方向モデルは補完的</strong>で、等重みの z 和が単独より改善(Codex の paired bootstrap: FP+GL − FP は +0.07〜+0.15、FP+GL − GL は +0.03〜+0.10、いずれも区間が 0 を含まない)。ICE 追加や GL 重み 2 倍の差は区間が 0 を跨ぎ、採用する証拠は無い(悪化の証明でもない)。(4) GLACIER は ICEBERG より一貫して強い。(5) random と hard は同じ 200 分子・同じスペクトルの再評価で、独立な評価分子は A・B 合計 400。候補は 100 件打ち切り(実際は中央値 2,600 件)、セット B の強制追加群(75 分子)は難易度が異なる。</p>
+<h4 id="e2b-v2codex-002-experimentse2_forwardv2">E2b v2(Codex 002 の修正を反映した再実行、<code>experiments/e2_forward/v2/</code>)</h4>
+<p>修正点: MSG 除外を公式スコアラー鍵でも実施、セット A の入力スペクトルを enveda-180(timsTOF)のみに限定(200 分子全て timsTOF)、セット B も選定元ライブラリのスペクトルに限定(Orbitrap 114、ToF 53、qTof 13 ほか)、候補の重複排除と正解判定を公式鍵で実施(正解の別表記 3 件を除去)、候補窓の中性質量にも電子補正を適用、<code>truth_in_retrieval_window</code> で層別(A 191/200、B 110/200。B の残り 90 分子は正解を強制追加した群で難易度が低い)。各セット 200 分子、候補 100 件、MRR@25(分子単位ブートストラップ、paired delta)。</p>
+<table>
+<thead>
+<tr>
+<th>セット・デコイ</th>
+<th style="text-align: right;">FPNet(fold-safe)</th>
+<th style="text-align: right;">ICEBERG</th>
+<th style="text-align: right;">GLACIER</th>
+<th style="text-align: right;">FP+GL</th>
+<th style="text-align: right;">FP+ICE+GL</th>
+<th>Δ(FP+GL − FP)</th>
+<th>Δ(FP+GL − GL)</th>
+<th>Δ(FP+ICE+GL − FP+GL)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A timsTOF・ランダム</td>
+<td style="text-align: right;">0.850</td>
+<td style="text-align: right;">0.860</td>
+<td style="text-align: right;">0.892</td>
+<td style="text-align: right;"><strong>0.924</strong></td>
+<td style="text-align: right;">0.923</td>
+<td>+0.074 [+0.041, +0.108]</td>
+<td>+0.031 [+0.011, +0.053]</td>
+<td>−0.000 [−0.014, +0.014]</td>
+</tr>
+<tr>
+<td>A timsTOF・近傍</td>
+<td style="text-align: right;">0.590</td>
+<td style="text-align: right;">0.574</td>
+<td style="text-align: right;">0.639</td>
+<td style="text-align: right;"><strong>0.736</strong></td>
+<td style="text-align: right;">0.711</td>
+<td>+0.146 [+0.101, +0.193]</td>
+<td>+0.097 [+0.056, +0.140]</td>
+<td>−0.025 [−0.053, +0.004]</td>
+</tr>
+<tr>
+<td>B 公開 NP ライブラリ・ランダム</td>
+<td style="text-align: right;">0.807</td>
+<td style="text-align: right;">0.817</td>
+<td style="text-align: right;">0.769</td>
+<td style="text-align: right;">0.826</td>
+<td style="text-align: right;"><strong>0.854</strong></td>
+<td>+0.019 [−0.013, +0.051]</td>
+<td>+0.057 [+0.027, +0.088]</td>
+<td>+0.028 [+0.005, +0.051]</td>
+</tr>
+<tr>
+<td>B 公開 NP ライブラリ・近傍</td>
+<td style="text-align: right;">0.679</td>
+<td style="text-align: right;">0.656</td>
+<td style="text-align: right;">0.625</td>
+<td style="text-align: right;">0.715</td>
+<td style="text-align: right;"><strong>0.744</strong></td>
+<td>+0.035 [−0.000, +0.070]</td>
+<td>+0.090 [+0.048, +0.131]</td>
+<td>+0.029 [+0.004, +0.056]</td>
+</tr>
+</tbody>
+</table>
+<p>v2 の読み取り(Codex 003 の確認を反映): (1) セット A(timsTOF、CE 既知)では FP+GL の融合が FP 単独・GL 単独より有意に良く、GL の重み 2 倍や ICE 追加を採用する根拠は無い。(2) セット B では ICE 追加が FP+GL を有意に改善(+0.029 [+0.004, +0.056])する一方、FP+GL が FP 単独を改善する証拠はまだ弱い(近傍 +0.035、区間が 0 に接する)。(3) B には交絡がある: 200 分子中 192 分子で CE が欠損(<code>ce_units</code> も unknown)、111 分子が 1 スペクトルのみ、選定元は GNPS 188 分子、v1 と共通の分子は 3 件のみ。したがって「装置・化学で最適な融合が変わる → 学習融合が必要」は仮説にとどめ、A の同じ分子で CE 情報だけを隠す対照で切り分ける。(4) 正解が PubChem 窓にある分子(raw 鍵判定)は強制追加群より一貫して難しく、B の絶対値はこの層別で読む(B 近傍で FP 0.56 vs 0.82)。(5) 候補 100 件打ち切り・分子式既知・正解存在・|ppm|&lt;10 の選別という条件付き診断であり、端から端の Class 2 性能ではない。random/hard は同じ分子の再評価で、独立な評価分子は A・B 合計 400。</p>
+<h4 id="ce-codex-003-a-results_timstof_unseen_hard_nocejson">CE 情報を隠した対照(Codex 003 の提案、セット A 近傍デコイと同じ分子・候補・スペクトル、<code>results_timstof_unseen_hard_noce.json</code>)</h4>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th style="text-align: right;">FP</th>
+<th style="text-align: right;">ICE</th>
+<th style="text-align: right;">GL</th>
+<th style="text-align: right;">FP+GL</th>
+<th style="text-align: right;">FP+ICE+GL</th>
+<th>Δ(FP+ICE+GL − FP+GL)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CE 既知(元の v2)</td>
+<td style="text-align: right;">0.590</td>
+<td style="text-align: right;">0.574</td>
+<td style="text-align: right;">0.639</td>
+<td style="text-align: right;">0.736</td>
+<td style="text-align: right;">0.711</td>
+<td>−0.025 [−0.053, +0.004]</td>
+</tr>
+<tr>
+<td>CE を隠す(順方向モデルは 20+40+60 eV 統合予測、FPNet は ce_known=0)</td>
+<td style="text-align: right;">0.525</td>
+<td style="text-align: right;">0.586</td>
+<td style="text-align: right;">0.647</td>
+<td style="text-align: right;">0.712</td>
+<td style="text-align: right;">0.714</td>
+<td>+0.002 [−0.031, +0.035]</td>
+</tr>
+</tbody>
+</table>
+<p>読み取り: CE を隠しても ICE の追加は有意に効かず、セット B の ICE 利得は CE 欠損だけでは説明できない(装置・化学・スペクトル数などの他の要因が残る)。FPNet は CE 入力を失うと 0.065 下がるが、順方向モデルは CE バケット別の予測より統合予測の方がわずかに良く(GL 0.639→0.647、ICE 0.574→0.586)、CE の使い方自体に改善余地がある可能性を示す(未検証)。</p>
+<p>含意: FP と GL の融合は同一分子式候補の順位付けを改善する。ただし今回の比較は V18 の融合規則(融合順位スコア + GL)や窓拡張を検証したものではなく、E3 候補(ICE 追加・GL 重み増・窓拡張)を支持する比較は無い(→ 本日は E0 のみ提出)。E2b は「分子式と正解候補の存在を与えた異性体識別パネル」として Class 2 部品の比較に使い、端から端までの Class 2 評価(実測プリカーサからの候補取得、分子式なし、強制追加なし、参照除外)は別層で整備する。</p>
+<h3 id="e2c-class-2-experimentse2_forwardfunnel">E2c: 端から端の Class 2 相当漏斗診断(分子式なし・正解追加なし、<code>experiments/e2_forward/funnel/</code>)</h3>
+<p>Codex 003 が求めた P1 の予備版。E2b v2 と同じ 400 分子(学習ライブラリに公開スペクトルがある分子を Class 2 の代理として、参照は使わない)について、実測 [M+H]+ プリカーサ(電子補正済み)から中性質量を求め、PubChem tier の ±10 ppm 窓にある全構造(分子式で絞らない、正解を追加しない、raw InChIKey14 で重複排除)を候補とし、fold-safe FPNet(各分子を学習していない fold のモデル)で全候補を順位付け、上位 100 件を GLACIER / ICEBERG で再スコアして、公式 MRR@25 相当(raw 鍵で正解照合)を測った。</p>
+<table>
+<thead>
+<tr>
+<th>セット A: timsTOF 未知分子 200 件</th>
+<th style="text-align: right;">値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>質量窓の候補数(中央値 / 90% 点)</td>
+<td style="text-align: right;">10,396 / 17,476</td>
+</tr>
+<tr>
+<td>正解が窓にある分子</td>
+<td style="text-align: right;">191 / 200</td>
+</tr>
+<tr>
+<td>FPNet での正解順位の中央値</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>正解が FPNet 上位 100 に入る分子</td>
+<td style="text-align: right;">183 / 200</td>
+</tr>
+<tr>
+<td>FPNet のみ(全候補) MRR@25 / top-1</td>
+<td style="text-align: right;">0.446 / 30.5%</td>
+</tr>
+<tr>
+<td>FPNet 上位 40 を z(FP)+z(GL) で再順位</td>
+<td style="text-align: right;">0.608 / 45.5%</td>
+</tr>
+<tr>
+<td>FPNet 上位 100 を z(FP)+z(GL) で再順位</td>
+<td style="text-align: right;"><strong>0.615 / 46.0%</strong>(Δ vs FP +0.169 [+0.114, +0.223])</td>
+</tr>
+<tr>
+<td>上位 100 を GL のみで再順位</td>
+<td style="text-align: right;">0.560 / 41.5%</td>
+</tr>
+<tr>
+<td>上位 100 を z(FP)+z(ICE)+z(GL)</td>
+<td style="text-align: right;">0.597(Δ vs FP+GL −0.018 [−0.054, +0.019])</td>
+</tr>
+<tr>
+<td>窓 40 → 100 の差</td>
+<td style="text-align: right;">+0.007 [−0.018, +0.032]</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>セット B: 公開 NP ライブラリ由来の未見分子 200 件(GNPS 中心、他装置、CE 欠損多数)</th>
+<th style="text-align: right;">値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>質量窓の候補数(中央値 / 90% 点)</td>
+<td style="text-align: right;">5,076 / 13,972</td>
+</tr>
+<tr>
+<td>正解が窓にある分子(raw 鍵判定、PubChem tier のみ)</td>
+<td style="text-align: right;">110 / 200</td>
+</tr>
+<tr>
+<td>FPNet での正解順位の中央値(窓に正解がある分子)</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr>
+<td>正解が FPNet 上位 100 に入る分子</td>
+<td style="text-align: right;">93 / 200</td>
+</tr>
+<tr>
+<td>FPNet のみ(全候補) MRR@25 / top-1</td>
+<td style="text-align: right;">0.213 / 15.5%</td>
+</tr>
+<tr>
+<td>FPNet 上位 100 を z(FP)+z(GL) で再順位</td>
+<td style="text-align: right;">0.320 / 26.0%(Δ vs FP +0.108 [+0.067, +0.150])</td>
+</tr>
+<tr>
+<td>上位 100 を z(FP)+z(ICE)+z(GL)</td>
+<td style="text-align: right;"><strong>0.339 / 28.0%</strong>(Δ vs FP+GL +0.018 [−0.004, +0.041])</td>
+</tr>
+<tr>
+<td>上位 100 を GL のみ / ICE のみ</td>
+<td style="text-align: right;">0.296 / 0.293</td>
+</tr>
+</tbody>
+</table>
+<p>読み取り: (1) timsTOF セットでは、実運用規模(1 分子あたり約 1 万候補)でも正解の 95% が質量窓に入り、FPNet 単独で中央値 3 位・上位 100 に 92% が入る。候補到達率より順位付けが損失の主因で、参加者報告(ランキングの伸びしろはリコールの 17 倍)と整合。(2) GLACIER による shortlist の再順位付けが timsTOF セットの MRR を 0.45 → 0.61 に、NP セットでは 0.21 → 0.32 に押し上げる(文献 prior なし、学習融合なし、固定の等重み z 和)。(3) timsTOF では窓 40→100 の拡大も ICE 追加も有意差なし。NP セットでは ICE 追加が +0.018(区間が 0 を含む)。(4) NP セットの損失の半分近くは候補到達率(窓に正解があるのは 55%)だが、これは PubChem tier のみ・raw 鍵判定の値で、本番パイプラインが使う COCONUT・PubChemLite・学習構造プールを含まず、公式鍵での照合もしていないため、本番の到達率を表さない。(5) セット A は合成化合物、セット B は他装置・CE 欠損という交絡があり、Codex 003 の P1 設計(開発に使った分子の除外、候補出典の来歴、公式同一性での窓照合、分母の固定)はまだ満たしていない。P1 の予備診断として扱う。評価スクリプトの <code>@40</code> 変種はセット B で nan を返す既知のバグがある(候補数 40 未満の分子の扱い、未修正)。</p>
+<h3 id="p1-0800experimentsp1_baseline">P1: ラベル非依存の候補取得 → 公式同一性で採点する基準系(08:00〜、<code>experiments/p1_baseline/</code>)</h3>
+<p>Codex 003 で合意した「分子式も正解追加も使わない候補取得から公式採点までが動き、どの段で正解を失うか分かる基準系」。設計の詳細と結果は <code>docs/p1_baseline_2026-10-24.md</code>。</p>
+<ul>
+<li>評価分子(凍結・未使用): A = enveda-180(timsTOF)300 分子、B = 公開天然物ライブラリ(gnps 275 ほか)300 分子。identity fold 0、MassSpecGym 非掲載(raw 鍵・公式鍵)、開発に使った identity group(パネル 250、E2b/E2c 400 分子)を除外、identity group から 1 分子、fit/tune/eval に 3 等分。ラベル由来の ppm フィルタは使わず誤差は記録のみ。</li>
+<li>候補源(来歴付き): PubChem tier(1.06 億行)、公開 v2 pool(学習構造 / COCONUT、鍵は公式 scorer key と一致)、prvsiyan COCONUT(学習構造を除いた COCONUT なのでデコイ源のみ)。±10 ppm 窓、電子質量補正。class-2 模擬として正解の学習構造としての存在は隠す。</li>
+<li>順位付け: fold-0 FPNet(学習コード付き)で窓全体を採点 → FP 上位 100 と z(FP)+0.15·prior 上位 100 の和集合を shortlist(公式鍵で重複排除)→ GLACIER / ICEBERG → 融合の比較。prior は公開 popularity データセット(tier 行・pool 行に整列)から公開 v18 の定義で合成。</li>
+<li>候補到達(384 秒): A は 296/300 が PubChem 窓内(COCONUT には 0)。B は外部 DB に存在 198/300、測定窓内 179/300(23 分子が |誤差| &gt; 10 ppm、学習構造としては 277/300 が窓内)。公式鍵のタウトマー別名による到達は 0 件。</li>
+<li>セット A の結果(300 分子、窓 1 万構造、公式同一性): FP 0.465 → z(FP)+z(GL) 0.685(+0.221 [+0.186, +0.257])、z(FP)+2z(GL) 0.708、+0.5 prior 0.716。公開 Notebook の規則(上位 25 の同一分子式 slot 再順位)の再現は 0.627 で、同じ GL スコアの全体 z 和より −0.058 [−0.084, −0.034]。FP top-1 の誤りの 91% は同一分子式異性体。</li>
+<li>ICE 完全版(09:05): この条件では ICE も有効(z(FP)+z(ICE)+z(GL) 0.723、FP+GL に +0.038 [+0.016, +0.060])。E2b の「timsTOF で ICE 無効」は分子式既知・100 候補の条件に限った結果だった。公開規則の再現も ICE+GL 版 0.686 が基準。</li>
+<li>公開 Notebook の PubChem 専用リスト(K=25、pool 外構造)を模擬: E0 の規則(ICE+GL)0.717 → K=100・全体 z(base)+2z(GL)+z(ICE) 0.766(+0.049 [+0.021, +0.077]、fit/tune/eval すべてで一致)。→ 提出候補 <strong>E4 v2</strong> を作成(<code>kernels/e4-pclist/</code>、E0 から 4 箇所置換: K 25→100、ICE/GL 入力に PubChem リスト全件、PubChem リストの再順位を全体 z 和(GL 重み 2、ICE 重み 1)に、予算 ICE 7200 / GL 5400 秒)。Codex 004 の指摘(候補条件・実関数・評価器の修正)を反映した模擬 v2 でも A +0.049 [+0.022, +0.077]、B +0.047 <a href="strict +0.042">+0.019, +0.075</a>と方向一致。</li>
+<li><strong>方針転換(09:45、ユーザー判断)</strong>: 公開ノートブックの局所修正で積む進め方はやめ、E4 v3 は P1 代理指標の LB 転移を測る計測提出 1 回に限定。以後は自前ベースライン B1(統一候補表 + 学習順位付け、<code>reports/agent_review/005_request.md</code> §4)を構築する。</li>
+</ul>
+<h3 id="e0">E0: 公開最高系譜の忠実再現(基準提出)</h3>
+<ul>
+<li>smoke コミット(可視 test の 12 分子、<code>scoring_rerun=false</code>、経過 1,329 秒)は成功: 12 分子を推論し、残り 388 分子は placeholder で全 400 行の submission を生成(「400 行を書けた」ことと「400 分子を推論できた」ことは別)。GLACIER 分岐 11 分子・断片スコア分岐 1 分子、Codex が指摘した「GL 有効なのに unrescored」は 0 件(12 分子中)。</li>
+<li>提出: submission 57567821(2026-10-24 02:13 JST、本日残り 4 回)。<strong>Public LB 0.464</strong>(06:30 JST 採点完了、提出から約 4 時間 15 分で本番再実行が完了)。元ノートブックの報告値 0.464 と一致し、提出経路と再現性を確認。現時点の LB では首位 0.504、金圏(上位 17 程度)の下限が約 0.473、0.464 は 30〜40 位前後。</li>
+<li>smoke の所要時間(T4): 固定費約 1,000 秒(ライブラリ索引 362 秒、キャッシュ構築 949 秒、エンジン準備 981 秒、GBDT ランカー学習を含む)、12 分子で主エンジン約 60 秒、PubChem リスト約 170 秒、ICE 86 秒(1,599 予測、36.7 予測/秒)、GL 49 秒(74.7 予測/秒)。400 分子では ICE 約 58k 予測 ≈ 26 分、GL ≈ 13 分と見積もられ、予算(5,400 秒 / 4,000 秒)内。</li>
+<li>コンプライアンス上の注意: この系譜は第三者が学習コード未公開のまま配布した重み(fpnet_full1 等)に依存する。運営は「使用する全ての重みについて実際に使った学習コードの提示」を入賞条件としており(Killian 10-13/14、750612)、このままの構成は入賞資格を満たさない可能性が高い。最終解では学習コード付きの fold-safe FPNet(Apache-2.0 の学習キットあり)等への置き換えが必要。</li>
+</ul>
+<h3 id="b1-1000experimentsb1_baseline-docsb1_baseline_designmd">B1: 自前ベースライン(10:00〜、<code>experiments/b1_baseline/</code>、設計 <code>docs/b1_baseline_design.md</code>)</h3>
+<p>ユーザー判断(09:45)で公開ノートブックの局所修正をやめ、自前のベースラインに移行。10:30 までに実装した部品:</p>
+<ul>
+<li><code>b1_common.py</code>: 10 アダクトの中性質量変換(train で全アダクト中央値 0 ppm 付近を確認)、電子質量の扱い、スペクトルエントロピー類似度(同一分子・別 CE 中央値 0.69 vs 異分子 0.014)。</li>
+<li><code>build_spectra_store.py</code>: 学習スペクトル 2.54M 本の mmap ストア(9 秒)。Kaggle 上では train.parquet から同じものを実行時に構築(10 秒、オフセット一致を確認)。</li>
+<li><code>b1_features.py</code>: 統一候補表(PubChem tier + v2 pool + COCONUT の窓、fold-0 FPNet、ライブラリ類似度の C1/C2 両視点、prior、shortlist = FP ∪ FP+prior ∪ 参照上位、公式鍵)。</li>
+<li><code>b1_evaluate.py</code>: 固定規則の比較(S = z(FP)+w·z(GL)+z(ICE)+λ·pop、参照優先規則、strict/C1/C2)。<code>b1_rank_train.py</code>: LambdaRank(fit/tune/eval)。</li>
+<li><code>b1_pipeline.py</code> + <code>kernels/b1-baseline/</code>: 提出 Notebook(ローカル 3 分子で end-to-end 動作確認済み。Kaggle へ push 待ち: GPU セッション上限 2 のため E4 の実行終了後)。</li>
+<li>評価集合: <code>eval_set</code>(A/B 各 300、seed 2、全開発 group 除外)、<code>eval_c1</code>(NP 300、≥2 ライブラリ、seed 3)。A は他ライブラリ参照が 7/300 のみで C1 不可。</li>
+<li>実行中: eval_set の特徴表(約 6 秒/分子)→ GL/ICE → 評価、eval_c1 → P1 分子(fit 用)の順に自動連鎖。</li>
+</ul>
+<p>E4 v5(計測提出)は Codex 005 の指摘で「両モデルが全候補を被覆するときだけ新融合」に改め、可視実行の完了後に自動提出する。v3/v4 は提出しない。</p>
+<h2 id="3-codex">3. Codex との議論の要点</h2>
+<ul>
+<li>000(初回): 分子同一性を揃えた検証、候補カバレッジと順位付けの分離、パネルの偏り、Public LB 130 分子は推定値、公開 Notebook の系譜の混同に注意。</li>
+<li>001: V18 には既に ICE 候補 60 件・NH4/水損失 proxy・ICE+GL 併用・window 40/80 対応がある。セル 44 の <code>if ice and gl</code> 分岐で ICE 辞書が空だと有効な GL が未使用になる経路を実データで数えるべき。パネルキャッシュでは V18 の replay は不可。ルール一括削除は反証あり(PubChem 挿入除去で pool 除外 MRR 0.519→0.361)。採否判断はブートストラップ区間だけでなく作用分子数・悪化例・学習混入・実行時間で。提出は E0 と検証済み 1 変更の 2 本。</li>
+<li>判断記録: <code>reports/agent_review/001_decision.md</code>。</li>
+</ul>
+<h2 id="4">4. 現時点の結論</h2>
+<ol>
+<li><strong>本質的課題は Class 2 の同一分子式異性体の識別と、Class 3 の候補生成</strong>であり、調査(CASMI 史、MassSpecGym、公開パイプライン、全ディスカッション)と自前の実験(E1/E2/E2b)が一致している。Class 1 は参加者報告でライブラリ検索 0.9 超だが、新しい基準系でも同じ性能が出るかは別条件(同一測定・複製を除いた参照検索)で測る。</li>
+<li><strong>順方向モデル(GLACIER)と指紋モデルは同一分子式異性体の識別で補完的</strong>。timsTOF(CE 既知)の未見分子では等重み融合が単独より有意に良い(近傍デコイ 99 件中 top-1: GL 47.5%、FP 41.5%、融合 59.0%)。他装置の公開ライブラリ分子では ICE 追加が効き、FP+GL の優位は弱い(CE 欠損などの交絡あり)。公開パイプラインのパネルでの順方向モデル評価は MassSpecGym との重複(250 分子中 236 が収載、204 が train fold)により過大評価の恐れがあり、未見分子での再評価が必要。</li>
+<li><strong>公開最高系譜(V18 = 0.464 構成)への設定変更(ICE 追加・GL 重み増・窓拡大)を支持する比較は無い。</strong> 公開系譜の 0.373→0.455 の積み上げは Public LB 約 130 分子での選択で、CV の裏付けが無い(ディスカッション 748068、Codex 001 も同意)。</li>
+<li><strong>提出</strong>: E0(V18 忠実再現)のみ提出(submission 57567821、採点待ち)。根拠の無い設定変更の 2 本目は提出しない。</li>
+<li><strong>次の到達点</strong>(Codex 002 と合意した順序。「数日で 0.480」とは断定しない): (1) 評価と来歴の修正・凍結(E2b v2: 公式鍵での MSG 除外・候補同一性・正解判定、入力スペクトルの装置限定、電子補正の一貫適用)、(2) 学習コード付きの既存 FPNet と凍結 GL による基準系の構築(入賞要件は来歴の確保で満たし、自前変更は 1 fold で比較)、(3) 実際の shortlist 上で FP・GL・ICE・参照類似度・prior と欠損フラグを同じ候補行に揃え、小さな固定融合を基準に OOF 特徴を集めてから LambdaRank、(4) GLACIER の timsTOF 適応と対照学習は小規模試行で実現可能性(上流 ms-pred の学習コード、MAGMa 教師データ、GPU メモリ)を確認してから、(5) 生成経路は上記の評価系で「回収した正解」と「押し下げた既存正解」の両方を測る。最終 2 提出は「守り/攻め」でヘッジ。</li>
+<li><strong>コンプライアンス</strong>: 公開系譜の第三者重み(fpnet_full1、v4b ランカー)は学習コード未公開で、運営の「全重みの学習コード提示」要件を満たさない可能性が高い。学習コードと分割監査が公開されている fold-safe FPNet のように来歴を確保できる重みは再学習不要で、再現できない重み・融合規則だけを置き換える。各 checkpoint と学習コード・設定・データ版の対応を manifest として保存する。</li>
+</ol></article><p class='small muted'>原文: <code>docs/progress_2026-10-24_night.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

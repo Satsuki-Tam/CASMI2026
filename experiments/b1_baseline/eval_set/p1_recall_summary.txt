@@ -1,0 +1,12 @@
+== A_timstof: N=300 | libs {'enveda-180': 300} | groups {'fit': 100, 'tune': 100, 'eval': 100} | CE known frac 1.00 | instruments {'timsTOF': 300}
+   measured ppm error: median +0.51, |err|>10 ppm: 0 molecules
+   window sizes (median): PubChem tier 10114 (same formula 3382); pool 119 (external 23); coco 22
+   STAGE db_present_external 287/300  [COCONUT(pool) 0, coco dataset 0, PubChem tier @exact 287]
+   STAGE window_external     287/300  [pool-COCONUT 0, coco 0, tier 287 (official-key fallback hits 0)]
+   STAGE window_train (class-1 route, masked later) 300/300 | window_any 300/300
+== B_nplib: N=300 | libs {'gnps': 276, 'massbank': 10, 'msdial': 8, 'mona': 5, 'riken': 1} | groups {'fit': 100, 'tune': 100, 'eval': 100} | CE known frac 0.04 | instruments {'Orbitrap': 154, 'ToF': 83, 'qTof': 15, 'qToF': 6, 'ESI-QFT': 6}
+   measured ppm error: median -0.08, |err|>10 ppm: 25 molecules
+   window sizes (median): PubChem tier 4571 (same formula 670); pool 28 (external 15); coco 14
+   STAGE db_present_external 191/300  [COCONUT(pool) 54, coco dataset 0, PubChem tier @exact 190]
+   STAGE window_external     175/300  [pool-COCONUT 46, coco 0, tier 174 (official-key fallback hits 0)]
+   STAGE window_train (class-1 route, masked later) 275/300 | window_any 275/300

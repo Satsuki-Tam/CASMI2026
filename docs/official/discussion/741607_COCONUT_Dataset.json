@@ -1,0 +1,23 @@
+{
+  "topic": {
+    "id": 741607,
+    "title": "COCONUT Dataset",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741607",
+    "postDate": "2026-09-16T05:12:18.264Z",
+    "authorName": "Priyanshu Sinha",
+    "authorUrl": "https://www.kaggle.com/pri2si17",
+    "votes": 3,
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>I found this datasource <a href=\"https://coconut.naturalproducts.net/download\" target=\"_blank\">https://coconut.naturalproducts.net/download</a> which might be helpful. I created a kaggle dataset so that it can be attached to notebook. Feel free to explore and use it.</p>\n<p><a href=\"https://www.kaggle.com/datasets/pri2si17/coconut-natural-products-2026-09/data\" target=\"_blank\">https://www.kaggle.com/datasets/pri2si17/coconut-natural-products-2026-09/data</a></p>"
+  },
+  "comments": [
+    {
+      "id": 3525370,
+      "authorName": "Abiram Bharathi S.A",
+      "postDate": "2026-09-17T16:12:04.980Z",
+      "content": "<p>This Dataset is conneted with this competiton or not</p>"
+    }
+  ]
+}

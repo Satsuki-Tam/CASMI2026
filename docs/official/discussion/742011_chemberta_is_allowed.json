@@ -1,0 +1,28 @@
+{
+  "topic": {
+    "id": 742011,
+    "title": "chemberta is allowed",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742011",
+    "postDate": "2026-09-18T22:26:44.330Z",
+    "authorName": "ممدوح",
+    "authorUrl": "https://www.kaggle.com/mamdouhbarkat",
+    "commentCount": 2,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>is chemberta  allowed to be used in my notebook</p>"
+  },
+  "comments": [
+    {
+      "id": 3525805,
+      "authorName": "Navneet",
+      "postDate": "2026-09-19T02:06:35.210Z",
+      "content": "<p>Is it? <a href=\"/mamdouhbarkat\" target=\"_blank\">@mamdouhbarkat</a> </p>"
+    },
+    {
+      "id": 3525801,
+      "authorName": "David Healey",
+      "postDate": "2026-09-19T01:13:21.620Z",
+      "content": "<p>Yes, chemberta is open source</p>"
+    }
+  ]
+}

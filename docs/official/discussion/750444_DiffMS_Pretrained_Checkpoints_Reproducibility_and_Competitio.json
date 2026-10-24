@@ -1,0 +1,15 @@
+{
+  "topic": {
+    "id": 750444,
+    "title": "DiffMS Pretrained Checkpoints — Reproducibility and Competition Eligibility",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/750444",
+    "postDate": "2026-10-18T11:08:35.743Z",
+    "authorName": "Zorojuro",
+    "authorUrl": "https://www.kaggle.com/yahiaokba",
+    "votes": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>I'm looking into pretrained molecular structure generators, particularly DiffMS, and had a few questions.</p>\n<p>The DiffMS maintainers acknowledged a reproducibility issue with the MIST encoder in GitHub issue #27.</p>\n<p>Has anyone seen a corrected DiffMS checkpoint release?</p>\n<p>Is there a verified training-data provenance record confirming that the released weights do not rely on restricted NIST data?</p>\n<p>Has anyone confirmed whether these pretrained weights are eligible under the competition's external-data rules?</p>\n<p>Are there other publicly available spectrum-to-structure generators with clearly documented training sources and pretrained checkpoints?</p>\n<p>Any official references or clarifications would be appreciated.</p>"
+  },
+  "comments": []
+}

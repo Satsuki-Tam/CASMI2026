@@ -1,0 +1,15 @@
+{
+  "topic": {
+    "id": 749778,
+    "title": "How to begin competition in unknown field",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/749778",
+    "postDate": "2026-10-16T00:26:09.995Z",
+    "authorName": "Harsh_2035",
+    "authorUrl": "https://www.kaggle.com/harsh2035",
+    "votes": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>I am assuming that most of the kagglers in this competition come from computer science or IT related field</p>\n<p>How do you know which model will work or which method will work on the dataset of the competition</p>\n<p>Do you guys do research on the problem?</p>\n<p>Do you go to ChatGPT or Claude or your favourite llm and ask them to plan the architecture to create a model such that it gives higher accuracy?</p>\n<p>OR</p>\n<p>Do you guys create your own custom model or do Transfer Learning?</p>\n<p>Looking Forward to your thoughts and approach!</p>"
+  },
+  "comments": []
+}

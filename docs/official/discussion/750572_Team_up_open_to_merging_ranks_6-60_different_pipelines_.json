@@ -1,0 +1,15 @@
+{
+  "topic": {
+    "id": 750572,
+    "title": "Team up — open to merging (ranks ~6-60, different pipelines)",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/750572",
+    "postDate": "2026-10-18T23:44:29.863Z",
+    "authorName": "yves mouaha",
+    "authorUrl": "https://www.kaggle.com/yvesmouaha",
+    "votes": -2,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi all, yves mouaha here. I'm open to a team merge before the Dec 7 deadline.</p>\n<p>What I bring:</p>\n<ul>\n<li>A reproducible 0.455 base and 35+ scored submissions (COCONUT/PubChem popularity priors, ICEBERG and GLACIER rescoring, MetFrag-lite, tautomer handling), including what did NOT help, so we don't waste submissions.</li>\n<li>A validation bench on enveda-180 (same instrument as the test) in progress, to tune without overfitting the 31% public split.</li>\n<li>Daily availability for experiments and submission management.</li>\n</ul>\n<p>What I'm looking for: a team whose pipeline differs from the public 0.455 lineage, so that a rank-level fusion adds real diversity.</p>\n<p>Prize split: Kaggle default (even shares). No code or data shared before a merge, per the rules. Comment below or send a team invite to \"yves mouaha\".</p>"
+  },
+  "comments": []
+}

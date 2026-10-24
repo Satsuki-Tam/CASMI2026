@@ -1,0 +1,35 @@
+{
+  "topic": {
+    "id": 751356,
+    "title": "How do I get validated in this competition?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/751356",
+    "postDate": "2026-10-21T13:53:15.615Z",
+    "authorName": "Mark",
+    "authorUrl": "https://www.kaggle.com/markdjadchenko",
+    "votes": 1,
+    "commentCount": 3,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>I have been trying to create something that correlates reasonably well with the LB (leaderboard), but so far, I am only getting a low correlation. My current approach is to train the model on all the data, excluding the \"envenda np examples.\"</p>"
+  },
+  "comments": [
+    {
+      "id": 3543343,
+      "authorName": "Tra Crew",
+      "postDate": "2026-10-23T08:52:21.073Z",
+      "content": "<p>I have built a fairly accurate mock scorer by making a hidden test set, holding out from the training data.\nIts fairly accurate now after some calibration and tuning, ive been able to prevalidate my submissions score and predict exactly the last 15 or so submission scores.\n Its saved me a few wasted runs and helped me catch countless bugs in my notebook prevalidation gates, try holding out a few hundred molecules from your training data and tune the scoring against your submissions until you are consistently getting really close with your predictions. </p>"
+    },
+    {
+      "id": 3543127,
+      "authorName": "Jake",
+      "postDate": "2026-10-22T23:46:15.940Z",
+      "content": "<p>I created a set aside validation subset of the training data and simulated type 1/2/3 molecules from it by masking features from inference.  For example, simulated type2 molecules have their spectra masked from the reference catalog that my inference pipeline uses but the molecule itself is still allowed to be in the catalog.  Simulated type3 molecules get completely masked.</p>"
+    },
+    {
+      "id": 3542725,
+      "authorName": "Md Mobashir Rahman",
+      "postDate": "2026-10-22T10:04:32.550Z",
+      "content": "<p>Thats a huge problem for me as well.</p>"
+    }
+  ]
+}

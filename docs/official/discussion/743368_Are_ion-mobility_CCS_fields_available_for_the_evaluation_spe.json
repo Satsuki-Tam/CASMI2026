@@ -1,0 +1,22 @@
+{
+  "topic": {
+    "id": 743368,
+    "title": "Are ion-mobility / CCS fields available for the evaluation spectra?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/743368",
+    "postDate": "2026-09-25T19:08:12.851Z",
+    "authorName": "Vedrin Jeliazkov",
+    "authorUrl": "https://www.kaggle.com/vedrinjeliazkov",
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p><a href=\"/davidhealeyenveda\" target=\"_blank\">@davidhealeyenveda</a> (sorry to ping — question for the organizers)</p>\n<p>Hi! Thank you for the quick clarifications this week, they've been very helpful.</p>\n<p>A data-schema question: the frames list TimsTOF-style instrument_type values, and Enveda's own public releases (e.g. the enveda-180 dataset) carry a precursor ion-mobility field — but the train.parquet / test.parquet frames we receive contain no IM / 1/K0 / CCS columns. Could you confirm whether the source spectra behind the evaluation (hidden) set carry precursor ion-mobility or CCS values at all, and whether such a field is intended to be exposed (or was deliberately excluded from the task inputs)?</p>\n<p>We ask because collision cross-section looks like a natural tie-breaker for isomer pairs in this task, and we'd like to know whether exploring that direction is meaningful for the final scoring set before investing in it. If it's deliberately excluded, that's a perfectly good answer — we just want to build against the right assumptions.</p>\n<p>Thanks a lot for your time and for running the competition!</p>"
+  },
+  "comments": [
+    {
+      "id": 3529239,
+      "authorName": "David Healey",
+      "postDate": "2026-09-27T18:01:05.703Z",
+      "content": "<p>Its deliberately excluded; the test set has no CCS values.</p>"
+    }
+  ]
+}

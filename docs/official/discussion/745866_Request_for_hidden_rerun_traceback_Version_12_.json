@@ -1,0 +1,22 @@
+{
+  "topic": {
+    "id": 745866,
+    "title": "Request for hidden rerun traceback (Version 12)",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/745866",
+    "postDate": "2026-10-05T00:58:59.536Z",
+    "authorName": "Lake Tafere",
+    "authorUrl": "https://www.kaggle.com/laketafere",
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hello CASMI organizers,</p>\n<p>Could you share the traceback or failing stage for my notebook submission, CASMI 2026 v6_light submission, Version 12? Kaggle marks its private hidden-data rerun as “Notebook Threw Exception,” but provides no traceback or score.</p>\n<p>The corresponding committed notebook run succeeds in 317.3 seconds. It reads the competition Parquets, writes /kaggle/working/submission.csv, and validates 400 unique molecule IDs, 25 nonempty candidates per molecule, and sample_submission order. Its JSONL debug log reports 809 events, 400 molecule starts and completions, and no fallback, exception, or error events.</p>\n<p>Version 12 also uses sample_submission order only when its IDs match the runtime test IDs; otherwise it keeps test.parquet order. The visible run reports matching IDs, so the hidden-rerun failure remains unexplained.</p>\n<p>Could you provide the private rerun traceback or identify the failing stage? Also, does the hidden evaluation replace test.parquet while leaving sample_submission.csv unchanged, or are both files replaced?</p>\n<p>Thank you.</p>"
+  },
+  "comments": [
+    {
+      "id": 3532892,
+      "authorName": "PC Jimmmy",
+      "postDate": "2026-10-05T02:14:45.443Z",
+      "content": "<p>Close to 0.000 percent chance that a private rerun trace back will ever be provided - nicely word try though.  Other than a couple of different error messages - there is never log or trace data on submission runs.</p>\n<p>test and sample submission are both replaced. </p>\n<p>Exception errors often shape/memory related.  The fake test is big enough that those errors should have occurred when you saved/run the notebook.  so …..</p>\n<p>If you can't work it out - make the notebook public and share a link here - likely someone can help spot the issue.</p>"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "topic": {
+    "id": 741876,
+    "title": "Clarification on private external compute",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741876",
+    "postDate": "2026-09-17T22:35:33.026Z",
+    "authorName": "Alaa Mostafa",
+    "authorUrl": "https://www.kaggle.com/onlineopp",
+    "votes": 3,
+    "commentCount": 6,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hello,</p>\n<p>Could the organisers please clarify whether an individual participant may process the competition data in a secure private third-party cloud-computing environment solely for model training or inference?</p>\n<p>The environment would be accessible only to the participant. The competition data would not be published or shared with anyone outside the participant’s official Kaggle team.</p>\n<p>Would this comply with the competition’s Data Access and Data Security rules?</p>\n<p>Thank you.\nAlaa</p>"
+  },
+  "comments": [
+    {
+      "id": 3525668,
+      "authorName": "Navneet",
+      "postDate": "2026-09-18T15:37:45.777Z",
+      "content": "<p>Thank you for the Clarification on private external compute <a href=\"/onlineopp\" target=\"_blank\">@onlineopp</a> </p>",
+      "votes": 1,
+      "replies": [
+        {
+          "id": 3525684,
+          "authorName": "Alaa Mostafa",
+          "postDate": "2026-09-18T16:29:54.240Z",
+          "content": "<p>Thank you. To avoid any misunderstanding, could one of the competition hosts please provide a direct yes-or-no confirmation:</p>\n<p>Am I permitted to upload the competition training files to a private Hugging Face repository, train the model using Hugging Face cloud compute, and bring the resulting model weights back into Kaggle for submission inference?</p>",
+          "votes": 1
+        }
+      ]
+    },
+    {
+      "id": 3525546,
+      "authorName": "David Healey",
+      "postDate": "2026-09-18T04:47:36.737Z",
+      "content": "<p>You are referring to the competition training data?  Yes, my understanding is that can be processed and trained on on a cloud environment.  </p>",
+      "votes": 1,
+      "replies": [
+        {
+          "id": 3525652,
+          "authorName": "Alaa Mostafa",
+          "postDate": "2026-09-18T14:49:59.913Z",
+          "content": "<p>Hi David. Yes, I am referring to the competition training data.</p>\n<p>Could you please confirm specifically whether I am allowed to upload the competition training data to my private Hugging Face storage, process it and train models in the Hugging Face cloud environment, then use the resulting model weights or training outputs in my Kaggle submission notebook?</p>",
+          "replies": [
+            {
+              "id": 3525815,
+              "authorName": "David Healey",
+              "postDate": "2026-09-19T02:59:52.230Z",
+              "content": "<p>Yes, you can do that. </p>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3525530,
+      "authorName": "Jessie Grubaugh",
+      "postDate": "2026-09-18T02:12:29.480Z",
+      "content": "<p>3n+1=1+3*n\n*N=10\nP√np=n<em>p</em>p=0\nA+b=c=a=-(-c+b</p>",
+      "votes": -2
+    }
+  ]
+}

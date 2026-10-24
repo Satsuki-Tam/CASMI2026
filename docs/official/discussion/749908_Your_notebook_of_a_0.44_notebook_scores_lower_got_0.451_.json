@@ -1,0 +1,77 @@
+{
+  "topic": {
+    "id": 749908,
+    "title": "Your notebook of a 0.44+ notebook scores lower? got (0.451+)  ",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/749908",
+    "postDate": "2026-10-16T10:35:23.252Z",
+    "authorName": "Aryan Awasthi",
+    "authorUrl": "https://www.kaggle.com/aryanawasthiteykik",
+    "votes": 1,
+    "commentCount": 9,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Copies of top notebooks scoring lower? Check your environment</p>\n<p>Pin the Docker image. Several top notebooks assert Python 3.12 and RDKit versions. A copy that runs on the latest image (Python 3.13) can silently score lower. One of our unpinned copies of a 0.441 notebook scored 0.427; the pinned copy scored 0.441. In the notebook’s settings choose Pin to original environment, or copy docker_image from kaggle kernels pull -m.</p>\n<p>What separates the 0.446+ notebooks from the 0.443 ones, as far as we can tell from the public code: a lower PubChem promotion threshold (rel &gt; 150), a metric-identity-exact engine-2 rank-2 insert, and the CC-BY ChEBI/LMSD candidate set.</p>\n<p>Quick tip after burning a few submissions: when we copied some of the top public notebooks, a few scored noticeably lower than their source, one by over 0.01.</p>\n<p>The cause wasn’t the code; it was the runtime environment. Some of these pipelines are sensitive to the Python/library versions they were built on. Matching the original environment fixed it, and our copies reproduced the original scores exactly.</p>\n<p>Two other small lessons:</p>\n<ul>\n<li>A title’s score isn’t always the notebook’s real score. Check the score on the notebook page.</li>\n<li>Most of our “small improvements” on top of strong pipelines ended up slightly worse than the untouched version.</li>\n</ul>"
+  },
+  "comments": [
+    {
+      "id": 3539701,
+      "authorName": "Kino Lutor",
+      "postDate": "2026-10-16T10:39:41.353Z",
+      "content": "<p>we are looking for equally skilled Team member's here!if you want to join,leave your contact information or just come to contact us!!!🥳</p>",
+      "votes": 1,
+      "replies": [
+        {
+          "id": 3539771,
+          "authorName": "AlexMoura2023",
+          "postDate": "2026-10-16T13:29:29.443Z",
+          "content": "<p>Hi! I'm interested in exploring a potential collaboration with your team.</p>\n<p>I'm <strong>Alex Moura, an Associate Professor at the Federal University of Juiz de Fora (UFJF), Brazil</strong>.</p>\n<p>A brief overview of my academic background:</p>\n<p>****- Ph.D. in Electrical Engineering — Federal University of Minas Gerais (UFMG).</p>\n<ul>\n<li>M.Sc. in Mathematics — University of Brasília (UnB), specializing in Mathematical Analysis.</li>\n<li>B.Sc. in Mathematics — Federal University of Espírito Santo (UFES).****</li>\n</ul>\n<p>My research experience includes applied mathematics, numerical methods, computational modeling, discrete exterior calculus, electromagnetics, and large-scale numerical problems.</p>\n<p>I'm currently working extensively on AI-driven molecular identification from MS/MS spectra, developing candidate retrieval strategies, fragmentation analysis, ensemble ranking, and machine-learning approaches for CASMI 2026.</p>\n<p>My team has achieved a public leaderboard score of 0.446, and we are actively researching approaches to push beyond 0.500.</p>\n<p>I believe my mathematical and computational background could complement your team's expertise. I'd be happy to discuss a potential collaboration and exchange ideas.</p>\n<p>Kaggle: AlexMoura2023</p>\n<p>Best regards,\nAlex Moura</p>",
+          "votes": 1,
+          "replies": [
+            {
+              "id": 3539778,
+              "authorName": "Kino Lutor",
+              "postDate": "2026-10-16T13:58:57.653Z",
+              "content": "<p>ok,of course,professor,how can we get contact?</p>"
+            },
+            {
+              "id": 3539780,
+              "authorName": "Kino Lutor",
+              "postDate": "2026-10-16T14:05:13.777Z",
+              "content": "<p>If available,you can add me on discord:Kino</p>"
+            },
+            {
+              "id": 3539808,
+              "authorName": "AlexMoura2023",
+              "postDate": "2026-10-16T14:59:29.807Z",
+              "content": "<p>alexmoura1714</p>"
+            },
+            {
+              "id": 3539809,
+              "authorName": "AlexMoura2023",
+              "postDate": "2026-10-16T14:59:43.283Z",
+              "content": "<p>in discord\nalexmoura1714</p>"
+            },
+            {
+              "id": 3539828,
+              "authorName": "Kino Lutor",
+              "postDate": "2026-10-16T15:40:11.823Z",
+              "content": "<p>OK,i sent asking  permission to you</p>"
+            },
+            {
+              "id": 3539855,
+              "authorName": "Aryan Awasthi",
+              "postDate": "2026-10-16T16:45:59.543Z",
+              "content": "<p>well ofcourse, will add you in discord and connect with you there</p>"
+            },
+            {
+              "id": 3539856,
+              "authorName": "Aryan Awasthi",
+              "postDate": "2026-10-16T16:48:19.490Z",
+              "content": "<p>alright check my username would be teykik there</p>"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "topic": {
+    "id": 748540,
+    "title": "COCONUT natural products with Morgan + MACCS fingerprints (no pickle)",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/748540",
+    "postDate": "2026-10-12T12:59:56.974Z",
+    "authorName": "Aryan Awasthi",
+    "authorUrl": "https://www.kaggle.com/aryanawasthiteykik",
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>I’ve shared 436k COCONUT 2.0 natural products, sorted by mass, with precomputed Morgan-2048 + MACCS fingerprints in plain Parquet/NumPy, so there’s no pickle to load and no RDKit needed to use them. The description has a 10 ppm window example and code to add the training structures yourself (they can’t be redistributed).</p>\n<p>Dataset: <a href=\"https://www.kaggle.com/datasets/aryanawasthiteykik/casmi26-coconut-morgan-maccs-fingerprints\" target=\"_blank\">https://www.kaggle.com/datasets/aryanawasthiteykik/casmi26-coconut-morgan-maccs-fingerprints</a>\nIt matches the outputs of my spectrum→fingerprint model: <a href=\"https://www.kaggle.com/datasets/aryanawasthiteykik/casmi26-spectrum-to-fingerprint-mlp\" target=\"_blank\">https://www.kaggle.com/datasets/aryanawasthiteykik/casmi26-spectrum-to-fingerprint-mlp</a></p>\n<p>Credit to <a href=\"/prvsiyan\" target=\"_blank\">@prvsiyan</a> 's COCONUT candidates dataset and to the COCONUT team. Feedback welcome.</p>"
+  },
+  "comments": []
+}

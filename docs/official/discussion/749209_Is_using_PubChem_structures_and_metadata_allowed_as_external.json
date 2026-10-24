@@ -1,0 +1,26 @@
+{
+  "topic": {
+    "id": 749209,
+    "title": "Is using PubChem (structures and metadata) allowed as external data?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/749209",
+    "postDate": "2026-10-14T10:01:32.621Z",
+    "authorName": "Masa.Yamashita_00",
+    "authorUrl": "https://www.kaggle.com/myamashi",
+    "commentCount": 2,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi everyone, and hosts,</p>\n<p>I understand that the Rules allow external data in general, but I am not sure whether PubChem qualifies, so I would like to confirm before relying on it.</p>\n<p>Specifically:</p>\n<ol>\n<li><p>Candidate structures: Can I use PubChem compound records (SMILES / InChIKey / exact mass) to extend the candidate pool used for retrieval and ranking?</p></li>\n<li><p>Metadata: Can I use PubChem-derived statistics (for example, the number of depositing substances or linked PubMed articles) as a prior or feature in a ranking model?</p></li>\n<li><p>Offline use: Internet access is disabled at submission time, so I would need to upload a processed snapshot as a Kaggle Dataset and attach it to my notebook. Is this acceptable, and does the Dataset need to be public?</p></li>\n<li><p>License: As far as I understand, NCBI places no restrictions on the use of PubChem itself, but individual data providers may claim rights over their records. Is there anything else participants should consider?</p></li>\n<li><p>Test set: PubChem may contain the ground-truth structures of the test molecules. Is there any concern about this from the hosts' side?</p></li>\n</ol>\n<p>Thank you in advance for any clarification.</p>"
+  },
+  "comments": [
+    {
+      "id": 3538739,
+      "authorName": "Marie Killian",
+      "postDate": "2026-10-14T18:38:54.863Z",
+      "content": "<p>Thank you for asking for clarification!</p>\n<ol>\n<li>Yes</li>\n<li>Yes, PubChem-derived statistics are permitted as ranking features. Any additional information gathered by following references in PubChem would depend on the licensing of that particular source.</li>\n<li>Yes, uploading PubChem data as a Kaggle Dataset for offline use is acceptable. The dataset would need to be included with a prize-eligible solution but does not need to be public during the competition.</li>\n<li>See the answer to 2. </li>\n<li>No. PubChem is an allowed resource.</li>\n</ol>"
+    },
+    {
+      "id": 3538710,
+      "postDate": "2026-10-14T17:58:28.707Z"
+    }
+  ]
+}

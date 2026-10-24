@@ -1,0 +1,24 @@
+{
+  "topic": {
+    "id": 742278,
+    "title": "Test spectra appear verbatim in train.parquet (all 400 molecules).",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742278",
+    "postDate": "2026-09-21T05:19:35.499Z",
+    "authorName": "Odim David Emeka",
+    "authorUrl": "https://www.kaggle.com/odimdavidchukwuemeka",
+    "votes": -4,
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<hr>\n<p>Hi Enveda team,\nWhile building a spectral library baseline I found that the test spectra are present unchanged inside <code>train.parquet</code>, which makes the labels recoverable. Flagging it early so it can be corrected rather than sat on.\n<strong>What I found</strong>\nEvery one of the 1,213 rows in <code>test.parquet</code> has a byte-identical counterpart in <code>train.parquet</code>: the <code>ms2_mzs</code> and <code>ms2_normalized_intensities</code> arrays match exactly, not approximately. Those matches cover <strong>400 of 400</strong> test molecules, and all of them come from the <code>enveda-180</code> ingest library. 399 of the 400 map to a single <code>inchikey14</code>; one (<code>m_6ebcf9</code>) matches two different structures.\n<strong>How to reproduce</strong>\nHash the raw peak arrays on both sides and intersect:</p>\n<pre><code>import hashlib, numpy as np, pandas as pd, pyarrow.parquet as pq\ndef sig(mzs, ins):\n  h = hashlib.blake2b(digest_size=16)\n  h.update(np.asarray(mzs, dtype=np.float64).tobytes())\n  h.update(np.asarray(ins, dtype=np.float64).tobytes())\n  return h.hexdigest()\ntest = pd.read_parquet(\"test.parquet\")\ntest_sigs = {sig(m, i) for m, i in\n           zip(test.ms2_mzs, test.ms2_normalized_intensities)}\npf = pq.ParquetFile(\"train.parquet\")\ncols = [\"inchikey14\", \"ms2_mzs\", \"ms2_normalized_intensities\", \"ingest_lib\"]\nhits = 0\nfor rg in range(pf.metadata.num_row_groups):\n  df = pf.read_row_group(rg, columns=cols).to_pandas()\n  hits += sum(sig(r.ms2_mzs, r.ms2_normalized_intensities) in test_sigs\n              for r in df.itertuples())\nprint(hits)   # 1215 rows matching 1213 test spectra\n</code></pre>\n<blockquote>\n  <p>**\n  A quicker smell test: run any binned-cosine library search of test against train. Every test molecule returns a best match of exactly 1.000. For comparison, the same code on a held-out split of train (query spectra removed from the library) gives a median around 0.94 — so 1.000 across the board is the tell.\n  <strong>Why it matters</strong>\n  As it stands, a lookup table scores close to the 1.0 ceiling on MRR@25 without doing any structure elucidation, which isn't the task you set. I haven't submitted a solution built on this, and I'm not posting the recovered structures.</p>\n  <h2>Happy to share more detail privately if useful.</h2>\n</blockquote>"
+  },
+  "comments": [
+    {
+      "id": 3526535,
+      "authorName": "PC Jimmmy",
+      "postDate": "2026-09-21T17:12:38.053Z",
+      "content": "<p><em>test.parquet — the spectra to identify. One row per spectrum; the structure is not given. Note: the file you see is comprised of examples from the training dataset; it will be replaced by the hidden test set during re-run, and will be approximately the same size.</em></p>\n<p>Is this the reason for your finding?</p>\n<p>Also - sharing more detail privately sounds a bit like a violation of the rules.  Hopefully you just meant you would be happy to discuss in more detail in this post if folks have questions.</p>",
+      "votes": 2
+    }
+  ]
+}

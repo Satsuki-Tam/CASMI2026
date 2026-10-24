@@ -1,0 +1,27 @@
+# Possible incentive gap in MRR@25: generation can hurt before it helps
+topic 741659 | by **Mahou Lettuce** (https://www.kaggle.com/frogcannotdie) | posted 2026-09-16 | votes 1 | comments 0 | https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741659
+
+I noticed a potentially important issue when looking at the strongest public retrieval baselines.
+
+At first glance, Class 3 naturally suggests adding a de novo generator: generate novel structures, merge them with database candidates, and let a ranker choose among all of them. But under the current MRR@25 metric, this is not necessarily a free improvement. In fact, unless both the generator and the cross-source ranker are already quite strong, adding novel candidates can reduce the expected score.
+
+The reason is simply the shape of MRR:
+
+$$\mathrm{score}(r)=\frac1r.$$
+
+Moving a correct candidate from rank 1 to rank 2 costs 0.5. Moving it from rank 2 to rank 3 costs another 0.167. By contrast, successfully recovering a previously unsolved Class-3 molecule only at rank 5 gains 0.2. So one generated false positive that pushes a confident rank-1 database hit to rank 2 can wipe out the benefit of multiple successful but lower-ranked de novo discoveries.
+
+This matters because the public retrieval baselines are already quite strong on cases where the truth is in the candidate pool. One public notebook (https://www.kaggle.com/code/octaviograu/enveda-molecule-evidence-ranking) reports roughly 0.94 MRR / 0.99 Recall@25 in its Class-1-like validation, and about 0.55 MRR / 0.92 Recall@25 for its learned Class-2-like ranker. When the true structure is removed from the pool, its Class-3-like score is exactly zero—yet this retrieval-only system still obtains a very competitive public leaderboard score.
+
+There is also direct evidence of candidate dilution. Another public baseline (https://www.kaggle.com/code/prvsiyan/analog-propagation-casmi-2026-baseline) reports that expanding its candidate pool with PubChem isomers reduced Class-2 MRR from about 0.52 to 0.35, even though the larger pool should improve raw candidate coverage. The extra near-duplicate decoys hurt ranking more than the additional recall helped. A neural generator would create a similar problem, potentially with an even harder and distribution-shifted set of decoys.
+
+So there seems to be a metric-induced incentive gap: unless a system can reliably detect when retrieval has failed and can calibrate generated candidates against database candidates well enough to avoid disturbing already-correct top ranks, the MRR-optimal strategy may be to protect retrieval performance and effectively give up on much of Class 3, and possibly on the hardest part of Class 2.
+
+This does not mean de novo generation is useless. It suggests that the important problem is not just generation, but safe candidate augmentation: confidence gating, calibrated fusion, or only allowing generated candidates to enter high ranks when there is strong evidence that the database pool is insufficient.
+
+For participants, I think this is worth keeping in mind before simply merging generated structures into an existing candidate pool.
+
+For the organizers, if strong Class-3 performance is a central scientific objective of the challenge, it may also be worth considering whether overall MRR alone fully aligns the leaderboard incentives with that objective. Reporting class-stratified MRR, a macro-average across the three classes, or an additional Class-3 metric could make genuine de novo structure elucidation more directly rewarded.
+
+## Comments (0 top-level)
+

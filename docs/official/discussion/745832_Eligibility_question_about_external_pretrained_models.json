@@ -1,0 +1,59 @@
+{
+  "topic": {
+    "id": 745832,
+    "title": "Eligibility question about external pretrained models",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/745832",
+    "postDate": "2026-10-04T18:00:36.989Z",
+    "authorName": "Joakim Eklund",
+    "authorUrl": "https://www.kaggle.com/joakimeklund",
+    "commentCount": 6,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi David,</p>\n<p>I have a narrow eligibility question about external pretrained models.</p>\n<p>Suppose a publicly released model was trained on a public dataset that includes community spectra whose annotations were derived from matching against NIST, but does not redistribute the proprietary NIST library itself.</p>\n<p>Would such pretrained weights be eligible for CASMI26, or would any NIST-derived subset need to be excluded and the model retrained?</p>\n<p>Thanks!</p>"
+  },
+  "comments": [
+    {
+      "id": 3534613,
+      "authorName": "Joakim Eklund",
+      "postDate": "2026-10-07T21:00:32.367Z",
+      "content": "<p>Thank you, David. One narrow follow-up on inference inputs: we generate our own candidate structures for each unknown spectrum, and each candidate has a molecular formula derived from that candidate structure. Would it be permitted to use that candidate-derived formula as an input when scoring that same candidate with an eligible pretrained model, provided that no ground-truth formula or structure is used? The scores would only be used to rerank candidates sharing the same molecular formula, not to compare scores across different formulas.</p>",
+      "replies": [
+        {
+          "id": 3538745,
+          "authorName": "Marie Killian",
+          "postDate": "2026-10-14T18:47:20.160Z",
+          "content": "<p>Yes, using molecular formulas for candidate structures as inputs to an eligible pretrained model is permitted.</p>"
+        }
+      ]
+    },
+    {
+      "id": 3534580,
+      "authorName": "David Healey",
+      "postDate": "2026-10-07T20:25:17.957Z",
+      "content": "<p>Actually I will make an exception here after looking into it more.  There is at least one dataset in GNPS that has this form, with fairly old and small NIST data.  We'll say if it was on GNPS well before the competition started (say, 6 months), and hasn't been taken down, its fair game. </p>",
+      "replies": [
+        {
+          "id": 3536068,
+          "authorName": "Amin",
+          "postDate": "2026-10-09T17:12:00.063Z",
+          "content": "<p>Thank you, David, that is very helpful. To make sure we apply it correctly, could you confirm whether it covers the GNPS spectral library GNPS-NIST14-MATCHES (<a href=\"https://external.gnps2.org/gnpslibrary)\" target=\"_blank\">https://external.gnps2.org/gnpslibrary)</a>? As far as we understand, it holds spectra from public GNPS/MassIVE datasets whose structure annotations came from matches against NIST14, and it has been publicly downloadable from GNPS for several years.</p>\n<p>If it is covered, may we use it (a) as reference spectra for library matching at inference time and (b) as training data for our own models? We would not use any NIST library itself or any model trained on NIST data.</p>\n<p>Thanks again!</p>",
+          "votes": 1,
+          "replies": [
+            {
+              "id": 3536140,
+              "authorName": "David Healey",
+              "postDate": "2026-10-09T19:44:54.763Z",
+              "content": "<p>Yes, specifically GNPS-NIST14-MATCHES is allowed, because it has been in the GNPS open repository for many years and we won't require everyone to remove it from their GNPS library dumps.  Allowed for library matching and training.</p>\n<p>However, I believe NIST would consider any newly created such datasets to be derivatives and in violation of their license.</p>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3534532,
+      "authorName": "David Healey",
+      "postDate": "2026-10-07T19:33:03.857Z",
+      "content": "<p><a href=\"/joakim\" target=\"_blank\">@joakim</a> thank you, interesting question.  I'm inclined to say yes, this would be a derivative of NIST and NIST does not allow derivatives.  And it would give you annotated data that is only available because of access to NIST.  But if you point me to the dataset in question I will take a look in more depth, there may be a well established exception.</p>"
+    }
+  ]
+}

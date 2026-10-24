@@ -1,0 +1,39 @@
+{
+  "topic": {
+    "id": 741844,
+    "title": "Pretrained Models with Commercially Restricted Data",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741844",
+    "postDate": "2026-09-17T18:50:51.187Z",
+    "authorName": "Azam Hussain",
+    "authorUrl": "https://www.kaggle.com/azamhuss",
+    "commentCount": 3,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Are pretrained models released under a commercially permissive license (e.g. MIT) eligible if some of the data used by the original authors to train the publicly released checkpoint has non-commercial restrictions, assuming competitors do not themselves use or redistribute that restricted dataset?</p>"
+  },
+  "comments": [
+    {
+      "id": 3525542,
+      "authorName": "David Healey",
+      "postDate": "2026-09-18T04:34:28.697Z",
+      "content": "<p>Thank you for bringing up this question.&nbsp;The main question with model weights is whether the license for the data in question allows redistribution (even noncommercial redistribution) of derivatives like model weights.&nbsp; If so, then you should be fine to use it.&nbsp;</p>",
+      "votes": 1,
+      "replies": [
+        {
+          "id": 3525686,
+          "authorName": "Azam Hussain",
+          "postDate": "2026-09-18T16:42:36.987Z",
+          "content": "<p>Thank you!</p>",
+          "replies": [
+            {
+              "id": 3525774,
+              "authorName": "ممدوح",
+              "postDate": "2026-09-18T22:03:24.953Z",
+              "content": "<p>to host:\ncan u  be  clearer\nu can define allowed datasets&amp;models</p>"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+ "seed": 3,
+ "n_per_set": 300,
+ "fold_identity": 0,
+ "max_spectra": 8,
+ "ppm_window": 10.0,
+ "exact_tol_da": 0.002,
+ "electron_shift_libs": [
+  "enveda-180"
+ ],
+ "exclusions": {
+  "msg_raw": 28929,
+  "msg_scorer": 28895,
+  "development_keys": 2089,
+  "development_identity_groups": 2044,
+  "files": [
+   {
+    "file": "experiments/p1_baseline/run1/p1_molecules.csv",
+    "rows": 600,
+    "new_keys": 615
+   },
+   {
+    "file": "experiments/b1_baseline/eval_set/p1_molecules.csv",
+    "rows": 600,
+    "new_keys": 609
+   },
+   {
+    "file": "experiments/e2_forward/e2b_np_unseen_molecules.csv",
+    "rows": 200,
+    "new_keys": 197
+   },
+   {
+    "file": "experiments/e2_forward/e2b_np_unseen_hard_molecules.csv",
+    "rows": 200,
+    "new_keys": 0
+   },
+   {
+    "file": "experiments/e2_forward/e2b_timstof_unseen_molecules.csv",
+    "rows": 200,
+    "new_keys": 200
+   },
+   {
+    "file": "experiments/e2_forward/e2b_timstof_unseen_hard_molecules.csv",
+    "rows": 200,
+    "new_keys": 0
+   },
+   {
+    "file": "experiments/e2_forward/v2/e2b_timstof_unseen_molecules.csv",
+    "rows": 200,
+    "new_keys": 1
+   },
+   {
+    "file": "experiments/e2_forward/v2/e2b_timstof_unseen_hard_molecules.csv",
+    "rows": 200,
+    "new_keys": 0
+   },
+   {
+    "file": "experiments/e2_forward/v2/e2b_np_unseen_molecules.csv",
+    "rows": 200,
+    "new_keys": 201
+   },
+   {
+    "file": "experiments/e2_forward/v2/e2b_np_unseen_hard_molecules.csv",
+    "rows": 200,
+    "new_keys": 0
+   }
+  ]
+ },
+ "coco_key_is_official": 0.8433333333333334,
+ "coco_key_is_raw": 1.0,
+ "rdkit": "2026.03.3",
+ "inputs": {
+  "data/external/v2_pool/pool_meta.parquet": "82b8c40315611289b9a4004b3af18d6d3402b3cd5baa4ee5723da07b7e2f6bb0",
+  "data/external/coconut/coco_mass.npy": "2b2af92c3185fa8cd52a4a3e3e7fd7eda4d94e8b9402662a3a4c55ffb13c6e5c",
+  "data/external/identity_folds/structures.parquet": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
+  "data/processed/train_scorer_keys.parquet": "db618b5ee87ff13845ca447d8e7dcb8b2fe48d584550f803aa49240dad5af5ef"
+ },
+ "tier_rows": 105875489,
+ "seconds": 396
+}
