@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 03:06 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 03:11 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -4899,7 +4899,9 @@ p1 + p2 + p3 = 1
 </li>
 <li><a href="#3">3. 追記(結果)</a><ul>
 <li><a href="#31-m1-vs-m2xdev-tuneevalab-200c1-41frozen-09dev_pair_final0300">3.1 修正表・共通台帳での旧 M1 vs M2x(dev tune+eval、A/B 各 200、C1 41;frozen 台帳評価器、τ0.9;dev_pair_final/、03:00)</a></li>
-<li><a href="#32-w7-600-m2x-blend21-test-eval_test_full2">3.2 W7 600 分子(M2x blend21、再生成 test eval_test_full2)</a></li>
+<li><a href="#32-w7-600-m2x-blend21">3.2 W7 600 分子(M2x blend21)</a></li>
+<li><a href="#33-dev-c1-eval_c1b_nplib-300-fit-m1-vs-m2xdev_pair_final_c1set0309">3.3 dev C1 集合(eval_c1、B_nplib 300 分子、全群 = fit を含む)での旧 M1 vs M2x(dev_pair_final_c1set/、03:09)</a></li>
+<li><a href="#34-w7-600eval_test_full3-0400">3.4 W7 600(eval_test_full3)の結果は 04:00 頃に追記する。開封はその合格を条件とする。</a></li>
 </ul>
 </li>
 <li><a href="#4">4. 意見がほしい点</a></li>
@@ -5020,8 +5022,48 @@ p1 + p2 + p3 = 1
 <li>旧 M1 の修正表(run1b_v2)は forward スコアを全分子で再利用でき(候補集合に変化なし)、C1 参照の修正だけが反映されている。</li>
 <li>dev C1 集合(257 分子)の同じ比較は実行中(<code>dev_pair_final_c1set</code>)。</li>
 </ul>
-<h3 id="32-w7-600-m2x-blend21-test-eval_test_full2">3.2 W7 600 分子(M2x blend21、再生成 test <code>eval_test_full2</code>)</h3>
-<p>パイプライン C2 view の公式 MRR(600 分子、fit 込み): main(blend21)0.6046 / 固定 0.5149(A 0.785 / 0.645、B 0.424 / 0.385)。評価器との一致表は集計中(追記)。</p>
+<h3 id="32-w7-600-m2x-blend21">3.2 W7 600 分子(M2x blend21)</h3>
+<ul>
+<li>1 回目の再生成(<code>eval_test_full2</code>、2,819 スペクトル)は <strong>無効</strong>: builder の 1 行を編集した際に <code>.filter(ライブラリ・test アダクト)</code> がコメント内に入り、他ライブラリ・二量体アダクトのスペクトルまで含めてしまった(query 選択差 140 分子)。パイプライン側の公式 MRR(C2、fit 込み)main 0.6046 / 固定 0.5149 は参考値。</li>
+<li>修正(フィルタ復元)後に再生成(<code>eval_test_full3</code>、<strong>2,107 スペクトル / 600 分子、10 種の test アダクトのみ</strong>)→ パイプライン C2 → parity → C1 を実行中(03:08 開始、C2 の判定は 04:00 頃)。結果は §3.3 に追記。</li>
+<li>教訓: builder・評価器・パイプラインの query 選択は 1 つの関数を共有すべき(現状は 3 箇所に同じ規則を書いている)。開封前の修正はしないが、次段で統一する。</li>
+</ul>
+<h3 id="33-dev-c1-eval_c1b_nplib-300-fit-m1-vs-m2xdev_pair_final_c1set0309">3.3 dev C1 集合(eval_c1、B_nplib 300 分子、全群 = fit を含む)での旧 M1 vs M2x(<code>dev_pair_final_c1set/</code>、03:09)</h3>
+<table>
+<thead>
+<tr>
+<th>view</th>
+<th style="text-align: right;">M1 learned</th>
+<th style="text-align: right;">M1 blend21</th>
+<th style="text-align: right;">M2x learned</th>
+<th style="text-align: right;">M2x blend21</th>
+<th><strong>M2x blend21 − M1 learned</strong></th>
+<th>M2x learned − M1 learned</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1 (261)</td>
+<td style="text-align: right;">0.883</td>
+<td style="text-align: right;">0.824</td>
+<td style="text-align: right;">0.917</td>
+<td style="text-align: right;">0.900</td>
+<td><strong>+0.076 [+0.050, +0.105]</strong></td>
+<td>+0.035 [+0.012, +0.058]</td>
+</tr>
+<tr>
+<td>C2 (300)</td>
+<td style="text-align: right;">0.566†</td>
+<td style="text-align: right;">0.541</td>
+<td style="text-align: right;">0.582</td>
+<td style="text-align: right;">0.560</td>
+<td>+0.018 [−0.006, +0.043]</td>
+<td>+0.017 [−0.007, +0.041]</td>
+</tr>
+</tbody>
+</table>
+<p>† M1 learned C2 = 0.5597 − (−0.0241)… 表の値は locked_results.md の実測。fit 群を含むので学習器側は過大だが、paired 差は同じ分子上の比較。M2x blend21 − M2x learned = C1 −0.017 [−0.035, +0.002]、C2 −0.023 [−0.040, −0.006]。</p>
+<h3 id="34-w7-600eval_test_full3-0400">3.4 W7 600(<code>eval_test_full3</code>)の結果は 04:00 頃に追記する。開封はその合格を条件とする。</h3>
 <h2 id="4">4. 意見がほしい点</h2>
 <p><strong>Q1</strong> §3 の結果が「W7 機械的一致: 候補集合・真の所属・top-1・RR が全件一致(forward 雑音による順序差は別報告)」「dev C2 で M2x blend21 − M1 learned が −0.02 を下回らない」「C1 集合で M2x blend21 が M1 learned に対し下側 CI &gt; −0.02 でないとしても固定・保険を上回る」を満たしたら、<code>locked_open_v5.sh</code> を実行してよいか。満たさない項目があった場合の扱い(開封せず M1 のみ提出 / 開封して記録のみ)。
 <strong>Q2</strong> 朝の 2 枠: (i) M2x 本命(blend21)、(ii) 同じ Notebook 構成の <code>--emit insurance</code> version(submission.csv = 固定 + libpri τ0.9)で「2 つの最終出力ポリシーの差」を観測。locked の結果が M2x 不採用でも、(i) を「比較用」として提出する価値はあるか(E0 0.464 との差で読む)。
