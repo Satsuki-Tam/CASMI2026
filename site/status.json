@@ -48,33 +48,34 @@
   {
    "state": "run",
    "name": "W7 600 分子の機械的一致(M2x blend21、再生成 test)",
-   "detail": "C2 → C1。候補集合・真の所属・top-1・RR の全件一致を目標",
-   "eta": "C2 03:05 頃"
+   "detail": "再生成 test(eval_test_full3、2,107 スペクトル)。独立 forward の parity と、共有キャッシュ(パイプラインの GL を評価器側に渡す)の機械的 parity(閾値 1.0)の両方。C2 は GL 採点中、C1 はその後",
+   "eta": "C2 04:05 / C1 05:10 頃"
   },
   {
-   "state": "run",
+   "state": "done",
    "name": "M1 対照の修正表(run1b_v2 / run_c1b_v2)と最終比較(dev_pair_final)",
-   "detail": "共通台帳で旧 M1 と M2x の learned / blend21 / fixed / insurance を公式 scorer で比較",
-   "eta": "03:10 頃"
+   "detail": "登録出力同士の正しい比較: M2x blend21 − 旧 M1 learned = A C2 −0.016 [−0.040, +0.008]、B C2 +0.005、B C1(41)−0.028 [−0.084, +0.024]、C1 集合 eval 群 0.000 [−0.055, +0.056]。開発集合では同等〜わずかに劣る;M2x の根拠はパネル(C1 0.891 vs 0.599)のみ",
+   "eta": "完了"
   },
   {
-   "state": "wait",
+   "state": "done",
    "name": "Codex 014(開封前の登録確認)",
-   "detail": "W7 と最終比較の結果を添えて依頼 → 回答後に locked_open_v5.sh を 1 回実行",
-   "eta": "03:30 頃"
+   "detail": "比較列の訂正、開封前 3 条件(登録出力比較・共有キャッシュ parity・開封時の合格確認)を実装。W7 両 view 合格が開封条件",
+   "eta": "完了"
   },
   {
    "state": "wait",
    "name": "Notebook push(M2x 本命 + 保険 version)",
    "detail": "rank_v4b 埋め込み、--main blend21、--tau 0.9;保険は --emit insurance。05:00 までに push、09:00 以降に提出",
-   "eta": "03:45 頃"
+   "eta": "開封後(05:20 頃)"
   }
  ],
  "next": [
-  "W7 600(C2)合格 + 最終比較 → Codex 014 → locked 開封(1 回)→ 採用規則で判定",
-  "Notebook 2 version を push(本命 blend21 / 保険)→ 09:00 以降に提出(枠の使用は結果次第)",
-  "朝の進捗報告の確定(E0 との差 0.13 の分解、次段 = E0 を自前分子で実行する移植)",
-  "次段: 実測 NH4 + [M+H]+ を持つ MSG 非重複分子での proxy 検証、FIORA(負イオン)の検討、C1-all view の取得独立性監査"
+  "W7 600(C2・C1)独立 forward + 共有キャッシュの parity → 両 view PASS なら locked_open_v5.sh を 1 回実行",
+  "REGISTERED 行(M2x blend21 − M1 learned)で採用規則を判定 → 本命昇格 or 比較用",
+  "Notebook 2 version(本命 blend21 / 保険 --emit insurance)を push → 09:00 以降に提出(枠の使用は 014 の規則)",
+  "朝の進捗報告の確定",
+  "次段: E0 の自前分子での実行(資産 20 GB を取得中)、query 選択の共通関数化、proxy の正しい検証、FIORA(許可が必要)"
  ],
  "pages": [
   [
