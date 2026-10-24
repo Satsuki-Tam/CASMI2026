@@ -278,22 +278,23 @@ def main():
                         if len(rows_) > MAX_REF:
                             pri = np.array([0 if add_of_row[x] in M_by_add else 1 for x in rows_]); rows_ = [rows_[i] for i in np.argsort(pri, kind="stable")[:MAX_REF]]
                         return rows_
-                    main_refs = cap(kept); keep_refs = cap(kept + kept_susp)
-                    for tag, refs in (("", main_refs), ("_keepdup", keep_refs)):
-                        b1 = b2 = s1 = s2 = 0.0; n1 = n2 = ns1 = ns2 = 0
-                        for x in refs:
+                    # Scenario exclusion FIRST, then MAX_REF (the submission pipeline's order; Codex 012 found 9/300 dev C1 molecules whose truth lost
+                    # its usable other-library references because the cap used to run before the same-library exclusion). C1 view: the truth's
+                    # own-library references are removed; C2 view: every reference of the truth is removed; other candidates keep all references.
+                    for tag, pool in (("", kept), ("_keepdup", kept + kept_susp)):
+                        refs1 = cap([x for x in pool if not (is_truth_cand and lib_of_row[x] == lib)])
+                        b1 = s1 = 0.0; n1 = ns1 = 0
+                        for x in refs1:
                             (rmz, rit), rprec = ref_cache[x]
-                            k1 = not (is_truth_cand and lib_of_row[x] == lib); k2 = not is_truth_cand
-                            n1 += int(k1); n2 += int(k2); sa = add_of_row[x] in M_by_add; ns1 += int(k1 and sa); ns2 += int(k2 and sa)
-                            if not (k1 or k2): continue
+                            n1 += 1; sa = add_of_row[x] in M_by_add; ns1 += int(sa)
                             for s in qspec:
                                 if s["mode"] != mode_of_row[x]: continue
                                 sim = entropy_similarity(s["clean"][0], s["clean"][1], rmz, rit); same = add_of_row[x] == s["adduct"]
-                                if k1: b1 = max(b1, sim); s1 = max(s1, sim if same else 0.0)
-                                if k2: b2 = max(b2, sim); s2 = max(s2, sim if same else 0.0)
+                                b1 = max(b1, sim); s1 = max(s1, sim if same else 0.0)
+                        b2, s2, n2, ns2 = (0.0, 0.0, 0, 0) if is_truth_cand else (b1, s1, n1, ns1)
                         L["c1" + tag][ci], L["c2" + tag][ci] = b1, b2
                         if tag == "": L["same_c1"][ci], L["same_c2"][ci] = s1, s2; nref["c1"][ci], nref["c2"][ci] = n1, n2; nsame["c1"][ci], nsame["c2"][ci] = ns1, ns2
-                    if is_truth_cand: usable_truth_c1 = max(usable_truth_c1, sum(1 for x in main_refs if lib_of_row[x] != lib))
+                        if tag == "" and is_truth_cand: usable_truth_c1 = max(usable_truth_c1, len(refs1))
                 if len(ref_cache) > 300_000: ref_cache.clear()
                 # ---- per-view shortlists; stored table = union; official keys; merge duplicates
                 fpz = np.nan_to_num(fpu, nan=np.nanmin(fpu) if np.isfinite(fpu).any() else 0.0); zf = (fpz - fpz.mean()) / (fpz.std() + 1e-9)

@@ -1,12 +1,12 @@
 {
- "headline": "方針: 自前ベースライン B1(計算は DGX Spark のみ、PC は監視と記録)。10/25 深夜: パネル診断で、登録済み候補の学習融合が「参照を持つ分子」(クラス 1)で固定規則を 0.26〜0.43 下回る崩壊を発見(C2 学習行が真の参照を全て隠すため「参照あり = 偽」を学習)。counts 除去 + C1 ×3 で再学習した rank_v4b / rank_v4g を M2x / M1x として再登録する準備(parity・開発集合 paired 差を実行中、Codex 012 回答待ち)。locked は未開封。",
+ "headline": "方針: 自前ベースライン B1(計算は DGX Spark のみ)。10/25 深夜: パネル診断で登録済み候補の学習融合がクラス 1(参照あり)で崩壊することを発見(C2 学習行が真の参照を隠すため「参照あり = 偽」を学習)。Codex 012 の訂正: パネル run は v3 拡大 shortlist、公開比較は 250/250 で再集計、評価器の C1 参照選択に順序バグ(提出パイプラインと不一致)→ 修正して全特徴表を再計算中。再登録は再学習と切替規則の比較の後。locked は未開封。",
  "kpi": {
   "目標 (Public LB)": "0.480 以上(金圏)、理想 0.500",
   "現在の最高 Public LB": "0.464 (E0, 公開系譜の再現) / 自前 B1 固定規則 0.334 / M1(学習融合)採点待ち(12 時間超)",
   "首位 / 金圏下限 (10/24 朝)": "0.504 / 約 0.473",
   "本日の残り提出": "2 回(09:00 JST にリセット; 予定: M2x 本命 + 保険 libpri 0.8)",
   "開発集合 eval 群 strict(C1 / C2)": "固定 0.45 / 0.44 → M2x(rank_v4b) 0.833 / 0.527、M1x(rank_v4g) 0.833 / 0.501",
-  "パネル 250 分子(C1 / C2、固定 0.862 / 0.862、参照単独 0.909)": "M1 0.588 / 0.900 → M1x 0.699 / 0.886; M2 0.430 / 0.934 → M2x 0.737 / 0.882"
+  "パネル 250 分子(C1 / C2、固定 0.864 / 0.864、参照単独 0.909、公開 0.955 / 0.971)": "M1 0.588 / 0.900 → M1x 0.699 / 0.886; M2 0.430 / 0.934 → M2x 0.737 / 0.882"
  },
  "jobs": [
   {
@@ -22,28 +22,28 @@
    "eta": "00:18 完了"
   },
   {
-   "state": "run",
-   "name": "再登録候補の W7 parity(50 分子; M2x = rank_v4b, M1x = rank_v4g, τ 0.8)",
-   "detail": "spark_parity_v4_chain.sh",
-   "eta": "00:45 頃"
+   "state": "done",
+   "name": "Codex 012 回答(00:45)",
+   "detail": "訂正 3 点(パネル run の候補構成、公開比較の結合漏れ、評価器の C1 参照選択順序)を受け入れ。再登録は保留、v4b を M2′ として確定しない。切替規則の比較 → C1-all は取得独立性の監査後",
+   "eta": "完了"
   },
   {
    "state": "run",
-   "name": "開発 tune+eval 群での新旧 paired 差(frozen 台帳評価器)",
-   "detail": "dev_pair_v4_m1(M1x − M1)、dev_pair_v4_m2(M2x − M2)",
-   "eta": "00:40 頃"
+   "name": "特徴表の再計算(C1 参照選択修正、spark_v3b_chain.sh)",
+   "detail": "run_v3b_c1 → run_v3b_eval → run_v3b_p1 → rank_v5a/b 再学習 + probe → run_v3b_locked → run_panel_v3b → run_locked_v2b。forward スコアは旧 run を種に差分のみ再計算",
+   "eta": "stage 2 01:45 / 全体 02:45 頃"
+  },
+  {
+   "state": "done",
+   "name": "再登録候補の W7 parity / 開発 paired 差",
+   "detail": "M2x(rank_v4b)parity 合格(C2 0.662 / C1 0.818 on 50)。dev tune+eval: M2x − M2 A C2 +0.005 [−0.012, +0.022]、B C2 −0.019 [−0.041, +0.002]、B C1 +0.027。M1x − M1 A C2 −0.028 [−0.048, −0.009]",
+   "eta": "完了"
   },
   {
    "state": "run",
    "name": "W7 本番 600 分子 C2 再実行(M1 構成、再開ドライバ経由)",
    "detail": "GL 598/599 済、ICE 410/599",
    "eta": "00:55 頃"
-  },
-  {
-   "state": "run",
-   "name": "Codex 012(崩壊の機構・修正方向・再登録・朝の提出)",
-   "detail": "00:06 依頼",
-   "eta": "回答待ち"
   },
   {
    "state": "wait",
@@ -53,10 +53,10 @@
   }
  ],
  "next": [
-  "Codex 012 の回答 → 再登録(M1x = rank_v4g / M2x = rank_v4b、保険 libpri 0.8)を確定し `docs/validation_design.md` に記録",
-  "両候補の parity 合格を確認 → `spark/jobs/locked_open_v4.sh` を手動で 1 回実行 → 採用規則(010)で選択",
-  "M2x Notebook(--k_fpp 200 --k_pop 50 --w_ice 0 --tau 0.8、rank_v4b 埋め込み、約 3 h)を 05:00 までに push → 09:00 以降に本命を提出。保険 version は別 Notebook 実行で提出",
-  "M1 の LB 値が出たら ±0.02 の運用閾値で読み、クラス 1 の体制(パネル型 / 開発型)の推定を更新",
+  "v3b 特徴表 → rank_v5a/b → probe → frozen 台帳評価器で dev paired 差(新 − rank_v3、switch − learned/fixed、τ0.9/0.8)→ M2′ と切替の採否",
+  "Codex 013 で確認 → 再登録(`locked_open_v5.sh`)→ 50 分子 parity → locked 開封 1 回(M1 凍結対照 + M2′)",
+  "M2′ Notebook を 05:00 までに push → 09:00 以降に提出。保険 version(τ0.9)は比較目的を決めて用意",
+  "忠実な M1 パネル確認(run_panel_v2k、K=100)と W7 C2 再実行の結果を記録",
   "朝の進捗報告(docs/progress_2026-10-25_morning.md)"
  ],
  "pages": [

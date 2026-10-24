@@ -14,9 +14,16 @@ import numpy as np, pandas as pd
 ap = argparse.ArgumentParser(); ap.add_argument("--panel_dir", required=True); ap.add_argument("--run", required=True); ap.add_argument("--set", default="P_np250"); ap.add_argument("--out", required=True)
 a = ap.parse_args()
 mc = pd.read_parquet(f"{a.panel_dir}/main_candidates.parquet"); mc["molecule"] = mc.molecule.astype(str)
-M = pd.read_csv(f"{a.run}/b1_molecules_{a.set}.csv"); M["molecule"] = M.molecule.astype(str); M = M.set_index("molecule")
-F = pd.read_parquet(f"{a.run}/b1_features_{a.set}.parquet"); F["molecule"] = F.molecule.astype(str)
-per = pd.read_csv(f"{a.run}/results/b1_per_molecule_{a.set}.csv"); per["molecule"] = per.molecule.astype(str); per = per.set_index("molecule")
+# public ids are raw InChIKey14 (train's inchikey14); B1 ids are the official scorer identity -> map both the query and the candidate keys
+# (Codex 012: the raw-string join lost 16 of 250 molecules; on official identities all 250 correspond)
+_keys = pd.read_parquet(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data/processed/train_scorer_keys.parquet"), columns=["inchikey14", "scorer_ik14"]).drop_duplicates("inchikey14")
+RAW2OFF = dict(zip(_keys.inchikey14, _keys.scorer_ik14))
+OFF = lambda k: RAW2OFF.get(k, k)
+mc["molecule"] = mc.molecule.map(OFF); mc["candidate_key"] = mc.candidate_key.astype(str).map(OFF)
+mc["is_truth"] = (mc.candidate_key == mc.molecule) | mc.is_truth.astype(bool)
+M = pd.read_csv(f"{a.run}/b1_molecules_{a.set}.csv"); M["molecule"] = M.molecule.astype(str).map(OFF); M = M.set_index("molecule")
+F = pd.read_parquet(f"{a.run}/b1_features_{a.set}.parquet"); F["molecule"] = F.molecule.astype(str).map(OFF); F["official_key"] = F.official_key.astype(str).map(OFF)
+per = pd.read_csv(f"{a.run}/results/b1_per_molecule_{a.set}.csv"); per["molecule"] = per.molecule.astype(str).map(OFF); per = per.set_index("molecule")
 SCEN = {"c1": "reference_in_other_libraries", "c2": "structure_in_pool_no_reference"}
 md = [f"# B1 vs public pipeline on the panel ({a.run}, {a.set})", ""]
 
@@ -32,7 +39,7 @@ def pub_rr(view):
 def b1_pred_rr(view, kind):
     p = glob.glob(f"{a.run}/learned_eval/pred_{a.set}_{view}_*_{kind}.csv")
     if not p: return None
-    d = pd.read_csv(p[0]); d["molecule_id"] = d.molecule_id.astype(str); return dict(zip(d.molecule_id, d.rr))
+    d = pd.read_csv(p[0]); d["molecule_id"] = d.molecule_id.astype(str).map(OFF); return dict(zip(d.molecule_id, d.rr))
 
 
 for view in ("c2", "c1"):

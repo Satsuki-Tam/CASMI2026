@@ -49,8 +49,10 @@ def scores_for(view, g, mid, gl, ice, gl_ok, ice_ok, c, M, tau, margin, min_gl_c
         if X.shape[1] != len(c["feats"]): raise RuntimeError(f"schema mismatch {X.shape} vs {len(c['feats'])}")
         main = c["booster"].predict(X)
     else: main = ins   # the submission pipeline's fallback (b1_pipeline --min_gl_cover)
+    fire = bool(lib.max() >= tau and lib.max() - second >= margin)
+    # switch (Codex 012 (c)): one output function -- library priority fires or GL cover short -> insurance list, otherwise the learned list
     out = {}
-    for name, sc in (("learned", main), ("insurance", ins), ("fixed", S)):
+    for name, sc in (("learned", main), ("insurance", ins), ("fixed", S), ("switch", ins if fire else main)):
         order = np.argsort(-np.asarray(sc, float), kind="stable")[:25]; out[name] = [str(g.smiles.values[i]) for i in order]
     return out, dict(gl_cover_ok=bool(gl_cover_ok), gl_cover=float(np.isfinite(glv).mean()), ice_cover=float(np.isfinite(icv).mean()))
 
@@ -128,7 +130,7 @@ def main():
         for c in cands:
             d = data[(c["name"], s)]
             for view in ("c2", "c1"):
-                mols = ledger if view == "c2" else c1_ledger; preds = {"learned": {}, "insurance": {}, "fixed": {}}; n_fb = 0; covers = []
+                mols = ledger if view == "c2" else c1_ledger; preds = {"learned": {}, "insurance": {}, "fixed": {}, "switch": {}}; n_fb = 0; covers = []
                 for mid in mols:
                     g = view_frame(d["F"], d["M"], mid, view)
                     if len(g) == 0 or mid not in d["M"].index: continue
@@ -150,10 +152,11 @@ def main():
         for view in ("c2", "c1"):
             pairs = []
             for c in cands:
-                pairs += [(f"{c['name']}: learned − fixed", (s, view, c["name"], "learned"), (s, view, c["name"], "fixed")), (f"{c['name']}: insurance − fixed", (s, view, c["name"], "insurance"), (s, view, c["name"], "fixed"))]
+                pairs += [(f"{c['name']}: learned − fixed", (s, view, c["name"], "learned"), (s, view, c["name"], "fixed")), (f"{c['name']}: insurance − fixed", (s, view, c["name"], "insurance"), (s, view, c["name"], "fixed")),
+                          (f"{c['name']}: switch − fixed", (s, view, c["name"], "switch"), (s, view, c["name"], "fixed")), (f"{c['name']}: switch − learned", (s, view, c["name"], "switch"), (s, view, c["name"], "learned"))]
                 if c["name"] != ref:
                     pairs += [(f"{c['name']} − {ref} (learned)", (s, view, c["name"], "learned"), (s, view, ref, "learned")), (f"{c['name']} − {ref} (insurance)", (s, view, c["name"], "insurance"), (s, view, ref, "insurance")),
-                              (f"{c['name']} learned − {ref} insurance", (s, view, c["name"], "learned"), (s, view, ref, "insurance"))]
+                              (f"{c['name']} − {ref} (switch)", (s, view, c["name"], "switch"), (s, view, ref, "switch")), (f"{c['name']} learned − {ref} insurance", (s, view, c["name"], "learned"), (s, view, ref, "insurance"))]
             for label, kx, ky in pairs:
                 x, y = RR.get(kx), RR.get(ky)
                 if x is None or y is None or len(x) != len(y): continue

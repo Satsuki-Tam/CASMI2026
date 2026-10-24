@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 00:26 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 00:46 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-c2-strict">1. 漏斗(C2 視点、strict)</a></li>
@@ -36,6 +36,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#132-b1_learned_probepy-ablation">13.2 崩壊の機構(b1_learned_probe.py、推論時 ablation、再学習なし)</a></li>
 <li><a href="#133-rrb1_libpri_deltapy">13.3 参照優先規則の分子別 ΔRR(b1_libpri_delta.py)</a></li>
 <li><a href="#134-1-rank_v4v3-v2_noicespark_rank_v4_chainsh">13.4 修正の第 1 ラウンド(rank_v4*、v3 特徴表、v2_noice、spark_rank_v4_chain*.sh)</a></li>
+<li><a href="#135-codex-012-0050">13.5 Codex 012 の訂正(00:50)と、それを受けた再計算</a></li>
 </ul>
 </li>
 </ul>
@@ -628,4 +629,13 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 </table>
 <p>C1(参照あり)と C2(参照なし)の間には本質的なトレードオフがある: 参照証拠を強く信じる構成(v4c, v4e)はパネル C1 を固定規則水準(0.86〜0.90)に戻すが C2 を崩す(パネル C2 0.64〜0.67、eval C2 が固定以下)。類似 0.6〜0.9 の帯では「クラス 1 の真」と「クラス 2 の高類似アナログ」を参照情報だけでは区別できず、学習データのクラス比が賭けになる。v4b(counts 除去 + C1 ×3)が現時点の均衡点: v3 比でパネル C1 +0.31、C2 −0.05、eval 群は同等。</p>
 <p>推論時 guard(lib_max ≥ τ かつ margin ≥ m なら参照順)の格子(<code>--guards</code>): v4b 上の (0.8,0.2) はパネル C1 +0.033 / パネル C2 −0.021 / A C2 −0.032 / B C2 −0.007 → 本命には入れない。固定規則上の libpri(0.8,0.2)(保険): C1 集合 0.734(固定 0.546)、パネル C1 0.884、B C1 0.768;C2 損失 A −0.022、B −0.006、パネル −0.020。保険は τ=0.8 とする。</p>
-<p>期待値の試算(クラス 1 を全体の 0.2、クラス 2 を 0.4 と仮定、公開 LB のライブラリ検索単独 ≈0.15 から): パネル体制(著名化合物)のクラス 1 なら v4b は固定比 +0.009、M1(v2)は −0.024、M2(v3)は −0.051;開発体制(GNPS 様)なら v4b +0.108、M1 +0.10、M2 +0.11。<strong>v4b はどちらの体制でも M1/M2 を下回らない</strong>ため、M2′ = v4b、M1′ = v4g(v2 系譜、ICE あり)で再登録する方向(Codex 012 に諮問中; 50 分子 parity を両候補で実行中)。単調制約の 3 変種(v4e/f/h)はパネル C1 を 0.80〜0.86 に戻すが C2 を 0.67〜0.69 に崩すので採らない。M1 の LB 値は体制の判別材料(パネル体制なら 0.31 前後、開発体制なら 0.43 前後の見込み)。</p></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>期待値の試算(クラス 1 を全体の 0.2、クラス 2 を 0.4 と仮定、公開 LB のライブラリ検索単独 ≈0.15 から): パネル体制(著名化合物)のクラス 1 なら v4b は固定比 +0.009、M1(v2)は −0.024、M2(v3)は −0.051;開発体制(GNPS 様)なら v4b +0.108、M1 +0.10、M2 +0.11。<strong>v4b はどちらの体制でも M1/M2 を下回らない</strong>ため、M2′ = v4b、M1′ = v4g(v2 系譜、ICE あり)で再登録する方向(Codex 012 に諮問中; 50 分子 parity を両候補で実行中)。単調制約の 3 変種(v4e/f/h)はパネル C1 を 0.80〜0.86 に戻すが C2 を 0.67〜0.69 に崩すので採らない。M1 の LB 値は体制の判別材料(パネル体制なら 0.31 前後、開発体制なら 0.43 前後の見込み)。</p>
+<h3 id="135-codex-012-0050">13.5 Codex 012 の訂正(00:50)と、それを受けた再計算</h3>
+<ul>
+<li><strong><code>run_panel_v2</code> は v3 の拡大 shortlist</strong>(<code>FEAT_ARGS=""</code> が呼出先の既定値 <code>--k_fpp 200 --k_pop 50</code> に置換; manifest <code>k=100, k_fpp=200, k_pop=50</code>、平均 n_short_c2 226)。§13.1 の rank_v2 の値は「旧 M1 を拡大候補に適用した診断」であり、M1 本番構成(K=100)の忠実な再現ではない。忠実な確認は <code>run_panel_v2k</code>(K=100、GL/ICE は拡大 run の出力を種に再利用)で別途行う。rank_v3/v4 の候補構成は拡大版と一致している。</li>
+<li><strong>公開比較の 234/250 は生 ID の結合漏れ</strong>。両側を公式 identity に写像して 250/250 で再集計(<code>results_prior/b1_vs_public_v2.md</code>): 公開 main list C2 0.971 / C1 0.955、B1 固定 0.864 / 0.864、B1 学習(rank_v2)0.900 / 0.600、保険 0.860 / 0.867。paired: 学習 − 公開 C2 −0.071、固定 − 公開 C2 −0.107 / C1 −0.091 → 固定版の不足は C1 だけに集中していない。prior 整合は共通候補 9,058 件で Spearman 0.957(順位が似る証拠であり、融合への寄与や隠しテストでの重みまで同じという証拠ではない)。</li>
+<li><strong>評価器の C1 参照選択の順序バグ</strong>: <code>b1_features.py</code> は MAX_REF=24 に絞ってから真の同一ライブラリ参照を除いていた(提出パイプラインは除外 → 24 本)。<code>run_c1_v2</code> で「他ライブラリ参照 24 本以上・重複除外 0 件なのに usable &lt; 24」が 9 分子(例: XHBSBNYEHDQRCP は他ライブラリ 25 本に対し usable 0)。真が同一ライブラリに多数の参照を持つ分子ほど、C1 view の真の参照が削られていた → 学習の c1 行から「参照多数・高類似の真」の例が失われていた可能性がある。修正(除外 → cap)して全特徴表を再計算中(<code>spark_v3b_chain.sh</code>、forward スコアは旧 run を種に候補集合が変わった分子のみ再計算)。</li>
+<li>0.334 は学習融合を使わない固定版の LB であり、学習器の C1 悪化はそれ自体で 0.334 を説明しない(別の問題)。</li>
+<li>参照数 224 は MAX_REF 前の総数、cap 後の usable は平均 22.9;23.5 は「学習が負けた 105 分子」の平均。</li>
+<li>再登録は保留: v4b を M2′ として確定せず、旧 M1 は凍結対照として残す。修正後の表で再学習(rank_v5a/b)→ 切替規則(GL 不足 or 参照優先発火 → 保険、それ以外 → 学習)の paired 比較 → M2′ を 1 本に決める。保険 τ は 0.9 を対照に維持し τ0.8 は変更案。判断の詳細は <code>reports/agent_review/012_decision.md</code>。</li>
+</ul></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

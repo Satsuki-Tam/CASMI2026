@@ -7,14 +7,24 @@ import argparse, json, os, shutil, subprocess, sys, time
 ap = argparse.ArgumentParser(); ap.add_argument("runner"); ap.add_argument("pkg"); ap.add_argument("inp"); ap.add_argument("out")
 ap.add_argument("--python", default=sys.executable); ap.add_argument("--max_restarts", type=int, default=12)
 ap.add_argument("--reuse", action="store_true", help="seed from an existing <out.json> (keep molecules that already have scores; rerun only the others)")
+ap.add_argument("--seed", default=None, help="seed from this output file instead of <out.json> (e.g. the same set's runner output of an earlier feature run)")
+ap.add_argument("--reuse_complete", action="store_true", help="with --reuse/--seed: keep a molecule only if EVERY candidate of the current input has a score "
+                "(a molecule whose candidate set changed is rerun whole); default keeps any molecule with at least one score")
 ap.add_argument("rest", nargs=argparse.REMAINDER)
 a = ap.parse_args(); t0 = time.time()
 items = json.load(open(a.inp)); order = [it["mid"] for it in items]; by_mid = {it["mid"]: it for it in items}
 merged = {}; skipped = []; head_fail = {}
-if a.reuse and os.path.exists(a.out):
+seed_path = a.seed if a.seed else (a.out if a.reuse else None)
+if seed_path and os.path.exists(seed_path):
     try:
-        prev = json.load(open(a.out)); merged = {m: d for m, d in prev.items() if m in by_mid and d and any(v is not None for v in d.values())}
-        shutil.copy(a.out, a.out + ".before_resume.json"); print(f"[resume] reusing {len(merged)} scored molecules from {a.out}", flush=True)
+        prev = json.load(open(seed_path))
+        def usable(m, d):
+            if m not in by_mid or not d: return False
+            if a.reuse_complete: return all(d.get(s) is not None for s in by_mid[m]["cands"])
+            return any(v is not None for v in d.values())
+        merged = {m: {s: d.get(s) for s in by_mid[m]["cands"]} for m, d in prev.items() if usable(m, d)}
+        if os.path.exists(a.out): shutil.copy(a.out, a.out + ".before_resume.json")
+        print(f"[resume] reusing {len(merged)} scored molecules from {seed_path} (complete-only: {a.reuse_complete})", flush=True)
     except Exception as e: print("[resume] could not reuse existing output:", repr(e), flush=True)
 for attempt in range(a.max_restarts + 1):
     todo = [m for m in order if m not in merged and m not in skipped]
