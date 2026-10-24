@@ -3,7 +3,7 @@
 Training rows: shortlist candidates of molecules in the FIT groups of the given runs, under both scenario views (C2 and, where
 possible, C1) -- the two views of one molecule are one 'identity' and always stay in the same split. Features are molecule-relative
 (z within the shortlist) plus raw values and flags; the label is is_truth. Model selection (num_leaves / learning rate / rounds) uses
-the TUNE groups; the EVAL groups are scored once with the selected setting and reported next to the fixed rule S(2,1,0.15).
+the TUNE groups; the EVAL groups are scored once with the selected setting and reported next to the fixed rules S(2,1,0.5) (reference) and S(2,1,0.15).
 Usage: python -X utf8 b1_rank_train.py --runs RUN:eval_csv[:group_override] ... [--out DIR]   (e.g. run_p1:...:fit uses all P1 molecules as fit)
        e.g. --runs experiments/b1_baseline/run1:experiments/b1_baseline/eval_set/p1_molecules.csv experiments/b1_baseline/run_c1:...
 """
@@ -30,17 +30,23 @@ def load_run(run, eval_csv, group_override=None):
             except Exception: ok = False
             return (json.load(open(p)) if ok else {}), ok
         gl, gl_ok = load("gl"); ice, ice_ok = load("ice")
-        for mid, g in F.groupby("molecule", sort=False):
+        for mid, g0 in F.groupby("molecule", sort=False):
             if mid not in M.index: continue
             m = M.loc[mid]
-            fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float)
-            glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
-            icv = np.array([np.nan if (ice.get(mid) or {}).get(sm) is None else float((ice.get(mid) or {}).get(sm)) for sm in g.smiles], float)
-            zfp = z(fp); zgl = term(glv, gl_ok); zice = term(icv, ice_ok)
             for view in ("c2", "c1"):
                 if view == "c1" and not bool(m.c1_possible): continue
+                # class-2 view: a structure that exists in no external source and whose train membership is hidden would not be a candidate
+                # for a genuinely novel-to-libraries molecule -> drop it (otherwise 'no source flags' identifies the truth = leak)
+                keep = (g0.in_tier.values | g0.in_coconut.values | g0[f"in_train_{view}"].values).astype(bool)
+                g = g0[keep].reset_index(drop=True) if view == "c2" else g0
+                if len(g) == 0: continue
+                fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float)
+                glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
+                icv = np.array([np.nan if (ice.get(mid) or {}).get(sm) is None else float((ice.get(mid) or {}).get(sm)) for sm in g.smiles], float)
+                zfp = z(fp); zgl = term(glv, gl_ok); zice = term(icv, ice_ok)
                 lib = g[f"lib_sim_{view}"].values.astype(float); top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
-                S = zfp + (2 * zgl if zgl is not None else 0) + (zice if zice is not None else 0) + LAM * pop
+                S = zfp + (2 * zgl if zgl is not None else 0) + (zice if zice is not None else 0) + 0.5 * pop
+                S15 = zfp + (2 * zgl if zgl is not None else 0) + (zice if zice is not None else 0) + LAM * pop
                 d = pd.DataFrame(dict(run=run, set=s, molecule=mid, view=view, group=group_override or m.group, identity=mid, is_truth=g.is_truth.values.astype(int),
                                       z_fp=zfp, z_gl=zgl if zgl is not None else 0.0, z_ice=zice if zice is not None else 0.0, fp=np.nan_to_num(fp, nan=np.nanmin(fp) if np.isfinite(fp).any() else 0),
                                       gl=np.nan_to_num(glv, nan=-1.0), ice=np.nan_to_num(icv, nan=-1.0), pop_public=pop, lsid=g.lsid.values, lpmid=g.lpmid.values, lsynonyms=g.lsynonyms.values,
@@ -49,7 +55,7 @@ def load_run(run, eval_csv, group_override=None):
                                       lib_max_mol=float(lib.max()), in_tier=g.in_tier.values.astype(float), in_train=g[f"in_train_{view}"].values.astype(float), in_coconut=g.in_coconut.values.astype(float),
                                       ppm_err=g.ppm_err.values.astype(float), fp_rank_window=np.log1p(g.fp_rank_window.values.astype(float)), n_cands=float(len(g)),
                                       gl_missing=(~np.isfinite(glv)).astype(float), ice_missing=(~np.isfinite(icv)).astype(float), n_query=float(m.n_query), ce_known=float(m.ce_known),
-                                      view_c1=float(view == "c1"), S_fixed=S, reachable=bool(ev.loc[mid, "window_external"]) if mid in ev.index else True))
+                                      view_c1=float(view == "c1"), S_fixed=S, S_fixed15=S15, reachable=bool(ev.loc[mid, "window_external"]) if mid in ev.index else True))
                 out.append(d)
     return pd.concat(out, ignore_index=True)
 
@@ -89,12 +95,12 @@ def main():
             tune = tune.copy(); tune["pred"] = bst.predict(tune[FEATS].values)
             m = mrr_of(tune, "pred"); results.append(dict(params=params, rounds=rounds, tune_c2_strict=m.get("c2", {}).get("strict"), tune_c1=m.get("c1", {}).get("mrr"), tune_c2=m.get("c2", {}).get("mrr")))
             print(f"  leaves {params['num_leaves']} lr {params['learning_rate']} rounds {rounds}: tune C2 strict {m.get('c2', {}).get('strict', float('nan')):.4f} | C1 {m.get('c1', {}).get('mrr', float('nan')):.4f}", flush=True)
-    base_tune = mrr_of(tune, "S_fixed"); print("fixed rule S(2,1,0.15) on tune:", base_tune)
+    base_tune = mrr_of(tune, "S_fixed"); print("fixed rule S(2,1,0.5) on tune:", base_tune); print("fixed rule S(2,1,0.15) on tune:", mrr_of(tune, "S_fixed15"))
     best = max(results, key=lambda r: (r["tune_c2_strict"] or 0) + 0.5 * (r["tune_c1"] or 0))
     print("selected:", best)
     bst = lgb.train(best["params"], ds_fit, num_boost_round=best["rounds"])
     ev = ev.copy(); ev["pred"] = bst.predict(ev[FEATS].values)
-    out = dict(selected=best, tune_fixed=base_tune, eval_lambdarank=mrr_of(ev, "pred"), eval_fixed=mrr_of(ev, "S_fixed"),
+    out = dict(selected=best, tune_fixed=base_tune, eval_lambdarank=mrr_of(ev, "pred"), eval_fixed=mrr_of(ev, "S_fixed"), eval_fixed15=mrr_of(ev, "S_fixed15"),
                importance=dict(zip(FEATS, [int(x) for x in bst.feature_importance("gain").round().astype(int)])), n_fit_rows=len(fit_t), n_fit_groups=int(fit_t.groupby(["molecule", "view"]).ngroups))
     # paired bootstrap on eval (per molecule-view)
     rows = []

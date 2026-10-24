@@ -1,0 +1,127 @@
+{
+ "selected": {
+  "params": {
+   "num_leaves": 7,
+   "learning_rate": 0.03,
+   "min_data_in_leaf": 20,
+   "feature_fraction": 0.8,
+   "bagging_fraction": 0.8,
+   "bagging_freq": 1,
+   "lambda_l2": 1.0,
+   "verbose": -1,
+   "objective": "lambdarank",
+   "metric": "ndcg",
+   "eval_at": [
+    25
+   ],
+   "label_gain": [
+    0,
+    1
+   ],
+   "seed": 0
+  },
+  "rounds": 100,
+  "tune_c2_strict": 0.5772581168831168,
+  "tune_c1": 0.7884615384615384,
+  "tune_c2": 0.5772581168831168
+ },
+ "tune_fixed": {
+  "c1": {
+   "mrr": 0.5980477855477855,
+   "n": 26,
+   "strict": 0.5980477855477855
+  },
+  "c2": {
+   "mrr": 0.5586298354423355,
+   "n": 200,
+   "strict": 0.5586298354423355
+  }
+ },
+ "eval_lambdarank": {
+  "c1": {
+   "mrr": 0.7068965517241379,
+   "n": 29,
+   "strict": 0.7068965517241379
+  },
+  "c2": {
+   "mrr": 0.5086309251887141,
+   "n": 199,
+   "strict": 0.5086309251887141
+  }
+ },
+ "eval_fixed": {
+  "c1": {
+   "mrr": 0.3916803503010399,
+   "n": 29,
+   "strict": 0.3916803503010399
+  },
+  "c2": {
+   "mrr": 0.4903570138273065,
+   "n": 199,
+   "strict": 0.4903570138273065
+  }
+ },
+ "eval_fixed15": {
+  "c1": {
+   "mrr": 0.3867027270678386,
+   "n": 29,
+   "strict": 0.3867027270678386
+  },
+  "c2": {
+   "mrr": 0.47659873832279975,
+   "n": 199,
+   "strict": 0.47659873832279975
+  }
+ },
+ "importance": {
+  "z_fp": 2486,
+  "z_gl": 14856,
+  "z_ice": 2949,
+  "fp": 457,
+  "gl": 1505,
+  "ice": 155,
+  "pop_public": 2021,
+  "lsid": 644,
+  "lpmid": 9,
+  "lsynonyms": 1535,
+  "np_bit": 164,
+  "src_bit": 104,
+  "lotus": 516,
+  "lib_sim": 1518,
+  "lib_same": 809,
+  "lib_nref": 95,
+  "lib_margin": 42,
+  "lib_max_mol": 51,
+  "in_tier": 0,
+  "in_train": 24,
+  "in_coconut": 395,
+  "ppm_err": 46,
+  "fp_rank_window": 1005,
+  "n_cands": 0,
+  "gl_missing": 0,
+  "ice_missing": 0,
+  "n_query": 14,
+  "ce_known": 0,
+  "view_c1": 36
+ },
+ "n_fit_rows": 22709,
+ "n_fit_groups": 186,
+ "eval_delta": {
+  "c1": {
+   "delta": 0.31521620142309803,
+   "ci95": [
+    0.18341543513957306,
+    0.4534756431308155
+   ],
+   "n": 29
+  },
+  "c2": {
+   "delta": 0.018273911361407668,
+   "ci95": [
+    -0.011193064731603013,
+    0.04720631854843354
+   ],
+   "n": 199
+  }
+ }
+}
