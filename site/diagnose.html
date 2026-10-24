@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 01:22 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 01:32 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-c2-strict">1. 漏斗(C2 視点、strict)</a></li>
@@ -37,6 +37,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#133-rrb1_libpri_deltapy">13.3 参照優先規則の分子別 ΔRR(b1_libpri_delta.py)</a></li>
 <li><a href="#134-1-rank_v4v3-v2_noicespark_rank_v4_chainsh">13.4 修正の第 1 ラウンド(rank_v4*、v3 特徴表、v2_noice、spark_rank_v4_chain*.sh)</a></li>
 <li><a href="#135-codex-012-0050">13.5 Codex 012 の訂正(00:50)と、それを受けた再計算</a></li>
+<li><a href="#136-rank_v5a-v5b0127-blend-frozen">13.6 修正表での再学習(rank_v5a / v5b、01:27)と blend の frozen 台帳結果</a></li>
 </ul>
 </li>
 </ul>
@@ -638,4 +639,48 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li>0.334 は学習融合を使わない固定版の LB であり、学習器の C1 悪化はそれ自体で 0.334 を説明しない(別の問題)。</li>
 <li>参照数 224 は MAX_REF 前の総数、cap 後の usable は平均 22.9;23.5 は「学習が負けた 105 分子」の平均。</li>
 <li>再登録は保留: v4b を M2′ として確定せず、旧 M1 は凍結対照として残す。修正後の表で再学習(rank_v5a/b)→ 切替規則(GL 不足 or 参照優先発火 → 保険、それ以外 → 学習)の paired 比較 → M2′ を 1 本に決める。保険 τ は 0.9 を対照に維持し τ0.8 は変更案。判断の詳細は <code>reports/agent_review/012_decision.md</code>。</li>
-</ul></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul>
+<h3 id="136-rank_v5a-v5b0127-blend-frozen">13.6 修正表での再学習(rank_v5a / v5b、01:27)と blend の frozen 台帳結果</h3>
+<table>
+<thead>
+<tr>
+<th>モデル(学習表)</th>
+<th>eval 群 C1 / C2(strict、固定 0.452 / 0.442)</th>
+<th>dev C1 集合 C1 / C2†</th>
+<th>A C2†</th>
+<th>B C1 / C2†</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rank_v3(旧表)</td>
+<td>0.830 / 0.529</td>
+<td>0.892 / 0.566</td>
+<td>0.778</td>
+<td>0.918 / 0.435</td>
+</tr>
+<tr>
+<td>rank_v4b(旧表)</td>
+<td>0.833 / 0.527</td>
+<td>0.917 / 0.582</td>
+<td>0.805</td>
+<td>0.933 / 0.453</td>
+</tr>
+<tr>
+<td>rank_v5a(修正表、counts 除去)</td>
+<td>0.833 / 0.519</td>
+<td>0.904 / 0.559</td>
+<td>0.770</td>
+<td>0.923 / 0.427</td>
+</tr>
+<tr>
+<td>rank_v5b(修正表、counts 除去 + C1 ×3)</td>
+<td>0.858 / 0.515</td>
+<td>0.927 / 0.545</td>
+<td>0.745</td>
+<td>0.925 / 0.419</td>
+</tr>
+</tbody>
+</table>
+<p>† probe(fit 群込み)、採点はすべて修正表上。eval C2 は 4 モデルとも 0.515〜0.529 で雑音内、C1 は v5b が最良。パネルの v5a/b は 02:20 頃。</p>
+<p>blend(z(learned)+z(fixed))の frozen 台帳 paired 差(dev tune+eval): blend21 − learned = A C2 −0.008 [−0.021, +0.005]、B C2 +0.004 [−0.012, +0.019]、B C1(41)−0.057 <a href="固定比 +0.303">−0.121, +0.001</a>。パネル(probe): rank_v4b blend21 C1 0.891 / C2 0.911(learned 0.737 / 0.882)、rank_v3 blend21 0.812 / 0.938(learned 0.430 / 0.934)。切替規則(GL 不足 or 参照優先発火 → 保険)は A C2 −0.015 [−0.028, −0.004] で利得なし → 不採用。<strong>M2′ の既定案 = rank_v4b + blend21</strong>(<code>b1_pipeline --main blend21</code>、保険 τ0.9)。再登録用 <code>spark/jobs/locked_open_v5.sh</code>(M1 凍結対照 = run_locked_v2b + rank_v2、M2x = run_v3b_locked + rank_v4b)を配置、Codex 013 の回答後に 1 回だけ実行。</p></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
