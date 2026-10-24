@@ -9,7 +9,7 @@ Usage: python -X utf8 make_eval_test.py --eval_csv p1_molecules.csv --store DIR 
 """
 import argparse, json, os
 import numpy as np, polars as pl
-from b1_common import ADDUCT_SHIFT, ELECTRON
+from b1_common import ADDUCT_SHIFT, ELECTRON, select_queries
 
 ap = argparse.ArgumentParser(); ap.add_argument("--eval_csv", required=True); ap.add_argument("--store", required=True); ap.add_argument("--raw", required=True); ap.add_argument("--out", required=True)
 ap.add_argument("--max_spectra", type=int, default=16); ap.add_argument("--sets", nargs="*", default=["A_timstof", "B_nplib"]); ap.add_argument("--limit", type=int, default=0, help="first N molecules per set (parity subsets)")
@@ -19,11 +19,13 @@ if a.limit: mols = pl.concat([mols.filter(pl.col("set") == s_).head(a.limit) for
 meta = pl.read_parquet(f"{a.store}/spec_meta.parquet")
 keys = pl.read_parquet(os.path.join(os.path.dirname(a.store), "train_scorer_keys.parquet")).select("inchikey14", "normalized_smiles").unique("inchikey14")
 sel = meta.join(mols.select("molecule", "lib"), left_on="inchikey14", right_on="molecule", how="inner").filter((pl.col("ingest_lib") == pl.col("lib")) & pl.col("adduct").is_in(list(ADDUCT_SHIFT)))   # raw inchikey14 + selection library + test adducts, exactly as b1_features (2026-10-25 check)
-# adduct round-robin per molecule, [M+H]+ first, then by CE
-sel = sel.with_columns(pl.col("ce_mean").fill_null(0.0), (pl.col("adduct") != "[M+H]+").cast(pl.Int8).alias("not_mh"))
-# deterministic: within an adduct by CE then store row (b1_features sorts the same way), round-robin over adducts ([M+H]+ first, then by adduct name)
-sel = sel.sort(["inchikey14", "not_mh", "adduct", "ce_mean", "row"], maintain_order=True).with_columns(pl.col("row").cum_count().over(["inchikey14", "adduct"]).alias("k_in_adduct"))
-sel = sel.sort(["inchikey14", "k_in_adduct", "not_mh", "adduct", "row"], maintain_order=True).with_columns(pl.col("row").cum_count().over("inchikey14").alias("k")).filter(pl.col("k") <= a.max_spectra)
+# query policy shared with the evaluator and the pipeline (b1_common.select_queries): per molecule, store-row order as tie-break, adduct round-robin
+add_of = dict(zip(sel["row"].to_list(), sel["adduct"].to_list())); ce_of = dict(zip(sel["row"].to_list(), sel["ce_mean"].to_list()))
+rows_by_mol = {}
+for r_, k_ in zip(sel["row"].to_list(), sel["inchikey14"].to_list()): rows_by_mol.setdefault(k_, []).append(int(r_))
+keep = set()
+for k_, rs in rows_by_mol.items(): keep.update(select_queries(sorted(rs), a.max_spectra, add_of.__getitem__, ce_of.__getitem__))
+sel = sel.filter(pl.col("row").is_in(sorted(keep)))
 rows = sorted(sel["row"].to_list())
 raw = pl.scan_parquet(f"{a.raw}/train.parquet").with_row_index("row").filter(pl.col("row").is_in(rows)).select(
     "row", "inchikey14", "ms2_mzs", "ms2_normalized_intensities", "precursor_mz", "adduct", "ionization_mode", "instrument_type", "collision_energy_ev", "collision_energy_orig", "collision_energy_orig_units").collect()
@@ -44,6 +46,7 @@ test.drop("row", "shift").write_parquet(f"{a.out}/test.parquet")
 # C1 keeps the identity but removes the query acquisitions and the truth's references from the query's own library (cross-library matching)
 rows_of = {}
 for r_, k_ in zip(sel["row"].to_list(), sel["inchikey14"].to_list()): rows_of.setdefault(k_, []).append(int(r_))
+rows_of = {k_: sorted(v_) for k_, v_ in rows_of.items()}   # order-independent masks (the pipeline consumes them as sets); stable across rebuilds
 mask_c2 = {m: {"ids": [k], "rows": rows_of.get(m, [])} for m, k in zip(mols["molecule"].to_list(), mols["scorer_key"].to_list())}
 mask_c1 = {m: {"rows": rows_of.get(m, []), "same_lib": {"identity": k, "lib": l}} for m, k, l in zip(mols["molecule"].to_list(), mols["scorer_key"].to_list(), mols["lib"].to_list())}
 json.dump(mask_c2, open(f"{a.out}/mask_c2.json", "w")); json.dump(mask_c1, open(f"{a.out}/mask_c1.json", "w"))

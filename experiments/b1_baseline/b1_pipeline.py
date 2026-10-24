@@ -22,7 +22,7 @@ from multiprocessing import Pool
 import numpy as np, pandas as pd, polars as pl
 
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
-from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity, forward_proxies  # noqa: E402
+from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity, forward_proxies, select_queries  # noqa: E402
 
 KAGGLE = os.path.exists("/kaggle/input")
 PPM, K_SHORT, K_LIB, LIB_MIN, MAX_REF, MAX_Q = 10.0, 100, 20, 0.2, 24, 8      # MAX_Q 8 with adduct round-robin = the evaluation's query policy
@@ -272,14 +272,8 @@ def main():
         if EXCL_ROWS or EXCL_IDS or MASK: log(f"EVALUATION MODE: global masks {len(EXCL_ROWS)} rows / {len(EXCL_IDS)} identities; per-molecule masks for {len(MASK)} molecules")
         for n_i, (mid, spectra) in enumerate(mols.items()):
             tm0 = time.time()
-            known = [s for s in spectra if s["adduct"] in ADDUCT_SHIFT]
-            by_add = {}
-            for s in sorted(known, key=lambda s: (s["adduct"] != "[M+H]+", s["adduct"], s["ce"] if s["ce"] is not None else 0.0)):
-                by_add.setdefault(s["adduct"], []).append(s)
-            q = []
-            while len(q) < MAX_Q and any(by_add.values()):          # adduct round-robin (same policy as b1_features.py)
-                for ad in list(by_add):
-                    if by_add[ad] and len(q) < MAX_Q: q.append(by_add[ad].pop(0))
+            known = [s for s in spectra if s["adduct"] in ADDUCT_SHIFT]          # test-file order = tie-break
+            q = select_queries(known, MAX_Q, lambda s: s["adduct"], lambda s: s["ce"])   # shared policy (b1_common), same as the evaluator and the test builder
             q = [dict(s, clean=clean_peaks(s["mz"], s["it"], s["prec"])) for s in q]
             if not q:                                         # unknown adducts only: fall back to [M+H]+ / [M-H]- by polarity
                 q = [dict(s, adduct=("[M+H]+" if s["mode"] == "positive" else "[M-H]-"), clean=clean_peaks(s["mz"], s["it"], s["prec"])) for s in spectra][:MAX_Q]

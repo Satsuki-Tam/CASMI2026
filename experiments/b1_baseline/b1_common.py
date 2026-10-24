@@ -117,3 +117,21 @@ def forward_proxies(spectra, covered=("[M+H]+", "[M+Na]+"), neg=False):
         p = dict(s); p.update(mz=(mz[keep] + shift).tolist(), it=it[keep].tolist(), prec=float(newp), adduct="[M+H]+", mode="positive", proxy=kind, proxy_from=add)
         out.append(p)
     return out
+
+
+def select_queries(items, max_q, adduct_of, ce_of):
+    """Query-spectrum selection shared by the evaluator (b1_features), the submission pipeline and the test builder (make_eval_test), Codex 015 (c).
+    items: candidate spectra (test adducts only) in a deterministic order that is the final tie-break (store row / test-file order).
+    Order within an adduct: collision energy (unknown/NaN -> 0.0), then input order. Adduct order: [M+H]+ first, then by adduct name.
+    Selection: round-robin over adducts (first spectrum of each adduct, then the second, ...) until max_q. Returns the selected items in that order."""
+    def ce_key(x):
+        c = ce_of(x)
+        return 0.0 if c is None or c != c else float(c)
+    by_add = {}
+    for x in sorted(items, key=lambda x: (adduct_of(x) != "[M+H]+", adduct_of(x), ce_key(x))):
+        by_add.setdefault(adduct_of(x), []).append(x)
+    q = []
+    while len(q) < max_q and any(by_add.values()):
+        for ad in list(by_add):
+            if by_add[ad] and len(q) < max_q: q.append(by_add[ad].pop(0))
+    return q

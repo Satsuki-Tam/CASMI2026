@@ -31,7 +31,7 @@ from collections import Counter
 from multiprocessing import Pool
 import numpy as np, pandas as pd, polars as pl
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity, forward_proxies
+from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity, forward_proxies, select_queries
 
 PPM, SHORTLIST_LAM, MAX_REF, DUP_SIM, K_LIB, LIB_MIN = 10.0, 0.15, 24, 0.98, 20, 0.2
 MAX_HEAVY_FORWARD = 100   # structures above this are not sent to the forward models (GLACIER rejects them; ICEBERG crashed a CUDA context)
@@ -166,14 +166,8 @@ def main():
                 tm0 = time.time(); mid = r.molecule; truth_key = r.scorer_key; lib = r.lib; shift = ELECTRON if lib == "enveda-180" else 0.0
                 truth_raw = getattr(r, "raw_key", None)
                 # ---- query spectra: selection library, test adducts, round-robin over adducts (same policy as the submission pipeline)
-                qrows = [int(x) for x in ik_rows.get(mid, []) if lib_of_row[x] == lib and add_of_row[x] in ADDUCT_SHIFT]
-                by_add = {}
-                for x in sorted(sorted(qrows), key=lambda x: (add_of_row[x] != "[M+H]+", add_of_row[x], ce_of_row[x] if np.isfinite(ce_of_row[x]) else 0)):   # ties broken by store row (deterministic; same as make_eval_test)
-                    by_add.setdefault(add_of_row[x], []).append(x)
-                q = []
-                while len(q) < a.max_spectra and any(by_add.values()):
-                    for ad in list(by_add):
-                        if by_add[ad] and len(q) < a.max_spectra: q.append(by_add[ad].pop(0))
+                qrows = sorted(int(x) for x in ik_rows.get(mid, []) if lib_of_row[x] == lib and add_of_row[x] in ADDUCT_SHIFT)   # store-row order = tie-break
+                q = select_queries(qrows, a.max_spectra, lambda x: add_of_row[x], lambda x: float(ce_of_row[x]))   # shared policy (b1_common)
                 if not q: print("skip", mid, "no query spectra"); continue
                 qspec = []
                 for x in q:

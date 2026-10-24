@@ -147,3 +147,10 @@ C1 代理では、学習融合はパイプラインの中でも固定規則よ�
 - **採用規則の判定(凍結規則どおり)**: C2 の差は A +0.007 / B −0.008 でいずれも |差| < 0.01 かつ方向不一致;C1 の差は −0.023(点推定が許容損失 0.02 を超え、下側 CI −0.087 で保護は宣言できない)→ **M2x は本命に昇格しない(未確定、両候補保持)**。機械的不一致は無い(W7 両 view で共有キャッシュ一致)ので、Codex 014 の区分では「性能未確定」= 比較目的の提出は可。
 - 読み: locked 集合(開発集合と同じ体制)では M2x と M1 は同等。M2x を推す根拠はパネル体制(クラス 1)だけで、locked はそれを測れない(C1 は 50 分子、他ライブラリ参照のみ)。LB 0.322(M1)との対比では、locked の「学習 − 固定 +0.07」が本番で消えた事実が残る。
 - 開封後に規則・候補・τ を変更しない。保険 τ0.9 の locked 値: M1 A 0.729 / B 0.362 / B-C1 0.789、M2x A 0.710 / B 0.365 / B-C1 0.792。
+
+## query 選択の共通関数化(Codex 015 (c)、2026-10-25 06:50)
+
+- `b1_common.select_queries(items, max_q, adduct_of, ce_of)` を新設し、評価器(`b1_features.py`)・提出パイプライン(`b1_pipeline.py`)・test ファイル builder(`make_eval_test.py`)の 3 箇所の独立実装を置き換えた。方針は不変: test adduct のみ、[M+H]+ 優先 → adduct 名、adduct 内は CE(欠損/NaN → 0)→ 入力順(store 行 / test ファイル順)、adduct round-robin で max_q まで。
+- 検証 `test_select_queries.py`(Spark、CPU、`logs/spark_select_queries_check.log`): 旧 3 実装(逐語コピー)と新関数を実データで照合 — 評価器 600 分子 ×(8, 16)差 0、builder 600 分子(8, 16)差 0、builder(8) と評価器(8) の行集合差 0、パイプライン経路(`eval_test_full3/test.parquet`、600 分子)旧新差 0、**パイプライン(8) と評価器(8) の順序付き store 行 600/600 一致**。判定 PASS。
+- 新 builder で `eval_test_full3` を再構築(max_spectra 8): `test.parquet` 2,107 行・全列同一、`exclude_rows_c1/exclude_identities_c2/solution.csv` 同一、`mask_c1/c2.json` は行集合同一(リスト順のみ差;パイプラインは集合として消費)。以後 builder は行リストをソートして出力(再構築で安定)。比較は `compare_eval_test_dirs.py`。
+- 2026-10-24 の sed 事故(filter がコメント化され 2,819 行の無効 test ファイル)の再発防止として、W7 の入力生成はこの関数と比較スクリプトで固定する。

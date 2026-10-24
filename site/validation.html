@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 05:21 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 06:52 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -35,6 +35,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#m2xrank_v4b-blend21-50-parity2026-10-25-0141eval_test_50_m2xb">再登録候補 M2x(rank_v4b + blend21)の 50 分子 parity(2026-10-25 01:41、eval_test_50_m2xb)</a></li>
 <li><a href="#w7-600-m2x-blend21-test-eval_test_full32026-10-25-0358">W7 600 分子の再実行(M2x blend21、正しい test ファイル eval_test_full3、2026-10-25 03:58)</a></li>
 <li><a href="#locked-2026-10-25-0504seed-4ab-300strict-scorer-experimentsb1_baselinelocked_open_v5">locked 開封の結果(2026-10-25 05:04、seed 4、A/B 各 300、strict、公式 scorer 複製;experiments/b1_baseline/locked_open_v5/)</a></li>
+<li><a href="#query-codex-015-c2026-10-25-0650">query 選択の共通関数化(Codex 015 (c)、2026-10-25 06:50)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -472,4 +473,11 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <li><strong>採用規則の判定(凍結規則どおり)</strong>: C2 の差は A +0.007 / B −0.008 でいずれも |差| &lt; 0.01 かつ方向不一致;C1 の差は −0.023(点推定が許容損失 0.02 を超え、下側 CI −0.087 で保護は宣言できない)→ <strong>M2x は本命に昇格しない(未確定、両候補保持)</strong>。機械的不一致は無い(W7 両 view で共有キャッシュ一致)ので、Codex 014 の区分では「性能未確定」= 比較目的の提出は可。</li>
 <li>読み: locked 集合(開発集合と同じ体制)では M2x と M1 は同等。M2x を推す根拠はパネル体制(クラス 1)だけで、locked はそれを測れない(C1 は 50 分子、他ライブラリ参照のみ)。LB 0.322(M1)との対比では、locked の「学習 − 固定 +0.07」が本番で消えた事実が残る。</li>
 <li>開封後に規則・候補・τ を変更しない。保険 τ0.9 の locked 値: M1 A 0.729 / B 0.362 / B-C1 0.789、M2x A 0.710 / B 0.365 / B-C1 0.792。</li>
+</ul>
+<h2 id="query-codex-015-c2026-10-25-0650">query 選択の共通関数化(Codex 015 (c)、2026-10-25 06:50)</h2>
+<ul>
+<li><code>b1_common.select_queries(items, max_q, adduct_of, ce_of)</code> を新設し、評価器(<code>b1_features.py</code>)・提出パイプライン(<code>b1_pipeline.py</code>)・test ファイル builder(<code>make_eval_test.py</code>)の 3 箇所の独立実装を置き換えた。方針は不変: test adduct のみ、[M+H]+ 優先 → adduct 名、adduct 内は CE(欠損/NaN → 0)→ 入力順(store 行 / test ファイル順)、adduct round-robin で max_q まで。</li>
+<li>検証 <code>test_select_queries.py</code>(Spark、CPU、<code>logs/spark_select_queries_check.log</code>): 旧 3 実装(逐語コピー)と新関数を実データで照合 — 評価器 600 分子 ×(8, 16)差 0、builder 600 分子(8, 16)差 0、builder(8) と評価器(8) の行集合差 0、パイプライン経路(<code>eval_test_full3/test.parquet</code>、600 分子)旧新差 0、<strong>パイプライン(8) と評価器(8) の順序付き store 行 600/600 一致</strong>。判定 PASS。</li>
+<li>新 builder で <code>eval_test_full3</code> を再構築(max_spectra 8): <code>test.parquet</code> 2,107 行・全列同一、<code>exclude_rows_c1/exclude_identities_c2/solution.csv</code> 同一、<code>mask_c1/c2.json</code> は行集合同一(リスト順のみ差;パイプラインは集合として消費)。以後 builder は行リストをソートして出力(再構築で安定)。比較は <code>compare_eval_test_dirs.py</code>。</li>
+<li>2026-10-24 の sed 事故(filter がコメント化され 2,819 行の無効 test ファイル)の再発防止として、W7 の入力生成はこの関数と比較スクリプトで固定する。</li>
 </ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
