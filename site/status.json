@@ -33,9 +33,9 @@
     },
     {
       "state": "run",
-      "name": "DGX Spark の環境構築とデータ同期",
-      "detail": "ユーザー指示: 以後の GPU 実験は Spark で実行。uv 環境 2 本(scorer 版 RDKit / 順方向モデル版)とデータ 13 GB を転送中",
-      "eta": "12:30 頃"
+      "name": "DGX Spark で B1 特徴表(P1 分子 600、LambdaRank 学習データ)",
+      "detail": "Spark 環境構築・データ同期完了(ICE/GL runner 動作確認済み)。BLAS スレッド 1 固定で 2.3 秒/分子(手元の 7 倍速)",
+      "eta": "13:00 頃"
     }
   ],
   "next": [

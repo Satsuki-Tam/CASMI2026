@@ -17,6 +17,8 @@ Outputs: <out>/b1_features_<set>.parquet (one row per shortlist candidate, both 
 Usage: python -X utf8 b1_features.py --eval_csv p1_molecules.csv --store DIR --tier DIR --pop DIR --pool pool_meta.parquet --coco DIR
                                      --fold_safe DIR --v3 DIR --out DIR [--k 100] [--workers 12] [--sets A_timstof B_nplib] [--limit N]
 """
+import os as _os
+for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMBA_NUM_THREADS"): _os.environ.setdefault(_v, "1")   # one BLAS thread per process: 16 workers x 64 OpenBLAS threads made the Spark 30x slower
 import argparse, hashlib, json, os, pickle, sys, time
 from collections import Counter
 from multiprocessing import Pool

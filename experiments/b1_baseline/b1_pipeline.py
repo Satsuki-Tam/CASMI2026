@@ -14,6 +14,8 @@ Stages (all label-free; see docs/b1_baseline_design.md):
 Usage (local): python -X utf8 b1_pipeline.py --test data/raw/test.parquet --out <dir> [--limit N] [--no_forward]
 On Kaggle the paths are resolved under /kaggle/input/** (same datasets as the public E0 kernel) and /kaggle/working.
 """
+import os as _os
+for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMBA_NUM_THREADS"): _os.environ.setdefault(_v, "1")   # one BLAS thread per process: 16 workers x 64 OpenBLAS threads made the Spark 30x slower
 import argparse, glob, json, os, subprocess, sys, time
 from collections import Counter
 from multiprocessing import Pool
