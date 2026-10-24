@@ -20,3 +20,4 @@
 {"time": "2026-10-24 10:52", "kind": "submit", "text": "E4 v5 を計測提出(57578830)。P1 では strict 差 A +0.049 / B +0.042。LB は方向のみ読む", "link": "submissions.html"}
 {"time": "2026-10-24 11:51", "kind": "event", "text": "DGX Spark(spark-8fda.local)への移行を開始: 環境構築スクリプトを実行、データ 13 GB を転送中。以後の GPU 実験は Spark で行う", "link": "index.html"}
 {"time": "2026-10-24 12:02", "kind": "event", "text": "DGX Spark 稼働開始: 環境 2 本・データ 13 GB・ICE/GL runner を確認。BLAS スレッド過剰を修正して B1 パイプライン 2.3 秒/分子(手元 17 秒)。P1 分子 600 の特徴表を Spark で開始", "link": "b1.html"}
+{"time": "2026-10-24 12:11", "kind": "result", "text": "B1 初回評価(C1 可能な天然物 300、GL のみ): C2 strict で FP 0.17 → FP+0.15prior 0.23 → S(2,1,0.15) 0.40 → prior 0.5 で 0.43。C1 はライブラリ類似度 1.0 の重複再登録が多数(中央値 1.0)で楽観的 → 重複取得の除外を実装し再構築中", "link": "b1.html"}
