@@ -25,7 +25,8 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from b1_common import ADDUCT_SHIFT, ELECTRON, clean_peaks, entropy_similarity  # noqa: E402
 
 KAGGLE = os.path.exists("/kaggle/input")
-PPM, K_SHORT, K_LIB, LIB_MIN, MAX_REF, MAX_Q = 10.0, 100, 20, 0.2, 24, 16
+PPM, K_SHORT, K_LIB, LIB_MIN, MAX_REF, MAX_Q = 10.0, 100, 20, 0.2, 24, 8      # MAX_Q 8 with adduct round-robin = the evaluation's query policy
+SHORTLIST_LAM = 0.15   # prior weight for the shortlist (as evaluated); LAM below is the fusion weight
 W_GL, W_ICE, LAM, TAU, MARGIN = 2.0, 1.0, 0.5, 2.0, 0.2   # LAM 0.5 (B1 eval: better than 0.15 on A, B and the C1 set); TAU 2.0 disables the library-priority rule until the deduplicated C1 evaluation supports it
 ICE_BUDGET, GL_BUDGET = 5400, 4000
 
@@ -200,6 +201,14 @@ def main():
     assert all(v.shape[0] == tmass.shape[0] for v in PC.values()), 'popularity arrays are not aligned to the tier'
     assert all(v.shape[0] == pool.height for v in PL.values()), 'pool popularity arrays are not aligned to the pool'
     log(f"paths: {json.dumps({k: str(v) for k, v in P.items()})}")
+    CMASS = CSMI = None
+    try:
+        import pickle
+        cdir = os.path.dirname(find("coco_mass.npy")) if KAGGLE else os.path.join(os.path.dirname(os.path.dirname(P["pool"])), "coconut")
+        if os.path.exists(f"{cdir}/coco_mass.npy"):
+            CMASS = np.load(f"{cdir}/coco_mass.npy"); CSMI = np.asarray(pickle.load(open(f"{cdir}/coco_meta.pkl", "rb"))["smiles"]); log(f"COCONUT candidate store: {len(CMASS):,} structures")
+    except Exception as e:
+        CMASS = CSMI = None; log("COCONUT store not used:", repr(e))
     order = np.argsort(pool["mass"].to_numpy(), kind="stable")
     pmass = pool["mass"].to_numpy()[order]; psmi = pool["smiles"].to_numpy()[order]; psrc = pool["src"].to_numpy()[order]; ppid = pool["pid"].to_numpy()[order]; pkey = pool["key"].to_numpy()[order]
     folds = [int(x) for x in args.folds.split(",")]
@@ -233,19 +242,38 @@ def main():
         log(f"library index: {len(key_rows):,} official identities with reference spectra")
         for n_i, (mid, spectra) in enumerate(mols.items()):
             tm0 = time.time()
-            q = [dict(s, clean=clean_peaks(s["mz"], s["it"], s["prec"])) for s in spectra if s["adduct"] in ADDUCT_SHIFT][:MAX_Q]
+            known = [s for s in spectra if s["adduct"] in ADDUCT_SHIFT]
+            by_add = {}
+            for s in sorted(known, key=lambda s: (s["adduct"] != "[M+H]+", s["adduct"], s["ce"] if s["ce"] is not None else 0.0)):
+                by_add.setdefault(s["adduct"], []).append(s)
+            q = []
+            while len(q) < MAX_Q and any(by_add.values()):          # adduct round-robin (same policy as b1_features.py)
+                for ad in list(by_add):
+                    if by_add[ad] and len(q) < MAX_Q: q.append(by_add[ad].pop(0))
+            q = [dict(s, clean=clean_peaks(s["mz"], s["it"], s["prec"])) for s in q]
             if not q:                                         # unknown adducts only: fall back to [M+H]+ / [M-H]- by polarity
                 q = [dict(s, adduct=("[M+H]+" if s["mode"] == "positive" else "[M-H]-"), clean=clean_peaks(s["mz"], s["it"], s["prec"])) for s in spectra][:MAX_Q]
             M_by_add = {}
             for s in q: M_by_add.setdefault(s["adduct"], []).append(s["prec"] + ADDUCT_SHIFT[s["adduct"]])
             M_by_add = {k: float(np.median(v)) for k, v in M_by_add.items()}
-            smiles, src_train, src_coco, tier_row, pool_pid, pool_key, cmass = [], [], [], [], [], [], []
+            src = {}   # smiles -> provenance (de-duplicated across the adduct windows before fingerprinting)
             for M in M_by_add.values():
                 tol = M * PPM * 1e-6; ts, trows, tms = tier_window(M - tol, M + tol)
+                for s_, tr_, m_ in zip(ts, trows, tms):
+                    d = src.setdefault(s_, dict(train=False, coco=False, trow=-1, pid=-1, pkey=None, mass=float(m_)))
+                    if d["trow"] < 0: d["trow"] = int(tr_)
                 lo = int(np.searchsorted(pmass, M - tol, "left")); hi = int(np.searchsorted(pmass, M + tol, "right"))
-                smiles += ts + [str(s) for s in psmi[lo:hi]]; src_train += [False] * len(ts) + [bool(x in (1, 3)) for x in psrc[lo:hi]]
-                src_coco += [False] * len(ts) + [bool(x in (2, 3)) for x in psrc[lo:hi]]; tier_row += list(trows) + [-1] * (hi - lo)
-                pool_pid += [-1] * len(ts) + [int(x) for x in ppid[lo:hi]]; pool_key += [None] * len(ts) + [str(x) for x in pkey[lo:hi]]; cmass += list(tms) + list(pmass[lo:hi])
+                for s_, sr_, pi_, pk_, m_ in zip(psmi[lo:hi], psrc[lo:hi], ppid[lo:hi], pkey[lo:hi], pmass[lo:hi]):
+                    d = src.setdefault(str(s_), dict(train=False, coco=False, trow=-1, pid=-1, pkey=None, mass=float(m_)))
+                    d["train"] |= int(sr_) in (1, 3); d["coco"] |= int(sr_) in (2, 3)
+                    if d["pid"] < 0: d["pid"] = int(pi_); d["pkey"] = str(pk_)
+                if CMASS is not None:
+                    clo = int(np.searchsorted(CMASS, M - tol, "left")); chi = int(np.searchsorted(CMASS, M + tol, "right"))
+                    for s_, m_ in zip(CSMI[clo:chi], CMASS[clo:chi]):
+                        d = src.setdefault(str(s_), dict(train=False, coco=False, trow=-1, pid=-1, pkey=None, mass=float(m_))); d["coco"] = True
+            smiles = list(src)
+            src_train = [src[s_]["train"] for s_ in smiles]; src_coco = [src[s_]["coco"] for s_ in smiles]; tier_row = [src[s_]["trow"] for s_ in smiles]
+            pool_pid = [src[s_]["pid"] for s_ in smiles]; pool_key = [src[s_]["pkey"] for s_ in smiles]; cmass = [src[s_]["mass"] for s_ in smiles]
             # FPNet logits (polarity groups, fold ensemble)
             zl, wsum = None, 0.0
             for mode in ("positive", "negative"):
@@ -306,7 +334,7 @@ def main():
             if len(ref_cache) > 200_000: ref_cache.clear()
             # shortlist + official keys
             fpz = np.nan_to_num(fpu, nan=np.nanmin(fpu) if np.isfinite(fpu).any() else 0.0); zf = (fpz - fpz.mean()) / (fpz.std() + 1e-9)
-            K = min(K_SHORT, n_u); top_fp = np.argsort(-np.nan_to_num(fpu, nan=-1e18), kind="stable")[:K]; top_fpp = np.argsort(-(zf + LAM * pop), kind="stable")[:K]
+            K = min(K_SHORT, n_u); top_fp = np.argsort(-np.nan_to_num(fpu, nan=-1e18), kind="stable")[:K]; top_fpp = np.argsort(-(zf + SHORTLIST_LAM * pop), kind="stable")[:K]
             top_lib = [i for i in np.argsort(-lib, kind="stable")[:K_LIB] if lib[i] > LIB_MIN]
             short = np.union1d(np.union1d(top_fp, top_fpp), np.array(top_lib, dtype=np.int64))
             s_smiles = [smiles[rep[keys[i]]["i"]] for i in short]

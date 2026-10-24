@@ -62,19 +62,29 @@ def main():
         gl, gl_ok = load("gl"); ice, ice_ok = load("ice")
         print(f"{s}: molecules {len(M)} | shortlist rows {len(F)} | GL {gl_ok} | ICE {ice_ok}")
         rows = []
-        for mid, g in F.groupby("molecule", sort=False):
-            is_t = g.is_truth.values.astype(bool); fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float)
-            glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
-            icv = np.array([np.nan if (ice.get(mid) or {}).get(sm) is None else float((ice.get(mid) or {}).get(sm)) for sm in g.smiles], float)
-            zfp = z(fp); zgl = term(glv, gl_ok); zice = term(icv, ice_ok)
-            rec = dict(molecule=mid, n=len(g), truth_in_shortlist=bool(is_t.any()), gl_cov=float(np.isfinite(glv).mean()), ice_cov=float(np.isfinite(icv).mean()))
-
-            def S(w_gl=1.0, w_ice=1.0, lam=LAM):
-                v = zfp.copy()
-                if zgl is not None: v = v + w_gl * zgl
-                if zice is not None: v = v + w_ice * zice
-                return v + lam * pop
+        gl = gl or {}; ice = ice or {}
+        for mid, g0 in F.groupby("molecule", sort=False):
+            rec = dict(molecule=mid, n=len(g0), truth_in_shortlist=False, gl_cov=0.0, ice_cov=0.0)
             for view in ("c2", "c1"):
+                # the view's own shortlist (per-view library slot; Codex 006) and, in the class-2 view, no candidate that exists in no external
+                # source once its train membership is hidden (otherwise 'no source flags' identifies the truth)
+                keep = g0[f"in_short_{view}"].values.astype(bool) if f"in_short_{view}" in g0.columns else np.ones(len(g0), bool)
+                if view == "c2": keep &= (g0.in_tier.values | g0.in_coconut.values | g0.in_train_c2.values).astype(bool)
+                g = g0[keep].reset_index(drop=True)
+                if len(g) == 0:
+                    rec[f"{view}:n"] = 0; continue
+                is_t = g.is_truth.values.astype(bool); fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float)
+                glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
+                icv = np.array([np.nan if (ice.get(mid) or {}).get(sm) is None else float((ice.get(mid) or {}).get(sm)) for sm in g.smiles], float)
+                zfp = z(fp); zgl = term(glv, gl_ok); zice = term(icv, ice_ok)
+                rec[f"{view}:n"] = len(g)
+                if view == "c2": rec["truth_in_shortlist"] = bool(is_t.any()); rec["gl_cov"] = float(np.isfinite(glv).mean()); rec["ice_cov"] = float(np.isfinite(icv).mean())
+
+                def S(w_gl=1.0, w_ice=1.0, lam=LAM, zfp=zfp, zgl=zgl, zice=zice, pop=pop):
+                    v = zfp.copy()
+                    if zgl is not None: v = v + w_gl * zgl
+                    if zice is not None: v = v + w_ice * zice
+                    return v + lam * pop
                 lib = g[f"lib_sim_{view}"].values.astype(float)
                 res = {"prior": pop + 1e-9 * zfp, "fp": zfp, "fp+0.15pop": zfp + LAM * pop, "lib": lib + 1e-6 * zfp,
                        "S(1,1,0.15)": S(1, 1, LAM), "S(2,1,0.15)": S(2, 1, LAM), "S(2,1,0)": S(2, 1, 0.0), "S(1,1,0)": S(1, 1, 0.0), "S(2,1,0.5)": S(2, 1, 0.5)}
@@ -98,11 +108,15 @@ def main():
                 rec[f"{view}:lib_max"] = float(lib.max()); rec[f"{view}:truth_lib"] = float(lib[is_t][0]) if is_t.any() else None
             rows.append(rec)
         D = pd.DataFrame(rows).set_index("molecule").reindex(M.index)
-        D = D.join(M[["group", "lib", "n_query", "n_adducts", "ce_known", "n_unique", "truth_in_window", "c1_possible", "truth_other_lib_refs", "lib_max_c1", "lib_max_c2"]])
+        mcols = [c for c in ("group", "lib", "n_query", "n_adducts", "ce_known", "n_unique", "truth_in_window", "c1_possible", "c1_usable", "truth_other_lib_refs", "lib_max_c1", "lib_max_c2", "reach_external_b1") if c in M.columns]
+        D = D.join(M[mcols])
         D = D.join(ev[["window_external", "db_present_external"]], how="left")
-        rules = sorted({c.split(":", 1)[1] for c in D.columns if c.startswith("c2:") and not c.endswith("@rank") and c.split(":", 1)[1] not in ("lib_max", "truth_lib")},
+        # strict class-2 mask: the B1 windows' own external reach when available (Codex 006), else the selection-time flag
+        if "reach_external_b1" in D.columns: D["window_external"] = D["reach_external_b1"].fillna(False).astype(bool)
+        if "c1_usable" in D.columns: D["c1_possible"] = D["c1_usable"].fillna(False).astype(bool)
+        rules = sorted({c.split(":", 1)[1] for c in D.columns if c.startswith("c2:") and not c.endswith("@rank") and c.split(":", 1)[1] not in ("lib_max", "truth_lib", "n")},
                        key=lambda x: ["prior", "fp", "fp+0.15pop", "lib"].index(x) if x in ("prior", "fp", "fp+0.15pop", "lib") else 10)
-        for c in [c for c in D.columns if (":" in c) and not c.endswith(("@rank", "lib_max", "truth_lib"))]: D[c] = D[c].fillna(0.0)
+        for c in [c for c in D.columns if (":" in c) and not c.endswith(("@rank", "lib_max", "truth_lib", ":n"))]: D[c] = D[c].fillna(0.0)
         reach = D.window_external.fillna(False).astype(bool).values; c1ok = D.c1_possible.fillna(False).astype(bool).values
         N = len(D); res = dict(set=s, n=N, n_reachable=int(reach.sum()), n_c1_possible=int(c1ok.sum()), gl_ok=gl_ok, ice_ok=ice_ok, rules={})
         md += [f"## {s} (N={N}; truth in shortlist {int(D.truth_in_shortlist.fillna(False).sum())}; reachable via external DB {int(reach.sum())}; class-1 possible {int(c1ok.sum())}; "

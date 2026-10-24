@@ -16,7 +16,8 @@
     "dmitriigluzdov/casmi26-natural-product-knowledge-table",
     "dmitriigluzdov/casmi26-natural-product-panel-benchmark",
     "dmitriigluzdov/casmi26-pubchem-popularity-prior",
-    "dmitriigluzdov/casmi26-attributed-v4g-reproduction-assets"
+    "dmitriigluzdov/casmi26-attributed-v4g-reproduction-assets",
+    "prvsiyan/coconut-casmi26-candidates"
   ],
   "kernel_sources": [],
   "competition_sources": [

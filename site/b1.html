@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 12:27 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 12:48 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-p1">1. 課題の構造(調査と P1 から)</a></li>
@@ -24,6 +24,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#3">3. 評価集合</a></li>
 <li><a href="#31-400">3.1 アダクトと順方向モデルの被覆(公開テスト 400 分子で測定)</a></li>
 <li><a href="#5-1-ab-300experimentsb1_baselinerun1resultsb1_resultsmd1220">5. 結果 1: 固定規則の評価(新評価集合 A/B 各 300、experiments/b1_baseline/run1/results/b1_results.md、12:20)</a></li>
+<li><a href="#6-lambdarank1230">6. 学習融合(LambdaRank)の統合(12:30)</a></li>
 <li><a href="#4-1030">4. 進行中(10:30)</a></li>
 </ul>
 </div>
@@ -230,6 +231,13 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 - 順方向モデルの全体 z 和が主力(A: FP 0.49 → S 0.67、B: 0.14 → 0.35)。prior 重み 0.5 は 0.15 より一貫して良い(A +0.007、B +0.034、C1 集合 +0.034)→ B1 の既定値を 0.5 に変更。
 - 参照優先規則は Class 2 を落とす(τ 0.6 で A −0.05)。合成ライブラリ(enveda-180)では類縁体の参照スペクトルが高い類似度を出すため、「高い類似度 = 正解がライブラリにある」が成り立たない。Class 1 の利得は重複除外後の C1 で測り直す。学習融合(LambdaRank)に類似度・次点差・参照数・同アダクトを特徴として渡す方が筋が良い。
 - B の C1 で類似度 1.000 の参照が大半: 同じスペクトルの再登録(GNPS → MoNA/MassBank)。参照の独立性を保つため、同一プリカーサ・類似度 ≥ 0.98 の参照を重複として除外する処理を追加し、C1 集合を Spark で再構築中。</p>
+<h2 id="6-lambdarank1230">6. 学習融合(LambdaRank)の統合(12:30)</h2>
+<ul>
+<li>共通特徴モジュール <code>b1_rankfeats.py</code>(学習と推論で同じ関数): z(FP)、z(GL)、z(ICE)、生スコア、prior 成分(SID/PMID/synonyms/NP/寄託源/LOTUS)、ライブラリ類似度・同アダクト類似度・参照数・次点差・分子内最大、出典フラグ、質量誤差、FP の窓内順位、候補数、欠損フラグ、query 数、CE 既知。シナリオ(C1/C2)のフラグは推論時に分からないため特徴に入れない。</li>
+<li>学習(<code>b1_rank_train.py</code>): 行 = shortlist 候補 × 視点(C2 と、参照のある分子では C1)。C2 視点では「外部出典が無く学習構造としての存在も隠された候補」を除外する(残すと『出典の無い候補 = 正解』という漏れになる。予備試験でこの漏れが +0.11 の見かけの利得を作っていた)。fit で学習、tune(C2 strict + 0.5·C1)で設定選択、eval 群で固定規則 S(2,1,0.5) と比較。</li>
+<li>推論(<code>b1_pipeline.py --rank_model</code>): モデルファイルがあれば LightGBM で候補を並べ替え、無ければ固定規則。Notebook 生成時にモデルを同梱。</li>
+<li>予備試験(fit = 新評価集合の fit 群 186 group のみ、eval 群 199 分子): C2 strict 0.490 → 0.517(+0.026 [−0.005, +0.057])、C1(n=29、重複込み)0.392 → 0.696。本試験は P1 600 分子を fit に加え、重複除外版の特徴で行う。</li>
+</ul>
 <h2 id="4-1030">4. 進行中(10:30)</h2>
 <ul>
 <li><code>eval_set</code> A/B の特徴表構築(約 9 秒/分子、CPU 競合時)→ GL/ICE → <code>b1_evaluate.py</code>。</li>

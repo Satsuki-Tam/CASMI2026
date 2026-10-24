@@ -29,15 +29,17 @@ def load_run(run, eval_csv, group_override=None):
             except Exception: ok = False
             return (json.load(open(p)) if ok else {}), ok
         gl, gl_ok = load("gl"); ice, ice_ok = load("ice")
+        LEDGER[(run, s)] = M.copy()
         for mid, g0 in F.groupby("molecule", sort=False):
             if mid not in M.index: continue
             m = M.loc[mid]
             for view in ("c2", "c1"):
-                if view == "c1" and not bool(m.c1_possible): continue
+                if view == "c1" and not bool(m["c1_usable"] if "c1_usable" in M.columns else m.c1_possible): continue
                 # class-2 view: a structure that exists in no external source and whose train membership is hidden would not be a candidate
                 # for a genuinely novel-to-libraries molecule -> drop it (otherwise 'no source flags' identifies the truth = leak)
-                keep = (g0.in_tier.values | g0.in_coconut.values | g0[f"in_train_{view}"].values).astype(bool)
-                g = g0[keep].reset_index(drop=True) if view == "c2" else g0
+                keep = g0[f"in_short_{view}"].values.astype(bool) if f"in_short_{view}" in g0.columns else np.ones(len(g0), bool)
+                if view == "c2": keep &= (g0.in_tier.values | g0.in_coconut.values | g0[f"in_train_{view}"].values).astype(bool)
+                g = g0[keep].reset_index(drop=True)
                 if len(g) == 0: continue
                 fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float)
                 glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
@@ -52,16 +54,27 @@ def load_run(run, eval_csv, group_override=None):
                 d = pd.DataFrame(X, columns=FEATS)
                 d.insert(0, "is_truth", g.is_truth.values.astype(int)); d.insert(0, "identity", mid); d.insert(0, "group", group_override or m.group); d.insert(0, "view", view)
                 d.insert(0, "molecule", mid); d.insert(0, "set", s); d.insert(0, "run", run)
-                d["S_fixed"] = S; d["S_fixed15"] = S15; d["reachable"] = bool(ev.loc[mid, "window_external"]) if mid in ev.index else True
+                d["S_fixed"] = S; d["S_fixed15"] = S15; d["reachable"] = bool(m["reach_external_b1"]) if "reach_external_b1" in M.columns else (bool(ev.loc[mid, "window_external"]) if mid in ev.index else True)
+                d["identity_group"] = int(m["identity_group"]) if "identity_group" in M.columns else -1
                 out.append(d)
     return pd.concat(out, ignore_index=True)
 
 
+LEDGER = {}   # (run, set) -> molecule table (reach / c1 flags), filled by load_run; molecules without candidate rows count as 0
+
+
 def mrr_of(df, score_col):
-    vals, strict = [], []
+    vals = []
     for (mid, view), g in df.groupby(["molecule", "view"], sort=False):
-        r, _ = rr(g[score_col].values, g.is_truth.values.astype(bool)); vals.append((view, r, bool(g.reachable.iloc[0])))
-    d = pd.DataFrame(vals, columns=["view", "rr", "reach"])
+        r, _ = rr(g[score_col].values, g.is_truth.values.astype(bool)); vals.append((mid, view, r, bool(g.reachable.iloc[0])))
+    d = pd.DataFrame(vals, columns=["molecule", "view", "rr", "reach"])
+    groups = set(df.group.unique()); runs = set(zip(df.run, df.set)); have = set(zip(d.molecule, d.view)); missing = []
+    for (run, s), L in LEDGER.items():
+        if (run, s) not in runs: continue
+        for mid, row in L[L.group.isin(groups)].iterrows():
+            if (mid, "c2") not in have: missing.append((mid, "c2", 0.0, bool(row.get("reach_external_b1", True))))
+            if bool(row.get("c1_usable", row.get("c1_possible", False))) and (mid, "c1") not in have: missing.append((mid, "c1", 0.0, True))
+    if missing: d = pd.concat([d, pd.DataFrame(missing, columns=d.columns)], ignore_index=True)
     res = {}
     for view, gg in d.groupby("view"):
         res[view] = dict(mrr=float(gg.rr.mean()), n=len(gg), strict=float((gg.rr * (gg.reach | (view == "c1"))).mean()))
@@ -74,6 +87,9 @@ def main():
     data = pd.concat([load_run(*r.split(":")) for r in a.runs], ignore_index=True)   # RUN:eval_csv[:group_override]
     print("rows", len(data), "| molecules", data.molecule.nunique(), "| groups", data.groupby("group").molecule.nunique().to_dict(), "| views", data.groupby("view").molecule.nunique().to_dict())
     fit, tune, ev = (data[data.group == g].copy() for g in ("fit", "tune", "eval"))
+    ig = {g: set(data[(data.group == g) & (data.identity_group >= 0)].identity_group) for g in ("fit", "tune", "eval")}
+    assert not (ig["fit"] & ig["tune"]) and not (ig["fit"] & ig["eval"]) and not (ig["tune"] & ig["eval"]), "identity groups shared between fit/tune/eval"
+    print("identity groups:", {g: len(v) for g, v in ig.items()})
     # keep only training groups whose shortlist contains the truth (ranking loss needs a positive); evaluation keeps every molecule
     def groups_with_truth(d):
         has = d.groupby(["molecule", "view"]).is_truth.transform("max") > 0; return d[has]
@@ -104,7 +120,8 @@ def main():
     for (mid, view), g in ev.groupby(["molecule", "view"], sort=False):
         r1, _ = rr(g.pred.values, g.is_truth.values.astype(bool)); r0, _ = rr(g.S_fixed.values, g.is_truth.values.astype(bool)); rows.append((view, r1 - r0, bool(g.reachable.iloc[0])))
     dd = pd.DataFrame(rows, columns=["view", "d", "reach"])
-    out["eval_delta"] = {v: dict(delta=float(gg.d.mean()), ci95=boot(gg.d.values), n=len(gg)) for v, gg in dd.groupby("view")}
+    dd["d_strict"] = dd.d * (dd.reach | (dd.view == "c1"))
+    out["eval_delta"] = {v: dict(delta=float(gg.d.mean()), ci95=boot(gg.d.values), delta_strict=float(gg.d_strict.mean()), ci95_strict=boot(gg.d_strict.values), n=len(gg)) for v, gg in dd.groupby("view")}
     json.dump(out, open(f"{a.out}/rank_results.json", "w"), indent=1, default=str); bst.save_model(f"{a.out}/lambdarank.txt")
     print(json.dumps({k: out[k] for k in ("eval_lambdarank", "eval_fixed", "eval_delta")}, indent=1)); print("importance (gain):", sorted(out["importance"].items(), key=lambda kv: -kv[1])[:12])
 
