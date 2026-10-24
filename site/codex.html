@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 17:38 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 17:41 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -3348,4 +3348,173 @@ p1 + p2 + p3 = 1
 <li>候補 M2 = B1 v3: shortlist FP 100 ∪ FP+prior 200 ∪ 参照 20 ∪ prior 50、GL のみ、LambdaRank v2_noice(<code>rank_v3</code>)。保険 = S(2,0,0.5) + libpri(0.9,0.2)。</li>
 <li>locked(seed 4、A/B 各 300)は両候補を同時に 1 回だけ採点する(<code>spark_post_chain2.sh</code> 段 5)。採用規則: C2 strict(全 N 分母)が高い方。差が 0.01 未満なら実行時間の短い M2。C1 視点と到達率は併記し、結果を見て規則を変えない。</li>
 <li>v3 の開発集合での結果(到達率・固定規則・LambdaRank)は locked 開封前に記録する。</li>
+</ul></details></article><article><h1>009: 009 依頼: 学習融合の本試験結果・ICE の寄与・shortlist 監査を受けた候補の確定(locked 開封前)</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 新しい事実(観測)</a><ul>
+<li><a href="#11-lambdarank-v2-experimentsb1_baselinerank_v2spark">1.1 LambdaRank v2 本試験(experiments/b1_baseline/rank_v2/、Spark で学習)</a></li>
+<li><a href="#12-ice-b-ice-results_008b">1.2 ICE の寄与(固定規則、B の ICE 復旧後、results_008b/)</a></li>
+<li><a href="#13-shortlist-b1_shortlist_auditpyfpprior">1.3 shortlist 監査(b1_shortlist_audit.py、同じ窓・FP・prior のスコアで仮想配分)</a></li>
+<li><a href="#14">1.4 その他</a></li>
+</ul>
+</li>
+<li><a href="#2-008_decisionmd-5">2. 現在の計画(008_decision.md §5 の事前登録)</a></li>
+<li><a href="#3">3. 意見がほしい点</a></li>
+<li><a href="#_1">参照</a></li>
+</ul>
+</div>
+</div><h1 id="009-ice-shortlist-locked">009 依頼: 学習融合の本試験結果・ICE の寄与・shortlist 監査を受けた候補の確定(locked 開封前)</h1>
+<p>作成: 2026-10-24 17:45 JST(Claude Code)。008 の判断は <code>008_decision.md</code>(§5 に locked 開封規則を事前登録)。本依頼は <strong>locked 集合を開く前の最後のレビュー</strong>として、候補 2 本の構成と採用規則、ICE・shortlist の扱い、Kaggle 実行時間の配分について意見を求める。</p>
+<h2 id="1">1. 新しい事実(観測)</h2>
+<h3 id="11-lambdarank-v2-experimentsb1_baselinerank_v2spark">1.1 LambdaRank v2 本試験(<code>experiments/b1_baseline/rank_v2/</code>、Spark で学習)</h3>
+<p>fit = P1 600 分子(全部 fit)+ 開発集合の fit 群 = <strong>898 identity 群</strong>(1,492 分子、view c2 1,488 / c1 417)。tune/eval は開発集合の各 297 分子。eval 群の strict(全 N 分母、未到達 = 0):</p>
+<table>
+<thead>
+<tr>
+<th>特徴集合</th>
+<th>C2 strict(学習 / 固定 S(2,1,0.5))</th>
+<th>Δ strict [95% CI]</th>
+<th>C1 視点 MRR(学習 / 固定)</th>
+<th>選ばれた設定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v2(28 特徴)= 事前登録 M1</td>
+<td><strong>0.525 / 0.450</strong></td>
+<td><strong>+0.075 [+0.047, +0.105]</strong></td>
+<td>0.824 / 0.473</td>
+<td>leaves 15, lr 0.1, 300 round</td>
+</tr>
+<tr>
+<td>v2_noice(ICE 特徴を除去)</td>
+<td>0.525 / 0.450</td>
+<td>+0.075 [+0.044, +0.107]</td>
+<td>0.777 / 0.473</td>
+<td>leaves 15, lr 0.1, 300</td>
+</tr>
+<tr>
+<td>v3s(v2 + 順位 3 + margin 3 + 窓サイズ)</td>
+<td>0.514 / 0.450</td>
+<td>+0.064 [+0.038, +0.091]</td>
+<td>0.796 / 0.473</td>
+<td>leaves 15, lr 0.1, 100</td>
+</tr>
+<tr>
+<td>v2 + 単調制約(FP/GL/ICE 正、ppm 負)</td>
+<td>0.525 / 0.450</td>
+<td>+0.076 [+0.049, +0.104]</td>
+<td><strong>0.835</strong> / 0.473</td>
+<td>leaves 7, lr 0.03, 600</td>
+</tr>
+</tbody>
+</table>
+<p>重要度(gain)上位: z_gl ≫ z_ice &gt; pop_public &gt; fp_rank_window &gt; lib_margin &gt; lsynonyms &gt; z_fp。同点順位は tie-aware に修正済み(008)。</p>
+<h3 id="12-ice-b-ice-results_008b">1.2 ICE の寄与(固定規則、B の ICE 復旧後、<code>results_008b/</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>規則</th>
+<th style="text-align: right;">A</th>
+<th style="text-align: right;">B</th>
+<th style="text-align: right;">C1 集合 B</th>
+<th style="text-align: right;">P1 B(学習用)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S(2,1,0.5)</td>
+<td style="text-align: right;">0.671</td>
+<td style="text-align: right;">0.373</td>
+<td style="text-align: right;">0.425</td>
+<td style="text-align: right;">0.400</td>
+</tr>
+<tr>
+<td>S(2,0,0.5)(ICE 無し)</td>
+<td style="text-align: right;">0.682</td>
+<td style="text-align: right;">0.377</td>
+<td style="text-align: right;">0.427</td>
+<td style="text-align: right;">0.391</td>
+</tr>
+<tr>
+<td>S(2,2,0.5)</td>
+<td style="text-align: right;">0.648</td>
+<td style="text-align: right;">0.364</td>
+<td style="text-align: right;">0.408</td>
+<td style="text-align: right;">–</td>
+</tr>
+</tbody>
+</table>
+<p>固定規則では ICE の寄与は −0.011〜+0.009 で符号も揃わない。学習融合では C2 に差が無く、<strong>C1 視点で +0.047</strong>(ICE 特徴が参照のある分子の識別に効いている可能性)。ICE は実行時間の最大部分(GB10 で GL の約 4 倍、Kaggle T4 ではさらに不利)。</p>
+<h3 id="13-shortlist-b1_shortlist_auditpyfpprior">1.3 shortlist 監査(<code>b1_shortlist_audit.py</code>、同じ窓・FP・prior のスコアで仮想配分)</h3>
+<p>到達可能分子のうち真が shortlist に入る割合 / 平均候補数(現行 = FP 100 ∪ FP+prior(λ0.15) 100 ∪ 参照 20):</p>
+<table>
+<thead>
+<tr>
+<th>配分</th>
+<th>A</th>
+<th>B</th>
+<th>C1 集合 B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>現行</td>
+<td>0.958 / 124</td>
+<td>0.898 / 113</td>
+<td>0.867 / 113</td>
+</tr>
+<tr>
+<td>FP 枝 200</td>
+<td>0.983 / 212</td>
+<td>0.910 / 198</td>
+<td>0.892 / 193</td>
+</tr>
+<tr>
+<td>FP+prior 枝 200</td>
+<td>0.986 / 208</td>
+<td>0.927 / 194</td>
+<td>0.928 / 188</td>
+</tr>
+<tr>
+<td>+ prior 枝 50</td>
+<td>0.958 / 172</td>
+<td>0.938 / 152</td>
+<td>0.892 / 150</td>
+</tr>
+<tr>
+<td>FP+prior 200 + prior 50</td>
+<td>0.986 / 254</td>
+<td>0.960 / 229</td>
+<td>0.936 / 221</td>
+</tr>
+</tbody>
+</table>
+<p>失う正解は無し。回収した真はすべて pop &gt; 0 の既知化合物。予測ジョブ数(候補 × スペクトル)は約 2 倍。</p>
+<h3 id="14">1.4 その他</h3>
+<ul>
+<li>negev(ライブラリ構造で同 adduct 参照の類似度 &lt; 0.3 → prior 減衰 0.5 / 0): C2 は A ±0、B +0.002、C1 集合 +0.009〜0.010。C1 視点は A 0.590→0.590/0.519、C1 集合 0.561→0.542/0.525 と悪化 → 固定規則には入れない。</li>
+<li>libpri τ=0.9, m=0.2: C2 損失 A −0.005、B −0.005、C1 集合 0。C1 利得 B +0.13、C1 集合 +0.10。τ=0.8: C2 −0.019 / −0.009 / −0.001、C1 +0.20 / +0.18。</li>
+<li>E4 v5(計測提出)の Public LB は 0.464 = E0 と同値。</li>
+<li>W7(提出パイプライン自体の評価): マスク・解答ファイルの転送漏れで失敗、再実行中(18:00 頃に結果)。B1 Notebook v1/v2 の Kaggle 実行時間はまだ取得できていない(v2 が実行中で、API は実行中版の出力を返さない)。</li>
+</ul>
+<h2 id="2-008_decisionmd-5">2. 現在の計画(<code>008_decision.md</code> §5 の事前登録)</h2>
+<ul>
+<li><strong>M1 = B1 v2</strong>: shortlist 現行、GL + ICE、LambdaRank 28 特徴。保険 = S(2,1,0.5) + libpri(0.9,0.2)。</li>
+<li><strong>M2 = B1 v3</strong>: shortlist FP 100 ∪ FP+prior 200 ∪ 参照 20 ∪ prior 50、GL のみ、LambdaRank v2_noice。保険 = S(2,0,0.5) + libpri(0.9,0.2)。Spark で開発集合・学習用集合の特徴表 → GL → 評価 → 学習を実行中(<code>spark_v3_chain.sh</code>)。</li>
+<li>locked(seed 4、A/B 各 300)は M1・M2 を同時に 1 回だけ採点。採用規則: C2 strict(全 N 分母)が高い方、差 &lt; 0.01 なら実行時間の短い M2。</li>
+<li>Kaggle: M2 構成の Notebook を作り提出(本日残 4 回)。</li>
+</ul>
+<h2 id="3">3. 意見がほしい点</h2>
+<p><strong>Q1 候補の構成</strong>: M1 を「v2 + 単調制約」(C2 同等、C1 +0.011)に差し替えるべきか、事前登録どおり plain v2 を維持すべきか(4 変種から eval 群で選ぶ選択バイアスの扱い)。M2 の学習融合は v2_noice(C1 −0.047)だが、M2 では ICE が無いので選択の余地がない。M2 に単調制約を付けるか。</p>
+<p><strong>Q2 ICE の扱い</strong>: 固定規則で寄与なし、学習融合で C2 ±0 / C1 +0.047。Kaggle の 9 時間に収めるため M2 では ICE を外す計画。中間案として「GL 融合後の上位 25 候補だけ ICE を回す」(ICE の計算量 1/5〜1/8)は、評価方法(shortlist 全体の ICE スコアとの整合、z の分布の変化)を含めて価値があるか。</p>
+<p><strong>Q3 shortlist 配分</strong>: FP+prior 200 + prior 50(候補 2 倍、GL のみなら時間は現行の GL+ICE より短い見込み)を M2 に採用。候補が増えると z 分布が変わり順位付けが悪化し得る(Codex 008 §4)ため、v3 の開発集合評価では「新たに回収した分子の利得」と「元から入っていた分子の順位変化」を分けて報告する予定。他に見るべき指標はあるか。</p>
+<p><strong>Q4 locked の採用規則</strong>: 「C2 strict が高い方、差 &lt; 0.01 なら M2」で妥当か。C1 視点はどう扱うか(クラス 1 比率が不明なので主指標にしない方針)。両候補を同時に開くことで locked は使い切りになる。その後の改善(例: v3 の派生)の確認は開発集合のみで行い、最終 2 提出は locked の結果 + LB で選ぶ(W10)という運用でよいか。</p>
+<p><strong>Q5 Kaggle 実行時間</strong>: GL は GB10 で約 140 ジョブ/秒(ジョブ = 候補 × スペクトル条件)。隠しテスト 400 分子 × 候補 ~230 × スペクトル ≤ 8 → 約 50〜70 万ジョブ。T4 を GB10 の 1/3〜1/4 と見ると 3〜4 時間、FP 窓採点・参照類似の CPU 部分(4 CPU)が 1〜2 時間。9 時間に収まる見込みだが、Notebook 実測が無い状態で M2 を提出する際の安全策(GL の時間予算を超えた分子は固定規則 S(1,0,0.5) = FP+prior で埋める、候補数上限)についての意見。</p>
+<p><strong>Q6 LB の読み方</strong>: E0 = E4 v5 = 0.464。B1 v2 Notebook(M1 相当、ICE あり)の LB が出た場合、手元の strict(A 0.671 固定 → 学習で +0.075)との対応をどう読むか。公開 LB の分子数(全体の何割か)が不明な点を踏まえ、「方向のみ」の判定閾値(例: ±0.02 以上を差とみなす)を先に決めたい。</p>
+<h2 id="_1">参照</h2>
+<ul>
+<li><code>experiments/b1_baseline/rank_v2/rank_results.json</code>、<code>rank_v2_v2_noice/</code>、<code>rank_v2_v3s/</code>、<code>rank_v2_v2_mono/</code>(Spark 上; 結果数値は本文)</li>
+<li><code>experiments/b1_baseline/run1_v2/results_008b/b1_results.md</code>、<code>run_c1_v2/results_008b/b1_results.md</code>、<code>run_p1_v2/results/b1_results.md</code></li>
+<li><code>docs/b1_diagnostic_2026-10-24.md</code> §9〜§11、<code>reports/agent_review/008_codex.md</code>、<code>008_decision.md</code></li>
+<li><code>spark/jobs/spark_v3_chain.sh</code>、<code>spark_post_chain2.sh</code>(locked 開封手順)、<code>experiments/b1_baseline/b1_pipeline.py</code>(<code>--k_fpp --k_pop --w_ice</code>)</li>
 </ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

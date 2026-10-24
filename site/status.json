@@ -20,43 +20,32 @@
    "eta": "2〜3 時間"
   },
   {
-   "state": "run",
-   "name": "B1 v2 の再構築(Spark): 新評価集合 A/B、C1 集合、P1 600 分子",
-   "detail": "run1_v2(A/B 300+300)と run_c1_v2(B 300)は特徴表・GL・固定規則評価まで完了(strict C2: A 0.671 / B 0.377、B は ICE 無し)。run_p1_v2(P1 600 分子 = LambdaRank の学習用)は特徴表 A 完了・B 進行中 → GL/ICE → 評価。続いて locked 集合(seed 4)→ 提出パイプライン自体の評価(C2/C1)。 後段(ICE 修復後の再評価 → LambdaRank v2 学習 → locked 評価 → パイプライン自体の C2/C1 評価)は Spark 側の spark/jobs/spark_post_chain.sh が順に実行する。",
-   "eta": "15:00 頃"
+   "state": "done",
+   "name": "B1 v2 の構築と評価(Spark)",
+   "detail": "特徴表・GL・ICE(GB10 クラッシュは CPU 退避で解消)・固定規則評価・診断・LambdaRank 本試験まで完了。C2 strict: 固定 0.450 → 学習 0.525(+0.075 [+0.047, +0.105])、C1 視点 0.473 → 0.824。ICE は固定規則で寄与なし。shortlist 監査: FP+prior 200 + prior 50 で到達率 A 0.986 / B 0.960 / C1 集合 0.936。"
   },
   {
    "state": "run",
-   "name": "ICEBERG の GB10 CUDA クラッシュ対策と B 集合の ICE 再採点(Spark)",
-   "detail": "random_walk_pe の疎行列 coalesce が cudaErrorIllegalAddress を散発(天然物集合のみ)。疎行列部分を CPU で計算して GPU に戻す修正を Spark 側 ICEBERG/GLACIER に適用し、再開可能ドライバ spark/jobs/ice_resume.py で run1_v2 B → run_c1_v2 B を順に再採点中。完了後に A/B を再評価し、LambdaRank v2 の学習はそれを待つ。 15:08 時点: run1_v2 B は 157/299 分子まで無事故で採点(従来は 44〜96 分子で落ちていた)。 16:15: run1_v2 B は 298/299 で完了(partial、1 分子は候補無し)。一方 run_p1_v2 の A で別の箇所(torch.unique の merge_sort)が同じ illegal address を起こし 253/300 で停止 → この関数も CPU 計算に退避し、再開ドライバに既存の部分出力を引き継ぐ --reuse を追加。後段チェーンは学習用集合と locked 集合の ICE を A/B とも修復してから学習・評価する。"
+   "name": "W7: 提出パイプライン自体の C2/C1 評価 + parity(Spark)",
+   "detail": "eval_test_set(600 分子)に本番パイプラインを掛け、学習融合(本命)と固定規則(保険)を公式スコアラー複製で採点。候補ダンプと評価器の特徴表の照合(parity)も同時に。1 回目はマスクファイルの転送漏れで失敗、再実行中(spark_pipeeval2_chain.sh)。"
+  },
+  {
+   "state": "run",
+   "name": "B1 v3 の開発(Spark): shortlist 拡大 + ICE 無し",
+   "detail": "FP 100 ∪ FP+prior 200 ∪ 参照 20 ∪ prior 50、GLACIER のみ。開発集合・学習用集合の特徴表 → GL → 評価 → LambdaRank(ICE 特徴なし)。locked 集合の特徴表も作るが採点は post-chain2 が v2/v3 を同時に 1 回だけ行う(事前登録済み)。v2 の locked 特徴表(GL/ICE)が終わってから開始。"
   },
   {
    "state": "wait",
-   "name": "shortlist 再現率の監査(Spark、低優先度)",
-   "detail": "診断 D1 の追補: 取りこぼした真は pop>0 の既知化合物で FP 順位 ~400 位。真の窓内順位(FP / prior / FP+λ·prior)を記録する列を b1_features に追加し、FP top-K ∪ prior top-K3 の仮想 shortlist の再現率を eval_set A/B と C1 集合で測る(spark/jobs/spark_audit_chain.sh、ICE 修復後の再評価が終わってから開始)。"
-  },
-  {
-   "state": "wait",
-   "name": "LambdaRank 小ブロック比較(Spark、v2 学習後)",
-   "detail": "Codex 008 Q3: 28 特徴の基準に対し v3s(同点対応の順位 3 + margin 3 + 窓サイズ)と単調制約(FP/GL/ICE 正・ppm 負)を同じ fit/tune/eval 群で 1 回ずつ比較(spark/jobs/spark_rankcmp_chain.sh)。"
-  },
-  {
-   "state": "wait",
-   "name": "W7 parity(Spark、パイプライン評価後)",
-   "detail": "提出パイプラインの候補ダンプと評価器の特徴表を同じ分子・視点で照合: 候補集合の一致(Jaccard)、正解の有無、fp/pop/参照類似/所属フラグ/ppm の一致(spark/jobs/spark_parity_chain.sh)。"
-  },
-  {
-   "state": "wait",
-   "name": "再評価 008(Spark、ICE 修復後)",
-   "detail": "partial 出力の受理、負の参照証拠規則 negev(0.5/0)、libpri τ 0.9 を含む評価器で run1_v2 / run_c1_v2 を再評価し results_008/ に保存(spark/jobs/spark_eval2_chain.sh)。"
+   "name": "Codex 009(locked 開封前の最終レビュー)",
+   "detail": "候補 M1(v2)/ M2(v3)の構成、ICE の扱い(外す / 上位 25 だけ)、shortlist 配分、locked 採用規則、Kaggle 実行時間の安全策、LB の読み方の 6 問。"
   }
  ],
  "next": [
-  "Codex 008(診断に基づく優先順位)の回答を受けて決める: 固定規則の保険 libpri(0.8,0.2)、shortlist K の拡大、LambdaRank の信頼度特徴、負の証拠規則、FP の扱い",
-  "検証設計の弱点 W1〜W10(docs/validation_design.md)への対処を Codex 007 と検討し、優先順に実装(本番条件を模した合成テスト、標本拡大、回帰テスト)",
-  "E4 v5 の LB が出たら: 方向のみ読む(増分は予測しない)。P1 の代理指標の扱いを Codex 006 で確認",
-  "B1 Notebook v1 の実行時間から Kaggle 9 時間予算の配分(FP 窓採点 / GL / ICE)を決める",
-  "LambdaRank(fit = P1 600 分子、tune = 新集合)が固定規則を tune 群で上回るか"
+  "Codex 009 の回答 → M1/M2 の構成を確定(単調制約の採否、ICE の扱い)",
+  "W7 の結果(本番パイプラインの C2/C1 公式スコア、parity)を確認し、ずれがあれば修正",
+  "v3 の開発集合結果(到達率・固定規則・LambdaRank)を記録 → locked を v2/v3 同時に 1 回開封 → 採用規則で選択",
+  "B1 Notebook v3(M2 構成、--k_fpp 200 --k_pop 50 --w_ice 0、学習モデル埋め込み)を作成し提出。B1 v2 Notebook の結果が出れば LB の方向を読む(閾値は 009 で決める)",
+  "Kaggle 実行時間の実測(B1 Notebook v1/v2 のログ)を取得し、GL 予算と候補数上限を決める"
  ],
  "pages": [
   [
