@@ -21,12 +21,6 @@
     },
     {
       "state": "run",
-      "name": "B1 固定規則の評価(新評価集合 A/B 各 300)",
-      "detail": "特徴表完了。ICEBERG(B)実行中 → 評価表(C1/C2・strict)を自動生成",
-      "eta": "12:10 頃"
-    },
-    {
-      "state": "run",
       "name": "B1 C1 専用集合(300)と P1 分子(600)",
       "detail": "C1 特徴表完了、GL/ICE 実行中 → 評価。続いて P1 分子の特徴表(LambdaRank の学習データ)",
       "eta": "14:30 頃"
@@ -123,7 +117,7 @@
     {
       "id": "B1",
       "question": "自前ベースライン: 統一候補表 + ライブラリ類似度 + FPNet + GL/ICE + 固定融合 → LambdaRank",
-      "result": "実装済み・評価中",
+      "result": "新評価集合: C2 strict A 0.672 / B 0.379(S = z(FP)+2z(GL)+z(ICE)+0.5 prior)。参照優先規則は Class 2 を落とす。C1 は重複除外後に再評価",
       "code": "experiments/b1_baseline/, kernels/b1-baseline/",
       "page": "b1.html",
       "state": "run"

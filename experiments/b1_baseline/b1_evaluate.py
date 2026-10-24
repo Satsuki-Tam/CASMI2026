@@ -81,11 +81,18 @@ def main():
                 base = S(2, 1, LAM)
                 for beta in (1.0, 2.0, 4.0): res[f"S(2,1,0.15)+{beta:g}lib"] = base + beta * lib
                 top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
-                for tau in (0.5, 0.6, 0.7):
-                    pri = (lib.max() >= tau) and (lib.max() - second >= 0.1)
-                    v = base.copy()
+                base5 = S(2, 1, 0.5)
+                res["S(2,1,0.5)+1lib"] = base5 + 1.0 * lib
+                for tau, margin in ((0.5, 0.1), (0.6, 0.1), (0.7, 0.1), (0.8, 0.2), (0.9, 0.2)):
+                    pri = (lib.max() >= tau) and (lib.max() - second >= margin)
+                    v = base5.copy()
                     if pri: v = np.where(lib >= tau, 100.0 + lib, v)
-                    res[f"libpri(tau={tau})>S(2,1,0.15)"] = v
+                    res[f"libpri(tau={tau},m={margin})>S(2,1,0.5)"] = v
+                # consistency rule: promote the best library match only if it is also among the top-3 of S
+                for tau in (0.6, 0.8):
+                    v = base5.copy(); i = int(np.argmax(lib)); rank_i = int(np.sum(base5 >= base5[i]))
+                    if lib[i] >= tau and lib[i] - second >= 0.1 and rank_i <= 3: v[i] = 100.0
+                    res[f"libpri(tau={tau})&S-top3>S(2,1,0.5)"] = v
                 for name, sc in res.items():
                     r, rank = rr(sc, is_t); rec[f"{view}:{name}"] = r; rec[f"{view}:{name}@rank"] = rank
                 rec[f"{view}:lib_max"] = float(lib.max()); rec[f"{view}:truth_lib"] = float(lib[is_t][0]) if is_t.any() else None
