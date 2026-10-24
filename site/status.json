@@ -50,12 +50,25 @@
    "name": "Codex 015(開封結果の読みと朝の提出)",
    "detail": "2 提出は「2 つの最終出力ポリシーの比較」として了承。表現を訂正(同等 → 優劣未確定・昇格条件未達)。次段の順序 (c)→(a)→(b)→(d)",
    "eta": "完了"
+  },
+  {
+   "state": "done",
+   "name": "Codex 015 (c): query 選択の共通関数化",
+   "detail": "b1_common.select_queries に一本化。旧 3 実装と実データ 600 分子で全一致(評価器・builder・パイプライン、パイプライン(8)=評価器(8) 600/600)。eval_test_full3 再構築も同一",
+   "eta": "06:52 完了"
+  },
+  {
+   "state": "running",
+   "name": "Codex 015 (a): E0(公開 0.464 系譜)を自前分子で実行",
+   "detail": "Spark で移植・起動中(別エージェント)。まず W7 600 分子の C2 代理、次に C1 代理、パネル 250。段階別(窓・shortlist・参照・forward・最終)に B1 が負ける箇所を特定する",
+   "eta": "移植後に起動、数時間"
   }
  ],
  "next": [
-  "kernel 完走(07:15 頃)→ 09:00 以降に提出: 本命 casmi26-b1-baseline v4(M2x blend21)/ 保険 casmi26-b1-insurance v1。提出 ID・manifest・Public 値を記録",
+  "kernel 完走 → 09:00 以降に提出: 本命 casmi26-b1-baseline v4(M2x blend21)/ 保険 casmi26-b1-insurance v1。提出 ID・manifest・Public 値を記録",
   "朝の進捗報告を確定(docs/progress_2026-10-25_morning.md)",
-  "次段: (c) query 選択の共通関数化 → (a) E0 を自前分子で実行(experiments/e0_offline/README.md、資産は Spark に配置済み)→ (b) 検証集合に層を追加、locked 2 の確保 → (d) proxy / FIORA"
+  "E0 自前分子実行の完走 → e0_vs_b1_stages で段階別の差を特定(Codex 016 で議論)",
+  "(b) 検証集合に層を追加(参照多数/少数、装置、文献数、負イオンのみ、NH4 のみ)、locked 2 の確保 → (d) proxy / FIORA は損失が実測された層のみ"
  ],
  "pages": [
   [
