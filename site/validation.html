@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 07:57 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 08:49 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -42,6 +42,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 </ul>
 </li>
 <li><a href="#e0-merge-cells14pye0-0750">E0 の最終 merge 規則(cells/14.py、E0 比較の読みのために記録、07:50)</a></li>
+<li><a href="#dev2-v2-m2x-run_p2dev_v3rank_v4bw_ice-0probe0845">dev2 v2 の速報(M2x 構成の特徴表 run_p2dev_v3、rank_v4b・w_ice 0、probe、08:45;チェーンの登録評価は後続)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -548,4 +549,104 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <ul>
 <li>BASE(engine 群の融合リスト、lib_max 付き)と PC(PubChem 専用チャネル)を分子ごとに統合: <code>lib_max &gt;= LIB_TAU(0.9)</code> なら BASE をそのまま出力(参照保護 = 我々の libpri τ0.9 と同じ閾値)。それ以外は PC の上位を固定スロットに interleave(<code>rel</code> = PubChem 上位の FPNet z と pool 最良の差が REL_TH 600 を超えると aggressive、未満なら gentle)。さらに <code>(S &gt; S_TAU and pop_top &gt;= POP_TAU) or rel &gt; 150</code> のとき PC 上位を 1 位に昇格(promote)。</li>
 <li>含意: E0 の参照保護は我々の保険と同じ形(τ0.9 の硬い gate)。E0 と B1 の差 0.13 は gate ではなく、BASE リスト(v4g 二段 ranker + BIO + AFIX + RRF)と PubChem チャネルの中身、および候補集合の違いにあるはず — E0 自前実行の段階表で「候補不在 / shortlist 落ち / forward 不足 / 再順位低下 / merge による押し下げ」に分類して確認する。</li>
+</ul>
+<h2 id="dev2-v2-m2x-run_p2dev_v3rank_v4bw_ice-0probe0845">dev2 v2 の速報(M2x 構成の特徴表 <code>run_p2dev_v3</code>、rank_v4b・w_ice 0、probe、08:45;チェーンの登録評価は後続)</h2>
+<table>
+<thead>
+<tr>
+<th>層 / view</th>
+<th style="text-align: right;">n(shortlist 内)</th>
+<th style="text-align: right;">GL fallback 分子</th>
+<th style="text-align: right;">learned</th>
+<th style="text-align: right;">pipeline(blend21 + fallback)</th>
+<th style="text-align: right;">固定</th>
+<th style="text-align: right;">lib のみ</th>
+<th style="text-align: right;">guard τ0.9</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C_np_crosslib C1</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.916</td>
+<td style="text-align: right;">0.916</td>
+<td style="text-align: right;">0.623</td>
+<td style="text-align: right;">0.957</td>
+<td style="text-align: right;">0.926</td>
+</tr>
+<tr>
+<td>C_np_crosslib C2</td>
+<td style="text-align: right;">100(84)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.610</td>
+<td style="text-align: right;">0.610</td>
+<td style="text-align: right;">0.507</td>
+<td style="text-align: right;">0.090</td>
+<td style="text-align: right;">0.610</td>
+</tr>
+<tr>
+<td>E_np_negonly C1</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;"><strong>0.856</strong></td>
+<td style="text-align: right;"><strong>0.561</strong></td>
+<td style="text-align: right;">0.220</td>
+<td style="text-align: right;">0.926</td>
+<td style="text-align: right;">0.864</td>
+</tr>
+<tr>
+<td>E_np_negonly C2</td>
+<td style="text-align: right;">100(76)</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">0.308</td>
+<td style="text-align: right;">0.235</td>
+<td style="text-align: right;">0.235</td>
+<td style="text-align: right;">0.132</td>
+<td style="text-align: right;">0.308</td>
+</tr>
+<tr>
+<td>F_np_uncovered C1</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;"><strong>0.866</strong></td>
+<td style="text-align: right;"><strong>0.590</strong></td>
+<td style="text-align: right;">0.396</td>
+<td style="text-align: right;">0.896</td>
+<td style="text-align: right;">0.866</td>
+</tr>
+<tr>
+<td>F_np_uncovered C2</td>
+<td style="text-align: right;">100(54)</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">0.264</td>
+<td style="text-align: right;">0.229</td>
+<td style="text-align: right;">0.229</td>
+<td style="text-align: right;">0.085</td>
+<td style="text-align: right;">0.264</td>
+</tr>
+<tr>
+<td>G_tims_crosslib C1</td>
+<td style="text-align: right;">100(98)</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">0.652</td>
+<td style="text-align: right;">0.587</td>
+<td style="text-align: right;">0.591</td>
+<td style="text-align: right;"><strong>0.876</strong></td>
+<td style="text-align: right;">0.664</td>
+</tr>
+<tr>
+<td>G_tims_crosslib C2</td>
+<td style="text-align: right;">100(89)</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">0.652</td>
+<td style="text-align: right;">0.636</td>
+<td style="text-align: right;">0.544</td>
+<td style="text-align: right;">0.063</td>
+<td style="text-align: right;">0.622</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>読み(速報、CI 未計算): (1) <strong>GL 不足 → 保険(固定 + libpri)の fallback は、forward の無い層 E/F で learned より大きく劣る</strong>(C1 で −0.30、C2 で −0.04〜−0.07)。既存の開発集合 A/B は [M+H]+ を持つ分子のみなので fallback 分岐は一度も検証されていなかった(パネルでのみ発動し、そこでは learned のクラス 1 崩壊が重なって保険が有利に見えた)。隠しテストでは被覆なし 29/400。(2) <strong>G(timsTOF query + 他ライブラリ参照)では lib のみ 0.876 ≫ learned 0.652(C1)</strong>: 参照が少なく装置が違う条件で learned が参照を信用しない — 隠しテストのクラス 1 条件に最も近い層で 0.22 の差。C(NP、参照多数)では learned ≈ lib(0.916 vs 0.957)。(3) C2 では lib のみは無力(0.06〜0.13)で learned が最良。→ Codex 017 で「fallback の出力ポリシー(保険 → learned)」と「G 型のクラス 1 の救済(参照の信用度を装置/参照数で条件付け)」を議論する。</li>
 </ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

@@ -80,6 +80,18 @@
    "name": "B1 パイプラインのパネル run(E0 比較用、M2x blend21、C2/C1)",
    "detail": "spark_panel_pipe_chain.sh、dev2 チェーン完了後に起動。E0 のパネル run と段階台帳で比較する",
    "eta": "dev2 完了後 1〜2 時間"
+  },
+  {
+   "state": "running",
+   "name": "GL なし ranker(fallback 分岐用候補、rank_v4b_nogl)",
+   "detail": "dev2 速報: GL 不足 → 保険の fallback は E/F で learned より −0.3(C1)、パネルの 34 分子では逆に保険が +0.14。GL 特徴を除いて同じ表で学習した ranker を E/F/G/C・パネル・A/B で probe(Codex 017 提案 1)",
+   "eta": "09:10 頃"
+  },
+  {
+   "state": "running",
+   "name": "Codex 017(fallback 出力ポリシー、timsTOF クラス 1 の学習行追加)",
+   "detail": "依頼 08:48 送付",
+   "eta": "回答待ち"
   }
  ],
  "next": [
