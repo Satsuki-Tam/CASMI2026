@@ -430,13 +430,20 @@ def main():
             booster = lgb.Booster(model_file=model_path); log(f"learned fusion model loaded: {model_path} ({booster.num_trees()} trees)")
         except Exception as e:
             booster = None; log("learned fusion unavailable -> fixed rule:", repr(e))
-    sub, fused_stats = [], Counter()
+    sub, sub_fixed, fused_stats = [], [], Counter()
     for mid in all_ids:
         rows = feats.get(str(mid), [])
-        if not rows: sub.append((mid, "CCO")); fused_stats["empty"] += 1; continue
+        if not rows: sub.append((mid, "CCO")); sub_fixed.append((mid, "CCO")); fused_stats["empty"] += 1; continue
         fp = np.array([r["fp"] if r["fp"] is not None else np.nan for r in rows]); pop = np.array([r["pop"] for r in rows]); lib = np.array([r["lib"] for r in rows])
         g = np.array([(GL.get(str(mid)) or {}).get(r["smiles"], np.nan) if (GL.get(str(mid)) or {}).get(r["smiles"]) is not None else np.nan for r in rows], float)
         ic = np.array([(ICE.get(str(mid)) or {}).get(r["smiles"], np.nan) if (ICE.get(str(mid)) or {}).get(r["smiles"]) is not None else np.nan for r in rows], float)
+        # fixed rule first: the insurance candidate, and the fallback when the learned fusion is unavailable
+        S = z(fp) + LAM * pop
+        if np.isfinite(g).sum() >= 2: S = S + W_GL * z(g); fused_stats["gl_used"] += 1
+        if np.isfinite(ic).sum() >= 2: S = S + W_ICE * z(ic); fused_stats["ice_used"] += 1
+        top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
+        if lib.max() >= TAU and lib.max() - second >= MARGIN: S = np.where(lib >= TAU, 100.0 + lib, S); fused_stats["lib_priority"] += 1
+        order = np.argsort(-S, kind="stable"); sub_fixed.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
         if booster is not None:
             try:
                 mi = molinfo.get(str(mid), dict(n_query=1, ce_known=0.0))
@@ -444,32 +451,31 @@ def main():
                                    [r["lotus_refs"] for r in rows], lib, [r["lib_same"] for r in rows], [r["lib_nref"] for r in rows], [r["in_tier"] for r in rows], [r["in_train"] for r in rows],
                                    [r["in_coconut"] for r in rows], [r["ppm_err"] for r in rows], [r["fp_rank_window"] for r in rows], mi["n_query"], mi["ce_known"])
                 order = np.argsort(-booster.predict(X), kind="stable"); fused_stats["learned"] += 1
-                sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25]))); continue
             except Exception as e:
                 fused_stats["learned_failed"] += 1; log("learned fusion failed for", mid, repr(e))
-        S = z(fp) + LAM * pop
-        if np.isfinite(g).sum() >= 2: S = S + W_GL * z(g); fused_stats["gl_used"] += 1
-        if np.isfinite(ic).sum() >= 2: S = S + W_ICE * z(ic); fused_stats["ice_used"] += 1
-        top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
-        if lib.max() >= TAU and lib.max() - second >= MARGIN: S = np.where(lib >= TAU, 100.0 + lib, S); fused_stats["lib_priority"] += 1
-        order = np.argsort(-S, kind="stable")
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
+    df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
     json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=K_SHORT, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
         sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(HERE)), "src"))
         import metric
-        sol = pd.read_csv(args.solution); sol["molecule_id"] = sol["molecule_id"].astype(str); sub_ = df.copy(); sub_["molecule_id"] = sub_["molecule_id"].astype(str)
-        sol = sol[sol.molecule_id.isin(set(sub_.molecule_id))]
-        official = float(metric.score(sol[["molecule_id", "smiles"]].copy(), sub_[sub_.molecule_id.isin(set(sol.molecule_id))].copy(), "molecule_id"))
-        rr = {m: metric.per_molecule_reciprocal_rank(s_, str(p_).split(";")) for m, s_, p_ in zip(sol.molecule_id, sol.smiles, sub_.set_index("molecule_id").loc[sol.molecule_id, "smiles"])}
-        per = sol.assign(rr=[rr[m] for m in sol.molecule_id]); per.to_csv(f"{P['work']}/eval_per_molecule.csv", index=False)
-        out_ = dict(official_mrr25=official, n=len(sol), masks=dict(rows=len(EXCL_ROWS), identities=len(EXCL_IDS)))
+        sol = pd.read_csv(args.solution); sol["molecule_id"] = sol["molecule_id"].astype(str)
+
+        def _score(sub_df):
+            s_ = sub_df.copy(); s_["molecule_id"] = s_["molecule_id"].astype(str); so = sol[sol.molecule_id.isin(set(s_.molecule_id))]
+            official = float(metric.score(so[["molecule_id", "smiles"]].copy(), s_[s_.molecule_id.isin(set(so.molecule_id))].copy(), "molecule_id"))
+            pred = s_.set_index("molecule_id").loc[so.molecule_id, "smiles"]
+            return official, so.assign(rr=[metric.per_molecule_reciprocal_rank(t_, str(p_).split(";")) for t_, p_ in zip(so.smiles, pred)])
+        official, per = _score(df); official_fixed, per_fixed = _score(df_fixed)
+        per = per.merge(per_fixed[["molecule_id", "rr"]].rename(columns={"rr": "rr_fixed"}), on="molecule_id", how="left"); per.to_csv(f"{P['work']}/eval_per_molecule.csv", index=False)
+        out_ = dict(official_mrr25=official, official_mrr25_fixed=official_fixed, learned_model=(model_path if booster is not None else None), n=len(per), masks=dict(rows=len(EXCL_ROWS), identities=len(EXCL_IDS)))
         for col in ("set", "group", "lib"):
-            if col in per.columns: out_[f"by_{col}"] = {str(k): round(float(g.rr.mean()), 4) for k, g in per.groupby(col)}
-        json.dump(out_, open(f"{P['work']}/eval_scores.json", "w"), indent=1); log(f"OFFICIAL MRR@25 = {official:.4f} on {len(sol)} molecules | {out_.get('by_set')}")
+            if col in per.columns: out_[f"by_{col}"] = {str(k): dict(main=round(float(g_.rr.mean()), 4), fixed=round(float(g_.rr_fixed.mean()), 4)) for k, g_ in per.groupby(col)}
+        json.dump(out_, open(f"{P['work']}/eval_scores.json", "w"), indent=1)
+        log(f"OFFICIAL MRR@25 = {official:.4f} (main{' = learned' if booster is not None else ' = fixed'}) / {official_fixed:.4f} (fixed rule) on {len(per)} molecules | {out_.get('by_set')}")
 
 
 if __name__ == "__main__":

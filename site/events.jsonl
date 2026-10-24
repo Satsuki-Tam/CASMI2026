@@ -32,3 +32,4 @@
 {"time": "2026-10-24 14:42", "kind": "issue", "text": "ICEBERG が DGX Spark(GB10)で CUDA illegal address を散発する原因を random_walk_pe の疎行列 coalesce に特定。疎行列部分を CPU に退避する修正と再開可能ドライバ(spark/jobs/ice_resume.py)を導入し、B 集合の ICE を再採点中。LambdaRank v2 の学習は再採点完了を待つ。", "link": "experiments.html"}
 {"time": "2026-10-24 14:53", "kind": "result", "text": "失敗モード診断 D1: A は順位付け損失が 2/3、B は未到達 41% と shortlist 取りこぼし 6〜11%。GL が最強で FP は天然物で弱い(top-1 15%)。prior 起因の誤りでは勝者の 7〜8 割が既知化合物。C1 は参照類似のみで 0.89〜0.91。次の一手の優先順位を Codex 008 に依頼。", "link": "diagnose.html"}
 {"time": "2026-10-24 15:00", "kind": "result", "text": "LambdaRank の特徴追加(v3: 信頼度・順位・窓サイズ)を予備比較: 300 群規模では v2(28 特徴)が最良(C2 strict +0.045 [+0.019,+0.073] vs 固定規則)、v3 は +0.026 と悪化、単調制約で +0.038。特徴追加は学習データ拡大後に再検討。", "link": "diagnose.html"}
+{"time": "2026-10-24 15:04", "kind": "decision", "text": "ユーザー指示: 手元 PC は CPU も含めて使用しない。PC 側で待機していた評価・LambdaRank 学習・locked 評価の処理を停止し、Spark 側の後段オーケストレータ(spark/jobs/spark_post_chain.sh)に移した。"}
