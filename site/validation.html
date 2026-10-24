@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 22:18 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 22:27 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -26,6 +26,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#5-codex-007-1405">5. Codex 007 の判断(14:05)</a></li>
 <li><a href="#w7-parity-2026-10-24-183050-eval_set-ab-25sparkjobsspark_parity50_chainsh">W7 parity の結果(2026-10-24 18:30、50 分子 = eval_set A/B 各 25、spark/jobs/spark_parity50_chain.sh)</a><ul>
 <li><a href="#w7-parity-19523-eval_test_50c">W7 parity 合格(19:52、3 回目、eval_test_50c)</a></li>
+<li><a href="#w7-600-m1-scorer-2224">W7 本番(600 分子、M1 構成、提出パイプライン自体を公式 scorer 複製で採点; 22:24)</a></li>
 </ul>
 </li>
 </ul>
@@ -311,4 +312,36 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 </tr>
 </tbody>
 </table>
-<p>修正したこと: (1) query 選択の同点(CE 欠損)順序を store 行で確定(両経路)、(2) test parquet のピークを store と同じ float32 精度に丸め、enveda-180 正モードの電子質量補正を適用、(3) C2 マスクで隠す「ライブラリ限定の正解構造」を窓統計には残し shortlist からだけ除外(fp_rank_window・z の一致)。残差は順序付き top-25 の尾部(近接スコアの入れ替わり)で、forward スコアの実行間ノイズ(GPU の非決定性)で説明される。判定規則: query・候補集合・正解所属・top-1・RR・top-25 集合は全分子一致、順序付き top-25 は ≥ 0.85。<code>b1_parity.py</code> が PASS/FAIL を返し、チェーンはそれで停止する。M2(v3 構成、rank_v3)でも同じ検査を <code>spark_parity_m2_chain.sh</code> で行う。</p></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>修正したこと: (1) query 選択の同点(CE 欠損)順序を store 行で確定(両経路)、(2) test parquet のピークを store と同じ float32 精度に丸め、enveda-180 正モードの電子質量補正を適用、(3) C2 マスクで隠す「ライブラリ限定の正解構造」を窓統計には残し shortlist からだけ除外(fp_rank_window・z の一致)。残差は順序付き top-25 の尾部(近接スコアの入れ替わり)で、forward スコアの実行間ノイズ(GPU の非決定性)で説明される。判定規則: query・候補集合・正解所属・top-1・RR・top-25 集合は全分子一致、順序付き top-25 は ≥ 0.85。<code>b1_parity.py</code> が PASS/FAIL を返し、チェーンはそれで停止する。M2(v3 構成、rank_v3)でも同じ検査を <code>spark_parity_m2_chain.sh</code> で行う。</p>
+<h3 id="w7-600-m1-scorer-2224">W7 本番(600 分子、M1 構成、提出パイプライン自体を公式 scorer 複製で採点; 22:24)</h3>
+<table>
+<thead>
+<tr>
+<th>代理</th>
+<th style="text-align: right;">本命(学習融合)</th>
+<th style="text-align: right;">保険(固定 + libpri 0.9)</th>
+<th>A / B(本命)</th>
+<th>eval 群(本命 / 保険)</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1(他ライブラリ参照あり)</td>
+<td style="text-align: right;"><strong>0.748</strong></td>
+<td style="text-align: right;">0.657</td>
+<td>0.830 / 0.666</td>
+<td>0.700 / 0.623</td>
+<td>GL 598/599、ICE 598/599、fallback 1</td>
+</tr>
+<tr>
+<td>C2(identity を隠す)</td>
+<td style="text-align: right;">(無効)</td>
+<td style="text-align: right;">(無効)</td>
+<td>–</td>
+<td>–</td>
+<td>Spark の GL が 56 分子でクラッシュ → fallback 543。再開ドライバ経由で再実行中</td>
+</tr>
+</tbody>
+</table>
+<p>C1 代理では、学習融合はパイプラインの中でも固定規則より +0.09(600 分子、fit 群を含む開発集合)。eval 群だけでも +0.08。</p></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
