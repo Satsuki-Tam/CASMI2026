@@ -186,3 +186,17 @@ C1 代理では、学習融合はパイプラインの中でも固定規則よ�
 ## E0 の最終 merge 規則(cells/14.py、E0 比較の読みのために記録、07:50)
 - BASE(engine 群の融合リスト、lib_max 付き)と PC(PubChem 専用チャネル)を分子ごとに統合: `lib_max >= LIB_TAU(0.9)` なら BASE をそのまま出力(参照保護 = 我々の libpri τ0.9 と同じ閾値)。それ以外は PC の上位を固定スロットに interleave(`rel` = PubChem 上位の FPNet z と pool 最良の差が REL_TH 600 を超えると aggressive、未満なら gentle)。さらに `(S > S_TAU and pop_top >= POP_TAU) or rel > 150` のとき PC 上位を 1 位に昇格(promote)。
 - 含意: E0 の参照保護は我々の保険と同じ形(τ0.9 の硬い gate)。E0 と B1 の差 0.13 は gate ではなく、BASE リスト(v4g 二段 ranker + BIO + AFIX + RRF)と PubChem チャネルの中身、および候補集合の違いにあるはず — E0 自前実行の段階表で「候補不在 / shortlist 落ち / forward 不足 / 再順位低下 / merge による押し下げ」に分類して確認する。
+
+## dev2 v2 の速報(M2x 構成の特徴表 `run_p2dev_v3`、rank_v4b・w_ice 0、probe、08:45;チェーンの登録評価は後続)
+| 層 / view | n(shortlist 内) | GL fallback 分子 | learned | pipeline(blend21 + fallback) | 固定 | lib のみ | guard τ0.9 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| C_np_crosslib C1 | 95 | 0 | 0.916 | 0.916 | 0.623 | 0.957 | 0.926 |
+| C_np_crosslib C2 | 100(84) | 0 | 0.610 | 0.610 | 0.507 | 0.090 | 0.610 |
+| E_np_negonly C1 | 59 | 59 | **0.856** | **0.561** | 0.220 | 0.926 | 0.864 |
+| E_np_negonly C2 | 100(76) | 76 | 0.308 | 0.235 | 0.235 | 0.132 | 0.308 |
+| F_np_uncovered C1 | 38 | 38 | **0.866** | **0.590** | 0.396 | 0.896 | 0.866 |
+| F_np_uncovered C2 | 100(54) | 54 | 0.264 | 0.229 | 0.229 | 0.085 | 0.264 |
+| G_tims_crosslib C1 | 100(98) | 7 | 0.652 | 0.587 | 0.591 | **0.876** | 0.664 |
+| G_tims_crosslib C2 | 100(89) | 7 | 0.652 | 0.636 | 0.544 | 0.063 | 0.622 |
+
+- 読み(速報、CI 未計算): (1) **GL 不足 → 保険(固定 + libpri)の fallback は、forward の無い層 E/F で learned より大きく劣る**(C1 で −0.30、C2 で −0.04〜−0.07)。既存の開発集合 A/B は [M+H]+ を持つ分子のみなので fallback 分岐は一度も検証されていなかった(パネルでのみ発動し、そこでは learned のクラス 1 崩壊が重なって保険が有利に見えた)。隠しテストでは被覆なし 29/400。(2) **G(timsTOF query + 他ライブラリ参照)では lib のみ 0.876 ≫ learned 0.652(C1)**: 参照が少なく装置が違う条件で learned が参照を信用しない — 隠しテストのクラス 1 条件に最も近い層で 0.22 の差。C(NP、参照多数)では learned ≈ lib(0.916 vs 0.957)。(3) C2 では lib のみは無力(0.06〜0.13)で learned が最良。→ Codex 017 で「fallback の出力ポリシー(保険 → learned)」と「G 型のクラス 1 の救済(参照の信用度を装置/参照数で条件付け)」を議論する。
