@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 02:25 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 03:06 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -4897,7 +4897,11 @@ p1 + p2 + p3 = 1
 <li><a href="#25-m1-vs-m2x-3">2.5 修正表・共通台帳での旧 M1 vs M2x(実行中 → §3)</a></li>
 </ul>
 </li>
-<li><a href="#3">3. 追記(結果)</a></li>
+<li><a href="#3">3. 追記(結果)</a><ul>
+<li><a href="#31-m1-vs-m2xdev-tuneevalab-200c1-41frozen-09dev_pair_final0300">3.1 修正表・共通台帳での旧 M1 vs M2x(dev tune+eval、A/B 各 200、C1 41;frozen 台帳評価器、τ0.9;dev_pair_final/、03:00)</a></li>
+<li><a href="#32-w7-600-m2x-blend21-test-eval_test_full2">3.2 W7 600 分子(M2x blend21、再生成 test eval_test_full2)</a></li>
+</ul>
+</li>
 <li><a href="#4">4. 意見がほしい点</a></li>
 </ul>
 </div>
@@ -4963,7 +4967,61 @@ p1 + p2 + p3 = 1
 <h3 id="25-m1-vs-m2x-3">2.5 修正表・共通台帳での旧 M1 vs M2x(実行中 → §3)</h3>
 <p>M1 側の修正表 <code>run1b_v2</code>(eval_set、K=100、GL+ICE 種あり)/ <code>run_c1b_v2</code>(C1 集合)を計算中。完了後、dev tune+eval と C1 集合で learned / blend21 / fixed / insurance を公式 scorer で比較(<code>dev_pair_final</code>, <code>dev_pair_final_c1set</code>)。</p>
 <h2 id="3">3. 追記(結果)</h2>
-<p>(W7 600 M2x の一致表、dev_pair_final の paired 差を追記)</p>
+<h3 id="31-m1-vs-m2xdev-tuneevalab-200c1-41frozen-09dev_pair_final0300">3.1 修正表・共通台帳での旧 M1 vs M2x(dev tune+eval、A/B 各 200、C1 41;frozen 台帳評価器、τ0.9;<code>dev_pair_final/</code>、03:00)</h3>
+<table>
+<thead>
+<tr>
+<th>set / view</th>
+<th style="text-align: right;">M1 learned</th>
+<th style="text-align: right;">M1 保険</th>
+<th style="text-align: right;">M2x learned</th>
+<th style="text-align: right;">M2x blend21</th>
+<th><strong>M2x blend21 − M1 learned</strong></th>
+<th>M2x learned − M1 learned</th>
+<th>M2x blend21 − fixed(M2x)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A C2 (200)</td>
+<td style="text-align: right;">0.757</td>
+<td style="text-align: right;">0.654</td>
+<td style="text-align: right;">0.749</td>
+<td style="text-align: right;">0.741</td>
+<td><strong>−0.001 [−0.025, +0.024]</strong></td>
+<td>−0.008 [−0.031, +0.014]</td>
+<td>+0.098 [+0.061, +0.135]</td>
+</tr>
+<tr>
+<td>B C2 (200)</td>
+<td style="text-align: right;">0.395</td>
+<td style="text-align: right;">0.377</td>
+<td style="text-align: right;">0.395</td>
+<td style="text-align: right;">0.399</td>
+<td><strong>+0.005 [−0.020, +0.032]</strong></td>
+<td>+0.001 [−0.025, +0.027]</td>
+<td>+0.024 [−0.001, +0.049]</td>
+</tr>
+<tr>
+<td>B C1 (41)</td>
+<td style="text-align: right;">0.853</td>
+<td style="text-align: right;">0.732</td>
+<td style="text-align: right;">0.882</td>
+<td style="text-align: right;">0.826</td>
+<td><strong>+0.014 [−0.046, +0.072]</strong></td>
+<td>+0.029 [−0.024, +0.088]</td>
+<td>+0.303 [+0.201, +0.407]</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>開発集合では M2x blend21 と旧 M1 learned は同等(C2 両集合で差の点推定 ≤ 0.005、区間 ±0.025)。C1(41 分子)は点推定 +0.014、下側 CI −0.046 で「ε=0.02 の保護」は宣言できない(この n では区間幅が 0.12 あり、保護の宣言は構造的に難しい)。</li>
+<li>パネル(probe、GL 汚染あり、差分比較のみ): M2x blend21 C1 0.891 / C2 0.911 vs 旧 M1 learned 0.599 / 0.918(忠実な K=100 構成)。</li>
+<li>旧 M1 の修正表(run1b_v2)は forward スコアを全分子で再利用でき(候補集合に変化なし)、C1 参照の修正だけが反映されている。</li>
+<li>dev C1 集合(257 分子)の同じ比較は実行中(<code>dev_pair_final_c1set</code>)。</li>
+</ul>
+<h3 id="32-w7-600-m2x-blend21-test-eval_test_full2">3.2 W7 600 分子(M2x blend21、再生成 test <code>eval_test_full2</code>)</h3>
+<p>パイプライン C2 view の公式 MRR(600 分子、fit 込み): main(blend21)0.6046 / 固定 0.5149(A 0.785 / 0.645、B 0.424 / 0.385)。評価器との一致表は集計中(追記)。</p>
 <h2 id="4">4. 意見がほしい点</h2>
 <p><strong>Q1</strong> §3 の結果が「W7 機械的一致: 候補集合・真の所属・top-1・RR が全件一致(forward 雑音による順序差は別報告)」「dev C2 で M2x blend21 − M1 learned が −0.02 を下回らない」「C1 集合で M2x blend21 が M1 learned に対し下側 CI &gt; −0.02 でないとしても固定・保険を上回る」を満たしたら、<code>locked_open_v5.sh</code> を実行してよいか。満たさない項目があった場合の扱い(開封せず M1 のみ提出 / 開封して記録のみ)。
 <strong>Q2</strong> 朝の 2 枠: (i) M2x 本命(blend21)、(ii) 同じ Notebook 構成の <code>--emit insurance</code> version(submission.csv = 固定 + libpri τ0.9)で「2 つの最終出力ポリシーの差」を観測。locked の結果が M2x 不採用でも、(i) を「比較用」として提出する価値はあるか(E0 0.464 との差で読む)。
