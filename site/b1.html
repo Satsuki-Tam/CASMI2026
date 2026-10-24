@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 12:48 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="eda.html" class="">データと課題</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 12:58 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-p1">1. 課題の構造(調査と P1 から)</a></li>
@@ -25,6 +25,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#31-400">3.1 アダクトと順方向モデルの被覆(公開テスト 400 分子で測定)</a></li>
 <li><a href="#5-1-ab-300experimentsb1_baselinerun1resultsb1_resultsmd1220">5. 結果 1: 固定規則の評価(新評価集合 A/B 各 300、experiments/b1_baseline/run1/results/b1_results.md、12:20)</a></li>
 <li><a href="#6-lambdarank1230">6. 学習融合(LambdaRank)の統合(12:30)</a></li>
+<li><a href="#7-v2codex-006-1250commit-7af074d">7. v2(Codex 006 対応、12:50、commit 7af074d)</a></li>
 <li><a href="#4-1030">4. 進行中(10:30)</a></li>
 </ul>
 </div>
@@ -237,6 +238,16 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li>学習(<code>b1_rank_train.py</code>): 行 = shortlist 候補 × 視点(C2 と、参照のある分子では C1)。C2 視点では「外部出典が無く学習構造としての存在も隠された候補」を除外する(残すと『出典の無い候補 = 正解』という漏れになる。予備試験でこの漏れが +0.11 の見かけの利得を作っていた)。fit で学習、tune(C2 strict + 0.5·C1)で設定選択、eval 群で固定規則 S(2,1,0.5) と比較。</li>
 <li>推論(<code>b1_pipeline.py --rank_model</code>): モデルファイルがあれば LightGBM で候補を並べ替え、無ければ固定規則。Notebook 生成時にモデルを同梱。</li>
 <li>予備試験(fit = 新評価集合の fit 群 186 group のみ、eval 群 199 分子): C2 strict 0.490 → 0.517(+0.026 [−0.005, +0.057])、C1(n=29、重複込み)0.392 → 0.696。本試験は P1 600 分子を fit に加え、重複除外版の特徴で行う。</li>
+</ul>
+<h2 id="7-v2codex-006-1250commit-7af074d">7. v2(Codex 006 対応、12:50、commit 7af074d)</h2>
+<ul>
+<li><strong>視点別 shortlist</strong>: 参照枠を C1/C2 それぞれの類似度で作り、保存表は和集合 + 所属フラグ。旧版では C2 に C1 参照由来の正解が混入していた(B 7 分子、MRR 寄与 0.0097)。</li>
+<li><strong>到達判定</strong>: <code>reach_external_b1</code>(B1 自身の窓で、正解の raw 鍵またはタウトマー別名が tier/COCONUT 出典の候補として存在)を strict マスクに使う。</li>
+<li><strong>重複参照の 2 段階</strong>: 確実な複製(同アダクト・|Δprec| &lt; 5 mDa・cleaned ピーク列一致)は常に除外。疑い(類似度 ≥ 0.98)は主類似度から除外し <code>*_keepdup</code> を併記。非正解側の除外数も記録。MAX_REF は分類後。C1 の分母は処理後に参照が残る分子(<code>c1_usable</code>)。</li>
+<li><strong>C2 視点で出典なし候補を除外</strong>(評価・学習とも)。空候補の分子も分母に残す。paired delta は strict でも報告。fit/tune/eval の identity group 共有を assert。</li>
+<li><strong>λ の分離</strong>: shortlist 0.15 / 融合 0.5。提出パイプラインの query 選択(アダクト round-robin、最大 8)と候補源(tier + pool + prvsiyan COCONUT)を評価と一致させた。アダクト窓をまたぐ SMILES の重複を指紋計算前に除去。</li>
+<li><strong>評価集合の役割</strong>: <code>eval_set</code> は開発集合(prior 選択に使用)。採用判断は <code>locked_eval</code>(seed 4、A/B 各 300、未使用 group)で 1 回だけ。</li>
+<li>再構築(Spark): run1_v2(eval_set)、run_c1_v2(C1 集合)、run_p1_v2(P1 600、LambdaRank の fit)。</li>
 </ul>
 <h2 id="4-1030">4. 進行中(10:30)</h2>
 <ul>
