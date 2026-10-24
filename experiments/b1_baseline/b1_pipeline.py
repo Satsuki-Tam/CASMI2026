@@ -174,6 +174,7 @@ def official_keys_of_train(store, pool):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--test", default=None); ap.add_argument("--out", default="experiments/b1_baseline/pipeline_local"); ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--no_forward", action="store_true"); ap.add_argument("--workers", type=int, default=0); ap.add_argument("--folds", default="0")
+    ap.add_argument("--rank_model", default=None, help="LightGBM LambdaRank model file (default: lambdarank.txt next to this script; absent -> fixed rule)")
     args = ap.parse_args(); P = paths(args); os.makedirs(P["work"], exist_ok=True); T0 = time.time(); log = lambda *x: print(f"[b1 {time.time()-T0:7.0f}s]", *x, flush=True)
     test_path = args.test or ("/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/test.parquet" if KAGGLE else os.path.join(os.path.dirname(P["train"]), "test.parquet"))
     workers = args.workers or max(2, (os.cpu_count() or 4) - 1)
@@ -214,7 +215,7 @@ def main():
         o = np.asarray(toff[lo:hi + 1]).astype(np.int64); raw = bytes(tbuf[o[0]:o[-1]]); base = o[0]
         return [raw[o[i] - base:o[i + 1] - base].decode("ascii") for i in range(hi - lo)], np.arange(lo, hi), np.asarray(tmass[lo:hi], np.float64)
 
-    stats, feats, runner, ref_cache = [], {}, [], {}
+    stats, feats, runner, ref_cache, molinfo = [], {}, [], {}, {}
     with Pool(workers, initializer=_init, initargs=(P["v3"], P["fold_safe"])) as wp, torch.no_grad():
         # (official key -> reference rows) for train structures: scorer keys from the store meta when available (local), else raw
         # InChIKey14 of the pool's train SMILES computed in the workers and matched to the store's inchikey14
@@ -276,6 +277,7 @@ def main():
                 stats.append(dict(molecule=mid, n_query=len(q), n_unique=0, seconds=time.time() - tm0)); feats[mid] = []; continue
             fpu = np.array([rep[k]["fp"] for k in keys]); fpu[~np.isfinite(fpu)] = np.nan
             trow = np.array([rep[k]["trow"] for k in keys]); pid = np.array([rep[k]["pid"] for k in keys]); in_train = np.array([rep[k]["train"] for k in keys]); in_coco = np.array([rep[k]["coco"] for k in keys])
+            cm_ = np.array([rep[k]["mass"] for k in keys], float)
             comp = {n: np.zeros(n_u, np.float32) for n in PC}; ht = trow >= 0; hp = (~ht) & (pid >= 0)
             for n in comp:
                 if ht.any(): comp[n][ht] = np.asarray(PC[n][np.sort(trow[ht])], dtype=np.float32)[np.argsort(np.argsort(trow[ht]))]
@@ -312,12 +314,17 @@ def main():
             best = {}
             for j, i in enumerate(short):
                 if okeys[j] is not None: best.setdefault(okeys[j], []).append(i)
+            ppm_err = np.min(np.abs(np.array([[(M - m_) / m_ * 1e6 for m_ in cm_] for M in M_by_add.values()])), axis=0) if M_by_add else np.full(n_u, np.nan)
+            fp_sorted = np.sort(np.nan_to_num(fpu, nan=-1e18))
             rows = []
             for ok, idxs in best.items():
                 i = max(idxs, key=lambda j: np.nan_to_num(fpu[j], nan=-1e18))
                 rows.append(dict(key=ok, smiles=smiles[rep[keys[i]]["i"]], fp=float(fpu[i]) if np.isfinite(fpu[i]) else None, pop=float(pop[i]), lib=float(max(lib[j] for j in idxs)),
-                                 lib_same=float(max(lib_same[j] for j in idxs)), in_train=bool(any(in_train[j] for j in idxs))))
+                                 lib_same=float(max(lib_same[j] for j in idxs)), lib_nref=int(max(nref[j] for j in idxs)), in_train=bool(any(in_train[j] for j in idxs)),
+                                 in_tier=bool(any(trow[j] >= 0 for j in idxs)), in_coconut=bool(any(in_coco[j] for j in idxs)), ppm_err=float(np.nanmin([ppm_err[j] for j in idxs])),
+                                 fp_rank_window=int(len(fp_sorted) - np.searchsorted(fp_sorted, np.nan_to_num(fpu[i], nan=-1e18), side="left")), **{n: float(comp[n][i]) for n in comp}))
             feats[mid] = rows
+            molinfo[mid] = dict(n_query=len(q), ce_known=float(np.mean([s["ce"] is not None for s in q])))
             runner.append(dict(mid=mid, lib_max=float(lib.max()), spectra=[dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
                                                                                    ce_ev=s.get("ce_ev"), ce_orig=s.get("ce_orig"), ce_units=s.get("ce_units")) for s in q], cands=[r["smiles"] for r in rows]))
             stats.append(dict(molecule=mid, n_query=len(q), adducts="|".join(sorted(M_by_add)), n_window=len(smiles), n_unique=n_u, n_train=int(in_train.sum()), n_shortlist=len(rows), lib_max=float(lib.max()), seconds=time.time() - tm0))
@@ -352,6 +359,15 @@ def main():
         elif ok.sum() >= 1: out[ok] = 0.0
         out[~ok] = np.nanmin(out[ok]) if ok.any() else 0.0
         return out
+    booster = None
+    model_path = args.rank_model or os.path.join(HERE, "lambdarank.txt")
+    if os.path.exists(model_path):
+        try:
+            import lightgbm as lgb
+            from b1_rankfeats import feature_matrix
+            booster = lgb.Booster(model_file=model_path); log(f"learned fusion model loaded: {model_path} ({booster.num_trees()} trees)")
+        except Exception as e:
+            booster = None; log("learned fusion unavailable -> fixed rule:", repr(e))
     sub, fused_stats = [], Counter()
     for mid in all_ids:
         rows = feats.get(str(mid), [])
@@ -359,6 +375,16 @@ def main():
         fp = np.array([r["fp"] if r["fp"] is not None else np.nan for r in rows]); pop = np.array([r["pop"] for r in rows]); lib = np.array([r["lib"] for r in rows])
         g = np.array([(GL.get(str(mid)) or {}).get(r["smiles"], np.nan) if (GL.get(str(mid)) or {}).get(r["smiles"]) is not None else np.nan for r in rows], float)
         ic = np.array([(ICE.get(str(mid)) or {}).get(r["smiles"], np.nan) if (ICE.get(str(mid)) or {}).get(r["smiles"]) is not None else np.nan for r in rows], float)
+        if booster is not None:
+            try:
+                mi = molinfo.get(str(mid), dict(n_query=1, ce_known=0.0))
+                X = feature_matrix(fp, g, ic, pop, [r["lsid"] for r in rows], [r["lpmid"] for r in rows], [r["lsynonyms"] for r in rows], [r["np"] for r in rows], [r["src_mask"] for r in rows],
+                                   [r["lotus_refs"] for r in rows], lib, [r["lib_same"] for r in rows], [r["lib_nref"] for r in rows], [r["in_tier"] for r in rows], [r["in_train"] for r in rows],
+                                   [r["in_coconut"] for r in rows], [r["ppm_err"] for r in rows], [r["fp_rank_window"] for r in rows], mi["n_query"], mi["ce_known"])
+                order = np.argsort(-booster.predict(X), kind="stable"); fused_stats["learned"] += 1
+                sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25]))); continue
+            except Exception as e:
+                fused_stats["learned_failed"] += 1; log("learned fusion failed for", mid, repr(e))
         S = z(fp) + LAM * pop
         if np.isfinite(g).sum() >= 2: S = S + W_GL * z(g); fused_stats["gl_used"] += 1
         if np.isfinite(ic).sum() >= 2: S = S + W_ICE * z(ic); fused_stats["ice_used"] += 1
@@ -367,7 +393,7 @@ def main():
         order = np.argsort(-S, kind="stable")
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), params=dict(K=K_SHORT, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=K_SHORT, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
 

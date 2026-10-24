@@ -2,7 +2,7 @@
  "selected": {
   "params": {
    "num_leaves": 7,
-   "learning_rate": 0.03,
+   "learning_rate": 0.1,
    "min_data_in_leaf": 20,
    "feature_fraction": 0.8,
    "bagging_fraction": 0.8,
@@ -21,9 +21,9 @@
    "seed": 0
   },
   "rounds": 100,
-  "tune_c2_strict": 0.5772581168831168,
-  "tune_c1": 0.7884615384615384,
-  "tune_c2": 0.5772581168831168
+  "tune_c2_strict": 0.5842648809523808,
+  "tune_c1": 0.8076923076923077,
+  "tune_c2": 0.5842648809523808
  },
  "tune_fixed": {
   "c1": {
@@ -39,14 +39,14 @@
  },
  "eval_lambdarank": {
   "c1": {
-   "mrr": 0.7068965517241379,
+   "mrr": 0.696360153256705,
    "n": 29,
-   "strict": 0.7068965517241379
+   "strict": 0.696360153256705
   },
   "c2": {
-   "mrr": 0.5086309251887141,
+   "mrr": 0.5165387725061092,
    "n": 199,
-   "strict": 0.5086309251887141
+   "strict": 0.5165387725061092
   }
  },
  "eval_fixed": {
@@ -74,52 +74,51 @@
   }
  },
  "importance": {
-  "z_fp": 2486,
-  "z_gl": 14856,
-  "z_ice": 2949,
-  "fp": 457,
-  "gl": 1505,
-  "ice": 155,
-  "pop_public": 2021,
-  "lsid": 644,
-  "lpmid": 9,
-  "lsynonyms": 1535,
-  "np_bit": 164,
-  "src_bit": 104,
-  "lotus": 516,
-  "lib_sim": 1518,
-  "lib_same": 809,
-  "lib_nref": 95,
-  "lib_margin": 42,
-  "lib_max_mol": 51,
+  "z_fp": 678,
+  "z_gl": 3918,
+  "z_ice": 982,
+  "fp": 247,
+  "gl": 433,
+  "ice": 124,
+  "pop_public": 613,
+  "lsid": 455,
+  "lpmid": 14,
+  "lsynonyms": 519,
+  "np_bit": 100,
+  "src_bit": 82,
+  "lotus": 160,
+  "lib_sim": 620,
+  "lib_same": 182,
+  "lib_nref": 46,
+  "lib_margin": 53,
+  "lib_max_mol": 45,
   "in_tier": 0,
-  "in_train": 24,
-  "in_coconut": 395,
-  "ppm_err": 46,
-  "fp_rank_window": 1005,
-  "n_cands": 0,
+  "in_train": 17,
+  "in_coconut": 110,
+  "ppm_err": 114,
+  "fp_rank_window": 794,
+  "n_cands": 8,
   "gl_missing": 0,
   "ice_missing": 0,
-  "n_query": 14,
-  "ce_known": 0,
-  "view_c1": 36
+  "n_query": 7,
+  "ce_known": 7
  },
  "n_fit_rows": 22709,
  "n_fit_groups": 186,
  "eval_delta": {
   "c1": {
-   "delta": 0.31521620142309803,
+   "delta": 0.304679802955665,
    "ci95": [
-    0.18341543513957306,
-    0.4534756431308155
+    0.16488574165298303,
+    0.4533394909688013
    ],
    "n": 29
   },
   "c2": {
-   "delta": 0.018273911361407668,
+   "delta": 0.026181758678802722,
    "ci95": [
-    -0.011193064731603013,
-    0.04720631854843354
+    -0.004944845076754626,
+    0.05737329563316114
    ],
    "n": 199
   }

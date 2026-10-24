@@ -6,7 +6,9 @@ import json, os, sys, hashlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SRC = os.path.join(ROOT, "experiments", "b1_baseline")
-files = {n: open(os.path.join(SRC, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py")}
+files = {n: open(os.path.join(SRC, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py", "b1_rankfeats.py")}
+model = os.path.join(SRC, "rank", "lambdarank.txt")
+if os.path.exists(model): files["lambdarank.txt"] = open(model, encoding="utf-8").read()
 shas = {n: hashlib.sha256(v.encode()).hexdigest() for n, v in files.items()}
 
 cells = []

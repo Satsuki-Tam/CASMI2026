@@ -12,9 +12,8 @@ import numpy as np, pandas as pd
 import lightgbm as lgb
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from b1_evaluate import z, rr, boot, term, LAM
+from b1_rankfeats import FEATS, feature_matrix
 
-FEATS = ["z_fp", "z_gl", "z_ice", "fp", "gl", "ice", "pop_public", "lsid", "lpmid", "lsynonyms", "np_bit", "src_bit", "lotus", "lib_sim", "lib_same", "lib_nref", "lib_margin",
-         "lib_max_mol", "in_tier", "in_train", "in_coconut", "ppm_err", "fp_rank_window", "n_cands", "gl_missing", "ice_missing", "n_query", "ce_known", "view_c1"]
 
 
 def load_run(run, eval_csv, group_override=None):
@@ -47,15 +46,13 @@ def load_run(run, eval_csv, group_override=None):
                 lib = g[f"lib_sim_{view}"].values.astype(float); top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
                 S = zfp + (2 * zgl if zgl is not None else 0) + (zice if zice is not None else 0) + 0.5 * pop
                 S15 = zfp + (2 * zgl if zgl is not None else 0) + (zice if zice is not None else 0) + LAM * pop
-                d = pd.DataFrame(dict(run=run, set=s, molecule=mid, view=view, group=group_override or m.group, identity=mid, is_truth=g.is_truth.values.astype(int),
-                                      z_fp=zfp, z_gl=zgl if zgl is not None else 0.0, z_ice=zice if zice is not None else 0.0, fp=np.nan_to_num(fp, nan=np.nanmin(fp) if np.isfinite(fp).any() else 0),
-                                      gl=np.nan_to_num(glv, nan=-1.0), ice=np.nan_to_num(icv, nan=-1.0), pop_public=pop, lsid=g.lsid.values, lpmid=g.lpmid.values, lsynonyms=g.lsynonyms.values,
-                                      np_bit=(g["np"].values != 0).astype(float), src_bit=((g.src_mask.values.astype(np.int64) & 1) != 0).astype(float), lotus=np.log1p(np.maximum(g.lotus_refs.values, 0)),
-                                      lib_sim=lib, lib_same=g[f"lib_same_{view}"].values.astype(float), lib_nref=g[f"lib_nref_{view}"].values.astype(float), lib_margin=lib - second,
-                                      lib_max_mol=float(lib.max()), in_tier=g.in_tier.values.astype(float), in_train=g[f"in_train_{view}"].values.astype(float), in_coconut=g.in_coconut.values.astype(float),
-                                      ppm_err=g.ppm_err.values.astype(float), fp_rank_window=np.log1p(g.fp_rank_window.values.astype(float)), n_cands=float(len(g)),
-                                      gl_missing=(~np.isfinite(glv)).astype(float), ice_missing=(~np.isfinite(icv)).astype(float), n_query=float(m.n_query), ce_known=float(m.ce_known),
-                                      view_c1=float(view == "c1"), S_fixed=S, S_fixed15=S15, reachable=bool(ev.loc[mid, "window_external"]) if mid in ev.index else True))
+                X = feature_matrix(fp, glv, icv, pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values,
+                                   lib, g[f"lib_same_{view}"].values, g[f"lib_nref_{view}"].values, g.in_tier.values, g[f"in_train_{view}"].values, g.in_coconut.values,
+                                   g.ppm_err.values, g.fp_rank_window.values, float(m.n_query), float(m.ce_known))
+                d = pd.DataFrame(X, columns=FEATS)
+                d.insert(0, "is_truth", g.is_truth.values.astype(int)); d.insert(0, "identity", mid); d.insert(0, "group", group_override or m.group); d.insert(0, "view", view)
+                d.insert(0, "molecule", mid); d.insert(0, "set", s); d.insert(0, "run", run)
+                d["S_fixed"] = S; d["S_fixed15"] = S15; d["reachable"] = bool(ev.loc[mid, "window_external"]) if mid in ev.index else True
                 out.append(d)
     return pd.concat(out, ignore_index=True)
 
