@@ -131,3 +131,5 @@ C1 代理では、学習融合はパイプラインの中でも固定規則よ�
 - 旧 600 分子 run の FAIL(query 選択差 18、候補集合差 27%)は builder 修正前の test ファイルによるもので、修正後は消えた。
 - パイプライン側の公式 MRR(C2、fit 込み): main(blend21)0.616 / 固定 0.510(A 0.790 / 0.645、B 0.443 / 0.374)。
 - **共有キャッシュでの機械的 parity(C2、600 分子、04:03): 合格**。パイプラインの GL 出力を評価器側の順位付けに渡すと、main(blend21 + 欠損分岐)と保険の top-1・RR・top-25 集合・順序付き top-25 が **599/599 で完全一致**(候補ゼロの 1 分子を除く)。→ 提出パイプラインの論理は評価器と一致;独立 forward での差は GPU 実行間の雑音のみ。C1 view は 05:00 頃。
+- **C1 view(04:48〜04:51)**: 独立 forward では top-1 598/599、RR 597/599(main)、top-25 集合 0.977、順序付き 0.913(GL 雑音 最大 0.144、p99 1.3e-3);**共有キャッシュでは 599/599 完全一致(PASS)**。両 view で機械的一致を確認 → Codex 014 の開封条件を満たす。
+- **locked 開封(1 回)を 04:53:16 に開始**(`spark/jobs/locked_open_v5.sh`、manifest: git e949a4a、評価器 sha 3aa42a62…、rank_v2 a84fe3ff…、rank_v4b 237710b6…、registered_main = M1 learned / M2x blend21、保険 τ0.9)。結果は `experiments/b1_baseline/locked_open_v5/`。

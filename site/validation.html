@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 04:12 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 04:54 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -406,4 +406,6 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <li>旧 600 分子 run の FAIL(query 選択差 18、候補集合差 27%)は builder 修正前の test ファイルによるもので、修正後は消えた。</li>
 <li>パイプライン側の公式 MRR(C2、fit 込み): main(blend21)0.616 / 固定 0.510(A 0.790 / 0.645、B 0.443 / 0.374)。</li>
 <li><strong>共有キャッシュでの機械的 parity(C2、600 分子、04:03): 合格</strong>。パイプラインの GL 出力を評価器側の順位付けに渡すと、main(blend21 + 欠損分岐)と保険の top-1・RR・top-25 集合・順序付き top-25 が <strong>599/599 で完全一致</strong>(候補ゼロの 1 分子を除く)。→ 提出パイプラインの論理は評価器と一致;独立 forward での差は GPU 実行間の雑音のみ。C1 view は 05:00 頃。</li>
+<li><strong>C1 view(04:48〜04:51)</strong>: 独立 forward では top-1 598/599、RR 597/599(main)、top-25 集合 0.977、順序付き 0.913(GL 雑音 最大 0.144、p99 1.3e-3);<strong>共有キャッシュでは 599/599 完全一致(PASS)</strong>。両 view で機械的一致を確認 → Codex 014 の開封条件を満たす。</li>
+<li><strong>locked 開封(1 回)を 04:53:16 に開始</strong>(<code>spark/jobs/locked_open_v5.sh</code>、manifest: git e949a4a、評価器 sha 3aa42a62…、rank_v2 a84fe3ff…、rank_v4b 237710b6…、registered_main = M1 learned / M2x blend21、保険 τ0.9)。結果は <code>experiments/b1_baseline/locked_open_v5/</code>。</li>
 </ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
