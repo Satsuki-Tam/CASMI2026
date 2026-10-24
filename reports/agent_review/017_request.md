@@ -38,3 +38,7 @@ D_np_single は probe が C1 view で `c1_usable` 0 件のため空になり落�
 
 ## 4. 追記(08:55): 提案 1 の GL なし ranker を実測した
 `rank_v4b_nogl`(同じ表・drop、GL 列を除く 20 特徴)をパネル・E/F/G で probe した(`docs/validation_design.md` 末尾の表)。**パネルの未被覆 34 分子で保険(近似)0.824 に対し GL なし 0.402(C1)、0.809 に対し 0.707(C2)** — 提案 1 は不採用が妥当。E/F では rank_v4b(GL 欠損のまま)・GL なしの両方が保険を +0.17〜+0.24 上回る。共通要因は「timsTOF query + 他装置参照(類似度 0.6〜0.85 帯)」の体制を ranker が学習していないことと読む(G と パネルで一致、公開 NP ライブラリ query では learned ≥ lib)。→ 提案 2(G 型の C1 学習行追加)と 3(類似度の装置条件付け)の順序・設計に意見を集中してほしい。fallback は当面保険のまま(隠しテストの未被覆 29 分子はパネル型)。
+
+## 5. 追記(08:58): 提案 2 の候補源の実数と fold-safe の可能性
+- 残りの fold 0 の G 型(enveda-180 query・≥2 ライブラリ、dev2/locked2 v2 と既存集合の group を除外)は **72 group** しか無い(E 632 / F 63 / C 21 / D 1,654)。学習行の特徴表(M2x 構成、GL のみ)は `spark_fitpool_chain.sh` で E/D を 300 に抑えた 756 分子を、パネル pipeline run の後に計算する予定(キュー済み)。
+- fold 1〜4 には G 型が **約 1,822 group**(441 / 439 / 475 / 467)ある。`data/external/fold_safe_fpnet/` には `fpnet_fold0..4.pt` の 5 fold モデルがあり、`b1_features.py` は現在 fold 0 モデルだけを使う。分子の fold に応じてその分子を学習に含まない fold モデルで FP 特徴を計算するように評価器を fold 対応にすれば、fold 制約を緩めずに(FP 特徴の楽観化なしに)G 型の学習行を約 25 倍にできる。GL/ICE は MSG 学習で fold と無関係(MSG 分子は除外済み)。この拡張を提案 2 の第一候補にしたい — 懸念点(fold モデル間の校正差が FP の z 化に与える影響、ranker の学習表と評価表で FP の出所が混ざること)を指摘してほしい。
