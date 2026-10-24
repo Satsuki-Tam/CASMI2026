@@ -11,17 +11,19 @@ FEATS = ["z_fp", "z_gl", "z_ice", "fp", "gl", "ice", "pop_public", "lsid", "lpmi
 # v3 additions (Codex 008 / diagnostic D1): each model's confidence on this list (top-1 minus top-2 of its z), the candidate's rank within the
 # list under each model, its distance to the list's best, the library-similarity rank, the in_train x lib_sim interaction and the window size.
 EXTRA_V3 = ["rank_fp", "rank_gl", "rank_ice", "gap_fp", "gap_gl", "gap_ice", "margin_fp_mol", "margin_gl_mol", "margin_ice_mol", "lib_rank", "in_train_x_lib", "log_n_window"]
-FEATSETS = {"v2": FEATS, "v3": FEATS + EXTRA_V3}
-# monotone directions for the constrained variant (0 = unconstrained)
-MONO = dict(z_fp=1, z_gl=1, z_ice=1, fp=1, gl=1, ice=1, lib_sim=1, lib_same=1, lib_margin=1, pop_public=1, lotus=1, lsid=1, lpmid=1, lsynonyms=1, in_train_x_lib=1,
-            ppm_err=-1, fp_rank_window=-1, rank_fp=-1, rank_gl=-1, rank_ice=-1, gap_fp=-1, gap_gl=-1, gap_ice=-1, lib_rank=-1)
+# v3s = the small block to compare first (Codex 008): per-model rank + per-model confidence + window size
+EXTRA_V3S = ["rank_fp", "rank_gl", "rank_ice", "margin_fp_mol", "margin_gl_mol", "margin_ice_mol", "log_n_window"]
+FEATSETS = {"v2": FEATS, "v3s": FEATS + EXTRA_V3S, "v3": FEATS + EXTRA_V3}
+# monotone directions for the constrained variant (0 = unconstrained): only the model scores (up) and the mass error (down), Codex 008
+MONO = dict(z_fp=1, z_gl=1, z_ice=1, fp=1, gl=1, ice=1, ppm_err=-1)
 
 
 def rank_desc(v):
-    """1 = best; candidates without a value get the worst rank (len)."""
+    """1 = best; ties share the best rank of their group (independent of the row order); candidates without a value get the worst rank (len)."""
     v = np.asarray(v, float); ok = np.isfinite(v); r = np.full(len(v), float(len(v)))
     if ok.any():
-        idx = np.flatnonzero(ok); order = idx[np.argsort(-v[ok], kind="stable")]; r[order] = np.arange(1, len(order) + 1)
+        vals = v[ok]; srt = np.sort(vals)[::-1]
+        r[np.flatnonzero(ok)] = np.searchsorted(-srt, -vals, side="left") + 1
     return r
 
 

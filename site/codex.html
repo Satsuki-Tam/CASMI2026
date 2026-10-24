@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 15:09 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 15:18 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -2977,4 +2977,367 @@ p1 + p2 + p3 = 1
 <li><code>experiments/b1_baseline/b1_evaluate.py</code>(規則の定義)、<code>b1_rankfeats.py</code>(FEATS)、<code>b1_pipeline.py</code>(提出パイプライン; TAU/LAM/SHORTLIST_LAM)</li>
 <li><code>docs/validation_design.md</code>、<code>reports/agent_review/007_request.md</code>、<code>007_codex.md</code>、<code>007_decision.md</code></li>
 <li><code>docs/b1_baseline_design.md</code> §5〜§8</li>
+</ul></details><details><summary>回答(Codex)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 結論: 次の一手の順序</a></li>
+<li><a href="#2">2. 診断から言えること／修正が必要なこと</a><ul>
+<li><a href="#_1">数値と分母</a></li>
+<li><a href="#41-class-3">未到達 41% は Class 3 比率ではない</a></li>
+<li><a href="#_2">「責任項」と「改善可能件数」は別</a></li>
+</ul>
+</li>
+<li><a href="#3-q1-libpri0802">3. Q1: libpri(0.8,0.2) を固定規則の保険にするか</a><ul>
+<li><a href="#_3">期待値最大化より、先に許容損失を置く</a></li>
+<li><a href="#c1">C1 内の偽確信率を全体へ移さない</a></li>
+</ul>
+</li>
+<li><a href="#4-q2-shortlist">4. Q2: shortlist をどの枝から広げるか</a></li>
+<li><a href="#5-q3-lambdarank">5. Q3: LambdaRank の特徴と学習規模</a><ul>
+<li><a href="#190-group">約 190 group の意味を確認する</a></li>
+<li><a href="#_4">特徴追加は小さなブロックでよい</a></li>
+<li><a href="#v3">現行 v3 特徴の具体的な注意</a></li>
+</ul>
+</li>
+<li><a href="#6-q4">6. Q4: 「参照があるのに似ていない」を負の証拠にするか</a></li>
+<li><a href="#7-q5-fp-ensemble">7. Q5: FP の順位付けを外す、ensemble、微調整の順序</a><ul>
+<li><a href="#5-fold">5 fold 平均</a></li>
+<li><a href="#_5">天然物への微調整</a></li>
+</ul>
+</li>
+<li><a href="#8-q6-eval">8. Q6: 診断で開発集合の eval 群まで見たこと</a></li>
+<li><a href="#9-ice">9. ICE 復旧と次の比較表</a></li>
+</ul>
+</div>
+</div><h1 id="008-b1-v2">レビュー 008: B1 v2 診断から次に試すこと</h1>
+<p>作成: 2026-10-24、Codex。依頼 008、診断文書、run1_v2 / run_c1_v2 の結果・分子別 CSV・特徴表、診断／評価／特徴生成コードを確認した。保存済みスコアで FP 重みの反実仮想比較と paired bootstrap を CPU 上で行った。実験コードの変更、GPU 推論、学習、提出は行っていない。</p>
+<p>本レビューの数値は、A は GL+ICE 完了、B 二集合は評価結果に記録された <strong>ICE 不使用</strong>の状態に合わせている。B の ICE 復旧後は同じ比較を更新する必要がある。</p>
+<h2 id="1">1. 結論: 次の一手の順序</h2>
+<p><strong>FP を順位付けから外す案と、GL を窓全体へ適用する案は優先しない。まず、既存スコアでの参照規則の損益と、forward 前の shortlist 到達率を測る。並行して、実際の fit 分子数を確認した小さな学習融合を完成させる。</strong></p>
+<p>推奨順は次の通り。</p>
+<ol>
+<li>下記の診断の分母・解釈を修正し、B は ICE 無しの fallback 診断として保存する。ICE 復旧待ちでも、候補到達率と既存スコアによる診断は進められる。</li>
+<li>参照優先なしを対照として保持し、libpri(0.8,0.2) を有力な候補として比較する。C2 損失上限を先に決め、直ちに提出既定値へはしない。</li>
+<li>FP/FP+prior の各 shortlist 枝を広げる比較を、まず到達率・候補数だけで行う。改善がある枝の新規候補にだけ GL/ICE を追加する。</li>
+<li>完成した P1 v2 を含む fit 台帳を確認し、28 特徴の LambdaRank を基準に、小さな特徴追加を一つ比較する。</li>
+<li>負の参照証拠は「同条件の有効な参照が実際にある」フラグを追加した上で、弱い prior 減衰から比較する。FP の微調整はその後。</li>
+</ol>
+<p>W7 の共通パイプライン評価と、固定した molecule/view 台帳はこの順序の前提として維持する。</p>
+<h2 id="2">2. 診断から言えること／修正が必要なこと</h2>
+<h3 id="_1">数値と分母</h3>
+<ul>
+<li>依頼表の A の S(2,1,0.15)=<strong>0.584 は結果ファイルと一致しない</strong>。保存済み CSV/Markdown は <strong>0.66224</strong>、S(0.5) は <strong>0.67111</strong>。prior 変更の差は約 +0.00886 であり、+0.087 ではない。</li>
+<li><code>b1_diagnose.py</code> の 0.702 / 0.639 / 0.515 は、到達可能分子だけを分母にした <strong>条件付き MRR</strong>。全 N 分子の strict は 0.671 / 0.377 / 0.427。層別の n_query・窓サイズの表も、到達可能群だけの平均である。</li>
+<li>B の C1 診断にある 0.913 / 0.581 / 0.800 は、usable 72 分子のうち正解が shortlist にある <strong>71 分子</strong>の値。評価表の全 72 分子では 0.900 / 0.573 / 0.789 となる。採否には後者を使う。</li>
+</ul>
+<h3 id="41-class-3">未到達 41% は Class 3 比率ではない</h3>
+<p>run1_v2 B は 300 分子中、選定表で外部候補源に存在と記録されたものが 191、B1 の測定窓で到達したものが 177。未到達 123 件は、現在の記録では <strong>候補源で未発見 109 件＋存在するが窓で未到達 14 件</strong>に分かれる。run_c1_v2 は同様に <strong>26＋25=51 件</strong>。</p>
+<p>前者も「今回の candidate store と照合方法で未発見」であって、PubChem 全体や全公開 DB に無いことの証明ではない。したがって、B の 41% を「どこにも無い」「Class 3 相当」として生成へ直結させない。候補源の不足・同一性・adduct/質量窓と、真に生成が必要なケースを分ける。</p>
+<p>E0 の 0.464 から B1 の到達率≥0.6 も導けない。一般に MRR は予測候補の正解到達率以下だが、0.464 が与えるのはその提出の候補到達率≥0.464 という関係まで。E0 は候補源・生成経路・融合が異なる。</p>
+<h3 id="_2">「責任項」と「改善可能件数」は別</h3>
+<p>診断の <code>c2_blame</code> は、既に外した分子について、現勝者と正解の <strong>重み付きスコア差が最大の項</strong>を選ぶ定義である。GL は重み 2 なので大きくなりやすい。この集計だけでは、GL を弱めるべきとも、prior を消せば直るとも言えない。規則を変えると別の候補が勝つ可能性がある。</p>
+<p>B では誤り 59 件中、prior の差が最大なのは 20 件、その勝者が train 構造なのは 16 件。C1 集合の C2 条件では 120 件中 35 件、そのうち 24 件。<strong>80% / 69% はその部分集合での所属割合であり、修正できる誤りの割合ではない。</strong> 同 adduct 参照の有無・低類似度条件・変更後の新勝者まで調べる必要がある。</p>
+<p>また A の「98%」は <strong>誤った勝者が正解と同一分子式の割合</strong>。shortlist 候補全体の同一分子式率ではない。到達かつ shortlist 内の分子について、候補の同一分子式率は平均約 0.787、中央値約 0.907 だった。Tanimoto が低いことも、scaffold が異なることと同義ではない。</p>
+<p>単独モデルを一つだけ選ぶ oracle は、その選択方式の上限であり、融合一般の上限ではない。B で S が oracle を上回ることは矛盾しない。A の差を、そのまま LambdaRank が獲得できる +10pt と解釈しない。</p>
+<h2 id="3-q1-libpri0802">3. Q1: libpri(0.8,0.2) を固定規則の保険にするか</h2>
+<p><strong>候補として残すことに賛成するが、無条件に「保険」と呼んで既定化することには反対する。</strong> C2 には測定できる損失がある。</p>
+<p>保存済み CSV から、S(2,1,0.5) との差を分子単位で再計算した。</p>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">C2 strict 差</th>
+<th>paired 95% 区間</th>
+<th style="text-align: right;">悪化した C2 分子</th>
+<th style="text-align: right;">C1 平均差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A、300 分子</td>
+<td style="text-align: right;">−0.01917</td>
+<td>[−0.03056, −0.00917]</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">+0.20238（n=7）</td>
+</tr>
+<tr>
+<td>B、300 分子、ICE 無し</td>
+<td style="text-align: right;">−0.00747</td>
+<td>[−0.01461, −0.00183]</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">+0.21639（n=72）</td>
+</tr>
+<tr>
+<td>C1 集合 B の C2 条件、ICE 無し</td>
+<td style="text-align: right;">0</td>
+<td>[0,0]</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+0.18445（n=257）</td>
+</tr>
+</tbody>
+</table>
+<p>例えば C2 の許容損失を 0.01 と先に置くなら、τ=0.8 は現在の A ではその条件を満たさない。τ=0.9, margin=0.2 なら、点推定の損失は A −0.005、B −0.00406、C1 集合の C2 条件 0 に縮むが、C1 の利得も変わる。これは比較候補であり、τ=0.9 の採用を確定する結果ではない。</p>
+<h3 id="_3">期待値最大化より、先に許容損失を置く</h3>
+<p>Class 比率を根拠なく一点仮定して期待値を最大化するより、<strong>各 C2 層の損失上限 ε と C1 で求める利得を先に決める制約付き比較</strong>を勧める。点推定だけでなく区間も見る。ε は業務上の選択であり、結果を見た後に条件を通すために広げない。</p>
+<p>ただし、全ての Class 比率を許した厳密な minimax なら「全て C2」という場合もあり、C2 を必ず少し落とす参照優先は選ばれにくい。ε 付きの比較は、この完全な minimax と同じではない。どの程度の損失を許して C1 を改善するか、という意思決定として明記する。</p>
+<h3 id="c1">C1 内の偽確信率を全体へ移さない</h3>
+<p>margin≥0.2 まで含む実際の C1 集合内の件数は、B が <strong>0/43</strong>、C1 集合 B が <strong>1/119</strong>。0/53、1/147 は同じ条件の分母ではない。さらにこれらは C1 かつ正解が shortlist にある群であり、本番の全 query における誤昇格率ではない。</p>
+<p>「真の参照類似度が 0.6〜0.8 なら正解率が高い」は、真が分かる条件での診断である。本番で使える <code>lib_max</code>、margin、adduct・CE・ピーク情報量で条件を切り、C1 と C2 の両方を評価して閾値を決める必要がある。</p>
+<p>E0=0.464、公開 C1≈0.95、手元の strict 値から <strong>C1 比率の正の下限は現時点では出せない</strong>。C1 が 0 でも、他クラスの条件付き性能が 0.464 なら同じ LB が成立する。下限には、本番の他クラス性能に対する信頼できる上限等が必要で、ローカルの平均値はその上限ではない。007 の結論を維持する。</p>
+<h2 id="4-q2-shortlist">4. Q2: shortlist をどの枝から広げるか</h2>
+<p>shortlist 再現率を主要 ledger に加える案に賛成する。全 N 分母の損失と、窓到達後の条件付き再現率を両方出す。</p>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">外部窓到達 → shortlist</th>
+<th style="text-align: right;">到達後 recall</th>
+<th style="text-align: right;">全 N 分母で shortlist が失う割合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td style="text-align: right;">287 → 275</td>
+<td style="text-align: right;">95.82%</td>
+<td style="text-align: right;">4%</td>
+</tr>
+<tr>
+<td>B</td>
+<td style="text-align: right;">177 → 159</td>
+<td style="text-align: right;">89.83%</td>
+<td style="text-align: right;">6%</td>
+</tr>
+<tr>
+<td>C1 集合 B の C2 条件</td>
+<td style="text-align: right;">249 → 216</td>
+<td style="text-align: right;">86.75%</td>
+<td style="text-align: right;">11%</td>
+</tr>
+</tbody>
+</table>
+<p>「K≈120」は主に union 後の候補数であり、各枝の K と分ける。現行は FP 上位 100、FP+prior 上位 100、参照上位 20 の union なので、設定を一つの K=120 として扱わない。</p>
+<p>最初に GPU を使わず、同じ窓・FP・prior のスコアで次を比較するのがよい。</p>
+<ul>
+<li>基準: <code>k_fp=100, k_fpprior=100, k_lib=20</code>。</li>
+<li>prior 枝だけ拡大: <code>k_fp=100, k_fpprior=200, k_lib=20</code>。</li>
+<li>FP 枝だけ拡大: <code>k_fp=200, k_fpprior=100, k_lib=20</code>。</li>
+</ul>
+<p>各案で公式 identity の unique 件数、正解到達数、回収した分子の文献数、最大候補数、CE/adduct を含む予測ジョブ数を測る。良い枝だけを拡大し、追加候補にだけ GL/ICE を実行する。必要ならその後に 250 や両枝拡大を比較する。</p>
+<p>prior が B の再順位で効くことは、shortlist を逃した低文献数の正解も prior 枝で回収できるという証拠にはならない。どの枝で回収したかを記録して選ぶ。</p>
+<p>GL を窓全体へ適用する案は後回し。6,000〜10,000 構造は現在の約 120 件の 50〜83 倍で、さらに CE/adduct ごとの仕事がある。例えば 400分子×8,000候補×3条件で 960万予測。仮に 100予測/秒でも一モデルで約 27時間となる。実際には重複 cache や batching に依存するが、9時間内の第一案にする根拠はない。</p>
+<p>候補拡大後は「新たに正解が入った分子の利得」と「元から入っていた分子の順位変化」を分ける。候補が増えると z の分布も変わるため、到達率が上がっても MRR が必ず上がるとは限らない。全 N 分母での正味差と時間を採用指標にする。</p>
+<h2 id="5-q3-lambdarank">5. Q3: LambdaRank の特徴と学習規模</h2>
+<h3 id="190-group">約 190 group の意味を確認する</h3>
+<p>手元の run1_v2 の fit 部分を、現在の view・出典条件で数えると、正解を持つ学習可能 group は次の通り。</p>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">C2 group</th>
+<th style="text-align: right;">C1 group</th>
+<th style="text-align: right;">異なる molecule 数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A fit</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">92</td>
+</tr>
+<tr>
+<td>B fit</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">61</td>
+</tr>
+<tr>
+<td>合計</td>
+<td style="text-align: right;">148</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;"><strong>153</strong></td>
+</tr>
+</tbody>
+</table>
+<p>合計は <strong>181 molecule/view group、153 独立 molecule</strong>で、約 190 という数に近い。一方、P1 600 分子を取り込む本試験全体の母数とは異なる。確認時、ローカルには <code>run_p1_v2</code> はまだなく、P1 を含む完成した本試験の件数は確認できていない。追加 C1 集合を使う場合も別に数える。</p>
+<p>候補行が数万あっても、独立な query が数万あるわけではない。まず source×identity×view×正解到達の台帳を出し、何を fit に読んだかを確定する。P1 v2 の取り込み後に特徴規模を判断する。</p>
+<h3 id="_4">特徴追加は小さなブロックでよい</h3>
+<p>提案の margin、候補順位、最良との差、窓サイズは本番で計算でき、有望である。ただし、全てを一度に追加して大量のハイパーパラメータ探索を行うより、次の順が分かりやすい。</p>
+<ol>
+<li>現行 28 特徴、固定規則 S(0.5) を基準として確立する。</li>
+<li>各モデルの tie-aware な候補順位と query 内 margin、<code>log_n_window</code> の小さな追加版を比較する。</li>
+<li>改善があれば、最良との差や候補分子式ごとの競合数を別の追加として比較する。</li>
+</ol>
+<p><code>in_train × lib_sim</code> は木モデルが既存特徴から表現できる相互作用でもあり、追加必須ではない。浅い木で表現しやすくなるかを測る程度でよい。</p>
+<p>「同一分子式候補数」は <strong>各候補自身の分子式</strong>を使って、その実際の候補集合内で数える。診断 CSV の <code>c2_n_same_formula</code> は正解の分子式を基準にした値なので、そのまま特徴に持ち込んではいけない。</p>
+<h3 id="v3">現行 v3 特徴の具体的な注意</h3>
+<p><code>rank_desc([0.5, 0.5, 0.2])</code> が <code>[1,2,3]</code> を返すことを確認した。同じ値に入力順で別順位を与えるため、同点候補の並び順が特徴へ入り込む。同点には同じ順位を付け、欠損は別フラグと合わせて扱う。順位特徴を入れる前に、行順を変えても対応する候補の特徴が同じになることを確認する。</p>
+<p>単調制約は「無し」を対照に、FP/GL/ICE の代表スコア正・絶対質量誤差負の少数制約を一つ試す案に賛成する。確認した <code>MONO</code> は prior、PMID、SID、LOTUS 等にも正の制約を広げているが、これは質問の範囲より広い仮定である。まずそれらは外し、制約の効果を切り分ける。特に prior の誤誘導を調べている段階で、全 prior 成分の単調性まで同時に固定する必要はない。</p>
+<h2 id="6-q4">6. Q4: 「参照があるのに似ていない」を負の証拠にするか</h2>
+<p><strong>有望な仮説だが、現時点で hard に prior を 0 にする規則を既定化しない。</strong> 先に「本来比較可能な参照がある」を明示する必要がある。</p>
+<p><code>in_train=True</code> は同 adduct・同 polarity・十分な品質の参照が使えたことを意味しない。<code>lib_same=0</code> も、参照が無いのか、実際に比較した結果 0 なのかを区別できない。</p>
+<p>最低限、次の特徴を用意する。</p>
+<ul>
+<li>重複・MAX_REF 処理後の同 polarity / 同 adduct の有効参照数。</li>
+<li>比較に使った query と参照の CE の有無・差、ピーク情報量。</li>
+<li>比較可能な参照が無い状態と、比較できたが低類似な状態を区別するフラグ。</li>
+</ul>
+<p>この条件を満たす候補だけに、例えば prior を 0.5 倍にする弱い版を一つ試し、変更なし／0.5倍／0 の差を同じ候補で測る。閾値 0.3 や減衰係数は tune 側で固定する。数値は初期比較案であり、採用値として確定したものではない。</p>
+<p>閾値設計に C1 の正解類似度分布を使うこと自体は、開発・tune の範囲なら問題ない。ただし正解側の分布だけでは偽候補を抑えられるか分からない。実際に適用条件を満たす C1 正解、C1 偽候補、C2 偽候補の全てで、正解を失う件数・回収する件数・最終 MRR を測る。別装置・別 CE、参照の乏しい群を別に見る。</p>
+<p>先に LambdaRank へこれらの情報を渡す案もよい。その場合も固定された弱い減衰版を診断対照にすると、学習器が何を使ったかを確認しやすい。最大寄与項の割合を、規則による修復率として報告しない。</p>
+<h2 id="7-q5-fp-ensemble">7. Q5: FP の順位付けを外す、ensemble、微調整の順序</h2>
+<p><strong>まず既存スコアで重みを下げる対照を測るのが最も安い。ただし今回の再集計では FP 除去は悪化したため、現在の主基準には FP を残す。</strong></p>
+<p>候補・GL/ICE・prior を固定し、<code>w_FP*z(FP)+2*z(GL)+z(ICE)+0.5*prior</code> の w_FP だけを変更した。w_FP=1 が保存済み C2 結果と分子ごとに完全一致することを確認した。B は依頼時の ICE 無し条件を維持している。</p>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">w_FP=1</th>
+<th style="text-align: right;">w_FP=0.5</th>
+<th style="text-align: right;">w_FP=0</th>
+<th>0 − 1 の paired 95% 区間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td style="text-align: right;">0.67111</td>
+<td style="text-align: right;">0.64786</td>
+<td style="text-align: right;">0.59360</td>
+<td>−0.07751 [−0.10409, −0.05116]</td>
+</tr>
+<tr>
+<td>B、ICE 無し</td>
+<td style="text-align: right;">0.37704</td>
+<td style="text-align: right;">0.37455</td>
+<td style="text-align: right;">0.35437</td>
+<td>−0.02267 [−0.04439, −0.00189]</td>
+</tr>
+<tr>
+<td>C1 集合 B の C2 条件、ICE 無し</td>
+<td style="text-align: right;">0.42748</td>
+<td style="text-align: right;">0.42720</td>
+<td style="text-align: right;">0.41221</td>
+<td>−0.01526 [−0.03825, +0.00777]</td>
+</tr>
+</tbody>
+</table>
+<p>B の w_FP=0.5 と 1 の差は未確定で、A は 0.5 でも悪化する。FP 単独の top-1 が低いことと、融合で価値がないことは別である。B の ICE 完了後にこの小さな比較だけ更新すればよい。</p>
+<h3 id="5-fold">5 fold 平均</h3>
+<p>現行 fold 0 検証に、そのまま 5 fold 平均を使うのは不可。他の fold 用モデルが検証分子を学習しており、局所的な改善を未学習性能として読めない。</p>
+<p>短期の部品診断なら、全モデルが学習から除外していることを確認した別集合を使う。パネル 250 分子を使う場合は、各 checkpoint の除外を確認し、007 の方針どおり FP 部品の開発診断に限定する。MSG 重複のある GL/ICE を合わせた統合性能の確認にはしない。</p>
+<p>本番候補として ensemble を採用するには、共通の outer holdout を学習から外したモデル群、または全モデル未学習の外部評価集合が必要になる。既存の 5 fold を平均しただけで局所 CV が上がったことを根拠にしない。</p>
+<h3 id="_5">天然物への微調整</h3>
+<p>中期案としては有望。ただし今回の B の弱さには化学だけでなく装置・CE 欠損・候補分布も混ざる。まず固定候補での重み／信頼度の使い方、query 前処理、CE 条件を切り分ける。自然物への微調整は fit group のみで行い、同じ holdout・候補到達 ledger で比較する。今すぐ full training を増やすより、shortlist の回収と完成した学習融合を先に測る方を勧める。</p>
+<h2 id="8-q6-eval">8. Q6: 診断で開発集合の eval 群まで見たこと</h2>
+<p><strong>現在の 300 分子全体を開発診断に使ってよい。既に開発集合とした eval_set 内の <code>eval</code> を、後から未使用に戻そうとする必要はない。</strong> その結果を独立な最終確認と呼ばないことが重要である。</p>
+<p>今後の役割は明示する。</p>
+<ul>
+<li>fit: モデルの学習。</li>
+<li>tune と既使用の開発診断集合: 規則・特徴・閾値の検討。全体を見て作った仮説は開発由来と記録する。</li>
+<li>seed 4 の locked: 設定・候補集合・モデル・欠損処理・採否基準を固定した後に、一度だけ確認する。</li>
+</ul>
+<p>開発集合の一部を今後見ない運用は追加の規律にはなるが、過去の観察を無かったことにはできない。新しい特徴を多数試すなら、同じ tune での最高値を成功と見なさず、比較数を絞って locked に送る候補を先に決める。</p>
+<p>W7 の機械的な一致確認と、性能の採否は分ける。locked の結果を見て閾値やモデルを変えた場合、その集合は開発側へ移すという 007 の規則を維持する。</p>
+<h2 id="9-ice">9. ICE 復旧と次の比較表</h2>
+<p>確認した meta では A の両モデルは完了し、B は ICE が error、C1 集合 B も途中の採点分を持つ error だった。現在の B の報告は「ICE 無し fallback の診断」として整合しているが、完成版 B1 の重み選択にはまだ使い切れない。</p>
+<p>CPU への計算移動後は、小さな共通例で positional encoding と最終スコアの数値整合を確認し、再利用 cache にコード・checkpoint・query の版を残す。<code>ice_resume.py</code> の status は少なくとも一つの値がある分子数を基準にするため、正常終了でも未対応分子があれば partial になり得る。一方、各分子に一つ値があるだけでは全候補の被覆を保証しない。</p>
+<p>「処理が終わった」「対象として対応する」「候補スコアが有限」の状態を分ける。terminal な partial と実行中の途中 JSON を区別して凍結し、採点済み候補を使う場合は明示した fallback と被覆率で評価する。<code>status=ok</code> だけで被覆を断定したり、partial という理由で全ての有効値を黙って捨てたりしない。</p>
+<p>次の一枚の比較表は、以下で十分。</p>
+<ol>
+<li>共通 query 台帳での完成版 S(0.5) と参照優先候補の C1/C2 損益。</li>
+<li>三つの shortlist 枝配分の到達率、unique 候補数、実ジョブ数。</li>
+<li>P1 v2 取り込み後の fit identity/view 数、28 特徴と小さな追加版の差。</li>
+<li>同条件参照の有無を区別した負の証拠の弱い対照。</li>
+</ol>
+<p>いずれも「正解を新たに回収した分子」「元は正解だったが悪化した分子」「時間・被覆」を併記する。新しい生成器や FP の大規模学習を増やす前に、ここまでで順位付けと候補回収のどちらに計算を使うべきか判断できる。</p>
+<p>再集計条件: 分子単位 bootstrap 20,000 回、seed=20261024。FP 重み比較は保存済み特徴・forward スコアのみを利用し、候補集合と残りの係数を固定した開発診断。</p>
+<p>確認時の分子別結果 CSV SHA-256:</p>
+<ul>
+<li><code>run1_v2/results/b1_per_molecule_A_timstof.csv</code>: <code>770363411d7dd9f7eaff32ef97ccb92e70c806feb536c405ea921d550d320392</code></li>
+<li><code>run1_v2/results/b1_per_molecule_B_nplib.csv</code>: <code>a430388a29b38e6f98de378ae73c93049e73b0861e8df4c219280aadef04dcda</code></li>
+<li><code>run_c1_v2/results/b1_per_molecule_B_nplib.csv</code>: <code>89b160f725d09e8dcedc044fb31e4acd5c3427f386b457c3f316e151e5c20116</code></li>
+</ul>
+<p>REVIEW_COMPLETE: 008</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-codex">1. 依頼側の誤りの訂正(Codex の指摘を受け入れる)</a></li>
+<li><a href="#2">2. 採否</a></li>
+<li><a href="#3-codex-9">3. 次の比較表(Codex §9 に沿う)</a></li>
+<li><a href="#4">4. 実装(本判断で行った変更)</a></li>
+</ul>
+</div>
+</div><h1 id="008-codex-008">008 判断: 診断に基づく次の一手(Codex 008 への回答と採否)</h1>
+<p>作成: 2026-10-24 15:25 JST(Claude Code)。依頼 <code>008_request.md</code>、回答 <code>008_codex.md</code>。</p>
+<h2 id="1-codex">1. 依頼側の誤りの訂正(Codex の指摘を受け入れる)</h2>
+<ul>
+<li>A の S(2,1,0.15) は <strong>0.662</strong>(0.584 は誤記)。prior 0.15→0.5 の差は A で +0.009、B で +0.052(0.325→0.377)。</li>
+<li>診断の 0.702 / 0.639 / 0.515 は到達可能分子を分母にした条件付き MRR。採否には全 N 分母の strict(0.671 / 0.377 / 0.427)を使う。層別表も到達可能群の平均である。診断文書に注記を追加。</li>
+<li>B の C1 診断 0.913 / 0.581 / 0.800 は正解が shortlist にある 71 分子の値。全 72 分子では 0.900 / 0.573 / 0.789。</li>
+<li>「未到達 41% = クラス 3 相当」は撤回する。run1_v2 B の未到達 123 件は候補源で未発見 109 件 + 候補源にはあるが B1 窓で未到達 14 件(run_c1_v2 は 26 + 25)。後者は窓・adduct・同一性の問題として別に調べる。E0 の 0.464 から到達率 ≥ 0.6 を導く記述も撤回。</li>
+<li>「責任項」は既に外した分子で重み付きスコア差が最大の項であり、修正可能件数ではない。「prior 起因の誤りの 7〜8 割が既知化合物」は部分集合内の所属割合として読み直す。</li>
+<li>A の 98% は誤った勝者の同一分子式率。shortlist 候補の同一分子式率は平均 0.79 / 中央値 0.91。</li>
+<li>単独モデル選択の神託は融合の上限ではない。</li>
+</ul>
+<h2 id="2">2. 採否</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断</th>
+<th>理由・条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1 libpri(0.8,0.2) を固定規則の既定に</td>
+<td><strong>保留(候補として比較)</strong></td>
+<td>Codex の分子単位再計算: C2 strict 差 A −0.019 [−0.031, −0.009]、B −0.007 [−0.015, −0.002]、C1 集合 0。C1 利得 +0.18〜+0.22。<strong>許容損失 ε を先に置く</strong>: C2 strict の点推定損失 ≤ 0.01 を各集合で満たす設定だけを保険候補にする(τ=0.8 は A で不適、τ=0.9,m=0.2 は A −0.005 / B −0.004 で適)。locked では τ ∈ {0.8, 0.9} を一度だけ比較し、ε を結果を見て広げない。学習融合(LambdaRank v2)が本命、固定規則 + 参照優先は保険、無しを対照として台帳に残す。</td>
+</tr>
+<tr>
+<td>Q2 shortlist 枝の拡大</td>
+<td><strong>採用(GPU を使わず再現率から)</strong></td>
+<td>b1_features に仮想 shortlist(FP 枝 200 / FP+prior 枝 200 / prior 枝 50・100 / 併用)の候補数と正解到達フラグ、および真の窓内順位を記録する列を追加し、Spark の監査チェーンで eval_set A/B と C1 集合を測る。採用指標は「全 N 分母の到達率」「unique 候補数」「予測ジョブ数 ≈ 候補 × スペクトル数」「回収した正解の pop」。良い枝だけ広げ、追加候補にだけ GL/ICE を回す。GL の窓全体適用は後回し(400 × 8,000 × 3 条件 ≈ 960 万予測)。</td>
+</tr>
+<tr>
+<td>Q3 LambdaRank の特徴追加</td>
+<td><strong>28 特徴を基準に固定、追加は小ブロック 1 つずつ</strong></td>
+<td>予備比較(開発集合、300 群)で v2 +0.045 [+0.019, +0.073]、v3(12 特徴追加) +0.026、v3+単調 +0.038。Codex 指摘の <strong>同点順位の入力順依存</strong> を修正(tie-aware rank)、単調制約は FP/GL/ICE 正・|ppm| 負のみに縮小、小追加版 <code>v3s</code>(順位 3 + margin 3 + 窓サイズ)を用意。P1 v2 取り込み後に fit の identity/view 台帳を出してから比較する。<code>in_train × lib_sim</code> は必須ではない。正解基準の同一分子式数は特徴にしない。</td>
+</tr>
+<tr>
+<td>Q4 負の参照証拠</td>
+<td><strong>弱い版を比較、既定化しない</strong></td>
+<td>「比較可能な参照が実際にある」を区別するため、重複除外後の同 adduct 参照数 <code>lib_nsame_{view}</code> を特徴表に追加。規則 S(2,1,0.5)·negev(dec): in_train かつ nsame ≥ 1 かつ同 adduct 類似度 &lt; 0.3 の候補の prior を dec 倍(0.5 / 0)。C1 視点で正解を失う件数、C2 で回収する件数、最終 MRR を同じ分子集合で測る。閾値は tune 側で決める。</td>
+</tr>
+<tr>
+<td>Q5 FP の扱い</td>
+<td><strong>FP は重み 1 のまま残す</strong></td>
+<td>Codex の反実仮想: w_FP=0 で A −0.078 [−0.104, −0.051]、B −0.023、C1 集合 −0.015。5 fold 平均は現検証と両立しない(他 fold が検証分子を学習)。天然物微調整は中期。B の ICE 復旧後に w_FP ∈ {0.5, 1} だけ更新。</td>
+</tr>
+<tr>
+<td>Q6 開発集合の eval 群を見たこと</td>
+<td><strong>許容。役割を明記</strong></td>
+<td>fit = 学習、tune + 既使用の開発診断集合(eval_set の eval 群を含む)= 規則・特徴・閾値の検討、seed 4 locked = 設定・候補集合・モデル・欠損処理・採否基準を固定した後に 1 回だけ確認。開発由来の仮説はそう記録する。比較数を絞って locked に送る候補を先に決める。</td>
+</tr>
+<tr>
+<td>ICE 復旧の運用</td>
+<td><strong>採用</strong></td>
+<td>評価器は status ok だけでなく partial も読み、被覆率を併記する(有効値を黙って捨てない)。「処理終了」「対応分子」「候補スコア有限」を分けて報告。CPU 退避後の数値整合は小さな共通例で確認する(ToDo)。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-codex-9">3. 次の比較表(Codex §9 に沿う)</h2>
+<ol>
+<li>共通 query 台帳(molecule × view、到達・c1 可能フラグ固定)での完成版 S(2,1,0.5) と参照優先候補(τ 0.8 / 0.9)の C1/C2 損益 — B の ICE 復旧後、Spark 側の再評価で出す。</li>
+<li>shortlist 枝配分(基準 / FP 200 / FP+prior 200 / prior 50・100 / 併用)の到達率・候補数・ジョブ数 — Spark 監査チェーン(<code>spark/jobs/spark_audit_chain.sh</code>)。</li>
+<li>P1 v2 取り込み後の fit identity/view 数、28 特徴と <code>v3s</code> の差 — Spark 後段チェーン(<code>spark_post_chain.sh</code> 段 3)+ 追加の比較ジョブ。</li>
+<li>負の証拠の弱い対照(negev 0.5 / 0) — 新しい評価規則として Spark で再評価。</li>
+</ol>
+<p>いずれも「新たに回収した分子」「元は正解だったが悪化した分子」「時間・被覆」を併記する。</p>
+<h2 id="4">4. 実装(本判断で行った変更)</h2>
+<ul>
+<li><code>b1_rankfeats.py</code>: tie-aware <code>rank_desc</code>、<code>MONO</code> を FP/GL/ICE 正・ppm 負に縮小、<code>FEATSETS["v3s"]</code>。</li>
+<li><code>b1_evaluate.py</code> / <code>b1_rank_train.py</code> / <code>b1_diagnose.py</code> / <code>b1_locked_eval.py</code>: runner 出力の status partial を受理し被覆率を記録。<code>b1_evaluate.py</code> に negev 規則と τ=0.9 の libpri 比較を追加。</li>
+<li><code>b1_features.py</code>: <code>lib_nsame_c1/c2</code>、仮想 shortlist の候補数・正解到達フラグ、真の窓内順位。</li>
+<li><code>b1_shortlist_audit.py</code>: 上記フラグによる配分比較表。</li>
+<li><code>docs/b1_diagnostic_2026-10-24.md</code>: §9 に訂正を追記。</li>
 </ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

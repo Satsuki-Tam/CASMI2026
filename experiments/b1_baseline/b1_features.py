@@ -253,7 +253,7 @@ def main():
                 comp["np"][(~ht) & (~hp)] = 1.0; comp["np"][in_coco] = np.maximum(comp["np"][in_coco], 1.0)
                 pop = comp["lsid"] + comp["lpmid"] + 0.5 * comp["lsynonyms"] + 1.0 * (comp["np"] != 0) + 0.5 * ((comp["src_mask"].astype(np.int64) & 1) != 0) + 0.5 * np.log1p(np.maximum(comp["lotus_refs"], 0))
                 # ---- library similarity (train-structure candidates); duplicate classification first, then MAX_REF
-                L = {v: np.zeros(n_u) for v in ("c1", "c2", "c1_keepdup", "c2_keepdup", "same_c1", "same_c2")}; nref = {v: np.zeros(n_u, int) for v in ("c1", "c2")}
+                L = {v: np.zeros(n_u) for v in ("c1", "c2", "c1_keepdup", "c2_keepdup", "same_c1", "same_c2")}; nref = {v: np.zeros(n_u, int) for v in ("c1", "c2")}; nsame = {v: np.zeros(n_u, int) for v in ("c1", "c2")}
                 n_exact_truth = n_susp_truth = n_exact_other = n_susp_other = 0; usable_truth_c1 = 0
                 truth_set = set(truth_idx)
                 for ci, k in enumerate(keys):
@@ -279,11 +279,11 @@ def main():
                         return rows_
                     main_refs = cap(kept); keep_refs = cap(kept + kept_susp)
                     for tag, refs in (("", main_refs), ("_keepdup", keep_refs)):
-                        b1 = b2 = s1 = s2 = 0.0; n1 = n2 = 0
+                        b1 = b2 = s1 = s2 = 0.0; n1 = n2 = ns1 = ns2 = 0
                         for x in refs:
                             (rmz, rit), rprec = ref_cache[x]
                             k1 = not (is_truth_cand and lib_of_row[x] == lib); k2 = not is_truth_cand
-                            n1 += int(k1); n2 += int(k2)
+                            n1 += int(k1); n2 += int(k2); sa = add_of_row[x] in M_by_add; ns1 += int(k1 and sa); ns2 += int(k2 and sa)
                             if not (k1 or k2): continue
                             for s in qspec:
                                 if s["mode"] != mode_of_row[x]: continue
@@ -291,7 +291,7 @@ def main():
                                 if k1: b1 = max(b1, sim); s1 = max(s1, sim if same else 0.0)
                                 if k2: b2 = max(b2, sim); s2 = max(s2, sim if same else 0.0)
                         L["c1" + tag][ci], L["c2" + tag][ci] = b1, b2
-                        if tag == "": L["same_c1"][ci], L["same_c2"][ci] = s1, s2; nref["c1"][ci], nref["c2"][ci] = n1, n2
+                        if tag == "": L["same_c1"][ci], L["same_c2"][ci] = s1, s2; nref["c1"][ci], nref["c2"][ci] = n1, n2; nsame["c1"][ci], nsame["c2"][ci] = ns1, ns2
                     if is_truth_cand: usable_truth_c1 = max(usable_truth_c1, sum(1 for x in main_refs if lib_of_row[x] != lib))
                 if len(ref_cache) > 300_000: ref_cache.clear()
                 # ---- per-view shortlists; stored table = union; official keys; merge duplicates
@@ -301,6 +301,12 @@ def main():
                 top_lib = {v: {int(i) for i in np.argsort(-L[v], kind="stable")[:K_LIB] if L[v][i] > LIB_MIN} for v in ("c1", "c2")}
                 short_v = {v: top_fp | top_fpp | top_lib[v] for v in ("c1", "c2")}
                 short = sorted(short_v["c1"] | short_v["c2"])
+                # shortlist audit (Codex 008 Q2): hypothetical branch allocations measured without forward models (sizes + truth membership)
+                def _top(score, k_): return set(np.argsort(-score, kind="stable")[:min(k_, n_u)].tolist())
+                fp_s = np.nan_to_num(fpu, nan=-1e18); fpp_s = zf + SHORTLIST_LAM * pop; pop_s = pop + 1e-6 * zf
+                alt_short = {"fp200": _top(fp_s, 200) | top_fpp | top_lib["c2"], "fpp200": top_fp | _top(fpp_s, 200) | top_lib["c2"],
+                             "fp200_fpp200": _top(fp_s, 200) | _top(fpp_s, 200) | top_lib["c2"], "pop50": short_v["c2"] | _top(pop_s, 50), "pop100": short_v["c2"] | _top(pop_s, 100),
+                             "fpp200_pop50": top_fp | _top(fpp_s, 200) | top_lib["c2"] | _top(pop_s, 50)}
                 s_smiles = [smiles[rep[keys[i]]["i"]] for i in short]
                 okeys = [k for rr in wp.map(_okey, [s_smiles[i:i + 25] for i in range(0, len(s_smiles), 25)]) for k in rr]
                 best = {}
@@ -317,6 +323,7 @@ def main():
                                          lib_sim_c1_keepdup=float(max(L["c1_keepdup"][j] for j in idxs)), lib_sim_c2_keepdup=float(max(L["c2_keepdup"][j] for j in idxs)),
                                          lib_same_c1=float(max(L["same_c1"][j] for j in idxs)), lib_same_c2=float(max(L["same_c2"][j] for j in idxs)),
                                          lib_nref_c1=int(max(nref["c1"][j] for j in idxs)), lib_nref_c2=int(max(nref["c2"][j] for j in idxs)),
+                                         lib_nsame_c1=int(max(nsame["c1"][j] for j in idxs)), lib_nsame_c2=int(max(nsame["c2"][j] for j in idxs)),
                                          in_top_fp=bool(si & top_fp), in_top_fpprior=bool(si & top_fpp), in_top_lib_c1=bool(si & top_lib["c1"]), in_top_lib_c2=bool(si & top_lib["c2"]),
                                          **{n: float(comp[n][i]) for n in comp}, pop_public=float(pop[i])))
                 runner.append(dict(mid=mid, spectra=[dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
@@ -337,6 +344,7 @@ def main():
                                      truth_fp_rank=min([rank_of(fpu, i) for i in truth_idx], default=-1), truth_pop_rank=min([rank_of(pop + 1e-6 * zf, i) for i in truth_idx], default=-1),
                                      truth_fppop_rank=min([rank_of(zf + SHORTLIST_LAM * pop, i) for i in truth_idx], default=-1), truth_fppop50_rank=min([rank_of(zf + 0.5 * pop, i) for i in truth_idx], default=-1),
                                      truth_lib_rank_c2=min([rank_of(L["c2"], i) for i in truth_idx], default=-1), truth_lib_rank_c1=min([rank_of(L["c1"], i) for i in truth_idx], default=-1),
+                                     **{f"n_short_{k_}": len(v_) for k_, v_ in alt_short.items()}, **{f"truth_in_short_{k_}": bool(truth_set & v_) for k_, v_ in alt_short.items()},
                                      seconds=time.time() - tm0))
                 if (n_i + 1) % 20 == 0 or n_i == len(ms) - 1:
                     d = pd.DataFrame(rows_out)

@@ -59,7 +59,7 @@ def tanimoto(a, b):
 
 def load(run, s, model):
     p = f"{run}/work/{model}_{s}.json"
-    try: ok = json.load(open(p + ".meta.json")).get("status") == "ok"
+    try: ok = json.load(open(p + ".meta.json")).get("status") in ("ok", "partial")
     except Exception: ok = False
     return (json.load(open(p)) if ok else {}), ok
 

@@ -56,7 +56,7 @@ def main():
 
         def load(model):
             p = f"{a.run}/work/{model}_{s}.json"
-            try: ok = json.load(open(p + ".meta.json")).get("status") == "ok"
+            try: ok = json.load(open(p + ".meta.json")).get("status") in ("ok", "partial")
             except Exception: ok = False
             return (json.load(open(p)) if ok else {}), ok
         gl, gl_ok = load("gl"); ice, ice_ok = load("ice")
@@ -93,6 +93,10 @@ def main():
                 top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
                 base5 = S(2, 1, 0.5)
                 res["S(2,1,0.5)+1lib"] = base5 + 1.0 * lib
+                # negative library evidence (Codex 008 Q4): a library structure with comparable (same-adduct) references that do not match the query loses prior weight
+                nsame = g[f"lib_nsame_{view}"].values.astype(float) if f"lib_nsame_{view}" in g.columns else g[f"lib_nref_{view}"].values.astype(float)
+                neg = g[f"in_train_{view}"].values.astype(bool) & (nsame >= 1) & (g[f"lib_same_{view}"].values.astype(float) < 0.3)
+                for dec in (0.5, 0.0): res[f"S(2,1,0.5)negev{dec:g}"] = S(2, 1, 0.5, pop=np.where(neg, dec * pop, pop))
                 for tau, margin in ((0.5, 0.1), (0.6, 0.1), (0.7, 0.1), (0.8, 0.2), (0.9, 0.2)):
                     pri = (lib.max() >= tau) and (lib.max() - second >= margin)
                     v = base5.copy()

@@ -27,7 +27,7 @@ def main():
 
         def load(model):
             p = f"{a.run}/work/{model}_{s}.json"
-            try: ok = json.load(open(p + ".meta.json")).get("status") == "ok"
+            try: ok = json.load(open(p + ".meta.json")).get("status") in ("ok", "partial")
             except Exception: ok = False
             return (json.load(open(p)) if ok else {}), ok
         gl, gl_ok = load("gl"); ice, ice_ok = load("ice")

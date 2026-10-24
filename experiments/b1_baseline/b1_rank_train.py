@@ -25,7 +25,7 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
         F = pd.read_parquet(fp_); M = pd.read_csv(f"{run}/b1_molecules_{s}.csv").set_index("molecule")
         def load(model):
             p = f"{run}/work/{model}_{s}.json"
-            try: ok = json.load(open(p + ".meta.json")).get("status") == "ok"
+            try: ok = json.load(open(p + ".meta.json")).get("status") in ("ok", "partial")
             except Exception: ok = False
             return (json.load(open(p)) if ok else {}), ok
         gl, gl_ok = load("gl"); ice, ice_ok = load("ice")

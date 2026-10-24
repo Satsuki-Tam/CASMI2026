@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 15:09 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 15:18 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-c2-strict">1. 漏斗(C2 視点、strict)</a></li>
@@ -27,6 +27,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#6-codex-008">6. 含意 — 次の一手の候補(Codex 008 で優先順位を議論)</a></li>
 <li><a href="#7-shortlist-1510">7. 追補: shortlist 取りこぼしの内訳(15:10)</a></li>
 <li><a href="#8-lambdarank-1500">8. 追補: LambdaRank の特徴追加の予備比較(15:00、開発集合のみ)</a></li>
+<li><a href="#9-codex-008-1525reportsagent_review008_codexmd">9. Codex 008 による訂正(15:25、reports/agent_review/008_codex.md)</a></li>
 </ul>
 </div>
 </div><h1 id="b1-2026-10-24">B1 失敗モード診断(2026-10-24 午後)</h1>
@@ -328,4 +329,15 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <ul>
 <li>300 群規模では <strong>特徴を増やすと悪化</strong>(v3 は gap_gl に重要度が集中し過学習)。単調制約は一部を回復するが v2 に届かない。Codex 007 の W9 懸念どおりで、特徴追加は学習データが 1,000 群規模になってから再検討する。</li>
 <li>v2 の LambdaRank は C1 視点で 0.84(参照のみ 0.89、libpri 0.73〜0.80 より高い)= 参照優先の判断を学習している。コード: <code>b1_rank_train.py --feats {v2,v3} [--monotone]</code>(既定 v2、<code>b1_rankfeats.FEATSETS</code>)。</li>
+</ul>
+<h2 id="9-codex-008-1525reportsagent_review008_codexmd">9. Codex 008 による訂正(15:25、<code>reports/agent_review/008_codex.md</code>)</h2>
+<ul>
+<li>§1 の strict MRR「到達分」(0.702 / 0.639 / 0.515)は到達可能分子を分母にした <strong>条件付き MRR</strong>。採否に使うのは全 N 分母の strict(0.671 / 0.377 / 0.427)。§2〜§5 の層別・モデル別の表も到達可能かつ shortlist 内の分子だけの集計である。</li>
+<li>§1 の「未到達 41% = クラス 3 相当」は撤回。run1_v2 B の未到達 123 件 = 候補源で未発見 109 件 + 候補源にはあるが B1 窓で未到達 14 件(C1 集合は 26 + 25)。前者も「今回の候補源と照合方法で未発見」であり、どの DB にも無いことの証明ではない。E0 の LB から到達率の下限は導けない。</li>
+<li>§3 の「責任項」は外した分子で重み付きスコア差が最大の項であって、<strong>修正できる件数ではない</strong>(GL は重み 2 なので大きく出やすい)。「prior 起因の誤りの勝者の 7〜8 割が既知化合物」はその部分集合内の所属割合。規則を変えれば別の候補が勝ち得る。</li>
+<li>§1 の「候補の 98% が同一分子式」は誤った勝者の同一分子式率。shortlist 候補の同一分子式率は平均 0.79 / 中央値 0.91。</li>
+<li>§2 の「神託」は単独モデルを一つ選ぶ方式の上限で、融合の上限ではない。</li>
+<li>§4 の B の 0.913 / 0.581 / 0.800 は正解が shortlist にある 71 分子の値(全 72 分子では 0.900 / 0.573 / 0.789)。偽確信の分母は C1 かつ正解が shortlist にある群(B 0/43、C1 集合 1/119 が margin ≥ 0.2 込みの正しい分母)。</li>
+<li>§6-1 の「libpri(0.8,0.2) を既定に」は保留。Codex の分子単位再計算では C2 strict の損失は A −0.019 [−0.031, −0.009]、B −0.007 [−0.015, −0.002]。許容損失 ε(≤ 0.01)を先に置き、τ 0.8 / 0.9 を locked で一度だけ比較する(<code>008_decision.md</code>)。</li>
+<li>§6-5 の FP: 重みを 0 にすると A −0.078、B −0.023 と悪化(Codex の反実仮想)。FP は重み 1 のまま残す。</li>
 </ul></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
