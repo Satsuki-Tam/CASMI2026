@@ -1,0 +1,249 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B1 失敗モード診断(10/24 午後)</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 14:53 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-c2-strict">1. 漏斗(C2 視点、strict)</a></li>
+<li><a href="#2-shortlist">2. 各モデルが真を何位に置くか(到達可能かつ shortlist 内の分子)</a></li>
+<li><a href="#3-s">3. S が外すとき、何が真を押し下げているか</a></li>
+<li><a href="#4-c1">4. C1 視点(真の参照スペクトルがライブラリにある分子; 同一取得の重複は除外)</a></li>
+<li><a href="#5">5. 層別</a></li>
+<li><a href="#6-codex-008">6. 含意 — 次の一手の候補(Codex 008 で優先順位を議論)</a></li>
+</ul>
+</div>
+</div><h1 id="b1-2026-10-24">B1 失敗モード診断(2026-10-24 午後)</h1>
+<p><strong>目的</strong>: B1 自前ベースラインがどの段階で MRR を失っているかを分解し、次の一手の優先順位を数値で決める。
+<strong>対象</strong>: <code>run1_v2</code>(評価集合 A = Enveda timsTOF 300 分子、B = 天然物ライブラリ 300 分子)、<code>run_c1_v2</code>(C1 検証用 B 集合 300 分子)。
+<strong>注意</strong>: B 集合の ICEBERG は DGX Spark(GB10)の CUDA クラッシュで未採点のため、B の数値は <strong>FP + GLACIER + prior のみ</strong>(再採点中。完了後に更新)。
+<strong>コード</strong>: <code>experiments/b1_baseline/b1_diagnose.py</code>(CPU のみ)。出力: <code>&lt;run&gt;/results/diagnose_&lt;set&gt;.md</code>、分子別 <code>diagnose_&lt;set&gt;_molecules.csv</code>。
+固定規則 S = z(FP) + 2·z(GL) + z(ICE) + 0.5·pop(C2 視点 = 真の参照スペクトルと訓練所属を隠す)。strict = 外部 DB で到達不能な分子は 0 点。</p>
+<h2 id="1-c2-strict">1. 漏斗(C2 視点、strict)</h2>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">N</th>
+<th style="text-align: right;">窓に真あり</th>
+<th style="text-align: right;">外部 DB 到達</th>
+<th style="text-align: right;">shortlist に真</th>
+<th style="text-align: right;">S で 1 位</th>
+<th style="text-align: right;">損失: 未到達</th>
+<th style="text-align: right;">未 shortlist</th>
+<th style="text-align: right;">2〜5 位</th>
+<th style="text-align: right;">6〜25 位</th>
+<th style="text-align: right;">&gt;25 位</th>
+<th style="text-align: right;">strict MRR(到達分)</th>
+<th style="text-align: right;">全体 MRR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A timsTOF</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">287 (96%)</td>
+<td style="text-align: right;">275</td>
+<td style="text-align: right;">166</td>
+<td style="text-align: right;">0.043</td>
+<td style="text-align: right;">0.040</td>
+<td style="text-align: right;">0.153</td>
+<td style="text-align: right;">0.082</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.702</td>
+<td style="text-align: right;">0.671</td>
+</tr>
+<tr>
+<td>B 天然物</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">277</td>
+<td style="text-align: right;">177 (59%)</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.410</td>
+<td style="text-align: right;">0.060</td>
+<td style="text-align: right;">0.069</td>
+<td style="text-align: right;">0.064</td>
+<td style="text-align: right;">0.020</td>
+<td style="text-align: right;">0.639</td>
+<td style="text-align: right;">0.377</td>
+</tr>
+<tr>
+<td>C1 集合 B</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">270</td>
+<td style="text-align: right;">249 (83%)</td>
+<td style="text-align: right;">216</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">0.170</td>
+<td style="text-align: right;">0.110</td>
+<td style="text-align: right;">0.150</td>
+<td style="text-align: right;">0.123</td>
+<td style="text-align: right;">0.020</td>
+<td style="text-align: right;">0.515</td>
+<td style="text-align: right;">0.427</td>
+</tr>
+</tbody>
+</table>
+<p>(損失は N を分母にした MRR 質量。strict MRR と全体 MRR は同じ到達判定を使う)</p>
+<p>読み方:
+- <strong>A は順位付けの問題</strong>。損失の 2/3 が「真が 2〜25 位」。shortlist 候補の 98% は真と同一分子式で、勝者と真の Tanimoto 類似度は中央値 0.4〜0.6(近縁異性体というより別骨格が勝っている)。
+- <strong>B は候補生成の限界が最大の損失</strong>。41% が PubChem/COCONUT のどこにも無い(クラス 3 相当)。到達可能な分子に限れば strict 0.64 で A(0.70)と大差ない。
+- <strong>shortlist の取りこぼし</strong>(到達可能なのに shortlist に入らない)が 6〜11% あり、順位付け損失(13〜29%)に比べ無視できない。shortlist は FP top-K ∪ (FP+prior) top-K ∪ 参照類似 top-K(K≈120)で、FP が天然物で弱いことが原因。
+- B のみ「窓に真が無い」分子が 8〜10% ある。GNPS 由来レコードのアダクト/前駆体表記の不整合と推定(A = Enveda timsTOF では 0)。隠しテストは Enveda 測定なので A 型と見る。</p>
+<h2 id="2-shortlist">2. 各モデルが真を何位に置くか(到達可能かつ shortlist 内の分子)</h2>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">FP top-1</th>
+<th style="text-align: right;">GL top-1</th>
+<th style="text-align: right;">ICE top-1</th>
+<th style="text-align: right;">prior top-1</th>
+<th style="text-align: right;">S top-1</th>
+<th style="text-align: right;">神託(分子ごとに最良モデルを選ぶ)</th>
+<th style="text-align: right;">真が S の top-5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A timsTOF (275)</td>
+<td style="text-align: right;">37%</td>
+<td style="text-align: right;">47%</td>
+<td style="text-align: right;">41%</td>
+<td style="text-align: right;">0%</td>
+<td style="text-align: right;">60%</td>
+<td style="text-align: right;">70%</td>
+<td style="text-align: right;">89%</td>
+</tr>
+<tr>
+<td>B 天然物 (159)</td>
+<td style="text-align: right;">15%</td>
+<td style="text-align: right;">39%</td>
+<td style="text-align: right;">–</td>
+<td style="text-align: right;">21%</td>
+<td style="text-align: right;">63%</td>
+<td style="text-align: right;">58%</td>
+<td style="text-align: right;">83%</td>
+</tr>
+<tr>
+<td>C1 集合 B (216)</td>
+<td style="text-align: right;">14%</td>
+<td style="text-align: right;">33%</td>
+<td style="text-align: right;">–</td>
+<td style="text-align: right;">15%</td>
+<td style="text-align: right;">44%</td>
+<td style="text-align: right;">50%</td>
+<td style="text-align: right;">78%</td>
+</tr>
+</tbody>
+</table>
+<p>読み方: <strong>GLACIER が最強</strong>。FP(FPNet f·z)は天然物で弱い(top-1 15%、中央順位 9〜10)。prior(文献人気度)は B で単独 top-1 21% と無視できない。神託との差は A で +10pt(モデル選択を学べれば伸びる)、B では融合 S が単独モデルより良い。真が S の top-5 に 78〜89% 入るので再順位付けの上限はまだ高い。</p>
+<h2 id="3-s">3. S が外すとき、何が真を押し下げているか</h2>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">誤り数</th>
+<th>責任項 FP / GL / ICE / prior</th>
+<th style="text-align: right;">prior が責任のとき勝者が訓練ライブラリ構造</th>
+<th style="text-align: right;">勝者の prior &gt; 真の prior</th>
+<th style="text-align: right;">勝者と真の Tanimoto(中央値)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A timsTOF</td>
+<td style="text-align: right;">109</td>
+<td>20% / 41% / 28% / 11%</td>
+<td style="text-align: right;">25%</td>
+<td style="text-align: right;">49%</td>
+<td style="text-align: right;">0.35〜0.60</td>
+</tr>
+<tr>
+<td>B 天然物</td>
+<td style="text-align: right;">59</td>
+<td>29% / 37% / – / 34%</td>
+<td style="text-align: right;">80%</td>
+<td style="text-align: right;">61%</td>
+<td style="text-align: right;">0.23〜0.39</td>
+</tr>
+<tr>
+<td>C1 集合 B</td>
+<td style="text-align: right;">120</td>
+<td>32% / 39% / – / 29%</td>
+<td style="text-align: right;">69%</td>
+<td style="text-align: right;">62%</td>
+<td style="text-align: right;">0.24〜0.41</td>
+</tr>
+</tbody>
+</table>
+<p>読み方:
+- GL は重み 2 なので最大の責任項になるが、GL の誤りは「別構造を強く支持」(押し下げ量 2.0〜4.8)しており、単に重みを下げても他の項が拾えない。
+- <strong>prior が責任の誤りでは勝者の 70〜80% が訓練ライブラリ内の既知化合物</strong>。「有名な既知化合物だが参照スペクトルは一致していない」候補を prior が押し上げている。これは「ライブラリ構造なのに参照類似度が低い」ことを負の証拠として使えば抑制できる(LambdaRank は in_train × lib_sim の交互作用として学習可能。固定規則にも入れられる)。</p>
+<h2 id="4-c1">4. C1 視点(真の参照スペクトルがライブラリにある分子; 同一取得の重複は除外)</h2>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">参照類似 1 位が真</th>
+<th style="text-align: right;">S が 1 位</th>
+<th style="text-align: right;">libpri(τ0.8, m0.2) が 1 位</th>
+<th>MRR: 参照のみ / S / libpri</th>
+<th>偽確信(lib_max ≥ 0.8 で外れ)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B 天然物</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">89%</td>
+<td style="text-align: right;">48%</td>
+<td style="text-align: right;">77%(発火 61%)</td>
+<td>0.913 / 0.581 / 0.800</td>
+<td>2 / 53(margin ≥ 0.2 は 0)</td>
+</tr>
+<tr>
+<td>C1 集合 B</td>
+<td style="text-align: right;">257</td>
+<td style="text-align: right;">86%</td>
+<td style="text-align: right;">40%</td>
+<td style="text-align: right;">64%(発火 46%)</td>
+<td>0.888 / 0.545 / 0.729</td>
+<td>11 / 147(margin ≥ 0.2 は 1)</td>
+</tr>
+</tbody>
+</table>
+<p>真の参照類似度別(C1 集合): 0.6〜0.8 でも参照 1 位が真 92%、≥0.8 で 96〜98%。しかし libpri は τ=0.8 でしか発火しないので 0.6〜0.8 帯(49 分子)を取りこぼす。
+τ を 0.6 に下げた場合の C2 側の代償は strict で A −0.048、B −0.026、C1 集合 −0.009(<code>b1_results.md</code>)。<strong>クラス 1 の比率に依存するトレードオフ</strong>。偽確信は margin ≥ 0.2 を課せばほぼ 0。</p>
+<h2 id="5">5. 層別</h2>
+<ul>
+<li>窓サイズ(同一 m/z 窓の構造数)最大四分位で strict が A 0.75 → 0.62、C1 集合 0.55 → 0.47。候補が多いほど順位付けが難しい。</li>
+<li>n_query = 1(スペクトル 1 本)は B で 0.56 vs 2 本以上 0.67〜0.71。複数スペクトル(複数アダクト/衝突エネルギー)は有利。</li>
+<li>A の fit/tune/eval 群は 0.73 / 0.72 / 0.66、B は 0.58 / 0.69 / 0.65。群間差は ±0.05 程度で、300 分子の統計誤差(95% CI ±0.045)と同程度。</li>
+</ul>
+<h2 id="6-codex-008">6. 含意 — 次の一手の候補(Codex 008 で優先順位を議論)</h2>
+<ol>
+<li><strong>固定規則の保険に参照優先を入れる</strong>: libpri(0.8, 0.2) を B1 パイプラインの既定に(現状 TAU 2.0 で無効)。C1 で +0.18〜0.22、C2 で −0.00〜−0.02。隠しテストにクラス 1 が 3 割あれば LB +0.05〜0.07 相当。</li>
+<li><strong>shortlist 再現率</strong>: 到達可能なのに shortlist 外が 6〜11%。K 120 → 200〜250 の費用(GL/ICE の実行時間)は B1 Notebook v1 の実測で判断。FP が弱い天然物では prior 側の枝を広げる方が効く可能性。</li>
+<li><strong>LambdaRank の特徴追加</strong>: モデルごとの信頼度(z の top-1 − top-2 margin、候補の各モデル内順位、最良との差)、窓サイズ、同一分子式候補数、in_train × lib_sim。神託との差(A で 10pt)を狙う。</li>
+<li><strong>負の証拠規則</strong>: ライブラリ構造で同一アダクトの参照があるのに類似度 &lt; 0.3 なら prior 項を 0 にする(prior 起因の誤りの 7〜8 割に効く見込み)。</li>
+<li><strong>FPNet の天然物での弱さ</strong>(top-1 15%)は中期課題。GLACIER が主力であることを踏まえ、GL の重み/校正を tune 群で見直す。</li>
+<li><strong>未到達 41%(B)</strong> は候補生成の限界。隠しテストの到達率は不明だが、公開系譜 E0 の 0.464 から到達率 ≥ 0.6 が示唆される。</li>
+</ol></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

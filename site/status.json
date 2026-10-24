@@ -32,8 +32,8 @@
   }
  ],
  "next": [
+  "Codex 008(診断に基づく優先順位)の回答を受けて決める: 固定規則の保険 libpri(0.8,0.2)、shortlist K の拡大、LambdaRank の信頼度特徴、負の証拠規則、FP の扱い",
   "検証設計の弱点 W1〜W10(docs/validation_design.md)への対処を Codex 007 と検討し、優先順に実装(本番条件を模した合成テスト、標本拡大、回帰テスト)",
-  "B1 固定規則の C1/C2 評価が出たら: 参照優先規則(τ・margin)と融合重みを tune 群で確定し、B1 Notebook v2 の既定値に反映",
   "E4 v5 の LB が出たら: 方向のみ読む(増分は予測しない)。P1 の代理指標の扱いを Codex 006 で確認",
   "B1 Notebook v1 の実行時間から Kaggle 9 時間予算の配分(FP 窓採点 / GL / ICE)を決める",
   "LambdaRank(fit = P1 600 分子、tune = 新集合)が固定規則を tune 群で上回るか"
@@ -136,6 +136,14 @@
    "code": "experiments/b1_baseline/, kernels/b1-baseline/",
    "page": "b1.html",
    "state": "run"
+  },
+  {
+   "id": "D1",
+   "question": "B1 はどの段階で MRR を失っているか(漏斗・モデル別順位・責任項・C1 視点・層別)",
+   "result": "A: 損失の 2/3 は順位付け(真が 2〜25 位)。B: 未到達 41%、shortlist 取りこぼし 6〜11%。GL が最強、FP は天然物で top-1 15%。prior 起因の誤りの勝者は 7〜8 割が既知化合物。C1 は参照のみで MRR 0.89〜0.91、libpri(0.8,0.2) の偽確信はほぼ 0",
+   "code": "experiments/b1_baseline/b1_diagnose.py",
+   "page": "diagnose.html",
+   "state": "done"
   }
  ],
  "research": [
@@ -231,6 +239,11 @@
    "docs/validation_design.md",
    "validation.html",
    "検証設計と残る懸念"
+  ],
+  [
+   "docs/b1_diagnostic_2026-10-24.md",
+   "diagnose.html",
+   "B1 失敗モード診断(10/24 午後)"
   ]
  ]
 }

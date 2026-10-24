@@ -30,3 +30,4 @@
 {"time": "2026-10-24 14:08", "kind": "decision", "text": "Codex 007: 検証の優先順位を確定(評価/提出の一致 → 参照条件と adduct 層の台帳 → パネル 250 の限定診断 → 学習融合の比較 → 標本拡大)。Class 比率は LB から逆算しない。最終提出は開封前に主候補・保険候補を固定", "link": "validation.html"}
 {"time": "2026-10-24 14:12", "kind": "event", "text": "提出パイプラインに評価モード(参照行・identity のマスク、複製参照の除外、公式スコアラーでの採点)を追加。評価用 test.parquet(新評価集合 600 分子・2,221 本・10 アダクト)を生成。これで評価と提出が同じコードを通る(Codex 007 W7)", "link": "validation.html"}
 {"time": "2026-10-24 14:42", "kind": "issue", "text": "ICEBERG が DGX Spark(GB10)で CUDA illegal address を散発する原因を random_walk_pe の疎行列 coalesce に特定。疎行列部分を CPU に退避する修正と再開可能ドライバ(spark/jobs/ice_resume.py)を導入し、B 集合の ICE を再採点中。LambdaRank v2 の学習は再採点完了を待つ。", "link": "experiments.html"}
+{"time": "2026-10-24 14:53", "kind": "result", "text": "失敗モード診断 D1: A は順位付け損失が 2/3、B は未到達 41% と shortlist 取りこぼし 6〜11%。GL が最強で FP は天然物で弱い(top-1 15%)。prior 起因の誤りでは勝者の 7〜8 割が既知化合物。C1 は参照類似のみで 0.89〜0.91。次の一手の優先順位を Codex 008 に依頼。", "link": "diagnose.html"}
