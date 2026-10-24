@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 21:09 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 21:11 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-c2-strict">1. 漏斗(C2 視点、strict)</a></li>
@@ -30,6 +30,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#9-codex-008-1525reportsagent_review008_codexmd">9. Codex 008 による訂正(15:25、reports/agent_review/008_codex.md)</a></li>
 <li><a href="#10-ice-b-1650results_008b">10. ICE 復旧後の B と、各モデルの寄与(16:50、results_008b/)</a></li>
 <li><a href="#11-shortlist-1722spark-run_audit_b1_shortlist_auditpy">11. shortlist 監査の結果(17:22、Spark run_audit_*、b1_shortlist_audit.py)</a></li>
+<li><a href="#12-v3shortlist-ice-2110run_v3_eval">12. v3(shortlist 拡大、ICE 無し)の固定規則結果(21:10、run_v3_eval)</a></li>
 </ul>
 </div>
 </div><h1 id="b1-2026-10-24">B1 失敗モード診断(2026-10-24 午後)</h1>
@@ -448,4 +449,34 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li>「FP+prior 200 + prior 50」で候補数は約 2 倍(予測ジョブ数も約 2 倍)。ICEBERG を外せば(§10)GL だけで十分収まる計算: GB10 で GL は約 140 ジョブ/秒、ICE はその 1/4 の速度。</li>
 <li>窓内順位の分布: A では真は FP で中央値 2 位(90% 点 31 位)、B・C1 集合では FP 中央値 14〜15 位(90% 点 336〜377 位)だが FP+0.15·prior では 4〜7 位(90% 点 121〜143 位)。prior 単独は B で中央値 45 位。</li>
 </ul>
-<p><strong>次の実験 B1 v3</strong>(Spark <code>spark_v3_chain.sh</code>): shortlist = FP 100 ∪ FP+prior 200 ∪ 参照 20 ∪ prior 50、GLACIER のみ(ICE 無し)、LambdaRank は ICE 特徴を除いた v2_noice。開発集合(eval_set A/B、C1 集合)と学習用 P1 600 分子で特徴表 → GL → 評価 → 学習。locked 集合は v2・v3 の 2 候補を同時に 1 回だけ開く(事前登録: <code>008_decision.md</code> 追記)。</p></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p><strong>次の実験 B1 v3</strong>(Spark <code>spark_v3_chain.sh</code>): shortlist = FP 100 ∪ FP+prior 200 ∪ 参照 20 ∪ prior 50、GLACIER のみ(ICE 無し)、LambdaRank は ICE 特徴を除いた v2_noice。開発集合(eval_set A/B、C1 集合)と学習用 P1 600 分子で特徴表 → GL → 評価 → 学習。locked 集合は v2・v3 の 2 候補を同時に 1 回だけ開く(事前登録: <code>008_decision.md</code> 追記)。</p>
+<h2 id="12-v3shortlist-ice-2110run_v3_eval">12. v3(shortlist 拡大、ICE 無し)の固定規則結果(21:10、<code>run_v3_eval</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th>真が shortlist に入る数(v2 → v3)</th>
+<th>固定規則 S(2,0,0.5): v2 → v3</th>
+<th>libpri(0.9,0.2) v3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A timsTOF</td>
+<td>275 → 283</td>
+<td><strong>0.682 → 0.652(−0.030)</strong></td>
+<td>0.645</td>
+</tr>
+<tr>
+<td>B 天然物</td>
+<td>159 → 170</td>
+<td>0.377 → 0.377(±0)</td>
+<td>0.373</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>到達率は上がったが、固定規則の MRR は A で 0.03 下がり B で変わらない。候補が約 2 倍になり z 分布と prior の相対位置が変わって、元から入っていた分子の順位が悪化した(Codex 008 §4 の警告どおり)。新たに回収した真は上位に来ていない。</li>
+<li>M2 の採否は、拡大リスト上で再学習する LambdaRank(ICE 特徴なし、<code>rank_v3</code>)の結果で決める。固定規則の保険としては v2 構成(K=100)の方が良い。</li>
+<li>W7 600 分子の C2 側は、Spark の GLACIER が別の箇所(<code>predict_inten_frag_batch</code> の merge_sort)で GB10 クラッシュし 56 分子しか採点されなかったため M1 の評価として無効(fallback 543 分子)。パイプラインの Spark 経路を再開ドライバ経由に変更し、C2 を再実行する。C1 側は GL 完走(598/599)。</li>
+</ul></article><p class='small muted'>原文: <code>docs/b1_diagnostic_2026-10-24.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

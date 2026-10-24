@@ -432,7 +432,9 @@ def main():
             for name, pkg, script in (("gl", P["glacier"], "gl_runner.py"), ("ice", P["iceberg"], "ice_runner.py")):
                 if name == "ice" and args.w_ice == 0: log("ICE skipped (w_ice = 0)"); continue
                 out = f"{P['work']}/{name}_out.json"
-                subprocess.run([P["runner_python"], f"{pkg}/{script}", pkg, f"{P['work']}/b1_forward_in.json", out, "--device", dev, "--site", "none", "--budget", str(_budget(args.gl_budget if name == "gl" else args.ice_budget))],
+                driver = os.path.join(os.path.dirname(os.path.dirname(HERE)), "spark", "jobs", "ice_resume.py")   # GB10: restart the runner after a CUDA crash and merge outputs
+                cmd_head = [P["runner_python"], driver, "--python", P["runner_python"], f"{pkg}/{script}", pkg, f"{P['work']}/b1_forward_in.json", out, "--"] if os.path.exists(driver) else [P["runner_python"], f"{pkg}/{script}", pkg, f"{P['work']}/b1_forward_in.json", out]
+                subprocess.run(cmd_head + ["--device", dev, "--site", "none", "--budget", str(_budget(args.gl_budget if name == "gl" else args.ice_budget))],
                                stdout=open(f"{P['work']}/{name}.log", "w"), stderr=subprocess.STDOUT)
                 try: (GL if name == "gl" else ICE).update(json.load(open(out))); log(f"{name} done")
                 except Exception as e: log(f"{name} output missing:", repr(e))
