@@ -5,7 +5,7 @@
 set -u
 cd ~/CASMI2026 || exit 1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=1
-B=experiments/b1_baseline; E=$B/eval_test_50b; PY=.venv/bin/python
+B=experiments/b1_baseline; E=$B/eval_test_50c; PY=.venv/bin/python
 git fetch -q origin && git checkout -q origin/main -- $B/b1_pipeline.py $B/b1_parity.py $B/b1_rankfeats.py $B/b1_common.py $B/make_eval_test.py $B/b1_evaluate.py $B/b1_locked_eval.py src/metric.py && echo "synced $(git rev-parse --short origin/main) $(date +%T)"
 mkdir -p $E
 $PY -X utf8 $B/make_eval_test.py --eval_csv $B/eval_set/p1_molecules.csv --store data/processed/spectra_store --raw data/raw --out $E --max_spectra 8 --limit 25 --sets A_timstof B_nplib || { echo "PARITY50 FAILED: make_eval_test"; exit 1; }

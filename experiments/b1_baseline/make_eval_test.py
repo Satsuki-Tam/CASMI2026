@@ -32,8 +32,12 @@ raw = pl.scan_parquet(f"{a.raw}/train.parquet").with_row_index("row").filter(pl.
 lib_of_row = dict(zip(sel["row"].to_list(), sel["ingest_lib"].to_list()))
 rows_l = raw["row"].to_list(); shift = [ELECTRON if (lib_of_row.get(r_) == "enveda-180" and m_ == "positive") else 0.0 for r_, m_ in zip(rows_l, raw["ionization_mode"].to_list())]
 raw = raw.with_columns(pl.Series("shift", shift))
+# the evaluator reads peaks from the float32 spectra store (b1_features: float32 -> float64 - shift); reproduce that precision here, otherwise FPNet
+# and the similarity see float64 peaks and a few boundary candidates / rankings differ (parity 2026-10-24)
+f32 = lambda xs: np.asarray(xs, np.float32).astype(np.float64).tolist()
 raw = raw.with_columns((pl.col("precursor_mz") - pl.col("shift")).alias("precursor_mz"),
-                       pl.struct(["ms2_mzs", "shift"]).map_elements(lambda d: [x - d["shift"] for x in d["ms2_mzs"]], return_dtype=pl.List(pl.Float64)).alias("ms2_mzs"))
+                       pl.struct(["ms2_mzs", "shift"]).map_elements(lambda d: [x - d["shift"] for x in f32(d["ms2_mzs"])], return_dtype=pl.List(pl.Float64)).alias("ms2_mzs"),
+                       pl.col("ms2_normalized_intensities").map_elements(f32, return_dtype=pl.List(pl.Float64)).alias("ms2_normalized_intensities"))
 test = raw.rename({"inchikey14": "molecule_id"}).with_columns(pl.col("row").cast(pl.Int64).alias("spectrum_row"))
 test.drop("row", "shift").write_parquet(f"{a.out}/test.parquet")
 # per-molecule masks with the evaluator's conventions: C2 hides every reference of the query's own identity (+ train membership);

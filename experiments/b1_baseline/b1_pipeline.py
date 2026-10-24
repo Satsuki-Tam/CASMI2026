@@ -331,8 +331,8 @@ def main():
             if excl_ids:
                 for k in list(rep):
                     if rep[k]["pkey"] in excl_ids:
-                        if rep[k]["trow"] < 0 and not rep[k]["coco"]: del rep[k]      # a library-only structure would not exist as a candidate for a novel molecule
-                        else: rep[k]["train"] = False
+                        rep[k]["train"] = False
+                        if rep[k]["trow"] < 0 and not rep[k]["coco"]: rep[k]["excluded"] = True   # library-only structure of a hidden identity: stays in the window statistics (as the evaluator) but never becomes a candidate
             keys = list(rep); n_u = len(keys)
             if n_u == 0:
                 stats.append(dict(molecule=mid, n_query=len(q), n_unique=0, seconds=time.time() - tm0)); feats[mid] = []; continue
@@ -383,6 +383,7 @@ def main():
             top_lib = [i for i in np.argsort(-lib, kind="stable")[:K_LIB] if lib[i] > LIB_MIN]
             short = np.union1d(np.union1d(top_fp, top_fpp), np.array(top_lib, dtype=np.int64))
             if args.k_pop > 0: short = np.union1d(short, np.argsort(-(pop + 1e-6 * zf), kind="stable")[:min(args.k_pop, n_u)])   # prior-only branch (Codex 008 Q2)
+            short = np.array([i for i in short if not rep[keys[i]].get("excluded")], dtype=np.int64)
             s_smiles = [smiles[rep[keys[i]]["i"]] for i in short]
             okeys = [k for rr_ in wp.map(_okey, [s_smiles[i:i + 25] for i in range(0, len(s_smiles), 25)]) for k in rr_]
             best = {}
