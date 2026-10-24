@@ -34,6 +34,21 @@
    "state": "wait",
    "name": "shortlist 再現率の監査(Spark、低優先度)",
    "detail": "診断 D1 の追補: 取りこぼした真は pop>0 の既知化合物で FP 順位 ~400 位。真の窓内順位(FP / prior / FP+λ·prior)を記録する列を b1_features に追加し、FP top-K ∪ prior top-K3 の仮想 shortlist の再現率を eval_set A/B と C1 集合で測る(spark/jobs/spark_audit_chain.sh、ICE 修復後の再評価が終わってから開始)。"
+  },
+  {
+   "state": "wait",
+   "name": "LambdaRank 小ブロック比較(Spark、v2 学習後)",
+   "detail": "Codex 008 Q3: 28 特徴の基準に対し v3s(同点対応の順位 3 + margin 3 + 窓サイズ)と単調制約(FP/GL/ICE 正・ppm 負)を同じ fit/tune/eval 群で 1 回ずつ比較(spark/jobs/spark_rankcmp_chain.sh)。"
+  },
+  {
+   "state": "wait",
+   "name": "W7 parity(Spark、パイプライン評価後)",
+   "detail": "提出パイプラインの候補ダンプと評価器の特徴表を同じ分子・視点で照合: 候補集合の一致(Jaccard)、正解の有無、fp/pop/参照類似/所属フラグ/ppm の一致(spark/jobs/spark_parity_chain.sh)。"
+  },
+  {
+   "state": "wait",
+   "name": "再評価 008(Spark、ICE 修復後)",
+   "detail": "partial 出力の受理、負の参照証拠規則 negev(0.5/0)、libpri τ 0.9 を含む評価器で run1_v2 / run_c1_v2 を再評価し results_008/ に保存(spark/jobs/spark_eval2_chain.sh)。"
   }
  ],
  "next": [
