@@ -27,6 +27,7 @@
     }
   ],
   "next": [
+    "検証設計の弱点 W1〜W10(docs/validation_design.md)への対処を Codex 007 と検討し、優先順に実装(本番条件を模した合成テスト、標本拡大、回帰テスト)",
     "B1 固定規則の C1/C2 評価が出たら: 参照優先規則(τ・margin)と融合重みを tune 群で確定し、B1 Notebook v2 の既定値に反映",
     "E4 v5 の LB が出たら: 方向のみ読む(増分は予測しない)。P1 の代理指標の扱いを Codex 006 で確認",
     "B1 Notebook v1 の実行時間から Kaggle 9 時間予算の配分(FP 窓採点 / GL / ICE)を決める",
@@ -42,6 +43,11 @@
       "eda.html",
       "データの詳細",
       "ライブラリ・アダクト・スペクトル数の分布、異性体の実例、候補の漏斗、評価指標"
+    ],
+    [
+      "validation.html",
+      "検証設計と残る懸念",
+      "何をもって改善と認めるかの規則、残る弱点 W1〜W10 と対処案"
     ],
     [
       "experiments.html",
@@ -215,6 +221,11 @@
       "research_notes/CASMI 2026 類似コンペ調査/retrieval_rerank_competitions.md",
       "research_retrieval.html",
       "検索・再順位コンペ"
+    ],
+    [
+      "docs/validation_design.md",
+      "validation.html",
+      "検証設計と残る懸念"
     ]
   ]
 }

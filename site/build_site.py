@@ -9,7 +9,7 @@ import markdown
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); SITE = os.path.join(ROOT, "site")
 MD = markdown.Markdown(extensions=["tables", "fenced_code", "toc", "sane_lists"], extension_configs={"toc": {"toc_depth": "2-3"}})
-NAV = [("index.html", "いま"), ("overview.html", "課題の全体像"), ("eda.html", "データの詳細"), ("experiments.html", "実験"), ("research.html", "調査"), ("codex.html", "Codex 議論"), ("submissions.html", "提出"), ("competition.html", "コンペ概要")]
+NAV = [("index.html", "いま"), ("overview.html", "課題の全体像"), ("eda.html", "データの詳細"), ("experiments.html", "実験"), ("research.html", "調査"), ("validation.html", "検証設計"), ("codex.html", "Codex 議論"), ("submissions.html", "提出"), ("competition.html", "コンペ概要")]
 CSS = """
 :root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
 *{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}

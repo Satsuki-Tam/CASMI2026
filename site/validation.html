@@ -1,0 +1,224 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>検証設計と残る懸念</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-24 13:51 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 本番条件(分かっていること)</a></li>
+<li><a href="#2">2. 採っている規則</a></li>
+<li><a href="#3">3. 残る懸念(優先順)</a></li>
+<li><a href="#4">4. 現在の評価集合</a></li>
+</ul>
+</div>
+</div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
+<p>この文書は「何をもって改善と認めるか」の規則と、まだ解けていない弱点を明文化したもの。更新はコミット単位で追う。</p>
+<h2 id="1">1. 本番条件(分かっていること)</h2>
+<ul>
+<li>隠しテスト: 天然物 約 400 分子、約 1,500 本、1〜16 本/分子(中央値 3)、timsTOF(Bruker)、10 アダクト(水損失を含む)、質量 157〜1,159 Da。</li>
+<li>Class 1(ライブラリに参照あり)/ 2(構造は PubChem・COCONUT にある)/ 3(新規)の比率は非公開(推定は 3 割〜7 割まで割れる)。</li>
+<li>Public LB は約 130 分子(0.008/分子)、1 日 5 提出、採点に約 4.5 時間。</li>
+</ul>
+<h2 id="2">2. 採っている規則</h2>
+<table>
+<thead>
+<tr>
+<th>原則</th>
+<th>具体</th>
+<th>根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分子単位の分離</td>
+<td>公式同一性(立体除去 + タウトマー正規化 InChIKey14)で identity group を作り、fit / tune / eval を group 単位で分離</td>
+<td>同じ分子の別スペクトルが両側に出ると類似度検索が自明になる</td>
+</tr>
+<tr>
+<td>未学習分子で測る</td>
+<td>FPNet は fold 0 固定、fold 0 の分子のみ評価。GLACIER/ICEBERG は MassSpecGym 非掲載分子のみ</td>
+<td>E1 でパネル 250 分子の 236 が MSG に含まれ、順方向モデルの評価が汚染されていた</td>
+</tr>
+<tr>
+<td>クラス別の模擬</td>
+<td>C2: 参照スペクトルを全て隠し学習構造としての存在も隠す。C1: 別ライブラリの独立参照だけ残す。同じ分子で両条件を作り同じ split に置く</td>
+<td>Codex 005/006</td>
+</tr>
+<tr>
+<td>ラベル非依存の候補取得</td>
+<td>分子式・正解追加を使わず、実測 m/z とアダクトから ±10 ppm で候補取得。到達不能な正解は 0(strict)</td>
+<td>P1 設計</td>
+</tr>
+<tr>
+<td>同一候補での比較</td>
+<td>固定規則・参照規則・学習融合を同じ shortlist 上で比較。分子ごとの paired delta と bootstrap 95% 区間</td>
+<td>002/003</td>
+</tr>
+<tr>
+<td>層別報告</td>
+<td>A(timsTOF・合成化学)と B(天然物化学・他装置)を別々に。本番比率を仮定した単一指標は作らない</td>
+<td>003</td>
+</tr>
+<tr>
+<td>視点別 shortlist</td>
+<td>C2 の shortlist に C1 参照由来の正解が入らないよう、参照枠は視点ごと</td>
+<td>006(B で 7 分子の混入を検出)</td>
+</tr>
+<tr>
+<td>複製参照の除外</td>
+<td>確実な複製(同アダクト・</td>
+<td>Δprec</td>
+</tr>
+<tr>
+<td>出典なし候補の除外</td>
+<td>C2 視点で、外部出典が無く学習構造としての存在も隠された候補は除く(残すと「出典の無い候補 = 正解」という漏れ)</td>
+<td>006(予備試験で +0.11 の見かけの利得を作っていた)</td>
+</tr>
+<tr>
+<td>最終判断は 1 回</td>
+<td>開発集合(eval_set)で設定を決め、未使用の locked eval(seed 4)で 1 回確認。eval を見て設定を変えたら開発集合に降格</td>
+<td>006</td>
+</tr>
+<tr>
+<td>公式スコアラーで採点</td>
+<td><code>src/metric.py</code>(公式メトリックの複製)で最終値</td>
+<td>003</td>
+</tr>
+<tr>
+<td>LB の使い方</td>
+<td>1 変更ずつ、方向の確認のみ。増分を予測しない</td>
+<td>005</td>
+</tr>
+</tbody>
+</table>
+<p>採否: (1) tune 群で Class 2 strict が A・B とも同方向、(2) Class 1(独立参照あり)を落とさない、(3) locked eval で矛盾しない、(4) LB で方向が食い違わない。</p>
+<h2 id="3">3. 残る懸念(優先順)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>懸念</th>
+<th>影響</th>
+<th>現状の対処</th>
+<th>検討したいこと</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W1</td>
+<td><strong>本番そっくりの検証データが無い</strong>(timsTOF × 天然物)。A は timsTOF だが合成化学、B は天然物だが Orbitrap/QTOF</td>
+<td>装置差 × 化学差の交互作用を見落とす。A・B の差分からの推定に頼る</td>
+<td>A/B を別々に報告。E4 v5 の LB で転移を 1 回計測</td>
+<td>パネル 250 分子(enveda-np-examples、timsTOF 天然物)を「装置差の層」として限定利用できるか(MSG 重複 236 分子 → 順方向モデル評価には使えないが、FPNet・ライブラリ検索の装置差測定には使える?)。enveda-180 から天然物様の部分集合(NP-likeness 高)を切り出す</td>
+</tr>
+<tr>
+<td>W2</td>
+<td><strong>Class 比率が不明</strong></td>
+<td>何を優先すべきか(Class 2 融合 vs Class 1 保護 vs Class 3 生成)の重みが決まらない。LB 上限も不明</td>
+<td>層別報告のみ</td>
+<td>公開 LB の数値分布(0.46〜0.50 に集中、首位 0.504)と、公開解法の Class 1 性能(≈0.95)から比率を逆算できないか。E0/E4 の LB と手元の strict 値の比から Class 3 比率の下限を推定</td>
+</tr>
+<tr>
+<td>W3</td>
+<td><strong>Class 3 を模擬していない</strong></td>
+<td>検索型では 0 点。生成手法の評価枠組みが無い</td>
+<td>上限 = 1 − Class 3 比率として扱う</td>
+<td>「正解を全 DB から除いた」C3 模擬(近縁構造・部分構造一致の部分点は MRR では 0)。生成の評価は別指標(Tanimoto)で先に測る</td>
+</tr>
+<tr>
+<td>W4</td>
+<td><strong>複製参照の判定が近似</strong></td>
+<td>C1 の値が楽観的/悲観的にずれる</td>
+<td>確実な複製と疑いを分け両方併記</td>
+<td>装置・CE・アダクトで層別し過剰除外を確認。ピーク列一致の閾値の感度</td>
+</tr>
+<tr>
+<td>W5</td>
+<td><strong>標本サイズ</strong></td>
+<td>各 300 分子で検出できる差は約 ±0.03。+0.01 の差は見えない</td>
+<td>区間が 0 を含む差は「方向のみ」</td>
+<td>必要なら新規 group から 1,000〜2,000 分子に拡大(Spark で特徴表は 2 秒/分子)</td>
+</tr>
+<tr>
+<td>W6</td>
+<td><strong>実行時間の検証が本番でしかできない</strong></td>
+<td>9 時間超過は 0 点</td>
+<td>Notebook 可視実行で段階別時間、fallback(順方向なしでも提出完成)</td>
+<td>隠しテスト条件(16 本/分子、1,159 Da、10 アダクト)を模した合成テスト parquet で Kaggle 実行時間を測る</td>
+</tr>
+<tr>
+<td>W7</td>
+<td><strong>評価と提出の設定ずれ</strong></td>
+<td>ローカルの利得が提出に移らない</td>
+<td>query 選択・候補源・λ を統一(v2)</td>
+<td>評価器と提出パイプラインで同じ候補表を作る回帰テスト(同じ分子で特徴が一致するか)</td>
+</tr>
+<tr>
+<td>W8</td>
+<td><strong>アダクト別の性能が未測定</strong></td>
+<td>負モードのみの分子(公開テストで 7%)は順方向モデルが使えない</td>
+<td>FP + prior + ライブラリで順位付け</td>
+<td>アダクト別・極性別の strict MRR を報告に追加</td>
+</tr>
+<tr>
+<td>W9</td>
+<td><strong>学習融合の過学習</strong></td>
+<td>fit が合成化学(P1 の A 300)に偏ると B で悪化</td>
+<td>tune/eval を A・B 両方で見る</td>
+<td>A/B の重み付け、group 単位の bootstrap、特徴の単調制約</td>
+</tr>
+<tr>
+<td>W10</td>
+<td><strong>Public LB への過適合</strong></td>
+<td>130 分子で ±0.01</td>
+<td>1 変更ずつ、方向のみ</td>
+<td>最終 2 提出の選び方(LB 最高ではなく locked eval 最高)を事前に決める</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4">4. 現在の評価集合</h2>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th>内容</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1 run1(A 300 / B 300)</td>
+<td>開発に使用済み(重み選定)</td>
+<td>LambdaRank の fit</td>
+</tr>
+<tr>
+<td>eval_set(A 300 / B 300、seed 2)</td>
+<td>v1/v2/P1 の group を除外</td>
+<td>開発集合(fit/tune/eval 群)</td>
+</tr>
+<tr>
+<td>eval_c1(NP 300、seed 3、≥2 ライブラリ)</td>
+<td>C1 模擬が可能</td>
+<td>参照検索の評価</td>
+</tr>
+<tr>
+<td>locked_eval(A 300 / B 300、seed 4)</td>
+<td>上記全ての group を除外</td>
+<td>最終確認 1 回</td>
+</tr>
+</tbody>
+</table></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
