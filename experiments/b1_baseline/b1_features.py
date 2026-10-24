@@ -333,6 +333,10 @@ def main():
                                      c1_usable_refs=int(usable_truth_c1), c1_usable=usable_truth_c1 > 0,
                                      n_exact_dup_truth=n_exact_truth, n_susp_dup_truth=n_susp_truth, n_exact_dup_other=n_exact_other, n_susp_dup_other=n_susp_other,
                                      truth_lib_sim_c1=float(max([L["c1"][i] for i in truth_idx], default=0.0)), truth_lib_sim_c1_keepdup=float(max([L["c1_keepdup"][i] for i in truth_idx], default=0.0)),
+                                     # shortlist audit: the truth's rank within the whole window under each shortlist branch score (-1 = truth not in window)
+                                     truth_fp_rank=min([rank_of(fpu, i) for i in truth_idx], default=-1), truth_pop_rank=min([rank_of(pop + 1e-6 * zf, i) for i in truth_idx], default=-1),
+                                     truth_fppop_rank=min([rank_of(zf + SHORTLIST_LAM * pop, i) for i in truth_idx], default=-1), truth_fppop50_rank=min([rank_of(zf + 0.5 * pop, i) for i in truth_idx], default=-1),
+                                     truth_lib_rank_c2=min([rank_of(L["c2"], i) for i in truth_idx], default=-1), truth_lib_rank_c1=min([rank_of(L["c1"], i) for i in truth_idx], default=-1),
                                      seconds=time.time() - tm0))
                 if (n_i + 1) % 20 == 0 or n_i == len(ms) - 1:
                     d = pd.DataFrame(rows_out)
