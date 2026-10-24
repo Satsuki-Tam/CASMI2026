@@ -189,6 +189,8 @@ def main():
     ap.add_argument("--k_fpp", type=int, default=None, help="FP+prior branch size (default = --k_short)")
     ap.add_argument("--k_pop", type=int, default=0, help="prior-only branch size added to the shortlist (default 0 = off)")
     ap.add_argument("--w_ice", type=float, default=W_ICE, help="ICE weight in the fixed rule; 0 skips the ICEBERG runner entirely")
+    ap.add_argument("--tau", type=float, default=TAU, help="library-priority threshold of the fixed rule (default 2.0 = off)")
+    ap.add_argument("--margin", type=float, default=MARGIN, help="library-priority margin over the runner-up (default 0.2)")
     ap.add_argument("--rank_model", default=None, help="LightGBM LambdaRank model file (default: lambdarank.txt next to this script; absent -> fixed rule)")
     ap.add_argument("--exclude_rows", default=None, help="evaluation: JSON list of spectra-store rows never used as references (the query acquisitions) -> class-1 proxy")
     ap.add_argument("--exclude_identities", default=None, help="evaluation: JSON list of official keys whose references are removed and whose train membership is hidden -> class-2 proxy")
@@ -453,7 +455,7 @@ def main():
         if np.isfinite(g).sum() >= 2: S = S + W_GL * z(g); fused_stats["gl_used"] += 1
         if args.w_ice != 0 and np.isfinite(ic).sum() >= 2: S = S + args.w_ice * z(ic); fused_stats["ice_used"] += 1
         top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
-        if lib.max() >= TAU and lib.max() - second >= MARGIN: S = np.where(lib >= TAU, 100.0 + lib, S); fused_stats["lib_priority"] += 1
+        if lib.max() >= args.tau and lib.max() - second >= args.margin: S = np.where(lib >= args.tau, 100.0 + lib, S); fused_stats["lib_priority"] += 1
         order = np.argsort(-S, kind="stable"); sub_fixed.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
         if booster is not None:
             try:
@@ -468,7 +470,7 @@ def main():
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, w_ice=args.w_ice, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, w_ice=args.w_ice, tau=args.tau, margin=args.margin, W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:

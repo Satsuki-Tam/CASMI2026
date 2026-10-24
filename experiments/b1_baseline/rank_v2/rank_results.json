@@ -1,0 +1,168 @@
+{
+ "selected": {
+  "params": {
+   "num_leaves": 15,
+   "learning_rate": 0.1,
+   "min_data_in_leaf": 20,
+   "feature_fraction": 0.8,
+   "bagging_fraction": 0.8,
+   "bagging_freq": 1,
+   "lambda_l2": 1.0,
+   "verbose": -1,
+   "objective": "lambdarank",
+   "metric": "ndcg",
+   "eval_at": [
+    25
+   ],
+   "label_gain": [
+    0,
+    1
+   ],
+   "seed": 0
+  },
+  "rounds": 100,
+  "tune_c2_strict": 0.5682506613756615,
+  "tune_c1": 0.8346603396603396,
+  "tune_c2": 0.5682506613756615
+ },
+ "tune_fixed": {
+  "c1": {
+   "mrr": 0.6152887759424489,
+   "n": 110,
+   "strict": 0.6152887759424489
+  },
+  "c2": {
+   "mrr": 0.5140917921231389,
+   "n": 300,
+   "strict": 0.5140917921231389
+  }
+ },
+ "eval_lambdarank": {
+  "c1": {
+   "mrr": 0.8244010182689427,
+   "n": 106,
+   "strict": 0.8244010182689427
+  },
+  "c2": {
+   "mrr": 0.5246158609908611,
+   "n": 300,
+   "strict": 0.5246158609908611
+  }
+ },
+ "eval_fixed": {
+  "c1": {
+   "mrr": 0.4726592934264235,
+   "n": 106,
+   "strict": 0.4726592934264235
+  },
+  "c2": {
+   "mrr": 0.4500694550547491,
+   "n": 300,
+   "strict": 0.4500694550547491
+  }
+ },
+ "eval_fixed15": {
+  "c1": {
+   "mrr": 0.4485176784929221,
+   "n": 106,
+   "strict": 0.4485176784929221
+  },
+  "c2": {
+   "mrr": 0.4290287914220308,
+   "n": 300,
+   "strict": 0.4290287914220308
+  }
+ },
+ "importance": {
+  "z_fp": 1756,
+  "z_gl": 18105,
+  "z_ice": 5941,
+  "fp": 1296,
+  "gl": 567,
+  "ice": 752,
+  "pop_public": 4387,
+  "lsid": 1444,
+  "lpmid": 228,
+  "lsynonyms": 1763,
+  "np_bit": 215,
+  "src_bit": 290,
+  "lotus": 156,
+  "lib_sim": 662,
+  "lib_same": 401,
+  "lib_nref": 676,
+  "lib_margin": 2488,
+  "lib_max_mol": 238,
+  "in_tier": 3,
+  "in_train": 11,
+  "in_coconut": 1114,
+  "ppm_err": 753,
+  "fp_rank_window": 3227,
+  "n_cands": 129,
+  "gl_missing": 0,
+  "ice_missing": 0,
+  "n_query": 95,
+  "ce_known": 215
+ },
+ "n_fit_rows": 105194,
+ "n_fit_groups": 884,
+ "feats": "v2",
+ "feature_names": [
+  "z_fp",
+  "z_gl",
+  "z_ice",
+  "fp",
+  "gl",
+  "ice",
+  "pop_public",
+  "lsid",
+  "lpmid",
+  "lsynonyms",
+  "np_bit",
+  "src_bit",
+  "lotus",
+  "lib_sim",
+  "lib_same",
+  "lib_nref",
+  "lib_margin",
+  "lib_max_mol",
+  "in_tier",
+  "in_train",
+  "in_coconut",
+  "ppm_err",
+  "fp_rank_window",
+  "n_cands",
+  "gl_missing",
+  "ice_missing",
+  "n_query",
+  "ce_known"
+ ],
+ "monotone": false,
+ "eval_delta": {
+  "c1": {
+   "delta": 0.3517417248425193,
+   "ci95": [
+    0.27499960951549834,
+    0.42984575107806217
+   ],
+   "delta_strict": 0.3517417248425193,
+   "ci95_strict": [
+    0.2745387563721725,
+    0.4309564206550924
+   ],
+   "n": 106
+  },
+  "c2": {
+   "delta": 0.07529939993546647,
+   "ci95": [
+    0.046336203277862524,
+    0.10429672372724212
+   ],
+   "delta_strict": 0.07529939993546647,
+   "ci95_strict": [
+    0.0466095199941011,
+    0.10457580725127515
+   ],
+   "n": 297
+  }
+ }
+}
