@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "recipe": "public fold-safe recipe with NO held-out identity fold (full_np): all folds trained, NP-example panel groups held out",
+  "spectra_total": 2539608,
+  "structures_total": 275810,
+  "training_structure_rows": 275545,
+  "excluded_np_structure_rows": 265,
+  "training_spectra_with_structure": 2482335,
+  "panel_identity_groups": 250,
+  "panel_training_overlap": 0,
+  "fold_training_overlap": 0,
+  "held_out_fold": null,
+  "train_parquet_sha256": "9423f90ec08b941a9646b535bf0606183e86ff0c5a297978f5a70693d41bcd98",
+  "folds_sha256": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
+  "structs_sha256": "f20aa1cac23af42e430a6633707fda34e48dea97114bdc3e443897f692df3656",
+  "built": "2026-10-25T11:36:54"
+}
