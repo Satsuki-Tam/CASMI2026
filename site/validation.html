@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 11:45 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 12:30 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -49,6 +49,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#e0-1-w7-600-c2-experimentse0_offlinerunsc2_full3rcomparereportmd1018-scorer-0">E0 自前実行の第 1 結果(W7 600 分子、C2 代理、experiments/e0_offline/runs/c2_full3r/compare/report.md、10:18;公式 scorer 複製、未到達 = 0)</a></li>
 <li><a href="#p2dev_eval_sametable1040m1-run_p2dev_v2-m1-rank_v2-learnedw_ice-1vs-m1_v4b-rank_v4b-blend21w_ice-0-ranker-ice">同一特徴表での切り分け(p2dev_eval_sametable/、10:40;M1 構成の表 run_p2dev_v2 上で、M1 = rank_v2 learned(w_ice 1)vs M1_v4b = rank_v4b blend21(w_ice 0);候補構成を固定して ranker + 出力ポリシー(+ ICE 除去)の効果だけを見る)</a></li>
 <li><a href="#ranker-rank_v4b-vs-rank_v6g-fold-0-g-72-pair_v6g_1115-blend21">ranker 一対比較 rank_v4b vs rank_v6g(= 同レシピ + fold 0 の G 型 72 群を学習行に追加;pair_v6g_*、11:15、登録評価器、主出力 blend21)</a></li>
+<li><a href="#fpnet-spark_panel_full1_chainsh1207m2x-rank_v4bblend21-fpnet">学習済み FPNet の診断(spark_panel_full1_chain.sh、12:07;M2x 構成・rank_v4b・blend21 のまま FPNet だけ差し替え、登録評価器)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -1074,6 +1075,62 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="fpnet-spark_panel_full1_chainsh1207m2x-rank_v4bblend21-fpnet">学習済み FPNet の診断(<code>spark_panel_full1_chain.sh</code>、12:07;M2x 構成・rank_v4b・blend21 のまま FPNet だけ差し替え、登録評価器)</h2>
+<table>
+<thead>
+<tr>
+<th>集合 / view</th>
+<th>FPNet(学習済み側)</th>
+<th style="text-align: right;">n</th>
+<th>REGISTERED 学習済み − fold-0</th>
+<th>shortlist 到達 fold-0 → 学習済み</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル C2</td>
+<td>公開 full1(パネル取得も学習)</td>
+<td style="text-align: right;">250</td>
+<td>+0.039 [+0.018, +0.062]</td>
+<td>1.000 → 1.000</td>
+</tr>
+<tr>
+<td>パネル C1</td>
+<td>同上</td>
+<td style="text-align: right;">250</td>
+<td><strong>+0.044 [+0.021, +0.068]</strong></td>
+<td>1.000 → 1.000</td>
+</tr>
+<tr>
+<td>W7 A C2</td>
+<td>fold-1(fold 0 = W7 を学習)</td>
+<td style="text-align: right;">300</td>
+<td>+0.039 [+0.015, +0.064]</td>
+<td>0.987 → 0.997</td>
+</tr>
+<tr>
+<td>W7 B C2</td>
+<td>同上</td>
+<td style="text-align: right;">300</td>
+<td>+0.033 [+0.013, +0.054]</td>
+<td>0.880 → 0.920</td>
+</tr>
+<tr>
+<td>W7 B C1 / A C1</td>
+<td>同上</td>
+<td style="text-align: right;">72 / 7</td>
+<td>+0.028 [−0.004, +0.069] / +0.021</td>
+<td></td>
+</tr>
+<tr>
+<td>- 読み(診断、018 の区別どおり): query 取得まで学習済みのモデルなので上限寄りの値。それでも利得は +0.03〜+0.04 に留まり、E0 との差(W7 で +0.065、Public で 0.13)の一部しか説明しない。パネルは shortlist 到達が既に 1.0 なので利得は順位付け経由。→ 残りは候補窓の設計(E0 は pool のみの窓)とみて、pool 窓 branch の監査を実行中。full_eval(query 未見・identity 学習済み)の結果で「本番クラス 1」の利得を確定する。</td>
+<td></td>
+<td style="text-align: right;"></td>
+<td></td>
 <td></td>
 </tr>
 </tbody>

@@ -18,6 +18,12 @@
 ### 2.1 提出の記録(2026-10-25 09:02 JST)
 | 提出 ID | Notebook 版 | 出力 | manifest(被覆・fallback・learned・時間) | Public | 比較目的 |
 |---|---|---|---|---|---|
-| 57610156 | `casmi26-b1-baseline` v4 | M2x blend21(submission.csv) | 400 採点、GL 371、fallback_gl_cover 29、lib_priority 59、learned 371、11,341 s | 採点待ち | M1 0.322 / 固定 0.334 との差 = 変更全体の総合効果 |
-| 57610167 | `casmi26-b1-insurance` v1 | 固定 + libpri τ0.9(submission.csv、本命リストは submission_main.csv に保存) | 同じ統計、12,007 s | 採点待ち | 固定 0.334 との差、本命との差 = 出力ポリシーの差 |
+| 57610156 | `casmi26-b1-baseline` v4 | M2x blend21(submission.csv) | 公開ダミーでの統計: GL 371、fallback 29、lib_priority 59、learned 371、11,341 s | **0.354** | M1 0.322 / 固定 0.334 との差 = 変更全体の総合効果 |
+| 57610167 | `casmi26-b1-insurance` v1 | 固定 + libpri τ0.9(submission.csv、本命リストは submission_main.csv に保存) | 同じ統計、12,007 s | **0.336** | 固定 0.334 との差、本命との差 = 出力ポリシーの差 |
 読みの規則は §1 のとおり(±0.02 は運用閾値)。提出枠は 1 日 5 回(残り 3)。
+
+### 2.2 読み(12:30、§1 の規則どおり)
+- M2x blend21 0.354 − M1 0.322 = **+0.032**(変更全体の総合効果;成分は特定できない;運用閾値 0.02 を超える = 本命の系譜を M2x 側に移す根拠の一つ)。
+- M2x 保険 0.336 − 旧固定 0.334 = +0.002(参照優先だけの効果ではない;shortlist・ICE の差を含む)。
+- M2x blend21 − M2x 保険 = +0.018(同一 run での最終出力ポリシーの差;±0.02 以内 = 優劣未確定)。
+- E0 0.464 との差は −0.110。locked の判定(未確定・両候補保持)は Public で変えない。
