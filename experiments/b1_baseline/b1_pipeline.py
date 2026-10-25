@@ -304,7 +304,7 @@ def main():
                 lo = int(np.searchsorted(pmass, M - tol, "left")); hi = int(np.searchsorted(pmass, M + tol, "right"))
                 for s_, sr_, pi_, pk_, m_ in zip(psmi[lo:hi], psrc[lo:hi], ppid[lo:hi], pkey[lo:hi], pmass[lo:hi]):
                     d = src.setdefault(str(s_), dict(train=False, coco=False, trow=-1, pid=-1, pkey=None, mass=float(m_)))
-                    d["train"] |= int(sr_) in (1, 3); d["coco"] |= int(sr_) in (2, 3)
+                    d["train"] |= int(sr_) in (1, 3); d["coco"] |= int(sr_) in (2, 3); d["psrc"] = d.get("psrc", 0) | int(sr_)   # pool source bits (1 train, 2 COCONUT)
                     if d["pid"] < 0: d["pid"] = int(pi_); d["pkey"] = str(pk_)
                 if CMASS is not None:
                     clo = int(np.searchsorted(CMASS, M - tol, "left")); chi = int(np.searchsorted(CMASS, M + tol, "right"))
@@ -312,7 +312,7 @@ def main():
                         d = src.setdefault(str(s_), dict(train=False, coco=False, trow=-1, pid=-1, pkey=None, mass=float(m_))); d["coco"] = True
             smiles = list(src)
             src_train = [src[s_]["train"] for s_ in smiles]; src_coco = [src[s_]["coco"] for s_ in smiles]; tier_row = [src[s_]["trow"] for s_ in smiles]
-            pool_pid = [src[s_]["pid"] for s_ in smiles]; pool_key = [src[s_]["pkey"] for s_ in smiles]; cmass = [src[s_]["mass"] for s_ in smiles]
+            pool_pid = [src[s_]["pid"] for s_ in smiles]; pool_key = [src[s_]["pkey"] for s_ in smiles]; cmass = [src[s_]["mass"] for s_ in smiles]; pool_src = [src[s_].get("psrc", 0) for s_ in smiles]
             # FPNet logits (polarity groups, fold ensemble)
             zl, wsum = None, 0.0
             for mode in ("positive", "negative"):
@@ -333,9 +333,9 @@ def main():
             rep = {}
             for i, k in enumerate(raw_keys):
                 if k is None: continue
-                if k not in rep: rep[k] = dict(i=i, train=src_train[i], coco=src_coco[i], trow=tier_row[i], pid=pool_pid[i], pkey=pool_key[i], mass=cmass[i], fp=float(fp[i]) if np.isfinite(fp[i]) else -np.inf)
+                if k not in rep: rep[k] = dict(i=i, train=src_train[i], coco=src_coco[i], trow=tier_row[i], pid=pool_pid[i], pkey=pool_key[i], mass=cmass[i], fp=float(fp[i]) if np.isfinite(fp[i]) else -np.inf, psrc=pool_src[i])
                 else:
-                    p = rep[k]; p["train"] |= src_train[i]; p["coco"] |= src_coco[i]
+                    p = rep[k]; p["train"] |= src_train[i]; p["coco"] |= src_coco[i]; p["psrc"] = p.get("psrc", 0) | pool_src[i]
                     if p["trow"] < 0: p["trow"] = tier_row[i]
                     if p["pid"] < 0: p["pid"] = pool_pid[i]; p["pkey"] = pool_key[i]
                     if np.isfinite(fp[i]) and fp[i] > p["fp"]: p["fp"] = float(fp[i])
@@ -344,6 +344,7 @@ def main():
                 for k in list(rep):
                     if rep[k]["pkey"] in excl_ids:
                         rep[k]["train"] = False
+                        ps_ = int(rep[k].get("psrc", 0)); rep[k]["pool_ineligible"] = ps_ != 0 and (ps_ & ~1) == 0   # class-2 evaluation: no pool slot for a training-only pool entry (as b1_features, Codex 020)
                         if rep[k]["trow"] < 0 and not rep[k]["coco"]: rep[k]["excluded"] = True   # library-only structure of a hidden identity: stays in the window statistics (as the evaluator) but never becomes a candidate
             keys = list(rep); n_u = len(keys)
             if n_u == 0:
@@ -395,8 +396,9 @@ def main():
             top_lib = [i for i in np.argsort(-lib, kind="stable")[:K_LIB] if lib[i] > LIB_MIN]
             short = np.union1d(np.union1d(top_fp, top_fpp), np.array(top_lib, dtype=np.int64))
             if args.k_pop > 0: short = np.union1d(short, np.argsort(-(pop + 1e-6 * zf), kind="stable")[:min(args.k_pop, n_u)])   # prior-only branch (Codex 008 Q2)
-            if args.k_pool > 0 and (pid >= 0).any():   # pool-window FP branch (2026-10-25): FP top-k among the window's v2-pool structures
-                short = np.union1d(short, np.argsort(-np.where(pid >= 0, np.nan_to_num(fpu, nan=-1e18), -np.inf), kind="stable")[:min(args.k_pool, int((pid >= 0).sum()))])
+            pool_ok = (pid >= 0) & ~np.array([bool(rep[k].get("pool_ineligible", False)) for k in keys])
+            if args.k_pool > 0 and pool_ok.any():   # pool-window FP branch (2026-10-25): FP top-k among the window's eligible v2-pool structures
+                short = np.union1d(short, np.argsort(-np.where(pool_ok, np.nan_to_num(fpu, nan=-1e18), -np.inf), kind="stable")[:min(args.k_pool, int(pool_ok.sum()))])
             short = np.array([i for i in short if not rep[keys[i]].get("excluded")], dtype=np.int64)
             s_smiles = [smiles[rep[keys[i]]["i"]] for i in short]
             okeys = [k for rr_ in wp.map(_okey, [s_smiles[i:i + 25] for i in range(0, len(s_smiles), 25)]) for k in rr_]
