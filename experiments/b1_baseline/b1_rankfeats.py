@@ -14,7 +14,12 @@ EXTRA_V3 = ["rank_fp", "rank_gl", "rank_ice", "gap_fp", "gap_gl", "gap_ice", "ma
 # v3s = the small block to compare first (Codex 008): per-model rank + per-model confidence + window size
 EXTRA_V3S = ["rank_fp", "rank_gl", "rank_ice", "margin_fp_mol", "margin_gl_mol", "margin_ice_mol", "log_n_window"]
 # v2_noice: ICE removed entirely (the fixed rule is better without the ICE term on all development sets, 2026-10-24 16:50)
+# 2026-10-26 (Codex 027/028 hypothesis 1): FPNet training exposure of each candidate for the checkpoint that produced the table / the inference
+# (fp_pos = the candidate identity was a positive of that FPNet's training; negpool = in the v2 pool = the decoy sampler's domain). Opt-in: only
+# models whose feature list contains these names need the `exposure` argument; label-free (ledgers per checkpoint, never the view's truth).
+EXTRA_EXP = ["fp_pos", "negpool"]
 FEATSETS = {"v2": FEATS, "v2_noice": [f for f in FEATS if f not in ("z_ice", "ice", "ice_missing")], "v3s": FEATS + EXTRA_V3S, "v3": FEATS + EXTRA_V3}
+FEATSETS["v2_noice_exp"] = FEATSETS["v2_noice"] + EXTRA_EXP
 # monotone directions for the constrained variant (0 = unconstrained): only the model scores (up) and the mass error (down), Codex 008
 MONO = dict(z_fp=1, z_gl=1, z_ice=1, fp=1, gl=1, ice=1, ppm_err=-1)
 # 2026-10-25 (panel probe): reference evidence may only raise a candidate -- in the C2 training view the truth has no references by construction,
@@ -45,7 +50,7 @@ def term(vals):
 
 
 def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src_mask, lotus_refs, lib_sim, lib_same, lib_nref, in_tier, in_train, in_coconut,
-                   ppm_err, fp_rank_window, n_query, ce_known, n_window=np.nan, feats=None):
+                   ppm_err, fp_rank_window, n_query, ce_known, n_window=np.nan, feats=None, exposure=None):
     """arrays of equal length (one molecule's candidates) -> (n, len(FEATS)) float matrix in FEATS order."""
     fp = np.asarray(fp, float); gl = np.asarray(gl, float); ice = np.asarray(ice, float); lib = np.asarray(lib_sim, float)
     top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
@@ -57,6 +62,9 @@ def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src
                 ppm_err=np.nan_to_num(np.asarray(ppm_err, float), nan=10.0), fp_rank_window=np.log1p(np.asarray(fp_rank_window, float)), n_cands=np.full(len(fp), float(len(fp))),
                 gl_missing=(~np.isfinite(gl)).astype(float), ice_missing=(~np.isfinite(ice)).astype(float), n_query=np.full(len(fp), float(n_query)), ce_known=np.full(len(fp), float(ce_known)))
     feats = list(feats) if feats is not None else FEATS
+    if any(c in EXTRA_EXP for c in feats):
+        if exposure is None: raise ValueError("feature list needs the FPNet exposure block (fp_pos / negpool) but no exposure arrays were given")
+        cols.update(fp_pos=np.asarray(exposure["fp_pos"], float), negpool=np.asarray(exposure["negpool"], float))
     if any(c in EXTRA_V3 for c in feats):
         def gap(zv): return (float(np.max(zv)) - zv) if len(zv) else zv
         def margin(zv):

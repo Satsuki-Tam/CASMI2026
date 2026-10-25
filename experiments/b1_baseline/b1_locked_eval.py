@@ -63,7 +63,9 @@ def scores_for(view, g, mid, gl, ice, gl_ok, ice_ok, c, M, tau, margin, min_gl_c
         X = feature_matrix(fp, glv, icv, pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values, lib,
                            g[f"lib_same_{view}"].values, g[f"lib_nref_{view}"].values, g.in_tier.values, g[f"in_train_{view}"].values, g.in_coconut.values,
                            g.ppm_err.values, g.fp_rank_window.values, float(M.loc[mid, "n_query"]), float(M.loc[mid, "ce_known"]),
-                           n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=c["feats"])
+                           n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=c["feats"],
+                           exposure=(dict(fp_pos=np.array([c["ledger"].get(str(k), (0.0, 0.0))[0] for k in g.official_key.values], float),
+                                          negpool=np.array([c["ledger"].get(str(k), (0.0, 0.0))[1] for k in g.official_key.values], float)) if c.get("ledger") else None))
         if X.shape[1] != len(c["feats"]): raise RuntimeError(f"schema mismatch {X.shape} vs {len(c['feats'])}")
         main = c["booster"].predict(X)
     else: main = ins   # the submission pipeline's fallback (b1_pipeline --min_gl_cover)
@@ -124,6 +126,8 @@ def main():
     ap.add_argument("--gate_dem", nargs="*", default=[], help="gated demotion specs TARGET:THETA:W (TARGET N = non-training, P = PubChem-tier only), e.g. N:0.7:2")
     ap.add_argument("--pc_slots", nargs="*", default=[], help="E0-style slotting of Pc candidates: NAME=4,8,12,16,20 ... (outputs blend21_slot<NAME>)")
     ap.add_argument("--pcd_w", nargs="*", default=[], help="Pc demotion weights (z units; 'inf' = remove Pc candidates): outputs blend21_pcd<w>")
+    ap.add_argument("--cand_ledger", nargs="*", default=[], help="NAME=ledger_<checkpoint>.parquet: FPNet exposure ledger of the checkpoint behind that candidate's tables "
+                    "(needed by models with the exposure feature block, Codex 028)")
     ap.add_argument("--main_of", nargs="*", default=[], help="registered MAIN output per candidate, NAME=OUTPUT (default learned), e.g. M1=learned M2x=blend21; "
                     "the paired difference of the registered mains is reported explicitly (Codex 014)")
     a = ap.parse_args()
@@ -156,7 +160,11 @@ def main():
         except Exception as e: problems.append(f"{name}: model {model} unreadable: {e!r}"); continue
         if any(f.startswith("Column_") for f in feats): problems.append(f"{name}: model {model} has no feature names")
         c = dict(name=name, run=run, model=model, w_ice=float(w_ice), booster=booster, feats=feats)
-        manifest["candidates"].append(dict(name=name, run=run, model=model, model_sha=sha(model), n_trees=booster.num_trees(), n_features=len(feats), features=feats, w_ice=float(w_ice)))
+        led_ = dict(kv.split("=", 1) for kv in a.cand_ledger).get(name)
+        if led_:
+            L_ = pd.read_parquet(led_); c["ledger"] = dict(zip(L_.key.astype(str), zip(L_.fp_pos.astype(float), L_.negpool.astype(float)))); c["ledger_path"] = led_
+        elif any(f in ("fp_pos", "negpool") for f in feats): problems.append(f"{name}: model needs an exposure ledger (--cand_ledger {name}=...)")
+        manifest["candidates"].append(dict(name=name, run=run, model=model, model_sha=sha(model), n_trees=booster.num_trees(), n_features=len(feats), features=feats, w_ice=float(w_ice), ledger=c.get("ledger_path")))
         for s in a.sets:
             fpq, mcsv = f"{run}/b1_features_{s}.parquet", f"{run}/b1_molecules_{s}.csv"
             for p in (fpq, mcsv):

@@ -26,3 +26,10 @@
 ## 4. 事前登録(03:00、実行前): ENS2 × RK_new の束
 - 目的: 「RK_new はクラス 1 型を上げ NP クラス 2 型を下げ、ENS2 は NP クラス 2 型を上げ G/C1 を下げる」という補完性の有無。ENS2 の表(run_ens2_*)に凍結 RK_new(rank_rk_fx)を当てる一条件を測り、既存の full_eval × 旧 / 新 ranker、ENS2 × 旧 ranker と合わせた 2×2 にする。
 - 主指標: J(§3 と同じ定義)の **ENS2×RK_new − full_eval×rank_v4b(作業用基準 M2x_fe)** の点推定が正。保護: dev2 の全層(C2 の C/D/E/F/G、C1 の C/E/F/G)で、作業用基準との差と M2x からの累積差の両方の点推定 ≥ −0.02。単体の不合格(ENS2、FE_new)はそのまま残し、二つの Δ が相殺すると仮定しない。判定がよくても Public 提出は ENS2 の checkpoint 2 本(full_rk の private model 化が要る)と parity の後。
+
+## 5. 事前登録(03:10、学習・評価の前): FP 正例学習への所属を特徴にした ranker(rank_rk_exp)
+- 台帳(`experiments/b1_baseline/exposure_ledger.py`、Spark の `ledgers/`): checkpoint ごとに、trainer の `Data.tr` と同じ規則(その run の spectrum cache にあり、split の保留 fold でなく、v2 pool にある構造)で正例の公式 key を数える。fold0 = 219,155(公開 kit の SPLIT_AUDIT の training_identity_keys と一致)、full_rk = 272,051、full_eval = 273,186。negpool = v2 pool の key(710,701)。
+- 特徴ブロック `fp_pos`・`negpool`(`b1_rankfeats.FEATSETS["v2_noice_exp"]`、opt-in;既存モデルと呼び出しは不変)。学習は rank_rk_fx と同一(full_rk の表・fit 群・C1 ×3・既見 C2 行の除外・rank_v4b の params・300 rounds)に full_rk の台帳を足すだけ。
+- 回帰試験(合格が前提): 台帳なしの再学習が rank_rk_fx と同一のモデル、評価器の rank_v4b の予測が既存の rk_eval_panel と同一。
+- 評価 (A) full_rk の表(full_rk 台帳): RK_exp − RK_new(特徴の効果)、RK_exp − RK_old。(B) **採用先 = full_eval の表(full_eval 台帳)**: FE_exp − M2x_fe(作業用基準)、FE_exp − FE_new、FE_exp − M2x(累積)。
+- **主指標 J** = 0.5 × パネル C1 clean の Δ + 0.5 × dev2 の C/D/E/F の C2 の Δ の均等平均(FE_exp − M2x_fe)。判定: J の点推定 > 0、かつ FE_exp − M2x_fe と FE_exp − M2x の両方で dev2 の全保護層(C2 の C/D/E/F/G、C1 の C/E/F/G)の点推定 ≥ −0.02。区間と各層を併記。合格しても Public 提出は parity と束の凍結の後(ENS2×RK_new の束と同時には混ぜない)。

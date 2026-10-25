@@ -16,6 +16,14 @@ from b1_rankfeats import FEATS, FEATSETS, MONO, MONO_LIB, feature_matrix
 
 
 
+EXPO = {}   # official key -> (fp_pos, negpool) from --exposure_ledger (Codex 028); used only when the feature list asks for the exposure block
+
+
+def exposure_of(keys):
+    fp_ = np.array([EXPO.get(str(k), (0.0, 0.0))[0] for k in keys], float); ng_ = np.array([EXPO.get(str(k), (0.0, 0.0))[1] for k in keys], float)
+    return dict(fp_pos=fp_, negpool=ng_)
+
+
 def load_run(run, eval_csv, group_override=None, feats=FEATS):
     ev = pd.read_csv(eval_csv).set_index("molecule")
     out = []
@@ -54,7 +62,8 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                 X = feature_matrix(fp, glv, icv, pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values,
                                    lib, g[f"lib_same_{view}"].values, g[f"lib_nref_{view}"].values, g.in_tier.values, g[f"in_train_{view}"].values, g.in_coconut.values,
                                    g.ppm_err.values, g.fp_rank_window.values, float(m.n_query), float(m.ce_known),
-                                   n_window=float(m["n_unique"]) if "n_unique" in M.columns and np.isfinite(float(m["n_unique"])) else np.nan, feats=feats)
+                                   n_window=float(m["n_unique"]) if "n_unique" in M.columns and np.isfinite(float(m["n_unique"])) else np.nan, feats=feats,
+                                   exposure=exposure_of(g.official_key.values) if EXPO else None)
                 d = pd.DataFrame(X, columns=feats)
                 d.insert(0, "is_truth", g.is_truth.values.astype(int)); d.insert(0, "identity", mid); d.insert(0, "group", group_override or m.group); d.insert(0, "view", view)
                 d.insert(0, "molecule", mid); d.insert(0, "set", s); d.insert(0, "run", run)
@@ -110,8 +119,12 @@ def main():
                     "(e.g. run_fitpool_v3=1 = 'G C1 weight reduced')")
     ap.add_argument("--c2_drop_exposure", default="", help="Codex 021/023: query_identity_exposure.csv of the FPNet that built the tables (molecule, exposure); the CLASS-2 "
                     "view rows of molecules whose identity is trained by that FPNet (exposure c1_seen) are dropped, rows of unseen_after_removal molecules are kept")
+    ap.add_argument("--exposure_ledger", default="", help="ledger_<checkpoint>.parquet (key, fp_pos, negpool) of the FPNet that built the tables; needed by the v2_noice_exp feature set")
     ap.add_argument("--monotone_lib", action="store_true", help="monotone constraints incl. the library similarities (reference evidence may only raise a candidate)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); FE = [f for f in FEATSETS[a.feats] if f not in set(a.drop)]
+    if a.exposure_ledger:
+        L_ = pd.read_parquet(a.exposure_ledger); EXPO.update(zip(L_.key.astype(str), zip(L_.fp_pos.astype(float), L_.negpool.astype(float))))
+        print(f"exposure ledger {a.exposure_ledger}: {len(EXPO):,} keys, fp_pos {int(L_.fp_pos.sum()):,}, negpool {int(L_.negpool.sum()):,}", flush=True)
     if a.monotone_lib: a.monotone = True
     MONO_USED = MONO_LIB if a.monotone_lib else MONO
     print("features:", len(FE), "| dropped:", a.drop, "| c1_repeat:", a.c1_repeat, "| c2_nolib:", a.c2_nolib, "| monotone:", a.monotone, "lib" if a.monotone_lib else "")
