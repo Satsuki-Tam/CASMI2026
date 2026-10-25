@@ -195,6 +195,8 @@ def main():
     ap.add_argument("--k_short", type=int, default=K_SHORT, help="FP branch size of the shortlist (default 100)")
     ap.add_argument("--k_fpp", type=int, default=None, help="FP+prior branch size (default = --k_short)")
     ap.add_argument("--k_pop", type=int, default=0, help="prior-only branch size added to the shortlist (default 0 = off)")
+    ap.add_argument("--dup_sim", type=float, default=DUP_SIM, help="near-duplicate reference rule: a reference at the same precursor (< 0.005 Da, same mode) with entropy "
+                    "similarity >= this to a query spectrum is dropped as a re-deposit of the query acquisition (default 0.98; > 1 keeps only the exact-peak-list rule; Codex 032)")
     ap.add_argument("--fpnet_ckpt", default="", help="load this FPNet checkpoint instead of <fold_safe>/fpnet_fold{k}.pt (a path, or on Kaggle a file name searched "
                     "under /kaggle/input); same architecture and fingerprint bits (fp_bits.npy of the fold-safe set) required")
     ap.add_argument("--pcl_boost", type=float, default=0.0, help="add w * 1[candidate in PubChemLite] to the MAIN list score (z units; library-priority candidates keep "
@@ -366,7 +368,7 @@ def main():
             comp["np"][in_coco] = np.maximum(comp["np"][in_coco], 1.0)
             pop = comp["lsid"] + comp["lpmid"] + 0.5 * comp["lsynonyms"] + 1.0 * (comp["np"] != 0) + 0.5 * ((comp["src_mask"].astype(np.int64) & 1) != 0) + 0.5 * np.log1p(np.maximum(comp["lotus_refs"], 0))
             # library similarity
-            lib = np.zeros(n_u); lib_same = np.zeros(n_u); nref = np.zeros(n_u, int)
+            lib = np.zeros(n_u); lib_same = np.zeros(n_u); nref = np.zeros(n_u, int); n_dup_exact = n_dup_sim = 0
             for ci, k in enumerate(keys):
                 pk = rep[k]["pkey"]
                 if not rep[k]["train"] or pk is None or pk not in key_rows or pk in excl_ids: continue
@@ -382,8 +384,8 @@ def main():
                     for s in q:
                         if abs(s["prec"] - rprec) < 0.005 and s["mode"] == mode_of_row[x]:
                             qmz, qit = s["clean"]
-                            if (s["adduct"] == add_of_row[x] and len(qmz) == len(rmz) and len(qmz) > 0 and np.allclose(qmz, rmz, atol=2e-4) and np.allclose(qit, rit, atol=1e-3)) or \
-                               entropy_similarity(qmz, qit, rmz, rit) >= DUP_SIM: dup = True; break
+                            if s["adduct"] == add_of_row[x] and len(qmz) == len(rmz) and len(qmz) > 0 and np.allclose(qmz, rmz, atol=2e-4) and np.allclose(qit, rit, atol=1e-3): dup = True; n_dup_exact += 1; break
+                            if entropy_similarity(qmz, qit, rmz, rit) >= args.dup_sim: dup = True; n_dup_sim += 1; break
                     if not dup: kept.append(x)
                 if len(kept) > MAX_REF:
                     pri = np.array([0 if add_of_row[x] in M_by_add else 1 for x in kept]); kept = [kept[i] for i in np.argsort(pri, kind="stable")[:MAX_REF]]
@@ -427,7 +429,7 @@ def main():
                           ce_ev=s.get("ce_ev"), ce_orig=s.get("ce_orig"), ce_units=s.get("ce_units")) for s in q]
             prox = forward_proxies(rspec, neg=args.neg_proxy) if args.adduct_proxy else []; rspec += prox   # proxies only when no covered positive spectrum
             runner.append(dict(mid=mid, lib_max=float(lib.max()), spectra=rspec, cands=[r["smiles"] for r in rows if heavy_ok(r["smiles"])]))
-            stats.append(dict(molecule=mid, n_query=len(q), adducts="|".join(sorted(M_by_add)), n_window=len(smiles), n_unique=n_u, n_train=int(in_train.sum()), n_shortlist=len(rows), lib_max=float(lib.max()), n_proxy=len(prox), seconds=time.time() - tm0))
+            stats.append(dict(molecule=mid, n_query=len(q), adducts="|".join(sorted(M_by_add)), n_window=len(smiles), n_unique=n_u, n_train=int(in_train.sum()), n_shortlist=len(rows), lib_max=float(lib.max()), n_proxy=len(prox), n_dup_exact=n_dup_exact, n_dup_sim=n_dup_sim, seconds=time.time() - tm0))
             if (n_i + 1) % 20 == 0 or n_i == len(mols) - 1:
                 d = pd.DataFrame(stats); log(f"{n_i+1}/{len(mols)} | window median {d.n_unique.median():.0f} | shortlist median {d.n_shortlist.median():.0f} | lib_max>=0.6: {int((d.lib_max >= TAU).sum())} | {d.seconds.mean():.1f}s/mol")
     pd.DataFrame(stats).to_csv(f"{P['work']}/b1_stage_stats.csv", index=False)
@@ -531,7 +533,7 @@ def main():
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     for name_, v_ in sub_probe.items(): pd.DataFrame(v_, columns=["molecule_id", "smiles"]).to_csv(f"{P['work']}/submission_probe_{name_}.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
