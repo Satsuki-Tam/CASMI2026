@@ -239,3 +239,10 @@ C1 代理では、学習融合はパイプラインの中でも固定規則よ�
 (D C1 は usable 参照 0 で n=0、採点なし。E/F は全分子が GL 不足 → 両候補とも learned = 保険。)
 
 - 読み: 新層では **M2x が M1 を上回るのは C/C1 のみ**(他ライブラリ参照多数、+0.038)。E/C2 と G/C2 は M1 が有意に良い。E/F では両候補の出力は保険(固定 + 参照優先)なので、差は **候補構成の差**(M2x の k_fpp 200 + k_pop 50 の拡大 shortlist が、forward 不在で FP + prior しか無いときに decoy を増やす)として読める。G/C2 でも M1(ICE あり・小 shortlist)が良い。locked(差なし)と合わせると、M2x の「候補 2 倍 + ICE 無し」は NP 層で損、C1 修正(rank_v4b)は参照多数の層でのみ得。→ 次の分解: 同じ特徴表(M1 構成)の上で rank_v2 learned と rank_v4b blend21 を比較し、ranker/出力ポリシーの効果を候補構成の効果から切り分ける(10:15 実行中、`p2dev_eval_sametable/`)。
+
+## E0 自前実行の第 1 結果(W7 600 分子、C2 代理、`experiments/e0_offline/runs/c2_full3r/compare/report.md`、10:18;公式 scorer 複製、未到達 = 0)
+- **E0 final 0.681 vs B1 main(blend21)0.616(保険 0.510): Δ +0.065 [+0.028, +0.102]**。A_timstof −0.071 [−0.116, −0.026](B1 が良い)、**B_nplib +0.201 [+0.145, +0.255]**(E0 が良い)。B1 の ranker 学習群(fit)では −0.002、tune +0.084、eval +0.112。
+- E0 の段階 MRR: engine-1 base-60 **0.939** → merge 0.907 → GLACIER 融合 0.696 → final 0.681。E0 の engine-1 窓/base-60 の到達は 0.953 = 窓到達そのもの(FPNet が真を常に上位 60 に置く)。**ただし E0 の FPNet(A/B/full1)と ranker は train.parquet 全体で学習しており、600 分子すべてを学習済み(重みレベルの重複、分子ごとに flag)。** B1 の到達: 窓 0.958、**shortlist 0.755**(fold 0 の FPNet は dev 分子を未見)。
+- E0 だけが 1 位を当てる分子を B1 の損失段階で分類: shortlist 落ち 54、順位 >1 が 40、融合で落ち 1。B1 が shortlist で落とした 120 分子で E0 は ΣΔRR +79。両者が真を持つ 269 分子では B1 の順位が良い(0.538 vs 0.393)。PubChem チャネルは pool 外の key を出すためここでは真を持たない(到達 0;train 由来の集合では評価不能)。
+- Engine 2 は 7 分子(前駆体 m/z が ±10 ppm 外、または多 adduct)でリストを返さず(B1 も 0 点)。GLACIER 融合は E0 の学習済み分子では −0.24 の損(engine-1 が既に正解を置いているため)。
+- **読み(仮説、018 で確認)**: 差の主因は **shortlist 到達**(B1 0.755 vs E0 ≈ 窓到達)で、E0 側は学習済み FPNet による「記憶」が効いている。隠しテストのクラス 1(train に参照がある分子)に対しては、train 全体で学習したモデルの記憶は正当な強み(禁止されていない)であり、B1 の fold-0 FPNet(train の 80% で学習)は fold 0 相当の分子で不利。クラス 2/3 には無関係。→ 検証案: パネル(NP・timsTOF・train 内分子)の C1 view で、fold-0 FPNet と train 全体で学習した FPNet(公開資産 `fpnet_full1.pt`、学習コード公開)を差し替えて B1 を比較し、クラス 1 条件での「記憶」の利得を測る。開発評価は C1 = 学習済みモデル可(隠しクラス 1 の代理)、C2 = fold-safe(クラス 2/3 の代理)に分ける。
