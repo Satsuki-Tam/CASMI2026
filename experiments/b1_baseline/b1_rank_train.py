@@ -61,7 +61,15 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                 d["S_fixed"] = S; d["S_fixed15"] = S15; d["reachable"] = bool(m["reach_external_b1"]) if "reach_external_b1" in M.columns else (bool(ev.loc[mid, "window_external"]) if mid in ev.index else True)
                 d["identity_group"] = int(m["identity_group"]) if "identity_group" in M.columns else -1
                 out.append(d)
-    return pd.concat(out, ignore_index=True)
+    T = pd.concat(out, ignore_index=True) if out else pd.DataFrame()
+    # Codex 017: USED ledger -- what actually enters the training / evaluation tables per run and set (selection counts are not training counts)
+    for s_ in sets_here:
+        t = T[T.set == s_] if len(T) else T
+        if not len(t): print(f"USED {os.path.basename(run)} {s_}: 0 rows", flush=True); continue
+        gv = t.groupby(["molecule", "view"]); pos = gv.is_truth.max()
+        print(f"USED {os.path.basename(run)} {s_}: identities {t.molecule.nunique()} | groups c1 {int((pos.index.get_level_values(1) == 'c1').sum())} c2 {int((pos.index.get_level_values(1) == 'c2').sum())} "
+              f"| groups with a positive c1 {int(pos[pos.index.get_level_values(1) == 'c1'].sum())} c2 {int(pos[pos.index.get_level_values(1) == 'c2'].sum())} | fit/tune/eval {dict(t.groupby('molecule').group.first().value_counts())}", flush=True)
+    return T
 
 
 LEDGER = {}   # (run, set) -> molecule table (reach / c1 flags), filled by load_run; molecules without candidate rows count as 0
