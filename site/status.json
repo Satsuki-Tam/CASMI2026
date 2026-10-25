@@ -112,10 +112,16 @@
    "eta": "10:18 完了"
   },
   {
-   "state": "queued",
-   "name": "決定実験: 学習済み FPNet(公開 full1 / fold-1 モデル)で B1 特徴表を作り直す(パネル C1、W7 A/B)",
-   "detail": "仮説「隠しクラス 1 では train 全体で学習したモデルの記憶が正当な強み」を測る。M2x(fold-0 FPNet)vs M2x_seen を登録評価器で比較、shortlist 到達も記録。fit pool の後に自動開始(Codex 018 の回答で設計を確定)",
+   "state": "running",
+   "name": "同一窓 FPNet 比較(fold-0 / fold-1 学習済み / 公開 full1): パネル・W7 A/B・dev2 D/E/F",
+   "detail": "パネル full1 特徴表 10:41 完了 → GL → W7 A/B fold-1 → full1(W7 A/B、dev2 D/E/F)→ fp_reach_compare。診断として読む(学習済みデータ)",
    "eta": "午後"
+  },
+  {
+   "state": "done",
+   "name": "Codex 018(shortlist 到達と学習済みモデルの記憶の仮説)",
+   "detail": "帰属を訂正(E0 の窓は B1 の 1/100、0.939 は ranker 後、両方に真あり 450 分子では B1 が良い)。同一窓での FPNet 比較を先に、full1 は診断用、提出用の重みは自前学習。C1/C2 は「参照の有無」と「モデルの露出」を別軸に",
+   "eta": "11:00 完了"
   }
  ],
  "next": [

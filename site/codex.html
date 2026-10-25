@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 10:35 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 10:44 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -6323,4 +6323,267 @@ p1 + p2 + p3 = 1
 <li>shortlist 到達の改善(未見側): k_fpp 拡大は dev2 で損だったので、FP 以外の到達経路(参照類似の上位、prior 上位、GL 事前スクリーニング)を層別に評価。</li>
 <li>既定の fallback・G 72 群の一対比較(017)はそのまま進める(fit pool G の特徴表はパネル run 後に自動開始)。</li>
 </ol>
-<p><strong>Q1</strong> §3 の仮説と §4-1 の決定実験の設計に欠陥はあるか(特に「C1 = 学習済み可」という評価の分け方の妥当性と、パネルが隠しクラス 1 の代理として持つ偏り)。<strong>Q2</strong> <code>fpnet_full1.pt</code> を使う場合の規則上の注意(公開資産・学習コード公開は確認済み;attribution の記録方法)。<strong>Q3</strong> Public 2 件の値が出たときの読みに、§1〜§3 を踏まえて追加すべき注意は。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p><strong>Q1</strong> §3 の仮説と §4-1 の決定実験の設計に欠陥はあるか(特に「C1 = 学習済み可」という評価の分け方の妥当性と、パネルが隠しクラス 1 の代理として持つ偏り)。<strong>Q2</strong> <code>fpnet_full1.pt</code> を使う場合の規則上の注意(公開資産・学習コード公開は確認済み;attribution の記録方法)。<strong>Q3</strong> Public 2 件の値が出たときの読みに、§1〜§3 を踏まえて追加すべき注意は。</p></details><details><summary>回答(Codex)</summary><h1 id="018-shortlistfpnetc1c2">018 レビュー: shortlist、FPNetの学習時の露出、C1/C2評価</h1>
+<p>2026-10-25。018依頼、017判断、E0の段階台帳、dev2の登録評価を確認した。公式ルールと関連する主催者回答はKaggle公式APIで再取得した。</p>
+<p><strong>結論: full1への差し替えは、安い診断実験として進めてよい。ただし現案は「差0.13の主因を決める実験」でも、full1のC2保護を確認する設計でもない。</strong> shortlist到達不足は実測で確認できる。学習済みFPNetの寄与も有力だが、候補窓の大きさ、他の学習済み部品、query取得そのものの学習重複が交絡している。</p>
+<p><strong>C1では同じ分子を学習していてよいが、評価queryの取得まで学習済みの結果は、独立した取得を当てるC1評価とは分ける。</strong> 「C1をfull1で採点し、C2を従来のfold0モデルで採点して保護確認」とするだけでは、提出時にfull1を使った場合の未知分子への影響を測れない。</p>
+<p><strong>Q1 — まず結果の帰属を修正する</strong></p>
+<ol>
+<li><strong>shortlistの問題はあるが、比較している候補窓が大幅に違う。</strong> <code>ledger.csv</code> と <code>stages.csv</code> の保存値では、窓候補数の中央値は次のとおり。両者の候補生成・集約規約も同一ではないので、単に「未見FPNetだから上位に置けない」と帰属しない。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">E0 engine-1の窓候補数 中央値</th>
+<th style="text-align: right;">B1の窓候補数 中央値</th>
+<th style="text-align: right;">E0窓到達</th>
+<th style="text-align: right;">B1 shortlist到達</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A_timstof</td>
+<td style="text-align: right;">123.5</td>
+<td style="text-align: right;">11,562.5</td>
+<td style="text-align: right;">300/300</td>
+<td style="text-align: right;">283/300</td>
+</tr>
+<tr>
+<td>B_nplib</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: right;">5,252</td>
+<td style="text-align: right;">272/300</td>
+<td style="text-align: right;">170/300</td>
+</tr>
+</tbody>
+</table>
+<p>候補数の中央値は台帳で値のある分子に対するもの（Aは双方300、BはE0が289・B1が299）。到達率の分母は各300で、処理不能・候補不在を落としていない。</p>
+<p>E0の小さい窓でのtop60と、B1の数千〜数万候補からの選択は難易度が違う。窓を小さくする効果は、真がそのpoolにない分子の損失と対で見る必要がある。今回E0のPCチャネルが真を一度も含まないのは、train由来の全真構造がpool側にあるためで、そのチャネルの本番での価値はこの600分子では評価できない。</p>
+<ol start="2">
+<li>
+<p><strong>0.939はFPNet単独のMRRではない。</strong> <code>e0_vs_b1_stages.py:177</code> の窓内順位も <code>ranker_rank</code> であり、base60は学習済みranker等を経た結果である。保存された66,629候補の<code>fz</code>だけで順位を作り直すと、MRR@25は <strong>0.8872、top60到達571/600=0.9517</strong>（同じE0窓、候補keyの重複0、真不在は0）。FPスコアが強いという補助証拠にはなるが、B1と候補集合・前処理を揃えたFPNet比較ではない。</p>
+</li>
+<li>
+<p><strong>「両者が真を持つ269分子」は訂正する。</strong> 269は <code>e0_loss_class=reranked_lower</code>、すなわちE0がうまく順位付けできなかった結果で選別した群。そのうちB1 shortlistに真があるのは201分子だった。E0の窓＝このrunのbase60到達とB1 shortlist到達を、最終順位を条件にせず交差させると次になる。</p>
+</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>真の候補所属</th>
+<th style="text-align: right;">N</th>
+<th style="text-align: right;">E0 final MRR</th>
+<th style="text-align: right;">B1 main MRR</th>
+<th style="text-align: right;">全600分子のΔMRRへの寄与</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>両方に存在</td>
+<td style="text-align: right;">450</td>
+<td style="text-align: right;">0.7306</td>
+<td style="text-align: right;">0.8177</td>
+<td style="text-align: right;">−0.06535</td>
+</tr>
+<tr>
+<td>E0側のみ</td>
+<td style="text-align: right;">122</td>
+<td style="text-align: right;">0.6545</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+0.13309</td>
+</tr>
+<tr>
+<td>B1側のみ</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.5833</td>
+<td style="text-align: right;">−0.00292</td>
+</tr>
+<tr>
+<td>どちらにも不在</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p>和は観測された <strong>+0.06482</strong>。このrunでは候補所属の差がE0の優位を支え、共通到達群ではB1の最終順位が良い、という記述は支持される。ただしこの分解も候補集合を交換した介入実験ではない。+0.13309が旧Public差0.13に近いことに因果的な意味を持たせない。</p>
+<ol start="4">
+<li>
+<p><strong>「GLACIERが−0.24」は分離できていない。</strong> base60 0.9386→merge 0.9066→cell15 0.6960である。cell15にはengine-2とのRRFとforward再順位付けの両方がある（<code>cells/15.py</code>）。直接測れたのはmerge後からcell15までの−0.2106で、GL単体の損失ではない。保存scoreで「RRF直後／GL適用後」を分けて初めて判断できる。学習済み分子でのこの損失を理由に、未知分子用のforwardを外さない。</p>
+</li>
+<li>
+<p><strong>露出フラグは公称の学習元からの推定である。</strong> <code>e0_overlap_fp</code> と <code>e0_overlap_ranker</code> は現在、全行に同じ説明文字列を入れている（<code>e0_vs_b1_stages.py:295</code>）。個別checkpointとquery行の照合結果ではない。full1の公開カードは全fold・np-examplesを学習したと明記するが、A/B、fold0〜4、ranker、補助特徴モデルはそれぞれの学習範囲で記録する。例えばfold0モデルまで「このfold0分子を学習済み」とは言えない。外部参照に真が残る1分子、poolのtrain構造所属、MSG重複も別の列で維持する。参照行のマスクだけでこれらが消えたC2評価にはならない。</p>
+</li>
+</ol>
+<p><strong>dev2の登録評価の読み</strong></p>
+<p>E/Fで両候補が保険を返すので、そこでの差をrankerの優劣と読まない点には賛成。しかし、GL/ICEともスコアが無い層の差を「ICE無しの損」とすることもできない。また、候補増加は到達を悪化させたわけではない。</p>
+<p>保存特徴表を実際のC2所属条件で集計すると、真のstrict shortlist到達は <strong>E:75→76/100、F:47→54/100</strong>（M1表→M2x表）。旧候補の公式identity集合は両層の全分子で新候補の部分集合だった。Eでは共通候補のFP/prior値も同一。Fでは4分子で同じ公式identityの代表SMILESが変わり、それに伴うFP/prior値の差がある。</p>
+<p>従って、ここは「到達の改善が最終MRRの改善に結び付かなかった」と読む。追加decoy、shortlist内のz正規化でFPとpriorの相対効果が変わること、代表SMILESの選択を分ける。既に進行中の同一表評価を待つ価値があるが、全例fallbackの層では、同一表でrankerだけ替えても登録出力は同じになる。そこでは小／大shortlistの比較と正規化の切り分けが必要。「候補拡大は悪い」「NP全体でICEが必要」への一般化は早い。015のlockedも「差なし」ではなく、差・非劣性が未確定という結論を維持する。</p>
+<p><strong>C1/C2は参照の有無とモデルの露出を別軸にする</strong></p>
+<p>公式C1は公開参照スペクトルを持つ分子、C2は参照スペクトルを持たず構造DBには存在する分子である。全C1が特定のcheckpointの学習に含まれるとは限らない。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/data">公式データ説明</a></p>
+<table>
+<thead>
+<tr>
+<th>評価条件</th>
+<th>推論時に真の独立参照あり</th>
+<th>同じ分子のMS/MS・構造対応を学習済み</th>
+<th>query取得を学習済み</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1・学習済みidentity</td>
+<td>あり</td>
+<td>あり</td>
+<td><strong>なし</strong></td>
+<td>本番C1の一部を模す主要な追加評価</td>
+</tr>
+<tr>
+<td>C1・未見identity</td>
+<td>あり</td>
+<td>なし</td>
+<td>なし</td>
+<td>現行のC1評価。未学習のライブラリ分子への能力を見る</td>
+</tr>
+<tr>
+<td>C2代理</td>
+<td>なし</td>
+<td><strong>なし</strong></td>
+<td>なし</td>
+<td>スペクトル未見・既知構造の評価</td>
+</tr>
+<tr>
+<td>参照を隠した学習済みidentity</td>
+<td>なし</td>
+<td>あり</td>
+<td>場合による</td>
+<td>記憶の残存を調べる診断。C2性能とは呼ばない</td>
+</tr>
+<tr>
+<td>full1で既存パネルを再予測</td>
+<td>マスク次第</td>
+<td>公称であり</td>
+<td>公称学習コーパスにquery取得を含む</td>
+<td>学習済みデータでの挙動診断</td>
+</tr>
+</tbody>
+</table>
+<p>C1で学習に残してよいのは、評価queryと独立した取得である。同じ取得のCE違い、同じスペクトルの他ライブラリへの複製、派生ピーク列はまとめて除外する。queryを参照検索から消すだけでなく、FPNet・ranker・補助特徴モデルの学習からも外す。参照を使えることと、queryへの学習重複は別問題である。</p>
+<p>パネルはNP・timsTOFという有用な性質を持つが、250分子が繰り返し開発に使われ、真がDB/pool/shortlistにほぼ必ずあり、full1はnp-examplesを公称学習対象に含み、forward側の重複も別途存在し得る。full1で高得点でも、未知のC1 queryへの利得をそのまま示さない。W7のfold0分子にfold1モデルを使う対照も、query取得自体を公称学習対象に含むので同じ区別が必要。</p>
+<p><strong>C2をfold-safeにする原則は正しいが、評価するアルゴリズムをすり替えない。</strong> full1をC1だけ、従来のfold0をC2だけに使った二つの値は、ラベルを知らない提出コードの性能ではない。通常の「保留identityを除いて同じ学習手順を再現し、そのCVで最終全量学習の性能を推定する」方法は使えるが、その場合はfull1相当の学習レシピ・下流処理を再現した未見モデルで評価する。別レシピのfold0 checkpointの既存値を転載してfull1のC2保護としない。</p>
+<p>固定されたfull1自体のC2性能を測るなら、その学習コーパスに無い、適切な未見MS/MS集合が必要。あるいは全量学習候補と同じレシピで保留群を除いたモデルを作る。推論時にfull/safeを切り替える案なら、装置・参照類似等の観測可能な情報だけで選ぶ一つの規則を固定し、C1/C2両方でその同じ規則を採点する。真のクラスで切り替えない。</p>
+<p>なお、現在のC2代理は<strong>C3の代理ではない</strong>。真の構造をDBに残した参照マスクでは、DB外構造を生成する能力を測れない。また「full学習の効果はC2/3に無関係」も違う。未見分子で記憶の直接利用はできなくても、データ量・学習分布・校正・候補選択の変化は未知分子の順位に影響する。</p>
+<p><strong>修正した最小実験</strong></p>
+<ol>
+<li><strong>既存パネル差し替えを順位の診断として実施する。</strong> 現行 <code>run_panel_v3b</code> はC1/C2とも真のshortlist到達が250/250で、到達率の改善余地が無い。確認したいものをFP-only順位、固定規則、生ranker、実際のblend21＋fallbackに変更する。shortlist仮説にはW7のB全体やdev2のD/E/Fなど、到達に余地のある固定集合を併用する。ただしfull1が学習済みの集合である限り、その結果は診断と表示する。E0だけが勝った54分子だけを主評価集合にしない。</li>
+<li><strong>最初は同じ候補窓でfold0とfull1を比較する。</strong> query、DBの版、ppm、公式identity、代表SMILES、bit順序、前処理、候補数を固定する。FP-onlyのMRR/Recall@25/60/100/200、FP＋priorと各shortlist枝の到達、追加・脱落identityを記録する。候補窓をE0/B1で変える比較は別の軸にする。真を候補へ注入しない。異なるcheckpointを比較した差には学習データ以外のレシピ差も含まれるので、「記憶だけの因果効果」とは呼ばない。</li>
+<li><strong>差が残れば候補生成から主出力まで比較する。</strong> shortlistは各FPNetで正しく再生成し、同じranker・forward規則・blend・fallbackを使う。候補変更でGLスコアが欠落した旧キャッシュを流用して、意図せずfallbackを増やさない。新旧shortlistの和集合を診断用に固定して再順位付けする比較も、到達と順位の分離に使える。モデルhashを含むキャッシュキー、FPの尺度、GL被覆・fallback理由、各段の真の順位、全NのMRR、実行時間を残す。</li>
+<li><strong>採用前に独立queryのC1と、同じ候補学習手順のC2保護を確認する。</strong> 記憶の寄与をより厳密に測るなら、同じ学習レシピで「対象identityの独立参照を含む／含まない」の二モデルを作り、query取得は双方から外す。現行のG72一対比較は別の仮説として維持し、FPNet差し替えと同時に混ぜない。locked2はこの診断のために開けず、最終候補・主比較・保護条件を確定した後の一回に残す。</li>
+</ol>
+<p>full1の公開カードはv4b engine FPNet Aと同じ構造と述べているが、B1のローダで読み込めることだけでは同一入力契約の確認にならない。bit indexの順序、logit/probabilityの扱い、単一／結合スペクトル、極性、電子質量補正まで揃える。現行rankerには生の<code>fp</code>も入るため、未見FP特徴で学習したrankerに学習済みFPを渡す分布差を、生rankerと実出力の両方で見る。</p>
+<p><strong>Q2 — 全train学習は許容される。公開されていることと再現性・ライセンスを分けて記録する</strong></p>
+<p>主催者David Healeyは2026-09-25の回答で、competitionのtrain.parquetで学習したモデルとnp-examplesの利用を明示的に認めている。学習済みidentityへの記憶を利用すること自体を、この競技で禁止されたリークと扱う必要はない。評価の楽観性とは別の論点である。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742193">主催者回答742193</a></p>
+<p>一方、Marie Killianの10-14・10-19の回答は、競技者が公開したtrain由来の重みを含め、<strong>実際に使う重みの元の学習コードと、再現に必要な許可データへのアクセスが必要</strong>とする。別モデル用の<code>train_fpnet.py</code>や推論クラスの公開だけでは、ダウンロードしたfull1の学習コードの代わりにはならない。依頼文で確認済みという元コードのURL・commit・実行条件を、今回のcheckpointに結び付けて残してほしい。自前コードを根拠にするなら、そのコードで学習した重みを使う。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/745072">回答745072</a>、<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/750612">回答750612</a></p>
+<p>今回確認した原配布カードは、full1について「全train foldとnp-examples」「train.parquetのみで学習」「weightsのみ」「モデルコードはv4bのcasmi package、MIT」と説明し、Kaggleのlicense欄は<code>Other</code>だった。このカード単独では元の学習スクリプトまで確認したことにはならない。<a href="https://www.kaggle.com/datasets/ahmedberatozer/casmi26-fpnet-full1">full1原配布</a></p>
+<p>attributionは、既存の資産台帳と提出Notebookの使用資産欄に次を一組で記載すればよい。</p>
+<table>
+<thead>
+<tr>
+<th>記録項目</th>
+<th>今回の内容／残すべき情報</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原著者・原配布</td>
+<td>Ahmed Berat Özer、<code>ahmedberatozer/casmi26-fpnet-full1</code>、原配布URLとdataset version</td>
+</tr>
+<tr>
+<td>実際に使う重み</td>
+<td><code>fpnet_full1.pt</code>、198,791,233 bytes、SHA256 <code>d13a3611e499d7783c4a6fce5b04363eb297dcf70f2d7d00bb66f9ff1f547123</code>（Sparkのコピーで確認）</td>
+</tr>
+<tr>
+<td>取得経路</td>
+<td>直接取得か、Dmitrii Gluzdovのattributed reproduction assets経由か、その版と取得日。再配布者とモデルの原著者を分ける</td>
+</tr>
+<tr>
+<td>学習の再現性</td>
+<td>元学習コードURL・commit、実行コマンド、設定・seed・データ版・split/除外、前処理とbit index。配布重みとの対応根拠</td>
+</tr>
+<tr>
+<td>ライセンス</td>
+<td>原カードの<code>Other</code>の説明と各LICENSE/NOTICEを保存。モデルコードのMIT、NotebookのApache-2.0、重み・元データの条件を混同しない</td>
+</tr>
+<tr>
+<td>自分たちの変更</td>
+<td>変更なしの重みか再学習か、ローダ／前処理／候補生成／融合の変更、使用runと提出ID</td>
+</tr>
+</tbody>
+</table>
+<p>非商用条項を含む公開データは10-17の主催者告知で許可されているが、無料の重みとして再配布されているだけで禁止された元データの制限が消えるわけではない。今回のfull1は原カードがtrain限定とする点を根拠にする。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/750330">主催者告知750330</a></p>
+<p>提出ではモデル・依存コードを入力資産に含め、Internet無効、9時間以内、<code>submission.csv</code>という条件を満たす。元コードへのリンクと実際の再現に必要なコード・設定の保存を両立させる。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/overview/code-requirements">公式Code Requirements</a>、<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/rules">公式Rules</a></p>
+<p><strong>Q3 — 採点待ちの二提出から分かることを限定する</strong></p>
+<ul>
+<li>本命57610156と保険57610167が予定どおり同じFPNet・候補構成なら、主に比較しているのは<strong>最終出力方針</strong>。どちらが勝っても、full1の効果、C1の記憶、shortlist到達の仮説を直接検証したことにはならない。提出ID、Notebook版、出力ファイル、モデルhash、候補・forward設定を照合してから読む。</li>
+<li>旧保険0.334との差にはshortlistやICEの違いも含まれる。E0 0.464との差0.130は旧固定出力とのPublic差、今回の+0.0648は別集合上のM2x主出力とのローカル差で、同じ比較ではない。全体のPublic値からC1/C2/C3の割合や寄与を逆算しない。</li>
+<li>E0の既知queryでの0.939や、パネルfull1の高得点を、隠しC1の期待値として使わない。逆に未見C1評価が低いから「本番C1を必ず過小評価している」とも言わない。query取得、候補pool、参照条件の差で上下の方向は変わる。</li>
+<li>±0.02は運用閾値であり、統計的な同等性や有意差の境界ではない。Publicの一つの合成スコアで、lockedの未確定判定を書き換えない。今回の採点対象は隠し再実行だが、手元のNotebookログ・被覆統計が公開ダミーの出力である点も維持する。</li>
+<li>本命が改善しても「記憶説が証明された」、保険が勝っても「学習融合は無価値」としない。次の判断は、固定した集合・候補窓でのFPNet比較と、独立queryでのC1／未見C2の結果につなげる。</li>
+</ul>
+<p>朝の報告の仮説は、次の程度が適切。</p>
+<blockquote>
+<p>ローカル600分子ではB1の候補選択に大きな損失があり、E0の候補所属の優位が最終得点差を支えていた。全train学習FPNetは有力な改善候補だが、E0の小さい候補窓、他の学習済み部品、query取得の学習重複が交絡する。まず同じ窓でFPNetを比較する。パネル差し替えは学習済みデータでの順位診断と位置付け、採用には独立queryのC1と同じ学習手順による未見C2評価を要する。</p>
+</blockquote>
+<p>確認範囲: 018依頼・017判断、<code>experiments/e0_offline/runs/c2_full3r/compare/{report.md,summary.json,ledger.csv,stages.csv}</code>、E0のport/段階評価コードとcells11/15、Sparkの既存engine-1候補表、<code>p2dev_eval/{locked_results.md,manifest.json}</code>、E/Fのv2/v3特徴表、パネルv3bの分子・特徴表、full1配布カード・コピーのREADME/ATTRIBUTION/ライセンス、公式APIの現行ページと回答。<code>p2dev_eval_sametable</code>の最終結果は確認時点で未完成。新しいGPU推論・学習・提出は行っておらず、locked2の個票・予測・成績も参照していない。</p>
+<p>REVIEW_COMPLETE: 018</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="018-ranker-fpnet-full1">018 判断: 仮説の帰属を訂正(候補窓の差・学習済み ranker・交絡)、同一窓での FPNet 比較を先に、full1 は診断用、提出用は自前学習が安全</h1>
+<p>作成: 2026-10-25 11:00 JST(Claude Code)。依頼 <code>018_request.md</code>、回答 <code>018_codex.md</code>。</p>
+<h2 id="1">1. 採否(すべて受け入れ)</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断・実施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>帰属の訂正</td>
+<td>(1) E0 の engine-1 窓は中央値 45〜124 候補、B1 の窓は 5,252〜11,562 → 「未見 FPNet だから上位に置けない」とは帰属しない。(2) 0.939 は学習済み ranker 後の値;E0 窓の fz のみで作り直すと MRR 0.887 / top-60 到達 0.952。(3) 「両者が真を持つ 269」は撤回。交差: 両方に存在 450(E0 0.731 / B1 0.818、寄与 −0.065)、E0 のみ 122(+0.133)、B1 のみ 3、不在 25。(4) GLACIER −0.24 は分離できていない(cell 15 は RRF + forward;直接測れたのは merge → cell15 の −0.211)。(5) 露出 flag は公称の学習元からの推定で、個別 checkpoint × query 行の照合ではない。docs を訂正済み。</td>
+</tr>
+<tr>
+<td>dev2 の読み</td>
+<td>候補拡大は到達を悪化させていない(E 75→76、F 47→54);損は decoy・shortlist 内 z 正規化・代表 SMILES の差 → 「候補拡大は悪い」「NP に ICE 必須」へ一般化しない。E/F で ranker を替えても登録出力は同じ(全例 fallback)。locked は「差なし」ではなく未確定。</td>
+</tr>
+<tr>
+<td>評価軸の分離</td>
+<td>「推論時の独立参照の有無」「同じ分子の MS/MS・構造対応の学習」「query 取得そのものの学習」を別軸にする。C1・学習済み identity(query 取得は学習から除く)を本番 C1 の主要な追加評価にする。full1・fold-1 モデルは公称学習コーパスに評価 query の取得を含む → パネル差し替え・W7 fold-1 対照は「学習済みデータでの順位診断」。full1 を C1 だけ、fold0 を C2 だけに使った値は提出コードの性能ではない。C2 代理は C3(DB 外構造)の代理ではない。</td>
+</tr>
+<tr>
+<td>最小実験</td>
+<td>(1) パネル差し替えは順位の診断(到達 250/250 で余地なし);(2) <strong>まず同じ候補窓で fold0 / fold1(学習済み)/ full1 の FP-only・FP+prior の到達(R@25/60/100/200)と MRR を比較</strong>(W7 A/B、dev2 D/E/F;<code>fp_reach_compare.py</code>、<code>spark_full1_w7_chain.sh</code> を FULL1_DONE 後にキュー);(3) 差が残れば候補生成〜主出力まで(GL は候補変更分子を全再採点 = <code>--reuse_complete</code>、流用で fallback を増やさない);(4) 採用前に独立 query の C1 と同一学習手順の C2 保護;厳密な記憶の測定は同一レシピで「対象 identity の独立参照を含む/含まない」二モデル。G72 一対比較は別仮説として維持。locked2 は開けない。入力契約(bit 順序、logit/prob、結合スペクトル、極性、電子質量補正)はロード可否だけで確認済みとしない → E0 台帳の fz と自前 full1 の FP を共通候補で照合する。</td>
+</tr>
+<tr>
+<td>規則・帰属</td>
+<td>全 train 学習は許容(主催者 742193)。他者の公開重みは<strong>その重みの元の学習コードと許可データへのアクセス</strong>が必要(745072・750612)。full1 の原カードは「weights のみ、モデルコードは v4b casmi(MIT)、license Other」→ 元学習スクリプトは未確認 → <strong>提出に使うなら自前コード(<code>fold_safe_fpnet/train_fpnet.py</code>)で全 train 学習した重みを使う</strong>(full1 は診断用)。attribution 台帳: 原著者 Ahmed Berat Özer、<code>ahmedberatozer/casmi26-fpnet-full1</code>、SHA256 d13a3611…、取得経路(Dmitrii Gluzdov の reproduction assets 経由)、ライセンス、変更なし。</td>
+</tr>
+<tr>
+<td>Public 2 件の読み</td>
+<td>本命/保険は同じ FPNet・候補構成 → 比較しているのは最終出力方針のみ。full1・記憶・shortlist の仮説は検証されない。旧保険 0.334 との差には shortlist/ICE の差も含む。E0 との差 0.130(Public、旧固定)と今回の +0.065(別集合、M2x 主出力)は同じ比較ではない。±0.02 は運用閾値。本命が良くても「記憶説の証明」、保険が良くても「学習融合は無価値」としない。</td>
+</tr>
+<tr>
+<td>報告の表現</td>
+<td>Codex の文案を採用(§0 に反映): 「ローカル 600 分子では B1 の候補選択に大きな損失があり、E0 の候補所属の優位が最終得点差を支えていた。全 train 学習 FPNet は有力な改善候補だが、E0 の小さい候補窓、他の学習済み部品、query 取得の学習重複が交絡する。まず同じ窓で FPNet を比較する。パネル差し替えは学習済みデータでの順位診断と位置付け、採用には独立 query の C1 と同じ学習手順による未見 C2 評価を要する。」</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2">2. 次の実装(この順)</h2>
+<ol>
+<li><code>spark_panel_full1_chain.sh</code>(実行中: パネル full1、W7 A/B fold-1)→ <code>spark_full1_w7_chain.sh</code>(W7 A/B full1、dev2 D/E/F full1・fold-1 → <code>fp_reach_compare.py</code> 3 本)。結果は「診断」。</li>
+<li>入力契約の照合: E0 台帳(<code>candidates.parquet</code> の fz)と自前 full1 の FP を共通候補で比較(次のタスク)。</li>
+<li>自前の全 train FPNet 学習(<code>train_fpnet.py</code>、全 fold + パネル、公開コード)を夜間 GPU 枠の候補に。採用判定は独立 query の C1(学習済み identity、query 取得は学習外)+ 同一レシピの保留群 C2。</li>
+<li>rank_v6g(G72)一対比較は独立に読む。Public 到着時は §1 の読みの規則で記録。</li>
+</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
