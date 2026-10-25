@@ -4,7 +4,8 @@ bootstrap (20,000, seed 20261025). Usage: python -X utf8 pcl_boost_report.py EVA
 """
 import argparse, glob, os, re
 import numpy as np, pandas as pd
-ap = argparse.ArgumentParser(); ap.add_argument("dirs", nargs="+"); ap.add_argument("--cand", default="M2x"); ap.add_argument("--out", default=""); a = ap.parse_args()
+ap = argparse.ArgumentParser(); ap.add_argument("dirs", nargs="+"); ap.add_argument("--cand", default="M2x"); ap.add_argument("--out", default="")
+ap.add_argument("--prefix", default="pcl", help="variant family: pcl (PubChemLite boost) or pcd (PubChem-tier-only demotion, Codex 023b)"); a = ap.parse_args()
 rng = np.random.default_rng(20261025)
 def ci(d):
     idx = rng.integers(0, len(d), size=(20000, len(d))); m = d[idx].mean(1); return np.percentile(m, 2.5), np.percentile(m, 97.5)
@@ -13,7 +14,7 @@ for d in a.dirs:
     for base in sorted(glob.glob(os.path.join(d, f"pred_*_{a.cand}_blend21.csv"))):
         m = re.match(rf"pred_(.+)_(c[12])_{a.cand}_blend21\.csv", os.path.basename(base)); s, view = m.group(1), m.group(2)
         b = pd.read_csv(base)
-        for f in sorted(glob.glob(os.path.join(d, f"pred_{s}_{view}_{a.cand}_blend21_pcl*.csv")), key=lambda x: float(re.search(r"pcl([0-9.]+)\.csv", x).group(1))):
+        for f in sorted(glob.glob(os.path.join(d, f"pred_{s}_{view}_{a.cand}_blend21_{a.prefix}*.csv")), key=lambda x: float(re.search(rf"{a.prefix}([0-9.]+|inf)\.csv", x).group(1))):
             o = pd.read_csv(f); assert list(o.molecule_id) == list(b.molecule_id)
             dd = o.rr.values - b.rr.values; lo, hi = ci(dd)
             md.append(f"| {os.path.basename(d)} | {s} | {view} | {len(b)} | {b.rr.mean():.3f} | {os.path.basename(f).split('_')[-1][:-4]} | {o.rr.mean():.3f} | {dd.mean():+.3f} [{lo:+.3f}, {hi:+.3f}] |")

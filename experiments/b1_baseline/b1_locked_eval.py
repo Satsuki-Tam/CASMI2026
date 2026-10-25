@@ -41,6 +41,8 @@ def runner(run, s, model):
 
 PCL = set()          # PubChemLite keys (official candidate_key + raw ik14), filled from --pcl_keys (2026-10-25 class-2 prior test)
 PCL_W = []           # boost weights: extra outputs blend21_pcl<w> = blend21 + w * 1[candidate in PubChemLite]
+PCD_W = []           # Pc demotion (Codex 023b follow-up): extra outputs blend21_pcd<w> = blend21 - w * 1[candidate neither a training structure (view) nor in COCONUT];
+                     # w = inf gives blend21_pcdinf = the pool-only filter of the FULL order (the local counterpart of the pool probe kernel)
 
 
 def scores_for(view, g, mid, gl, ice, gl_ok, ice_ok, c, M, tau, margin, min_gl_cover):
@@ -74,6 +76,13 @@ def scores_for(view, g, mid, gl, ice, gl_ok, ice_ok, c, M, tau, margin, min_gl_c
     if PCL_W:
         in_pcl = np.array([(k in PCL) for k in g.official_key.astype(str).values], float)
         variants += [(f"blend21_pcl{w:g}", np.asarray(blend21, float) + w * in_pcl) for w in PCL_W]
+    if PCD_W:
+        is_pc = ~(g[f"in_train_{view}"].values.astype(bool) | g.in_coconut.values.astype(bool))
+        for w in PCD_W:
+            if np.isinf(w):   # hard filter: Pc candidates removed (the list may be shorter than 25)
+                sc_ = np.asarray(blend21, float); keep_ = np.flatnonzero(~is_pc); o_ = keep_[np.argsort(-sc_[keep_], kind="stable")][:25]
+                out["blend21_pcdinf"] = [str(g.smiles.values[i]) for i in o_]
+            else: variants.append((f"blend21_pcd{w:g}", np.asarray(blend21, float) - w * is_pc.astype(float)))
     for name, sc in variants:
         order = np.argsort(-np.asarray(sc, float), kind="stable")[:25]; out[name] = [str(g.smiles.values[i]) for i in order]
     return out, dict(gl_cover_ok=bool(gl_cover_ok), gl_cover=float(np.isfinite(glv).mean()), ice_cover=float(np.isfinite(icv).mean()))
@@ -92,6 +101,7 @@ def main():
     ap.add_argument("--out", required=True); ap.add_argument("--sets", nargs="*", default=["A_timstof", "B_nplib"])
     ap.add_argument("--pcl_keys", default="", help="PubChemLite annotation parquet (candidate_key, ik14): adds outputs blend21_pcl<w>")
     ap.add_argument("--pcl_w", nargs="*", default=["0.5", "1", "2", "4"], help="boost weights for the blend21_pcl<w> outputs")
+    ap.add_argument("--pcd_w", nargs="*", default=[], help="Pc demotion weights (z units; 'inf' = remove Pc candidates): outputs blend21_pcd<w>")
     ap.add_argument("--main_of", nargs="*", default=[], help="registered MAIN output per candidate, NAME=OUTPUT (default learned), e.g. M1=learned M2x=blend21; "
                     "the paired difference of the registered mains is reported explicitly (Codex 014)")
     a = ap.parse_args()
@@ -100,6 +110,7 @@ def main():
         import polars as _pl
         _t = _pl.read_parquet(a.pcl_keys, columns=["candidate_key", "ik14"]); PCL.update(_t["candidate_key"].drop_nulls().to_list()); PCL.update(_t["ik14"].drop_nulls().to_list())
         PCL_W.extend(float(w) for w in a.pcl_w); print(f"PubChemLite keys {len(PCL):,}; boost weights {PCL_W}", flush=True)
+    if a.pcd_w: PCD_W.extend(float(w) for w in a.pcd_w); print(f"Pc demotion weights {PCD_W}", flush=True)
     if os.path.exists(os.path.join(a.out, "locked_results.json")) or os.path.exists(os.path.join(a.out, "manifest.json")):
         print(f"REFUSED: {a.out} already holds an opening (locked_results.json / manifest.json); the locked set is opened once"); sys.exit(3)
     os.makedirs(a.out, exist_ok=True)
@@ -162,7 +173,7 @@ def main():
         for c in cands:
             d = data[(c["name"], s)]
             for view in ("c2", "c1"):
-                mols = ledger if view == "c2" else c1_ledger; preds = {n_: {} for n_ in ["learned", "insurance", "fixed", "switch", "blend21", "blend11"] + [f"blend21_pcl{w:g}" for w in PCL_W]}; n_fb = 0; covers = []
+                mols = ledger if view == "c2" else c1_ledger; preds = {n_: {} for n_ in ["learned", "insurance", "fixed", "switch", "blend21", "blend11"] + [f"blend21_pcl{w:g}" for w in PCL_W] + [f"blend21_pcd{w:g}" for w in PCD_W]}; n_fb = 0; covers = []
                 MOLS_OF[(s, view)] = list(mols)
                 if len(mols) == 0:   # e.g. a stratum without usable C1 references (D_np_single): recorded as n=0, not scored (the official scorer rejects an empty submission)
                     md.append(f"| {s} | {view} (n=0) | {c['name']} | - | no molecules in this view (not scored) | - | - |"); print(md[-1], flush=True); continue
