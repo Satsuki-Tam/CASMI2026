@@ -1,0 +1,13 @@
+{
+ "train_spectra": 2514866,
+ "held_sids": 1613,
+ "held_overlap_in_Data_tr": 0,
+ "exposure_counts": {
+  "eval_c1:c1_seen": 281,
+  "eval_c1:unseen_after_removal": 19,
+  "eval_set:c1_seen": 84,
+  "eval_set:unseen_after_removal": 516,
+  "panel_np250:c1_seen": 250
+ },
+ "go_condition_i": true
+}

@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "recipe_variant": "full_rk",
+  "recipe": "public fold-safe recipe, no held-out fold; query acquisitions of the panel + W7 + eval_c1 removed at spectrum level (+identity-group duplicates); dev2 = hold, locked2 = lock, p1_run1 = rkfit",
+  "spectra_total_train_parquet": 2539608,
+  "spectra_in_cache": 2532665,
+  "rows_dropped": 6943,
+  "duplicate_rows_dropped": 1430,
+  "query_pairs": 1150,
+  "panel_query_rows_in_training": 0,
+  "holdout_training_overlap": 0,
+  "query_identities_with_remaining_spectra": 615,
+  "split_counts": {
+    "train": 274197,
+    "rkfit": 604,
+    "hold": 506,
+    "lock": 503
+  },
+  "dup_sim": 0.95,
+  "train_parquet_sha256": "9423f90ec08b941a9646b535bf0606183e86ff0c5a297978f5a70693d41bcd98",
+  "folds_sha256": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
+  "built": "2026-10-25T13:58:54",
+  "holdout_overlap_source": "computed from casmi.traindata.Data.tr (gocheck_full_rk.py)"
+}
