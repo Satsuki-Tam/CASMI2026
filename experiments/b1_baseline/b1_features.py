@@ -108,6 +108,8 @@ def main():
     ap.add_argument("--lib_conditions", action="store_true", help="Codex 030: also store, per candidate and view, the library support by query CONDITION "
                     "(adduct x 10-eV CE bucket; unknown CE = own bucket): lib_sup2_* = second-highest per-condition max similarity (NaN if < 2 comparable "
                     "conditions), lib_ncond_* = number of comparable conditions; same references, masks and caps as lib_sim_* (default off = unchanged)")
+    ap.add_argument("--dup_sim", type=float, default=DUP_SIM, help="similarity threshold of the SUSPECTED-duplicate rule (default 0.98 = unchanged; > 1 keeps every non-exact "
+                    "reference = the pipeline's --dup_sim 1.01 rule; Codex 032 diagnostic). Exact duplicates are always removed.")
     ap.add_argument("--sym_lib_mask", action="store_true", help="DIAGNOSTIC (Codex 030 audit): in the C1 view remove the query library's references for EVERY candidate, "
                     "not only for the truth (symmetric mask), to check that library features do not exploit the evaluation mask; never for training tables")
     ap.add_argument("--extra_ckpts", nargs="*", default=[], help="additional FPNet checkpoints; the query fingerprint logits are averaged over <fold_safe>/fpnet_fold0.pt and these "
@@ -279,7 +281,7 @@ def main():
                         (rmz, rit), rprec = ref_cache[x]
                         if any(exact_dup(s, rmz, rit, rprec, add_of_row[x]) for s in qspec):
                             n_exact_truth += int(is_truth_cand); n_exact_other += int(not is_truth_cand); continue
-                        susp = any(abs(s["prec"] - rprec) < 0.005 and s["mode"] == mode_of_row[x] and entropy_similarity(s["clean"][0], s["clean"][1], rmz, rit) >= DUP_SIM for s in qspec)
+                        susp = any(abs(s["prec"] - rprec) < 0.005 and s["mode"] == mode_of_row[x] and entropy_similarity(s["clean"][0], s["clean"][1], rmz, rit) >= a.dup_sim for s in qspec)
                         if susp: n_susp_truth += int(is_truth_cand); n_susp_other += int(not is_truth_cand); kept_susp.append(x)
                         else: kept.append(x)
 
@@ -390,7 +392,7 @@ def main():
             json.dump(runner, open(f"{a.out}/b1_runner_{set_name}_in.json", "w"))
             print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} shortlist rows ({time.time()-t0:.0f}s)", flush=True)
     import rdkit
-    json.dump(dict(k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, k_pool=a.k_pool, adduct_proxy=bool(a.adduct_proxy), neg_proxy=bool(a.neg_proxy), shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=DUP_SIM, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
+    json.dump(dict(dup_sim=a.dup_sim, lib_conditions=bool(a.lib_conditions), sym_lib_mask=bool(a.sym_lib_mask), extra_ckpts=list(a.extra_ckpts), k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, k_pool=a.k_pool, adduct_proxy=bool(a.adduct_proxy), neg_proxy=bool(a.neg_proxy), shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=DUP_SIM, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
                    rdkit=rdkit.__version__, seconds=round(time.time() - t0)), open(f"{a.out}/b1_features_manifest.json", "w"), indent=1)
     print(f"done {time.time()-t0:.0f}s")
 
