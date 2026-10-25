@@ -16,7 +16,8 @@ echo "== $(date +%T) train rank_v6g (rank_v4b recipe + fit pool G; trainer sha $
 $PY -X utf8 $B/b1_rank_train.py --runs $RUNS --out $B/rank_v6g --feats v2_noice --drop lib_nref in_train --c1_repeat 3 > $B/rank_v6g_train.log 2>&1; echo "train exit $?"
 grep -a "^USED\|^features\|fit groups\|WARNING" $B/rank_v6g_train.log | cut -c1-220
 # control: retrain rank_v4b's recipe with the new trainer (set discovery) to show the baseline is reproduced (same tables -> same model up to determinism)
-$PY -X utf8 $B/b1_rank_train.py --runs "$B/run_v3_p1:experiments/p1_baseline/run1/p1_molecules.csv:fit $B/run_v3_eval:$B/eval_set/p1_molecules.csv $B/run_v3_c1:$B/eval_c1/p1_molecules.csv" --out $B/rank_v4b_repro --feats v2_noice --drop lib_nref in_train --c1_repeat 3 > $B/rank_v4b_repro_train.log 2>&1
+RUNS0="$B/run_v3_p1:experiments/p1_baseline/run1/p1_molecules.csv:fit $B/run_v3_eval:$B/eval_set/p1_molecules.csv $B/run_v3_c1:$B/eval_c1/p1_molecules.csv"
+$PY -X utf8 $B/b1_rank_train.py --runs $RUNS0 --out $B/rank_v4b_repro --feats v2_noice --drop lib_nref in_train --c1_repeat 3 > $B/rank_v4b_repro_train.log 2>&1
 echo "rank_v4b reproduction: fit groups $(grep -a 'fit groups' $B/rank_v4b_repro_train.log | cut -c1-80) | model sha original $(sha256sum $B/rank_v4b/lambdarank.txt | cut -c1-12) repro $(sha256sum $B/rank_v4b_repro/lambdarank.txt | cut -c1-12)"
 export OMP_NUM_THREADS=2
 for E in "p2dev $B/eval_set2/v2/p2_molecules.csv run_p2dev_v3 C_np_crosslib D_np_single E_np_negonly F_np_uncovered G_tims_crosslib" "devAB $B/eval_set/p1_molecules.csv run_v3b_eval A_timstof B_nplib" "panel $B/panel_np250/p1_molecules.csv run_panel_v3b P_np250"; do
