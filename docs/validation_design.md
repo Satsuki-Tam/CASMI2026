@@ -399,3 +399,17 @@ C1 代理では、学習融合はパイプラインの中でも固定規則よ�
 - 登録主出力(M2x、v4 の pipeline そのもの = commit 7e84ed6 / sha 2dc30c5c5954)の最終リストを、候補が train 構造か(pool の train bit を公式 identity で OR した `in_train`)で絞った 2 版: probe T(train のみ)/ probe N(train 以外のみ)。順序は主出力のまま。`experiments/b1_probe023/`(差分は追加のみ)。
 - 不等式: P_T ≥ 主出力のクラス 1 寄与、P_N ≥ クラス 2 寄与、P_T + P_N − 0.354 = クラス間の取り違えの総量、p_train ≥ P_T。
 - パネル 16 分子の確認(Spark、現行 pipeline に同じ追加): C1 view main 0.891 → T 0.922 / N 0;C2 view(真の identity を隠す)main 0.891 → N 0.969 / T 0。不等式はすべて成立。C2 view では 16 中 3 分子で「train 構造のデコイが真を押し下げていた」。
+
+## pool / Pc フィルタの条件付き効果(Codex 023b、`diag/probe_strata_{p2dev,panel,devAB}.md`、18:45;保存 top-25 を絞る版 = 全順位列を絞る提出版の下限)
+| 集合 / view / 真の COCONUT 所属 | n | main RR | pool − main | Pc − main |
+|---|---:|---:|---:|---:|
+| C C1: COCONUT / 非 COCONUT | 37 / 58 | 0.897 / 0.921 | +0.020 / +0.050 | — |
+| C C2: COCONUT / 非 COCONUT | 37 / 58 | 0.723 / 0.594 | +0.029 / −0.594 | −0.723 / +0.008 |
+| D C2: COCONUT / 非 COCONUT | 12 / 75 | 0.514 / 0.274 | +0.114 / −0.274 | −0.514 / +0.015 |
+| E C2: COCONUT / 非 COCONUT | 29 / 60 | 0.444 / 0.177 | +0.081 / −0.177 | −0.444 / +0.119 |
+| F C2: COCONUT / 非 COCONUT | 41 / 19 | 0.475 / 0.179 | +0.008 / −0.179 | −0.475 / +0.059 |
+| G C1 / C2(全分子 非 COCONUT) | 98 / 98 | 0.612 / 0.650 | +0.248 / −0.650 | — / +0.012 |
+| W7 B C2: COCONUT / 非 COCONUT | 48 / 219 | 0.731 / 0.446 | +0.016 / −0.446 | −0.731 / +0.016 |
+| パネル C1 / C2(COCONUT 249/250) | 249 / 249 | 0.881 / 0.904 | +0.016 / +0.013 | — |
+- 読み: 真が COCONUT にある分子は main RR が高く、PubChem tier のみの候補を外すと +0.01〜+0.11。真が COCONUT に無いクラス 2 代理は main RR が低く(0.18〜0.59)、pool フィルタではすべて失う。隠しテストでの純効果は「COCONUT に無いクラス 2 の真の割合 × その RR」と「C1・COCONUT 側の順位改善」の綱引きで、P_pool − M = G_K − M_P がそれを直接測る。shortlist 到達 = 0 の分子(absent)は全フィルタで 0。
+- 注記: パイプラインのログの「lib_max>=0.6」は TAU(2.0)と比較しているため常に 0 になる表示上の誤り(出力には影響しない)。

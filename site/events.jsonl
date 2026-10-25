@@ -91,3 +91,4 @@
 {"time": "2026-10-25 12:30", "kind": "submit", "text": "Public 採点: 本命 M2x blend21 = 0.354(M1 0.322 から +0.032)、保険 = 0.336(旧固定 0.334 から +0.002)。自前 B1 の最高を更新。E0 0.464 との差は −0.110。", "link": "submissions.html"}
 {"time": "2026-10-25 18:10", "kind": "result", "text": "full_eval 登録評価: パネル C1 clean +0.035 [+0.009,+0.062]、dev2 保護は点推定すべて ≥ −0.02(下限は一部 < −0.02)→ 022 基準で『非劣性未確定の比較提出として可』。ただし現行 FPNet は隠しクラス1の約80%を既に学習済み identity として持つため、期待 ΔPublic ≈ +0.002〜+0.008 で見送り案(Codex 023 で確認中)"}
 {"time": "2026-10-25 18:11", "kind": "event", "text": "クラス分解の probe を準備: 登録主出力(v4 そのもの)を train 構造のみ / train+COCONUT のみ / PubChem のみに絞る 3 版。ローカルでは G(timsTOF の C1)で train のみが +0.243、パネルでは pool のみが C1 +0.016 / C2 +0.009"}
+{"time": "2026-10-25 18:42", "kind": "decision", "text": "Codex 023b: 診断提出は pool(train か COCONUT の候補のみ)と Pc(PubChem tier のみ)の二本、三本目の枠は保留。T の kernel は削除。提出版そのものを dev2 40 分子・両 view で検証(C1 view: 違反 0、26 位以下からの救済 3)"}

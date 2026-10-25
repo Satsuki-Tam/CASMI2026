@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 18:11 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 18:42 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -62,6 +62,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#full_eval-spark_fulleval_chainsh1742m2x-rank_v4bblend21-fallback-fpnet-full_eval022">full_eval の登録評価(spark_fulleval_chain.sh、17:42;M2x 構成・rank_v4b・blend21 + fallback のまま FPNet だけ full_eval、022 の基準は評価前に固定)</a></li>
 <li><a href="#1800-fpnet-1-80-fpnet-identity-query">新しい読み(18:00): 開発・評価はすべて「FPNet 未見」の領域、隠しクラス 1 の約 80% は現行 FPNet の「identity 既見・query 未見」の領域</a></li>
 <li><a href="#probecodex-023-1805">クラス分解の probe(Codex 023 で提案、18:05)</a></li>
+<li><a href="#pool-pc-codex-023bdiagprobe_strata_p2devpaneldevabmd1845-top-25">pool / Pc フィルタの条件付き効果(Codex 023b、diag/probe_strata_{p2dev,panel,devAB}.md、18:45;保存 top-25 を絞る版 = 全順位列を絞る提出版の下限)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -1714,4 +1715,88 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <li>登録主出力(M2x、v4 の pipeline そのもの = commit 7e84ed6 / sha 2dc30c5c5954)の最終リストを、候補が train 構造か(pool の train bit を公式 identity で OR した <code>in_train</code>)で絞った 2 版: probe T(train のみ)/ probe N(train 以外のみ)。順序は主出力のまま。<code>experiments/b1_probe023/</code>(差分は追加のみ)。</li>
 <li>不等式: P_T ≥ 主出力のクラス 1 寄与、P_N ≥ クラス 2 寄与、P_T + P_N − 0.354 = クラス間の取り違えの総量、p_train ≥ P_T。</li>
 <li>パネル 16 分子の確認(Spark、現行 pipeline に同じ追加): C1 view main 0.891 → T 0.922 / N 0;C2 view(真の identity を隠す)main 0.891 → N 0.969 / T 0。不等式はすべて成立。C2 view では 16 中 3 分子で「train 構造のデコイが真を押し下げていた」。</li>
-</ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul>
+<h2 id="pool-pc-codex-023bdiagprobe_strata_p2devpaneldevabmd1845-top-25">pool / Pc フィルタの条件付き効果(Codex 023b、<code>diag/probe_strata_{p2dev,panel,devAB}.md</code>、18:45;保存 top-25 を絞る版 = 全順位列を絞る提出版の下限)</h2>
+<table>
+<thead>
+<tr>
+<th>集合 / view / 真の COCONUT 所属</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">main RR</th>
+<th style="text-align: right;">pool − main</th>
+<th style="text-align: right;">Pc − main</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C C1: COCONUT / 非 COCONUT</td>
+<td style="text-align: right;">37 / 58</td>
+<td style="text-align: right;">0.897 / 0.921</td>
+<td style="text-align: right;">+0.020 / +0.050</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>C C2: COCONUT / 非 COCONUT</td>
+<td style="text-align: right;">37 / 58</td>
+<td style="text-align: right;">0.723 / 0.594</td>
+<td style="text-align: right;">+0.029 / −0.594</td>
+<td style="text-align: right;">−0.723 / +0.008</td>
+</tr>
+<tr>
+<td>D C2: COCONUT / 非 COCONUT</td>
+<td style="text-align: right;">12 / 75</td>
+<td style="text-align: right;">0.514 / 0.274</td>
+<td style="text-align: right;">+0.114 / −0.274</td>
+<td style="text-align: right;">−0.514 / +0.015</td>
+</tr>
+<tr>
+<td>E C2: COCONUT / 非 COCONUT</td>
+<td style="text-align: right;">29 / 60</td>
+<td style="text-align: right;">0.444 / 0.177</td>
+<td style="text-align: right;">+0.081 / −0.177</td>
+<td style="text-align: right;">−0.444 / +0.119</td>
+</tr>
+<tr>
+<td>F C2: COCONUT / 非 COCONUT</td>
+<td style="text-align: right;">41 / 19</td>
+<td style="text-align: right;">0.475 / 0.179</td>
+<td style="text-align: right;">+0.008 / −0.179</td>
+<td style="text-align: right;">−0.475 / +0.059</td>
+</tr>
+<tr>
+<td>G C1 / C2(全分子 非 COCONUT)</td>
+<td style="text-align: right;">98 / 98</td>
+<td style="text-align: right;">0.612 / 0.650</td>
+<td style="text-align: right;">+0.248 / −0.650</td>
+<td style="text-align: right;">— / +0.012</td>
+</tr>
+<tr>
+<td>W7 B C2: COCONUT / 非 COCONUT</td>
+<td style="text-align: right;">48 / 219</td>
+<td style="text-align: right;">0.731 / 0.446</td>
+<td style="text-align: right;">+0.016 / −0.446</td>
+<td style="text-align: right;">−0.731 / +0.016</td>
+</tr>
+<tr>
+<td>パネル C1 / C2(COCONUT 249/250)</td>
+<td style="text-align: right;">249 / 249</td>
+<td style="text-align: right;">0.881 / 0.904</td>
+<td style="text-align: right;">+0.016 / +0.013</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>- 読み: 真が COCONUT にある分子は main RR が高く、PubChem tier のみの候補を外すと +0.01〜+0.11。真が COCONUT に無いクラス 2 代理は main RR が低く(0.18〜0.59)、pool フィルタではすべて失う。隠しテストでの純効果は「COCONUT に無いクラス 2 の真の割合 × その RR」と「C1・COCONUT 側の順位改善」の綱引きで、P_pool − M = G_K − M_P がそれを直接測る。shortlist 到達 = 0 の分子(absent)は全フィルタで 0。</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>- 注記: パイプラインのログの「lib_max&gt;=0.6」は TAU(2.0)と比較しているため常に 0 になる表示上の誤り(出力には影響しない)。</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

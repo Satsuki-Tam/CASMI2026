@@ -23,3 +23,10 @@
 - Pc 側の検証: パネルは真がほぼ COCONUT なので不足 → **dev2 の 40 分子(各層 8)を両 view で提出版そのもので実行**し、`validate_probes.py` で所属・接頭辞順序・分割・RR の関係(真が群内なら RR_g ≥ RR_main、群外なら 0)・Pc 候補が全て tier・空リスト数・26 位以下からの救済数を分子別に検査(`spark_probe_val40.sh`)。
 - wrapper: `rc == 0` を assert、全 ID・行数・形式を検査してから EMIT、各出力の sha256・埋め込み sha・EMIT を `submission_meta.json` に保存(Pc の notebook に適用。pool v2 は旧 wrapper なので、提出前に commit run のログで rc 0 と行数を確認する)。
 - ローカル分解の未一致 SMILES(C/C2 2、E/C2 1、W7 B/C2 1)は top-25 の保存リストを絞る版の制約(26 位以下を救済できない下限)として記録し、提出版と同一実験とは扱わない。
+
+## 4. 検証結果(18:45、`spark_probe_val40.sh`、提出版 pipeline sha 1bc93dda… そのもの、dev2 40 分子 = 各層 8)
+| view | main | T | N | C のみ | Pc | pool | 違反(所属・接頭辞・分割・RR 関係・Pc の tier・未知 SMILES) | 真の群 | 空リスト(T/N/C/Pc/pool) | 26 位以下からの救済 |
+|---|---:|---:|---:|---:|---:|---:|---|---|---|---|
+| C1 | 0.573 | 0.692 | 0 | 0 | 0 | 0.677 | すべて 0 | T 22・T&C 14・不在 4 | 2/1/3/4/1 | T 3・pool 3 |
+| C2(真の identity を隠す) | 0.429 | 0 | 0.474 | 0.267 | 0.250 | 0.202 | すべて 0 | Pc 16・C のみ 14・不在 10 | 9/1/3/4/1 | C のみ 2・pool 1 |
+- C2 view で pool + Pc = 0.452 ≥ main 0.429(G_K + G_P = +0.023)。両 view とも VALIDATION PASS → Pc の kernel(`casmi26-b1-probe-p` v1、新 wrapper)を 18:45 に push。pool(v2、旧 wrapper)は提出前に commit run のログで rc 0 と行数を確認する。

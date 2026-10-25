@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 18:11 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 18:42 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -7567,4 +7567,127 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <p><strong>Q1</strong> 1 の判定(022 表の 2 行目)に同意するか。そのうえで 2 の理由で full_eval の比較提出を見送ることに同意するか(反対なら、どの情報が得られるかを示してほしい)。
 <strong>Q2</strong> 2 の「隠しクラス 1 の約 80% は fold-0 FPNet の既見 identity」という読みの穴(例: クラス 1 の定義が train 外の公開ライブラリを含む、identity 群の分割の偏り、パネル群との重なり)。
 <strong>Q3</strong> probe T/N の設計の穴と、読みの表の修正。in_train の判定(pool の train bit を公式 identity で OR)で十分か。2 枠を使う価値があるか、1 枠(T のみ)で足りるか。
-<strong>Q4</strong> full_rk(19:25 頃学習終了予定、20:50 以降はローカル PC 使用不可)の次の手順で、2 の読みを踏まえて変えるべき点。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<strong>Q4</strong> full_rk(19:25 頃学習終了予定、20:50 以降はローカル PC 使用不可)の次の手順で、2 の読みを踏まえて変えるべき点。</p></details><details><summary>回答(Codex)</summary><h1 id="023-full_evaltn-probe">023 レビュー: full_evalの判断、既見領域、T/N probe</h1>
+<p>2026-10-25。<strong>full_evalは022の「非劣性未確定だが一回の比較提出は可」に該当する。容量・作業負担を理由に今夜保留する選択は妥当だが、期待利得がほぼ無いという推定には同意しない。</strong> T/Nは二本そろえば固定ランキングの有用な診断になる。ただし、測るのはtrain所属による分割の効果であり、C1/C2の寄与やE0との差の所在そのものではない。</p>
+<p>私なら、アップロードが現実的に可能ならfull_evalの一回の直接比較を優先する。容量制約が解決できず見送る場合、T/N二本へ振り替える案は、以下の定義・読み方・実装確認を固定することを条件に支持する。</p>
+<p><strong>Q1 — 022の判定には同意。見送り理由は性能判定と分ける</strong></p>
+<p>保存予測からclean 202分子のΔを再集計し、<strong>+0.035033、95%区間 [+0.008969,+0.062041]</strong>を確認した。uncertain 48は+0.010417 [−0.020833,+0.041667]。dev2の全保護層の点推定は−0.02以上だが、挙げられた7層で下限が−0.02未満であり、非劣性未確定という判定は正しい。</p>
+<p>parityもC1/C2それぞれ16分子で、query差0、主出力・保険のtop-1/RR/集合/順序付きtop25が16/16一致していることを確認した。従って「比較提出できる候補」である。これは「提出しなければならない」という意味ではなく、保留しても性能上の判定はそのまま記録する。</p>
+<p>直接提出から得られる情報は、<strong>実際の隠し集合・既見性の混合・候補生成・forward・融合を通した、FPNet置換全体のΔPublic</strong>である。T/N probeは別の問いで、この情報を代替しない。容量制約が理由なら「比較可能だが資源配分により保留」と記載し、「利得がほぼ確実に0.02未満なので無価値」とは書かない。</p>
+<p><strong>Q2 — 約80%という基準集団の数字は正しいが、隠しへの移し方が強すぎる</strong></p>
+<p><code>make_split.py</code>は指定foldとNP-example群を除外し、<code>SPLIT_AUDIT.json</code>は学習identity key 219,155、除外55,031を記録する。元の学習対象の約80%を学習側に置いたという理解は妥当。パネルはfold番号にかかわらず群全体が除外され、従来のfold0ベースの開発配置はFPNetに未見のidentityを中心に測っていた。この点は、C1-seen行をrankerへ加える重要な動機になる。</p>
+<p>ただし次は別々の仮定である。</p>
+<ul>
+<li><strong>公開参照あり＝このtrainにある、ではない。</strong> train外の公開ライブラリ分子もC1になり得る。学習済み率80%が適用されるのは、学習対象の台帳に入る分子という条件の下である。</li>
+<li>foldはidentity群をseed付きで分割し、Enveda由来比率も揃えたもの。隠しC1が元の全学習分子から一様抽出された保証はない。パネル群との重複、化学領域・出典・質量帯、小さい隠し標本のばらつきもある。SPLIT_AUDIT自身も、歴史的batchでの露出を再構築した監査ではないと明記している。</li>
+<li><strong>full_evalが予測を変えるのは未学習だった約20%だけ、ではない。</strong> 新しい学習データと学習過程で重み全体が変わるため、元から既見のC1、train外C1、C2/3でもFP値・順位・候補・融合結果は変わる。dev2の区間が広い結果を「C2/3への差は0」と置くこともできない。</li>
+<li>パネルのfold0→full_eval差は「未見→既見」に加え、学習データ量等も変わった比較である。これを隠しの未見20%へ一律に掛け、他群を差0とするのは感度シナリオに留まる。p1=0.3〜0.5も観測値ではない。なお提示した積そのものの範囲は0.0018〜0.005で、0.008には別の仮定が必要になる。</li>
+</ul>
+<p>従って、既見性を考慮した評価が必要という帰結には賛成するが、これでfull_evalのPublic利得を小さく上限づけることはできない。</p>
+<p>また、現行fold0で「既見identity・未見query」を作れないというのは、<strong>元の学習コーパス内の取得だけを使う場合の制約</strong>である。同じidentityの、元の学習コーパス外の独立した取得が入手できれば評価できる。full_rk/full_evalで作る条件も有用だが、異なるcheckpoint上の代理である点は残る。</p>
+<p><strong>Q3 — T/Nの代数は、train所属と固定順位を厳密に定義すれば成立する</strong></p>
+<p>まずTを「公式scorerで正規化したidentityがtrainに存在する」、Nをその補集合と定義する。<strong>T/NはC1/C2のラベルではない。</strong> Nにはtrain外の公開参照を持つC1も含まれ得る。Nの得点がC2寄与と等しいとは言わない。</p>
+<p>全分子・同じ分母で、元出力Mのうち真がT/Nに属する寄与をM_T/M_Nとする。同じ候補集合・完全な順位列から、所属だけで絞ってtop25を作り、空の代替出力が偶然正解しない条件では、</p>
+<p><code>M = M_T + M_N</code></p>
+<p><code>P_T = M_T + G_T</code>、<code>P_N = M_N + G_N</code>、<code>G_T,G_N ≥ 0</code></p>
+<p>となる。従って、<code>P_T + P_N − M = G_T + G_N</code>は、<strong>真のtrain所属を知るoracleが、現在の候補と群内順位を固定したまま得る改善量</strong>である。候補生成・群内再順位付けまで改善した手法全般の上限ではない。また、現実の観測特徴でそのoracleを近似できると示したことにもならない。</p>
+<p>二本から元出力の寄与に付けられる範囲は、</p>
+<p><code>max(0, M−P_N) ≤ M_T ≤ min(M, P_T)</code></p>
+<p><code>max(0, M−P_T) ≤ M_N ≤ min(M, P_N)</code></p>
+<p>である。真がTにある比率p_Tについては、<code>P_T ≤ p_T ≤ 1−P_N</code>という範囲まで。P_Tをそのままクラス1比率や元のクラス1寄与と置かない。</p>
+<p><strong>in_trainの判定は、現在のwindow内フラグだけでは厳密なtrain所属にならない。</strong> 確認したコードは、窓に入ったpoolのsource bitをORし、shortlist内の公式identityへ集約する。一方でC2評価ではそのフラグを書き換える。窓外の表記や未収載の構造もあるので、意味を固定したglobal集合を別に使うのがよい。</p>
+<p>実測では、<code>data/processed/train_scorer_keys.parquet</code>の<code>scorer_ik14</code>のunique集合は <strong>274,195</strong>、poolのtrain bit集合は <strong>274,186</strong>で、<strong>global trainにだけある9 key</strong>があった（逆差0）。差は小さいが同一ではない。global train集合を固定し、各<code>rows[i]["key"]</code>をそこで判定する。poolを使った高速な集合構築でも、この差とscorer版を照合する。<code>official_keys_of_train()</code>は確認時点で<code>return None</code>のstubなので、関数名だけを根拠にglobal照合済みとは扱わない。</p>
+<p>実装上の最低条件は以下。</p>
+<ol>
+<li><strong>上流を変えず、top25への切詰め前の全順位列をfilterする。</strong> モデル・候補生成・prior・forward・blend・fallbackは元のM2xと同じ。公式identityで重複を統合し、TとNは互斥かつ全候補を被覆する。確認時点のコードは同じ<code>order</code>から両probe CSVを生成しており、この位置はよい。</li>
+<li><strong>元出力、T、Nを各run内で同時に保存する。</strong> 各提出の最終<code>submission.csv</code>へどれを出すかを明示し、元出力の選択ミスを防ぐ。probe無効時の出力が凍結基準と同じであること、順位が相対的に保持されることを確認する。</li>
+<li><strong>空出力を別に監査する。</strong> <code>CCO</code>を使うなら、対象の質量条件で正解にならないことと、空になった分子数を記録する。そうでなければ反対群のRR=0という式に例外ができる。候補ゼロの分子も分母から落とさない。</li>
+<li><strong>ローカルでは分子別に不等式を検査する。</strong> train由来集合をglobal Tで分けると真が全てTになるので、それだけでN側を検証したとは言わない。Nの正解を持つ条件は、既存C2の反実仮想でheld-out identityをTから除いた検査等で補い、global所属での性能診断とは区別する。</li>
+</ol>
+<p><strong>Public二本と過去0.354には、同じ完全順位列という保証がない。</strong> 同じコードでも隠し再実行は別になり、FP/forwardの数値差、候補境界、時間予算・欠損で順位列が変わり得る。<code>submission_unfiltered.csv</code>を保存しても、その隠し版のMRRを手元で確認できるわけではない。従ってPublicでの<code>P_T+P_N−0.354</code>は、同じ順位付けを再現できる範囲での近似測定とし、丸めと実行差も注記する。ローカルでは同一保存スコアを使った等式が成立することを確認する。</p>
+<p>読みの表は次に置き換える。</p>
+<table>
+<thead>
+<tr>
+<th>観測</th>
+<th>言えること／次の行動</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P_T+P_N−M ≥ 0.05</td>
+<td>この順位列では群をまたぐ候補の競合を除く余地が大きい。ローカルで観測可能特徴によるgateやヘッジを検証する。クラス判定可能性やE0との差の原因は未証明</td>
+</tr>
+<tr>
+<td>P_N ≤ 0.05</td>
+<td>元出力の<strong>N所属の真からの寄与は高々0.05</strong>。Nの頻度が低いのか、候補不在か、群内順位が悪いのかは分離できない</td>
+</tr>
+<tr>
+<td>P_Tが高くP_Nが小さい</td>
+<td>M_Tは少なくともM−P_N。元出力がT側から多く得点しているという理解はできるが、E0が追加で得る0.11がT側かN側かは分からない</td>
+</tr>
+<tr>
+<td>和がMを明瞭に下回る、または1を超える</td>
+<td>同一順位・互斥性・key判定・空出力・実行差を点検する。Publicの丸めや別実行を無視して直ちにクラス構成を解釈しない</td>
+</tr>
+</tbody>
+</table>
+<p><strong>二枠の価値は目的次第だが、提案の競合量を測るならT/N両方が必要。T一本では足りない。</strong> T一本からはM_Tの上限等しか付かず、P_Nとoracle差を復元できない。もし一枠に絞り、問いを「train外側の寄与がどこまであり得るか」に限定するなら、むしろNを優先する。どちらの場合も「B1がT中心だからE0との差もC1にある」という帰結は取り除く。</p>
+<p>この固定ルールの全分子共通ablationを行うなら、対象と解釈を提出前に記録する。Publicから個別test記録のラベルを作って予測へ組み込む実験とは区別する。公式規定は人手によるvalidation/test記録のラベルや予測情報の利用を禁止し、現在の日上限は5件である。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/rules">公式Rules</a></p>
+<p><strong>Q4 — full_rkでは「C1-seenを足す」だけでなく、適用先まで固定して比較する</strong></p>
+<ol>
+<li>19:25頃の学習完了後、final checkpoint・hash・コード/設定・除外と露出台帳を保存し、Sparkへ引き継ぐ。20:50までにローカル処理を終える条件を維持する。今夜中に新rankerまで完成させることを学習完了の条件にしない。</li>
+<li>p1のC2-unseen/C1-unseen、W7/eval_c1のC1を、実際の残存学習取得数でタグ付けして学習表を作る。C1 usableとFPNetの既見性は別なので、全てのW7 C1を一律にseen扱いしない。fit/tune/evalを維持し、C1/C2の有効群数・重みを先に固定する。パネルはranker学習へ入れない。</li>
+<li>まず<strong>full_rk＋旧v4b 対 full_rk＋新ranker</strong>。同じFPNet、候補、forward、出力方針で、C1-seen/unseenと未見C2を分けて見る。T/N gate、pool60、PCL加点をこの比較に混ぜない。</li>
+<li>新rankerを現行fold0へ移すなら、<strong>fold0＋旧ranker 対 fold0＋新ranker</strong>を別に確認する。raw FPの尺度や誤り方が異なるため、full_rk上で良いことだけで移植成功とはしない。既存のfold0パネルはunseenなので、この試験だけでfold0の隠しC1-seenを検証したことにもならない。</li>
+<li>比較が良ければ、学習表と同じfull_rkを使う候補をまず検討する。全量への再学習やfold0への移植は必須ではない。T/N probeが大きいoracle差を示しても、観測可能な情報でその差を回収できるかは別の一対比較にする。</li>
+</ol>
+<p>確認資料: 023依頼・022判断、<code>fe_eval_sync</code>の登録評価とパネル分子別差、固定監査群、Sparkの16分子parity両view、<code>make_split.py</code>・<code>SPLIT_AUDIT.json</code>・identity folds README、global train scorer keysとpool、現在の<code>b1_pipeline.py</code>、公式APIのルールと日上限。既存データの読取・CPU再集計のみ実施し、提出・dataset操作・学習への介入は行っていない。</p>
+<p>REVIEW_COMPLETE: 023</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-full_eval">1. full_eval</a></li>
+<li><a href="#2-probe">2. クラス分解の probe(診断、候補ではない)</a></li>
+<li><a href="#3-full_rkcodex-q4">3. full_rk(Codex Q4)</a></li>
+</ul>
+</div>
+</div><h1 id="023-full_eval-probe-full_rk">023 判断: full_eval は「比較可能だが資源配分により保留」、クラス分解の probe を実施、full_rk の次段を固定</h1>
+<p>作成: 2026-10-25 18:25 JST(Claude Code)。依頼 <code>023_request.md</code>(+ 追加 <code>023b_request.md</code>)、回答 <code>023_codex.md</code>。</p>
+<h2 id="1-full_eval">1. full_eval</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>判定</td>
+<td>022 の 2 行目「非劣性未確定の一回の比較提出として可」で確定(Codex が clean 202 の Δ +0.035033 [+0.008969, +0.062041]、uncertain、parity 16/16 を独立に再集計・確認)。</td>
+</tr>
+<tr>
+<td>提出</td>
+<td><strong>比較可能な候補として記録し、資源配分により保留</strong>(checkpoint を Kaggle に置く手段 = private 容量 29 MB の問題がユーザー判断待ち)。「期待利得がほぼ 0 なので無価値」とは書かない — Codex の指摘どおり、重み全体が変わるので既見 C1・train 外 C1・C2/3 でも順位は変わり、私の 0.2 × p1 × Δ の見積もりは感度シナリオに過ぎない(上限ではない)。容量が解決すれば一回の直接比較を優先する。</td>
+</tr>
+<tr>
+<td>既見性</td>
+<td>「元の学習対象の約 80% は fold-0 FPNet に既見、開発・評価は未見 identity 中心」は事実として記録。隠しクラス 1 への移し替え(公開参照あり = この train にある、一様抽出)は仮定であり、隠しテストの既見率としては使わない。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-probe">2. クラス分解の probe(診断、候補ではない)</h2>
+<ul>
+<li>定義: <strong>T = 候補の公式 identity が train 構造</strong>(実装は window 内 pool の train bit を公式 identity で OR)。Codex 指摘の global 集合(<code>train_scorer_keys.parquet</code> の 274,195 key)との差は pool の train bit に無い 9 key だけで、開発表の shortlist 候補 310,993 件では不一致 22 件(すべて window 側の取りこぼし、真は 0 件)→ 実質同一として、kernel に入れた window 版をそのまま使う(global 版は <code>experiments/b1_probe023/b1_pipeline_globalkeys.py</code> に保存)。T/N は C1/C2 のラベルではない(train 外の公開参照を持つ C1 は N 側)。</li>
+<li>代数(Codex): <code>P_T = M_T + G_T</code>、<code>P_N = M_N + G_N</code>、<code>P_T + P_N − M = G_T + G_N</code> = 候補と群内順位を固定したまま真の所属を知る oracle の改善量。<code>max(0, M−P_N) ≤ M_T ≤ min(M, P_T)</code>、<code>P_T ≤ p_T ≤ 1 − P_N</code>。Public の 0.354 とは隠し再実行が別なので近似。</li>
+<li>読みの表は Codex の置き換え版を採用(「B1 が T 中心だから E0 との差も C1」という帰結は削除)。</li>
+<li>空のリスト: エタノール("CCO"、46 Da)で埋める。隠しテストの質量は 157〜1,159 Da なので正解にならない。空になった分子数を run manifest に記録(<code>probe_empty_*</code>)。</li>
+<li>実装確認: パネル 16 分子(Spark)で、v4 の pipeline そのもの + probe の主出力が現行 pipeline と 16/16 一致、C1 view で T ≥ main・N = 0、C2 view(真の identity を隠す反実仮想)で N ≥ main・T = 0、pool + Pc ≥ main、T ≥ pool(C1)を分子別に確認。</li>
+<li>版の選択(T / pool / Pc の 3 版か、T / N か)は 023b の回答で確定する。kernel <code>casmi26-b1-probe-t</code> v2 と <code>casmi26-b1-probe-pool</code> v2 は 18:14 に push 済み(Kaggle の新しい notebook ではコンペのデータが <code>/kaggle/input/competitions/&lt;slug&gt;</code> に置かれるため v1 は test.parquet が見つからず失敗 → 置き場所を探す処理だけ追加した v2)。commit 実行は約 3 時間。</li>
+</ul>
+<h2 id="3-full_rkcodex-q4">3. full_rk(Codex Q4)</h2>
+<ol>
+<li>学習完了(19:25 頃)後、<code>handoff_full_rk.sh</code> が final checkpoint・sha256・学習記録・露出台帳を Spark に渡し READY を書く。20:50 までにローカル処理を終える条件は維持(20:45 で打ち切り)。</li>
+<li><code>spark_fullrk_chain.sh</code>(Spark、READY 待ちで起動済み): full_rk で p1 run1(rkfit 保留)・W7・eval_c1・dev2・パネルの特徴表を作り(GL は既存 run から seed)、ranker を rank_v4b の params/rounds のまま学習。<strong>C2 行は露出台帳で FPNet 既見の分子だけ落とす</strong>(<code>b1_rank_train.py --c2_drop_exposure</code>;W7 の 516 分子・eval_c1 の 19 分子は query 除去後に学習取得 0 = 未見なので C2 行を残す)。C1 行は既見・未見の両方を残し、評価で分けて読む。対照に同じ表で落とさない版(rank_rk_fx0)。</li>
+<li>主比較 <strong>full_rk + 旧 v4b(RK_old)対 full_rk + 新 ranker(RK_new)</strong>、採用の対照として凍結 M2x を併記。dev2(未見)、パネル(C1 既見)、W7(fit 群は学習に使ったので tune/eval 群で読む)。T/N gate・pool60・PCL はこの比較に混ぜない。</li>
+<li>fold-0 への移植は別の一対比較(fold0 + 旧 vs fold0 + 新)が必要。今夜はしない。</li>
+</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
