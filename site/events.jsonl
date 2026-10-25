@@ -83,3 +83,4 @@
 {"time": "2026-10-25 08:54", "kind": "result", "text": "GL なし ranker を実測 → fallback 分岐の答えではない(パネル未被覆 34 分子で保険 0.824 vs 0.402)。パネルと新層 G に共通する弱点は『timsTOF query + 他装置の参照(類似度 0.6〜0.85 帯)』を ranker が学習していないこと(A_timstof の C1 学習行は 7 分子)。Codex 017 で学習行追加/類似度の装置条件付けを議論。", "link": "validation.html"}
 {"time": "2026-10-25 09:02", "kind": "submit", "text": "09:02 比較提出 2 件: 本命 v4(M2x blend21)= 提出 ID 57610156、保険 v1(固定 + libpri τ0.9)= 57610167。採点待ち。提出枠は 1 日 5 回と判明(残り 3)。", "link": "submissions.html"}
 {"time": "2026-10-25 09:09", "kind": "issue", "text": "【訂正】07〜08 時台に書いた『隠しテストの adduct 被覆 / spectra 本数 / 参照一致』はすべて公開ダミー test(train 由来、採点時に置換)の集計で、隠しテストの性質ではない(Codex 017)。docs を訂正し、教訓を memory に保存。公式に使える隠しテスト情報は timsTOF・約 400 分子・3 クラスのみ。", "link": "validation.html"}
+{"time": "2026-10-25 09:47", "kind": "issue", "text": "E0 自前実行(c2_full3)がセル 17 で停止: Engine 2 が全分子を被覆せず assert。ICE 段階は 596/596 完了(キャッシュ有)。E0 担当エージェントに原因特定・assert の記録化・キャッシュ再利用での再実行を依頼。", "link": "experiments.html"}
