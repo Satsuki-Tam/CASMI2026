@@ -8,7 +8,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 SRC = os.path.join(ROOT, "experiments", "b1_baseline")
 import argparse
 ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--src_dir", default=SRC, help="directory holding b1_common.py / b1_pipeline.py / b1_rankfeats.py to embed (default: experiments/b1_baseline)"); ap.add_argument("--model", default=os.path.join(SRC, "rank", "lambdarank.txt"), help="LambdaRank model to embed ('' = none -> fixed rule)")
-ap.add_argument("--emit", default="main", choices=["main", "insurance", "probe_train", "probe_nontrain", "probe_coconut", "probe_pubchem", "probe_pool"], help="which list becomes submission.csv (one Kaggle submission per kernel version); "
+ap.add_argument("--emit", default="main", choices=["main", "insurance", "probe_train", "probe_nontrain", "probe_coconut", "probe_pubchem", "probe_pool", "probe_band26"], help="which list becomes submission.csv (one Kaggle submission per kernel version); "
                 "probe_* = DIAGNOSTIC class-decomposition probes (Codex 023), needs a pipeline that writes submission_probe_*.csv")
 ap.add_argument("--pipeline_args", default="", help="extra b1_pipeline.py arguments, e.g. '--k_short 200 --k_pop 50 --w_ice 0'")
 ap.add_argument("--expect_ckpt_sha", default="", help="full sha256 the loaded --fpnet_ckpt must have (asserted from the run manifest; empty = not checked)")
