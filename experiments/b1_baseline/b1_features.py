@@ -105,6 +105,8 @@ def main():
     ap.add_argument("--sets", nargs="*", default=["A_timstof", "B_nplib"]); ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--adduct_proxy", action="store_true", help="forward-model proxies for molecules without a covered positive spectrum: [M+NH4]+ / [M-H2O+H]+ scored as [M+H]+ (public N1A arm A)")
     ap.add_argument("--neg_proxy", action="store_true", help="EXPERIMENTAL: also map negative-mode spectra of such molecules onto the positive axis (see b1_common.forward_proxies)")
+    ap.add_argument("--extra_ckpts", nargs="*", default=[], help="additional FPNet checkpoints; the query fingerprint logits are averaged over <fold_safe>/fpnet_fold0.pt and these "
+                    "(same rule as b1_pipeline with several models); default none = single model, unchanged")
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True)
     import torch
     sys.path.insert(0, a.v3)
@@ -115,6 +117,8 @@ def main():
     RDLogger.DisableLog("rdApp.*"); TAUT = rdMolStandardize.TautomerEnumerator()
     mols = pd.read_csv(a.eval_csv)
     dtype = fpnet.autocast_dtype("cuda"); model = fpnet.load_model(f"{a.fold_safe}/fpnet_fold0.pt", "cuda")
+    extra_models = [fpnet.load_model(p_, "cuda") for p_ in a.extra_ckpts]
+    if extra_models: print(f"FPNet ensemble: {1 + len(extra_models)} models ({a.fold_safe}/fpnet_fold0.pt + {a.extra_ckpts}); logits averaged", flush=True)
     # ---- spectra store
     S_MZ = np.load(f"{a.store}/spec_mz.npy", mmap_mode="r"); S_IT = np.load(f"{a.store}/spec_int.npy", mmap_mode="r"); S_OFF = np.load(f"{a.store}/spec_off.npy")
     meta = pl.read_parquet(f"{a.store}/spec_meta.parquet")
@@ -209,7 +213,8 @@ def main():
                     inp = fpnet.collate([dict(mz=pm, it=pi, prec=prec, adduct_ix=chem.adduct_index(ad), ce=float(np.mean(ces)) if ces else 0.0, ce_known=1.0 if ces else 0.0,
                                               n_merged=min(len(grp), 8), mode=1.0 if mode == "positive" else -1.0)], "cuda")
                     with torch.autocast("cuda", dtype=dtype):
-                        z = model(*inp)[0].float()[0].cpu().numpy().astype(np.float32)
+                        if extra_models: z = torch.stack([m_(*inp)[0].float()[0] for m_ in [model] + extra_models]).mean(0).cpu().numpy().astype(np.float32)
+                        else: z = model(*inp)[0].float()[0].cpu().numpy().astype(np.float32)
                     zl = z * len(grp) if zl is None else zl + z * len(grp); wsum += len(grp)
                 zlog = (zl / wsum).astype(np.float32)
                 # ---- raw keys + FP for every window structure, merge on raw key
