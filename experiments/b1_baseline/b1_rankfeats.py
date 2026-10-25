@@ -20,6 +20,10 @@ EXTRA_V3S = ["rank_fp", "rank_gl", "rank_ice", "margin_fp_mol", "margin_gl_mol",
 EXTRA_EXP = ["fp_pos", "negpool"]
 FEATSETS = {"v2": FEATS, "v2_noice": [f for f in FEATS if f not in ("z_ice", "ice", "ice_missing")], "v3s": FEATS + EXTRA_V3S, "v3": FEATS + EXTRA_V3}
 FEATSETS["v2_noice_exp"] = FEATSETS["v2_noice"] + EXTRA_EXP
+# 2026-10-26 (Codex 030): library support by query condition (b1_features --lib_conditions): the second-best condition's best similarity,
+# its gap to the maximum, and the number of comparable conditions (NaN = fewer than two comparable conditions = unobserved). Opt-in.
+EXTRA_LC = ["lib_sup2", "lib_gap2", "lib_ncond"]
+FEATSETS["v2_noice_lc"] = FEATSETS["v2_noice"] + EXTRA_LC
 # monotone directions for the constrained variant (0 = unconstrained): only the model scores (up) and the mass error (down), Codex 008
 MONO = dict(z_fp=1, z_gl=1, z_ice=1, fp=1, gl=1, ice=1, ppm_err=-1)
 # 2026-10-25 (panel probe): reference evidence may only raise a candidate -- in the C2 training view the truth has no references by construction,
@@ -50,7 +54,7 @@ def term(vals):
 
 
 def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src_mask, lotus_refs, lib_sim, lib_same, lib_nref, in_tier, in_train, in_coconut,
-                   ppm_err, fp_rank_window, n_query, ce_known, n_window=np.nan, feats=None, exposure=None):
+                   ppm_err, fp_rank_window, n_query, ce_known, n_window=np.nan, feats=None, exposure=None, libcond=None):
     """arrays of equal length (one molecule's candidates) -> (n, len(FEATS)) float matrix in FEATS order."""
     fp = np.asarray(fp, float); gl = np.asarray(gl, float); ice = np.asarray(ice, float); lib = np.asarray(lib_sim, float)
     top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
@@ -65,6 +69,10 @@ def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src
     if any(c in EXTRA_EXP for c in feats):
         if exposure is None: raise ValueError("feature list needs the FPNet exposure block (fp_pos / negpool) but no exposure arrays were given")
         cols.update(fp_pos=np.asarray(exposure["fp_pos"], float), negpool=np.asarray(exposure["negpool"], float))
+    if any(c in EXTRA_LC for c in feats):
+        if libcond is None: raise ValueError("feature list needs the per-condition library block (lib_sup2 / lib_gap2 / lib_ncond) but no arrays were given")
+        sup2_ = np.asarray(libcond["sup2"], float)
+        cols.update(lib_sup2=sup2_, lib_gap2=lib - sup2_, lib_ncond=np.asarray(libcond["ncond"], float))
     if any(c in EXTRA_V3 for c in feats):
         def gap(zv): return (float(np.max(zv)) - zv) if len(zv) else zv
         def margin(zv):

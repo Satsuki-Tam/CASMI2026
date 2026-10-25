@@ -63,7 +63,8 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                                    lib, g[f"lib_same_{view}"].values, g[f"lib_nref_{view}"].values, g.in_tier.values, g[f"in_train_{view}"].values, g.in_coconut.values,
                                    g.ppm_err.values, g.fp_rank_window.values, float(m.n_query), float(m.ce_known),
                                    n_window=float(m["n_unique"]) if "n_unique" in M.columns and np.isfinite(float(m["n_unique"])) else np.nan, feats=feats,
-                                   exposure=exposure_of(g.official_key.values) if EXPO else None)
+                                   exposure=exposure_of(g.official_key.values) if EXPO else None,
+                                   libcond=(dict(sup2=g[f"lib_sup2_{view}"].values, ncond=g[f"lib_ncond_{view}"].values) if f"lib_sup2_{view}" in g.columns else None))
                 d = pd.DataFrame(X, columns=feats)
                 d.insert(0, "is_truth", g.is_truth.values.astype(int)); d.insert(0, "identity", mid); d.insert(0, "group", group_override or m.group); d.insert(0, "view", view)
                 d.insert(0, "molecule", mid); d.insert(0, "set", s); d.insert(0, "run", run)

@@ -65,7 +65,8 @@ def scores_for(view, g, mid, gl, ice, gl_ok, ice_ok, c, M, tau, margin, min_gl_c
                            g.ppm_err.values, g.fp_rank_window.values, float(M.loc[mid, "n_query"]), float(M.loc[mid, "ce_known"]),
                            n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=c["feats"],
                            exposure=(dict(fp_pos=np.array([c["ledger"].get(str(k), (0.0, 0.0))[0] for k in g.official_key.values], float),
-                                          negpool=np.array([c["ledger"].get(str(k), (0.0, 0.0))[1] for k in g.official_key.values], float)) if c.get("ledger") else None))
+                                          negpool=np.array([c["ledger"].get(str(k), (0.0, 0.0))[1] for k in g.official_key.values], float)) if c.get("ledger") else None),
+                           libcond=(dict(sup2=g[f"lib_sup2_{view}"].values, ncond=g[f"lib_ncond_{view}"].values) if f"lib_sup2_{view}" in g.columns else None))
         if X.shape[1] != len(c["feats"]): raise RuntimeError(f"schema mismatch {X.shape} vs {len(c['feats'])}")
         main = c["booster"].predict(X)
     else: main = ins   # the submission pipeline's fallback (b1_pipeline --min_gl_cover)
