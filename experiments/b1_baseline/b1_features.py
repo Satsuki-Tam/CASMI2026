@@ -105,6 +105,9 @@ def main():
     ap.add_argument("--sets", nargs="*", default=["A_timstof", "B_nplib"]); ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--adduct_proxy", action="store_true", help="forward-model proxies for molecules without a covered positive spectrum: [M+NH4]+ / [M-H2O+H]+ scored as [M+H]+ (public N1A arm A)")
     ap.add_argument("--neg_proxy", action="store_true", help="EXPERIMENTAL: also map negative-mode spectra of such molecules onto the positive axis (see b1_common.forward_proxies)")
+    ap.add_argument("--lib_conditions", action="store_true", help="Codex 030: also store, per candidate and view, the library support by query CONDITION "
+                    "(adduct x 10-eV CE bucket; unknown CE = own bucket): lib_sup2_* = second-highest per-condition max similarity (NaN if < 2 comparable "
+                    "conditions), lib_ncond_* = number of comparable conditions; same references, masks and caps as lib_sim_* (default off = unchanged)")
     ap.add_argument("--extra_ckpts", nargs="*", default=[], help="additional FPNet checkpoints; the query fingerprint logits are averaged over <fold_safe>/fpnet_fold0.pt and these "
                     "(same rule as b1_pipeline with several models); default none = single model, unchanged")
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True)
@@ -257,6 +260,8 @@ def main():
                 pop = comp["lsid"] + comp["lpmid"] + 0.5 * comp["lsynonyms"] + 1.0 * (comp["np"] != 0) + 0.5 * ((comp["src_mask"].astype(np.int64) & 1) != 0) + 0.5 * np.log1p(np.maximum(comp["lotus_refs"], 0))
                 # ---- library similarity (train-structure candidates); duplicate classification first, then MAX_REF
                 L = {v: np.zeros(n_u) for v in ("c1", "c2", "c1_keepdup", "c2_keepdup", "same_c1", "same_c2")}; nref = {v: np.zeros(n_u, int) for v in ("c1", "c2")}; nsame = {v: np.zeros(n_u, int) for v in ("c1", "c2")}
+                SUP2 = {v: np.full(n_u, np.nan) for v in ("c1", "c2")}; NCOND = {v: np.zeros(n_u, int) for v in ("c1", "c2")}
+                qcond = [(q_["adduct"], int(round(q_["ce"] / 10.0)) if q_["ce"] is not None else "na") for q_ in qspec]   # query condition (label-free)
                 n_exact_truth = n_susp_truth = n_exact_other = n_susp_other = 0; usable_truth_c1 = 0
                 truth_set = set(truth_idx)
                 for ci, k in enumerate(keys):
@@ -285,14 +290,19 @@ def main():
                     # own-library references are removed; C2 view: every reference of the truth is removed; other candidates keep all references.
                     for tag, pool in (("", kept), ("_keepdup", kept + kept_susp)):
                         refs1 = cap([x for x in pool if not (is_truth_cand and lib_of_row[x] == lib)])
-                        b1 = s1 = 0.0; n1 = ns1 = 0
+                        b1 = s1 = 0.0; n1 = ns1 = 0; cmax_ = {}
                         for x in refs1:
                             (rmz, rit), rprec = ref_cache[x]
                             n1 += 1; sa = add_of_row[x] in M_by_add; ns1 += int(sa)
-                            for s in qspec:
+                            for qi_, s in enumerate(qspec):
                                 if s["mode"] != mode_of_row[x]: continue
                                 sim = entropy_similarity(s["clean"][0], s["clean"][1], rmz, rit); same = add_of_row[x] == s["adduct"]
                                 b1 = max(b1, sim); s1 = max(s1, sim if same else 0.0)
+                                if a.lib_conditions and tag == "": cmax_[qcond[qi_]] = max(cmax_.get(qcond[qi_], 0.0), sim)
+                        if a.lib_conditions and tag == "":
+                            v_ = sorted(cmax_.values(), reverse=True)
+                            SUP2["c1"][ci] = v_[1] if len(v_) >= 2 else np.nan; NCOND["c1"][ci] = len(v_)
+                            if not is_truth_cand: SUP2["c2"][ci], NCOND["c2"][ci] = SUP2["c1"][ci], NCOND["c1"][ci]   # C2 view: the truth has no references
                         b2, s2, n2, ns2 = (0.0, 0.0, 0, 0) if is_truth_cand else (b1, s1, n1, ns1)
                         L["c1" + tag][ci], L["c2" + tag][ci] = b1, b2
                         if tag == "": L["same_c1"][ci], L["same_c2"][ci] = s1, s2; nref["c1"][ci], nref["c2"][ci] = n1, n2; nsame["c1"][ci], nsame["c2"][ci] = ns1, ns2
@@ -339,6 +349,9 @@ def main():
                                          lib_same_c1=float(max(L["same_c1"][j] for j in idxs)), lib_same_c2=float(max(L["same_c2"][j] for j in idxs)),
                                          lib_nref_c1=int(max(nref["c1"][j] for j in idxs)), lib_nref_c2=int(max(nref["c2"][j] for j in idxs)),
                                          lib_nsame_c1=int(max(nsame["c1"][j] for j in idxs)), lib_nsame_c2=int(max(nsame["c2"][j] for j in idxs)),
+                                         **({"lib_sup2_c1": float(np.nanmax([SUP2["c1"][j] for j in idxs])) if np.isfinite([SUP2["c1"][j] for j in idxs]).any() else np.nan,
+                                             "lib_sup2_c2": float(np.nanmax([SUP2["c2"][j] for j in idxs])) if np.isfinite([SUP2["c2"][j] for j in idxs]).any() else np.nan,
+                                             "lib_ncond_c1": int(max(NCOND["c1"][j] for j in idxs)), "lib_ncond_c2": int(max(NCOND["c2"][j] for j in idxs))} if a.lib_conditions else {}),
                                          in_top_fp=bool(si & top_fp), in_top_fpprior=bool(si & top_fpp), in_top_pop=bool(si & top_pop), in_top_lib_c1=bool(si & top_lib["c1"]), in_top_lib_c2=bool(si & top_lib["c2"]),
                                          **{n: float(comp[n][i]) for n in comp}, pop_public=float(pop[i])))
                 rspec = [dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
