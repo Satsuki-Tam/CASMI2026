@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 08:54 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 09:02 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -5796,6 +5796,7 @@ p1 + p2 + p3 = 1
 <li><a href="#2-run_panel_v3brank_v4b-ab-probe-csvgl-lib_max-09-lib">2. 同じ量をパネル(run_panel_v3b、rank_v4b)と A/B で見る(probe の分子別 CSV、GL 被覆の有無で分割;保険は lib_max ≥ 0.9 → lib 順位、それ以外 → 固定の近似)</a></li>
 <li><a href="#3">3. 提案(優先順、意見を求める)</a></li>
 <li><a href="#4-0855-1-gl-ranker">4. 追記(08:55): 提案 1 の GL なし ranker を実測した</a></li>
+<li><a href="#5-0858-2-fold-safe">5. 追記(08:58): 提案 2 の候補源の実数と fold-safe の可能性</a></li>
 </ul>
 </div>
 </div><h1 id="017-dev2-v2-2-gl-fallback-timstof-query-1">017 依頼: dev2 v2 の速報が示す 2 つの問題(GL 不足 fallback の出力ポリシー、timsTOF query のクラス 1)への対処順序</h1>
@@ -5996,4 +5997,9 @@ p1 + p2 + p3 = 1
 </ol>
 <p><strong>Q1</strong> 1 と 2 の順序と、1 の比較の保護集合・許容損失の置き方。<strong>Q2</strong> 2 の候補源(fold 0 の残り 133 group vs fold 制約の緩和)。<strong>Q3</strong> 速報の probe 値(CI なし、特徴表ベース)を朝の報告に載せるときの表現。</p>
 <h2 id="4-0855-1-gl-ranker">4. 追記(08:55): 提案 1 の GL なし ranker を実測した</h2>
-<p><code>rank_v4b_nogl</code>(同じ表・drop、GL 列を除く 20 特徴)をパネル・E/F/G で probe した(<code>docs/validation_design.md</code> 末尾の表)。<strong>パネルの未被覆 34 分子で保険(近似)0.824 に対し GL なし 0.402(C1)、0.809 に対し 0.707(C2)</strong> — 提案 1 は不採用が妥当。E/F では rank_v4b(GL 欠損のまま)・GL なしの両方が保険を +0.17〜+0.24 上回る。共通要因は「timsTOF query + 他装置参照(類似度 0.6〜0.85 帯)」の体制を ranker が学習していないことと読む(G と パネルで一致、公開 NP ライブラリ query では learned ≥ lib)。→ 提案 2(G 型の C1 学習行追加)と 3(類似度の装置条件付け)の順序・設計に意見を集中してほしい。fallback は当面保険のまま(隠しテストの未被覆 29 分子はパネル型)。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p><code>rank_v4b_nogl</code>(同じ表・drop、GL 列を除く 20 特徴)をパネル・E/F/G で probe した(<code>docs/validation_design.md</code> 末尾の表)。<strong>パネルの未被覆 34 分子で保険(近似)0.824 に対し GL なし 0.402(C1)、0.809 に対し 0.707(C2)</strong> — 提案 1 は不採用が妥当。E/F では rank_v4b(GL 欠損のまま)・GL なしの両方が保険を +0.17〜+0.24 上回る。共通要因は「timsTOF query + 他装置参照(類似度 0.6〜0.85 帯)」の体制を ranker が学習していないことと読む(G と パネルで一致、公開 NP ライブラリ query では learned ≥ lib)。→ 提案 2(G 型の C1 学習行追加)と 3(類似度の装置条件付け)の順序・設計に意見を集中してほしい。fallback は当面保険のまま(隠しテストの未被覆 29 分子はパネル型)。</p>
+<h2 id="5-0858-2-fold-safe">5. 追記(08:58): 提案 2 の候補源の実数と fold-safe の可能性</h2>
+<ul>
+<li>残りの fold 0 の G 型(enveda-180 query・≥2 ライブラリ、dev2/locked2 v2 と既存集合の group を除外)は <strong>72 group</strong> しか無い(E 632 / F 63 / C 21 / D 1,654)。学習行の特徴表(M2x 構成、GL のみ)は <code>spark_fitpool_chain.sh</code> で E/D を 300 に抑えた 756 分子を、パネル pipeline run の後に計算する予定(キュー済み)。</li>
+<li>fold 1〜4 には G 型が <strong>約 1,822 group</strong>(441 / 439 / 475 / 467)ある。<code>data/external/fold_safe_fpnet/</code> には <code>fpnet_fold0..4.pt</code> の 5 fold モデルがあり、<code>b1_features.py</code> は現在 fold 0 モデルだけを使う。分子の fold に応じてその分子を学習に含まない fold モデルで FP 特徴を計算するように評価器を fold 対応にすれば、fold 制約を緩めずに(FP 特徴の楽観化なしに)G 型の学習行を約 25 倍にできる。GL/ICE は MSG 学習で fold と無関係(MSG 分子は除外済み)。この拡張を提案 2 の第一候補にしたい — 懸念点(fold モデル間の校正差が FP の z 化に与える影響、ranker の学習表と評価表で FP の出所が混ざること)を指摘してほしい。</li>
+</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
