@@ -119,6 +119,8 @@ def main():
                     "(e.g. run_fitpool_v3=1 = 'G C1 weight reduced')")
     ap.add_argument("--c2_drop_exposure", default="", help="Codex 021/023: query_identity_exposure.csv of the FPNet that built the tables (molecule, exposure); the CLASS-2 "
                     "view rows of molecules whose identity is trained by that FPNet (exposure c1_seen) are dropped, rows of unseen_after_removal molecules are kept")
+    ap.add_argument("--c1_seen_only", default="", help="query_identity_exposure.csv: keep CLASS-1 view rows only for molecules whose identity the table-building FPNet "
+                    "was trained on (exposure c1_seen; molecules absent from the table count as unseen) -- leak-free design for FPNet-exposure features (Codex 029)")
     ap.add_argument("--exposure_ledger", default="", help="ledger_<checkpoint>.parquet (key, fp_pos, negpool) of the FPNet that built the tables; needed by the v2_noice_exp feature set")
     ap.add_argument("--monotone_lib", action="store_true", help="monotone constraints incl. the library similarities (reference evidence may only raise a candidate)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); FE = [f for f in FEATSETS[a.feats] if f not in set(a.drop)]
@@ -139,6 +141,12 @@ def main():
         print(f"c2 rows of FPNet-seen identities dropped: {int(drop_.sum()):,} rows, {data[drop_].molecule.nunique()} molecules "
               f"(exposure table: {len(seen_)} seen, {len(unseen_)} unseen; molecules not in the table are kept)", flush=True)
         data = data[~drop_].reset_index(drop=True)
+    if a.c1_seen_only:
+        ex1_ = pd.read_csv(a.c1_seen_only); seen1_ = set(ex1_.loc[ex1_.exposure == "c1_seen", "molecule"].astype(str))
+        drop1_ = (data.view == "c1") & ~data.molecule.astype(str).isin(seen1_)
+        print(f"c1 rows of identities NOT trained by the FPNet dropped: {int(drop1_.sum()):,} rows, {data[drop1_].molecule.nunique()} molecules (kept c1 molecules: "
+              f"{data[(data.view == 'c1') & ~drop1_].molecule.nunique()})", flush=True)
+        data = data[~drop1_].reset_index(drop=True)
     print("rows", len(data), "| molecules", data.molecule.nunique(), "| groups", data.groupby("group").molecule.nunique().to_dict(), "| views", data.groupby("view").molecule.nunique().to_dict())
     fit, tune, ev = (data[data.group == g].copy() for g in ("fit", "tune", "eval"))
     ig = {g: set(data[(data.group == g) & (data.identity_group >= 0)].identity_group) for g in ("fit", "tune", "eval")}
@@ -182,7 +190,7 @@ def main():
     ev = ev.copy(); ev["pred"] = bst.predict(ev[FE].values)
     out = dict(selected=best, tune_fixed=base_tune, eval_lambdarank=mrr_of(ev, "pred"), eval_fixed=mrr_of(ev, "S_fixed"), eval_fixed15=mrr_of(ev, "S_fixed15"),
                importance=dict(zip(FE, [int(x) for x in bst.feature_importance("gain").round().astype(int)])), n_fit_rows=len(fit_t), n_fit_groups=int(fit_t.groupby(["molecule", "view"]).ngroups),
-               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat), c1_only_runs=list(a.c1_only_runs), c2_drop_exposure=a.c2_drop_exposure)
+               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat), c1_only_runs=list(a.c1_only_runs), c2_drop_exposure=a.c2_drop_exposure, c1_seen_only=a.c1_seen_only, exposure_ledger=a.exposure_ledger)
     # paired bootstrap on eval (per molecule-view)
     rows = []
     for (mid, view), g in ev.groupby(["molecule", "view"], sort=False):
