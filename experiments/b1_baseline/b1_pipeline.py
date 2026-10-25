@@ -190,6 +190,9 @@ def main():
     ap.add_argument("--k_pop", type=int, default=0, help="prior-only branch size added to the shortlist (default 0 = off)")
     ap.add_argument("--fpnet_ckpt", default="", help="load this FPNet checkpoint instead of <fold_safe>/fpnet_fold{k}.pt (a path, or on Kaggle a file name searched "
                     "under /kaggle/input); same architecture and fingerprint bits (fp_bits.npy of the fold-safe set) required")
+    ap.add_argument("--pcl_boost", type=float, default=0.0, help="add w * 1[candidate in PubChemLite] to the MAIN list score (z units; library-priority candidates keep "
+                    "their 100+sim lead); same definition as b1_locked_eval blend21_pcl<w> (default 0 = off)")
+    ap.add_argument("--pcl_keys", default="", help="pubchemlite_annotations.parquet (candidate_key, ik14); default: searched under /kaggle/input or data/external_kaggle")
     ap.add_argument("--k_pool", type=int, default=0, help="pool-window FP branch: FP top-k among the window's v2-pool structures (E0 engine-1 analogue; default 0 = off)")
     ap.add_argument("--w_ice", type=float, default=W_ICE, help="ICE weight in the fixed rule; 0 skips the ICEBERG runner entirely")
     ap.add_argument("--tau", type=float, default=TAU, help="library-priority threshold of the fixed rule (default 2.0 = off)")
@@ -470,6 +473,12 @@ def main():
         except Exception as e:
             booster = None; log("learned fusion unavailable -> fixed rule:", repr(e))
     sub, sub_fixed, fused_stats = [], [], Counter()
+    PCL_KEYS = set()
+    if args.pcl_boost:
+        pp = args.pcl_keys or (find("pubchemlite_annotations.parquet") if KAGGLE else os.path.join(os.environ.get("CASMI_ROOT", r"C:\kaggle\CASMI" if os.name == "nt" else os.path.expanduser("~/CASMI2026")),
+                                                                                      "data/external_kaggle/casmi26-pubchem-popularity-prior/pubchemlite_annotations.parquet"))
+        _t = pl.read_parquet(pp, columns=["candidate_key", "ik14"]); PCL_KEYS = set(_t["candidate_key"].drop_nulls().to_list()) | set(_t["ik14"].drop_nulls().to_list())
+        log(f"PubChemLite boost {args.pcl_boost} on the main list: {len(PCL_KEYS):,} keys from {pp}")
     for mid in all_ids:
         rows = feats.get(str(mid), [])
         if not rows: sub.append((mid, "CCO")); sub_fixed.append((mid, "CCO")); fused_stats["empty"] += 1; continue
@@ -483,7 +492,7 @@ def main():
         top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
         S_plain = S.copy()   # the fixed rule without library priority (used by the blend hedges)
         if lib.max() >= args.tau and lib.max() - second >= args.margin: S = np.where(lib >= args.tau, 100.0 + lib, S); fused_stats["lib_priority"] += 1
-        order = np.argsort(-S, kind="stable"); sub_fixed.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
+        order = np.argsort(-S, kind="stable"); sub_fixed.append((mid, ";".join(rows[i]["smiles"] for i in order[:25]))); main_sc = S
         gl_cover_ok = np.isfinite(g).sum() >= max(2, args.min_gl_cover * len(rows))
         if booster is not None and not gl_cover_ok: fused_stats["fallback_gl_cover"] += 1
         if booster is not None and gl_cover_ok:
@@ -496,13 +505,16 @@ def main():
                 pred = booster.predict(X)
                 if args.main == "learned": sc = pred
                 else: sc = (2.0 if args.main == "blend21" else 1.0) * z(pred) + z(S_plain)   # blend hedge (2026-10-25): z(learned) + z(fixed rule), 2:1 or 1:1
-                order = np.argsort(-sc, kind="stable"); fused_stats["learned"] += 1
+                order = np.argsort(-sc, kind="stable"); fused_stats["learned"] += 1; main_sc = sc
             except Exception as e:
                 fused_stats["learned_failed"] += 1; log("learned fusion failed for", mid, repr(e))
+        if args.pcl_boost:   # PubChemLite prior on the main list (2026-10-25): main score (learned/blend, or the insurance fallback) + w * membership
+            in_pcl = np.array([r["key"] in PCL_KEYS for r in rows], float); fused_stats["pcl_boost_mols"] += int(in_pcl.any())
+            order = np.argsort(-(np.asarray(main_sc, float) + args.pcl_boost * in_pcl), kind="stable")
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
