@@ -37,6 +37,13 @@ W_GL, W_ICE, LAM, TAU, MARGIN = 2.0, 1.0, 0.5, 2.0, 0.2   # LAM 0.5 (B1 eval: be
 ICE_BUDGET, GL_BUDGET = 5400, 4000
 
 
+def comp_dir():   # competition files: legacy mount /kaggle/input/<slug>, newer notebooks mount competitions under /kaggle/input/competitions/<slug> (2026-10-25)
+    for d in ("/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra", "/kaggle/input/competitions/enveda-CASMI26-molecule-id-mass-spectra"):
+        if os.path.isfile(os.path.join(d, "test.parquet")): return d
+    hits = sorted(os.path.dirname(h) for h in glob.glob("/kaggle/input/**/enveda-CASMI26-molecule-id-mass-spectra/test.parquet", recursive=True))
+    return hits[0] if hits else "/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra"
+
+
 def find(pattern, root="/kaggle/input"):
     hits = sorted(glob.glob(os.path.join(root, "**", pattern), recursive=True))
     if not hits: raise FileNotFoundError(pattern)
@@ -52,7 +59,7 @@ def paths(args):
             raise FileNotFoundError(pats)
         pop = os.path.dirname(first("pc_lsid.npy"))
         tier = os.path.dirname(first("casmi26-pubchem-tier/pc_mass.npy", "pubchem_tier/pc_mass.npy", "pc_mass.npy"))
-        return dict(train="/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/train.parquet", tier=tier, pop=pop,
+        return dict(train=os.path.join(comp_dir(), "train.parquet"), tier=tier, pop=pop,
                     pool=first("casmi26-v2-pool/pool_meta.parquet", "pool_meta.parquet"), fold_safe=os.path.dirname(first("fpnet_fold0.pt")),
                     v3=os.path.dirname(os.path.dirname(first("casmi26-v3-models/code/casmi/fpnet.py", "v3_models/code/casmi/fpnet.py"))),
                     glacier=os.path.dirname(first("gl_runner.py")), iceberg=os.path.dirname(first("ice_runner.py")), work="/kaggle/working", store=None, runner_python=None)
@@ -207,7 +214,7 @@ def main():
     ap.add_argument("--adduct_proxy", action="store_true", help="forward-model proxies for molecules without a covered positive spectrum: [M+NH4]+ / [M-H2O+H]+ scored as [M+H]+ (public N1A arm A)")
     ap.add_argument("--neg_proxy", action="store_true", help="EXPERIMENTAL: also map negative-mode spectra of such molecules onto the positive axis (b1_common.forward_proxies)")
     args = ap.parse_args(); P = paths(args); os.makedirs(P["work"], exist_ok=True); T0 = time.time(); log = lambda *x: print(f"[b1 {time.time()-T0:7.0f}s]", *x, flush=True)
-    test_path = args.test or ("/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/test.parquet" if KAGGLE else os.path.join(os.path.dirname(P["train"]), "test.parquet"))
+    test_path = args.test or (os.path.join(comp_dir(), "test.parquet") if KAGGLE else os.path.join(os.path.dirname(P["train"]), "test.parquet"))
     workers = args.workers or max(2, (os.cpu_count() or 4) - 1)
     import torch
     sys.path.insert(0, P["v3"])

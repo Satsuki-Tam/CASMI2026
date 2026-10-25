@@ -43,10 +43,11 @@ if whl:
 else:
     print('no rdkit 2026.3.3 wheel attached; using the image RDKit', flush=True)
 import rdkit; print('rdkit', rdkit.__version__, flush=True)
+print('inputs:', sorted(os.listdir('/kaggle/input'))[:20], '| competitions:', sorted(os.listdir('/kaggle/input/competitions')) if os.path.isdir('/kaggle/input/competitions') else None, flush=True)
 ''')
 cells.append(f'''PIPELINE_ARGS = {json.dumps(A.pipeline_args.split())}
 EMIT = {json.dumps(A.emit)}   # 'main' = the pipeline's main list is submission.csv; 'insurance' = the fixed rule + library priority list is submission.csv (separate kernel version per Kaggle submission)
-''' + '''import subprocess, sys, time, json, os, shutil
+''' + '''import subprocess, sys, time, json, os, shutil, glob
 t0 = time.time()
 cmd = [sys.executable, '-X', 'utf8', '/kaggle/working/b1/b1_pipeline.py', '--out', '/kaggle/working'] + PIPELINE_ARGS
 print('running', ' '.join(cmd), flush=True)
@@ -64,7 +65,7 @@ elif EMIT.startswith('probe_'):
     os.replace('/kaggle/working/submission.csv', '/kaggle/working/submission_main.csv'); shutil.copy(f'/kaggle/working/submission_{EMIT}.csv', '/kaggle/working/submission.csv')
     print(f'EMIT {EMIT}: DIAGNOSTIC probe -- submission.csv = the main list filtered by training-structure membership (main list kept as submission_main.csv)', flush=True)
 import pandas as pd
-sub = pd.read_csv('/kaggle/working/submission.csv'); samp = pd.read_csv('/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/sample_submission.csv')
+sub = pd.read_csv('/kaggle/working/submission.csv'); samp = pd.read_csv(sorted(glob.glob('/kaggle/input/**/enveda-CASMI26-molecule-id-mass-spectra/sample_submission.csv', recursive=True))[0])
 assert len(sub) == len(samp) and set(sub.molecule_id) == set(samp.molecule_id), (len(sub), len(samp))
 assert sub.smiles.notna().all() and sub.smiles.map(lambda s: len(str(s).split(';'))).max() <= 25
 print(json.load(open('/kaggle/working/b1_run_manifest.json')))

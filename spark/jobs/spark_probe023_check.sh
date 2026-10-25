@@ -10,11 +10,11 @@ echo "== $(date +%T) probe023 check, pipeline sha $(sha256sum $S/b1_pipeline.py 
 for mode in c1 c2; do
   $PY -X utf8 $S/b1_pipeline.py --test $E/test.parquet --out $O/run_$mode --workers 8 --mask_json $E/mask_$mode.json --solution $E/solution.csv --rank_model $MODEL --tau 0.9 --main blend21 \
     --k_fpp 200 --k_pop 50 --w_ice 0 > $O/run_$mode.log 2>&1
-  echo "pipeline $mode exit $? ; $(grep -a 'OFFICIAL MRR' $O/run_$mode.log | cut -c1-160)"
+  echo "pipeline $mode exit $? ; $(grep -a 'OFFICIAL MRR' $O/run_$mode.log | cut -c1-160)"; grep -a 'probe' $O/run_$mode.log | cut -c1-200
   $PY -X utf8 -c "
 import pandas as pd, json
 d = pd.read_csv('$O/run_$mode/eval_per_molecule.csv'); s = json.load(open('$O/run_$mode/eval_scores.json'))
-print('$mode', 'main', round(d.rr.mean(), 4), 'probe', s['official_mrr25_probe'], 'n', len(d)); print('  pool>=train', bool((d.rr_probe_pool >= d.rr_probe_train - 1e-12).all()), ' pool+pubchem>=main', bool((d.rr_probe_pool + d.rr_probe_pubchem >= d.rr - 1e-12).all())); print('  coconut+pubchem>=nontrain', bool((d.rr_probe_coconut + d.rr_probe_pubchem >= d.rr_probe_nontrain - 1e-12).all()), ' exclusive', bool(((d.rr_probe_coconut > 0) & (d.rr_probe_pubchem > 0)).sum() == 0))
+print('$mode', 'main', round(d.rr.mean(), 4), 'probe', s['official_mrr25_probe'], 'n', len(d)); print('  train>=pool', bool((d.rr_probe_train >= d.rr_probe_pool - 1e-12).all()) if '$mode' == 'c1' else '', ' pool+pubchem>=main', bool((d.rr_probe_pool + d.rr_probe_pubchem >= d.rr - 1e-12).all())); print('  coconut+pubchem>=nontrain', bool((d.rr_probe_coconut + d.rr_probe_pubchem >= d.rr_probe_nontrain - 1e-12).all()), ' exclusive', bool(((d.rr_probe_coconut > 0) & (d.rr_probe_pubchem > 0)).sum() == 0))
 if '$mode' == 'c1': print('  train>=main', bool((d.rr_probe_train >= d.rr - 1e-12).all()), ' nontrain==0', bool((d.rr_probe_nontrain == 0).all()))
 else: print('  nontrain>=main', bool((d.rr_probe_nontrain >= d.rr - 1e-12).all()), ' train==0', bool((d.rr_probe_train == 0).all()))
 a = pd.read_csv('$O/run_$mode/submission.csv').set_index('molecule_id'); b = pd.read_csv('$B/probe_check/run_$mode/submission.csv').set_index('molecule_id')

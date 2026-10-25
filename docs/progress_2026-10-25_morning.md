@@ -123,3 +123,10 @@
 - 今夜の提出(事前登録、基準 0.354): pool60 だけ、または full_eval だけを一回ずつ。ΔPublic ≥ +0.02 で暫定基準候補、±0.02 は未確定、≤ −0.02 は見送り。
 - **15:56 実装確認(Codex 022)**: 提出パイプライン(`--fpnet_ckpt` で自前 checkpoint)と評価器の表を、分岐を網羅したパネル 16 分子・両 view・共有 forward で比較 → **PARITY PASS**(候補集合・主出力と保険の順序付き top-25 公式 identity が 16/16 一致、GL 不足 4 分子を含む、manifest に checkpoint sha256 5b8d1c31… を記録)。
 - **16:05 阻害要因**: 自前 checkpoint(190 MB)を Kaggle の private dataset にアップロードしようとしたが、アカウントの private 容量の残りが 29 MB で作成不可(容量は別コンペ RSNA knee の private dataset 群が使用)。他コンペの資産は触らない。選択肢(ユーザー判断): (1) 古い private dataset を削除して容量を空ける、(2) 重みを public dataset として公開する、(3) Kaggle の notebook 内で同じレシピで学習し、その出力を提出 kernel の入力にする(GPU 約 8 時間)。full_eval の評価が合格した場合に判断を依頼する。
+
+## 12. 夕方(17:40〜18:30)
+- **full_eval の登録評価が完了(17:42)**: パネル C1 clean 202 で **+0.035 [+0.009, +0.062]**(uncertain 48 は +0.010、全 250 は +0.030)、dev2 の保護層は点推定がすべて −0.02 以上で、7 層で 95% 下限が −0.02 未満 → 022 で事前に固定した基準の「非劣性未確定の一回の比較提出として可」。Codex 023 が再集計で確認。**提出は保留**(自前 checkpoint を Kaggle に置く private 容量がユーザー判断待ち)。容量が解決すれば一回の直接比較を優先する。
+- **見落としていた前提(18:00)**: 現行 FPNet(公開 fold-safe fold 0)の学習除外は identity fold 0 とパネル群だけで、元の学習対象の約 80% は学習済み。一方、dev2・locked2・W7・p1 はすべて identity fold 0 から選んでいた → **私たちの開発・評価はすべて「FPNet が未見の分子」でしか測っていない**。隠しクラス 1 には既見 identity が多く含まれ得る(割合は仮定)。ranker は未見の FP でしか学習していない。
+- **クラス間の取り違え(ローカル分解、`diag/probe_local_*.md`)**: 登録主出力の最終リストを train 構造だけに絞ると、timsTOF query の C1(dev2 G)で **0.600 → 0.843(+0.243)**。train 以外の候補が真を押し下げている。単純な交互配置は片方の view を大きく落とす。PubChem tier のみの候補を落とすと、パネル(真が全部 COCONUT)では両 view で +、開発集合の C2(真の多くが PubChem のみ)では大きく −。
+- **Public でのクラス分解 probe(診断、候補ではない)**: 0.354 の本命と同じ v4 の pipeline の最終リストを (T) train 構造のみ、(pool) train か COCONUT のみ、(Pc) PubChem tier のみ に絞る。T と pool の kernel を 18:14 に push(commit 実行 約 3 時間)。Pc は 023b の回答と GPU 枠の空きを待つ。読みは Codex の代数(`P_T + P_N − M` = 候補と群内順位を固定した oracle の改善量;T/N は C1/C2 のラベルではない)。
+- **full_rk**: 学習は 19:25 頃完了見込み。完了後に自動で Spark に引き渡し(`handoff_full_rk.sh`、20:45 打ち切り)、Spark で特徴表 → ranker 再学習(既見 identity の C2 行だけ除外)→ full_rk + 旧 v4b vs full_rk + 新 ranker の一対比較(`spark_fullrk_chain.sh`、READY 待ちで起動済み)。
