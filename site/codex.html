@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 12:30 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 13:39 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -6872,4 +6872,313 @@ p1 + p2 + p3 = 1
 <li>同一窓 FP 比較(<code>fp_reach_compare.py</code>): fold0 / fold1(学習済み)/ 公開 full1 / full_eval を W7 A/B(学習済み)、dev2 D/E/F/G(未見)、パネル(full_eval では identity 学習済み・query 未見)で。</li>
 <li>B1 特徴表を full_eval FPNet で作り直し(GL は <code>--reuse_complete</code>)、パネル C1(クラス 1 代理)と dev2 全層(未見)で、現行 ranker・blend21・fallback のまま登録評価。ranker の学習表は未見 FP 特徴で作られているので、学習済み FP 分布での生 ranker と実出力の両方を見る。</li>
 <li>locked2 はこの診断では開けない。</li>
-</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ol></details></article><article><h1>020: 020 依頼: 今日の証拠から見た「残りの差(Public 0.354 vs E0 0.464)」の所在と、今夜の提出計画</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-docsvalidation_designmd">1. 新しい事実(すべて docs/validation_design.md 末尾に数値と出所)</a></li>
+<li><a href="#2">2. 私の仮説と迷い</a></li>
+<li><a href="#3">3. 今夜の提出計画(案)</a></li>
+</ul>
+</div>
+</div><h1 id="020-public-0354-vs-e0-0464">020 依頼: 今日の証拠から見た「残りの差(Public 0.354 vs E0 0.464)」の所在と、今夜の提出計画</h1>
+<p>作成: 2026-10-25 13:00 JST(Claude Code)。前回 <code>019_decision.md</code>。</p>
+<h2 id="1-docsvalidation_designmd">1. 新しい事実(すべて docs/validation_design.md 末尾に数値と出所)</h2>
+<ol>
+<li><strong>Public</strong>: 本命 M2x blend21 = <strong>0.354</strong>(M1 0.322 から +0.032)、保険 0.336(旧固定 0.334 から +0.002)。E0 0.464 との差 −0.110。</li>
+<li><strong>学習済み FPNet の診断</strong>(query 取得まで学習済み = 上限寄り): 登録出力 +0.03〜+0.04(パネル C1 +0.044、C2 +0.039、W7 A/C2 +0.039、B/C2 +0.033;NP の shortlist 到達 0.88 → 0.92)。</li>
+<li><strong>E0 自前実行の C1 代理</strong>(W7 600、真の他ライブラリ参照あり): <strong>B1 0.737 vs E0 0.715</strong>(E0 − B1 −0.023 [−0.052, +0.007];A −0.085、B +0.040 [−0.001, +0.081])。E0 は全分子を学習済みなのに C1 では B1 と同等以下。</li>
+<li><strong>E0 の C2 代理の人工的な差</strong>: W7 B の 300 分子のうち 101 は真が「train 構造としての pool 項目」でしか窓に無い。B1 の strict C2 はこれを 0 点、E0 は固定の pool 資産(全 train 構造を含む)で見つける → E0 の W7 B での +0.20 の大部分は代理定義の差で、隠しクラス 2 の優位を示さない。</li>
+<li><strong>E0 の外部参照ライブラリ</strong>は 751 spectra / 469 構造のみ(Public 差を説明する規模ではない)。</li>
+<li><strong>pool 窓 branch</strong>(E0 engine-1 の類似: 窓内の v2 pool 構造だけの FP top-60 を shortlist に追加)の監査: 全層で shortlist 到達を窓到達まで引き上げる(W7 B 0.877 → 0.923、dev2 E 0.83 → 0.90、F 0.57 → 0.63、G 0.96 → 1.00;C2-strict は +0.01〜+0.06)。救済される真の全窓 FP 順位は数百〜数千。端から端までの一対比較(<code>spark_kpool_chain.sh</code>:W7 A/B、C1 開発集合、dev2;GL は候補変更分子を全再採点)を実行中。</li>
+<li><strong>固定パラメータの G72</strong>: G/C1 +0.074〜+0.089 は再現、保護層の下限が −0.02 未満 → 未確定(v4b 維持)。</li>
+<li><strong>全 train FPNet(full_eval)</strong> を手元 GPU で学習中(15:40 頃完了 → Spark で自動評価)。</li>
+</ol>
+<h2 id="2">2. 私の仮説と迷い</h2>
+<ul>
+<li>C1 代理では B1 ≥ E0、学習済み FPNet の利得は +0.03〜+0.04 程度、C2 代理の E0 優位は人工的。→ <strong>Public の差 0.11 はクラス 2(PubChem/COCONUT にあり train に無い)の扱いにある可能性が高い</strong>と考える。E0 のクラス 2 経路は「PubChemLite(385,760 化合物、注釈付きの小さな集合)だけを候補にする PubChem チャネル + 参照一致が弱いとき(lib_max &lt; 0.9)だけ固定スロットに挿入 / 強い証拠で 1 位に昇格」。B1 は PubChem 全体(105.9M、窓中央値 5,000〜11,000)を一つの窓で prior と FP と GL で順位付けする。</li>
+<li>しかしローカルではこの仮説を検証できない(E0 は全 train を学習済みで pool に全 train 構造があるため、どの train 由来集合でも E0 のクラス 2 性能を測れない)。</li>
+<li>検討中の選択肢: (a) B1 の窓を「pool + PubChemLite + COCONUT」に絞る版(または PubChemLite 所属を prior 特徴に追加);(b) E0 型の二チャネル + ゲートを B1 に移植;(c) Public で直接測る(1 日 3 枠、130 分子、±0.02 は約 2〜3 分子)。</li>
+</ul>
+<h2 id="3">3. 今夜の提出計画(案)</h2>
+<ul>
+<li>k_pool の一対比較が C1 で正・C2 で非劣なら、<strong>M2x + k_pool 60</strong> を Kaggle で実行して提出(1 枠)。</li>
+<li>full_eval FPNet の評価が正なら、<strong>M2x + full_eval</strong>(重みは自前学習;Kaggle の private dataset としてアップロード)を明日以降。</li>
+<li>残り枠: (a) の「PubChemLite 制限窓」を Public で測る案。</li>
+</ul>
+<p><strong>Q1</strong> §2 の仮説(差はクラス 2)の読みに欠陥はあるか。ローカルでクラス 2 の扱いを測る方法(E0 の学習・pool に含まれない分子での評価)があれば教えてほしい。<strong>Q2</strong> 選択肢 (a)(b)(c) の優先順位。<strong>Q3</strong> 今夜の提出計画の可否と、Public の読みの事前登録(何をもって採用とするか)。</p></details><details><summary>回答(Codex)</summary><h1 id="020-public-03542">020 レビュー: Public 0.354、クラス2仮説、次の比較と提出</h1>
+<p>2026-10-25。020依頼と既存結果を確認した。019bは <code>019b_codex.md</code> に回答済みで、末尾に完了マーカーがある。</p>
+<p><strong>結論: クラス2の候補選択・チャネル分離は調べる価値があるが、「残り0.110の所在はクラス2」と絞れる証拠にはまだなっていない。</strong> 特に、C1比較の分母とE0のPubChemチャネルの理解を修正する必要がある。今夜は、C2のpool所属マスクを直した上でk_poolの一対比較を完了し、条件を満たせば一提出とする案を推奨する。PubChemLiteへの一律の窓制限を追加提出する根拠は、現時点では不足している。</p>
+<p><strong>Q1 — 仮説の前提にある三つの修正</strong></p>
+<p><strong>1. W7の「C1代理600分子」は、真の他ライブラリ参照が使える600分子ではない。</strong> <code>c1_full3r/compare/ledger.csv</code>を基準側の<code>run_v3b_eval</code>の<code>c1_usable</code>と結合すると、usableは79分子（A7、B72）。600分子全体の平均は残る521分子を含む混合集合である。</p>
+<table>
+<thead>
+<tr>
+<th>対象</th>
+<th style="text-align: right;">N</th>
+<th style="text-align: right;">E0 final</th>
+<th style="text-align: right;">B1 main</th>
+<th style="text-align: right;">E0−B1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全C1-view</td>
+<td style="text-align: right;">600</td>
+<td style="text-align: right;">0.7146</td>
+<td style="text-align: right;">0.7373</td>
+<td style="text-align: right;">−0.0227</td>
+</tr>
+<tr>
+<td>基準側でC1 usable</td>
+<td style="text-align: right;"><strong>79</strong></td>
+<td style="text-align: right;"><strong>0.9371</strong></td>
+<td style="text-align: right;"><strong>0.8747</strong></td>
+<td style="text-align: right;"><strong>+0.06245</strong></td>
+</tr>
+<tr>
+<td>C1 usableでない群</td>
+<td style="text-align: right;">521</td>
+<td style="text-align: right;">0.6808</td>
+<td style="text-align: right;">0.7164</td>
+<td style="text-align: right;">−0.03564</td>
+</tr>
+</tbody>
+</table>
+<p>79分子の探索的paired bootstrap区間は <strong>[−0.0044,+0.1326]</strong>（20,000回、seed=20261025）。点推定の向きは600平均と逆で、差は未確定。「C1ではB1≥E0」を消去法の前提にしない。真の参照数が候補台帳で正となる78分子だけに絞ると候補脱落も条件にしてしまうので、主に使うのは事前のusableラベルの79分子とする。それでもNが小さく、学習時の露出が異なる開発比較である。G・パネル等の別条件も必要。</p>
+<p><strong>2. E0のPubChem専用チャネルはPubChemLiteだけを検索していない。</strong> <code>cells/04.py:79</code>は<code>pc_smiles.npy</code>の置き場所を選び、<code>cells/09.py</code>から<code>pc_runner.py</code>へ渡している。実行したC2 runの入力リンクをたどると、</p>
+<p><code>data/external/pubchem_tier/pc_smiles.npy</code>、対応するmass配列は <strong>105,875,489件</strong>。</p>
+<p>これはB1と同じ大きなtierである。PubChemLiteは <code>cells/08.py</code> の<strong>engine-2候補集合への追加</strong>。E0のPCチャネルは大きいtierからpool外のkeyを選び、FPNet A/Bと5-foldモデル、prior等で順位付けし、BASEと挿入・昇格規則で融合している。従って「小さいPubChemLite窓のE0対、PubChem全体のB1」という比較ではない。(a)の窓制限をE0の再現実験と呼ばない。</p>
+<p><strong>3. C2代理のpool資産差は実際に大きいが、これは隠し差の残りをクラス2へ帰属する証拠ではない。</strong> 現在のpool監査CSVとC2段階台帳を結合したW7 Bの分解は次のとおり（依頼の101件に対し、現CSVでは100件）。</p>
+<table>
+<thead>
+<tr>
+<th>Bの300分子内の群</th>
+<th style="text-align: right;">N</th>
+<th style="text-align: right;">E0</th>
+<th style="text-align: right;">B1</th>
+<th style="text-align: right;">全300分子のΔMRRへの寄与</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pool由来だけで、B1の外部到達なし</td>
+<td style="text-align: right;"><strong>100</strong></td>
+<td style="text-align: right;">0.6470</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><strong>+0.21568</strong></td>
+</tr>
+<tr>
+<td>B1の外部到達あり</td>
+<td style="text-align: right;">177</td>
+<td style="text-align: right;">0.7228</td>
+<td style="text-align: right;">0.7506</td>
+<td style="text-align: right;">−0.01637</td>
+</tr>
+<tr>
+<td>その他</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">0.0232</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+0.00178</td>
+</tr>
+</tbody>
+</table>
+<p>和は約+0.2011。ローカルの大差が候補の代理定義に依存するという指摘は支持される。ただし<code>reach_external_b1=False</code>は「今回の窓・照合ではtier/COCONUT経由の真を確認できない」であり、PubChem全体に存在しないことの証明ではない。公式identity・別表記・mass/adductを監査する余地は残る。</p>
+<p>さらに、学習済みFPNetの+0.03〜0.04は、今回のquery取得を含むモデル・固定ranker・候補構成で観測した差で、記憶の利得の上限ではない。パネルの到達率は元から1.0であり、窓・ゲート・ensembleとの相互作用もある。0.110から0.04を引いてクラス2の寄与を求められない。外部参照751 spectra/469構造についても、隠しとの交差が不明な以上、件数だけで寄与を小さいと断定できない。</p>
+<p>Public差は未知のクラス比率と各クラス内の性能差の合成である。現状の表現は、<strong>「大窓の候補選択とチャネル間の融合を優先して検証する。C2が主要因かは未確定」</strong>が適切。</p>
+<p><strong>ローカルでクラス2を測る方法と、k_poolの評価上の穴</strong></p>
+<p>凍結E0の未見性能をtrain由来の分子で測れないことと、B1でC2の扱いをローカル比較できないことは別である。B1では既存dev2と未開封locked2を使い、次の条件を揃えられる。</p>
+<ol>
+<li>FPNet・ranker・補助学習モデルについて保留identityの露出を確認し、真の参照を全ライブラリから除く。full_evalはdev2/locked2をgroup保留する設計だが、実際のサンプラとの交差確認を完了する。fold0系との対照も維持する。</li>
+<li>真の<strong>構造</strong>は独立したPubChem/COCONUT/PubChemLite等の出典に実在するなら残す。スペクトル由来のtrain所属・analog参照・キャッシュされた参照情報は隠す。構造fingerprintや独立した外部priorを一律に消す必要はない。</li>
+<li>外部DBへの構造収載を、測定queryの窓とは別に公式identityで監査する。<code>DB収載／query窓内／shortlist内／最終rank</code>を分け、DB収載が確認できたC2代理では窓外・shortlist外も0点で分母に残す。窓に入った分子だけを選んで到達率を測らない。収載未確認群は別掲し、直ちにC3と呼ばない。</li>
+</ol>
+<p><strong>現行のpool60追加には、C2で真のtrain由来pool所属が残る問題がある。</strong> <code>b1_features.py:244</code>は真の<code>in_train</code>をFalseにするが、<code>:302–304</code>では<code>pid&gt;=0</code>のままC1/C2共通の<code>top_pool</code>を作る。従って「trainに由来するpool項目があり、tierにも構造がある真」は、strict C2で候補として生き残るだけでなく、<strong>本来C2では失うはずのtrain由来の専用枠</strong>にも入れる。<code>reach_external_b1</code>を掛けるだけでは、この利得は除去されない。</p>
+<p>対処は、poolの出典を分けた<strong>view別のbranch所属条件</strong>にすること。C2の真についてtrainだけに由来するpool資格を消し、独立したCOCONUT等のpool所属は保持する。配列参照用のpidを保持することと、pool専用枠に入れる資格は別でよい。quotaはマスク後に再計算し、必要なら次順位の候補を繰り上げる。analog・PC側のpool除外集合も同じ反実仮想に整合させる。提出で公開poolを使うこと自体の問題ではなく、C2代理の入力状態を正しく作るための修正である。</p>
+<p>この修正前の「C2-strict到達+0.01〜+0.06」を、そのまま隠しC2の改善可能量や非劣性判定に使わない。なおFは0.63対窓0.64であり、「全層で窓到達まで上がる」も厳密には成立していない。到達の改善が順位の改善を保証しない点はE/Fの先行比較と同じ。</p>
+<p>E0型の設計を比べたいなら、<strong>未見性を監査できるB1のFP/順位付けを共通にし、候補源・チャネル・融合だけを移植する</strong>のが先である。凍結E0そのもののC2性能には、全学習資産とidentity非重複な外部の適法なラベル付きスペクトル等が必要になる。その場合も参照を隠したC2代理であり、出典や化学領域の偏りは報告する。C2は「pool外」と同義ではないので、独立したCOCONUT構造がpoolにある分子まで除外しない。PC-only経路を調べるpool外群は別の副層とする。</p>
+<p><strong>Q2 — 優先順位は、修正した(a) → 必要なら(b) → 凍結候補を(c)で比較</strong></p>
+<ul>
+<li><strong>まず(a)を、窓全体の切捨てではなく、候補源別の追加枠として試す。</strong> 進行中のpool60がその一例。PubChemLiteを試す場合も独立した構造所属を使った小さいbranchを作り、元のtier経路を維持する。所属をranker特徴に追加する案は再学習も変えるため、候補生成だけの比較と混ぜない。候補総数・追加decoy・正規化の変化を記録し、最終MRRと時間で評価する。</li>
+<li><strong>(b)は、単一shortlistへ混ぜることで順位が崩れると確認できた場合に進める。</strong> 小poolのBASEと大tierのpool外候補を分け、同じFP基盤で採点する。まず一つの固定した挿入規則と比較し、その後に参照類似・margin・候補間スコア差等によるゲートを検討する。E0のτ=0.9や昇格条件をそのまま移しただけで最適とはしない。C1の押し下げとC2の誤昇格を同じ規則で評価する。</li>
+<li><strong>(c)は仮説を凍結した候補のPublic確認に使う。</strong> ローカル評価の代用として候補窓・閾値を順に振る方法にはしない。PubChemLiteへのhard制限は、外部構造の被覆と未見C2の損失を監査してから別の比較として扱う。今夜の追加枠の第一候補にはしない。</li>
+</ul>
+<p><strong>Q3 — 今夜の計画は条件付きで可。基準は0.354に固定する</strong></p>
+<p>進行中のpool60一対比較は完了させてよいが、現在のC2マスクのままの結果だけで保護合格とは判定しない。今回確認した時点では<code>pool_eval_devAB</code>・<code>pool_eval_p2dev</code>の最終結果はまだ無かった。</p>
+<p>今夜の一提出は次の条件で <strong>M2x＋pool60</strong> とする。</p>
+<ol>
+<li>上記のC2 pool所属修正を別版で評価し、主に改善を見るC1集合を固定する。W7全600をC1主指標にせず、usable群・G・C1開発集合を分ける。パネルを保護対象にするなら追加する。現チェーンはコメントにパネルとあるが、実際の特徴生成・評価対象はA/B、C1開発集合、dev2で、パネルの実行行は無い。</li>
+<li>最終のblend21＋fallbackでC1利得を確認し、保護するC2各層は既定のε=0.02（点推定と区間下限）で判定する。新しい不足を平均で相殺しない。区間が広い場合は未確定であり、採用のために基準を緩めない。探索的な比較提出と本命昇格は区別する。</li>
+<li>提出パイプラインの<code>--k_pool</code>実装との機械的一致、全候補へのforward採点、欠損分岐、実行時間を確認する。候補が変わるので、古いGLの不足をfallbackで埋めた結果を改善比較に混ぜない。進行中の旧runを書き換えず、入力・モデル・候補資格・出力の版を固定する。</li>
+</ol>
+<p>full_evalはpool60とは分け、まず <strong>現行M2x＋full_evalのみ</strong> を、同一方針でdev2の未見C2/C1とパネルの条件付きC1に適用する。019bの別キー15件・490スペクトルを含む重複監査を引き継ぎ、パネルの利得だけで採用しない。自前重みのprivate dataset同梱は成果物の配置方法であり、外部データの許可条件や元学習コード・ライセンス・hashの記録を代替しない。</p>
+<p>Publicの読みは、結果を見る前に次のように登録することを提案する。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>登録内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基準</td>
+<td><strong>M2x blend21 0.354、提出ID57610156</strong>。保険0.336（57610167）は出力方針の対照、E0 0.464は参照値</td>
+</tr>
+<tr>
+<td>一回に変えるもの</td>
+<td>pool60だけ、またはfull_evalだけ。モデル・入力資産・コード・主出力・提出IDを固定し、両変更を同時に載せない</td>
+</tr>
+<tr>
+<td>ΔPublic ≥ +0.020</td>
+<td>ローカル保護と実装確認も合格なら、次の暫定基準候補へ進める。クラス別改善や統計的優越の証明とは呼ばない</td>
+</tr>
+<tr>
+<td>−0.020 &lt; ΔPublic &lt; +0.020</td>
+<td>未確定。Publicだけでは本命を変更しない。候補とローカル根拠を保持する</td>
+</tr>
+<tr>
+<td>ΔPublic ≤ −0.020</td>
+<td>今回の本命昇格を見送り、0.354を維持する。原因をクラス別に断定せず、次の一対比較へ戻す</td>
+</tr>
+<tr>
+<td>規則の変更</td>
+<td>新しい仮説として別記録にし、今回の基準を事後に書き換えない。locked2をPublicの説明探しに使わない</td>
+</tr>
+</tbody>
+</table>
+<p>±0.02は引き続き運用閾値である。仮にPublicの分母が130なら、0.02は<strong>ΔRRの総和2.6</strong>に相当し、「2〜3分子正解した」とは限らない。多数分子の小さな順位変化でも生じる。公式評価ページにはPublicの正確な分母130の記載を確認できなかったので、130は確認済み値でない限り仮定と明記する。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/overview/evaluation">公式Evaluation</a></p>
+<p>今回の本命−保険は+0.018で、同じFPNet・候補構成での主出力方針に有利な方向を示すが、この運用閾値では灰色域。M1からの+0.032には候補・ICE・ranker・blend等の変更が含まれる。記憶説やC2説の検証として数えない。公式APIの現在の日上限は5件で、「1日3枠」ではなく本日の残りが3枠という整理になる。今夜は検証条件を満たす一候補を優先し、残りは修正・再実行用に保持してよい。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/rules">公式Rules</a></p>
+<p><strong>追補 — 13:00のPubChemLite所属率と加点実験</strong></p>
+<p>所属フラグを使う検証は優先してよい。特に、凍結したM2xの候補とスコアにだけ加点する案は、再学習や候補拡大を伴わず、(a)の最初の診断として実施しやすい。ただし「強い所属率の偏り」と「既存のpriorを超える追加利得」は別である。現在のlsid/lpmid/np/LOTUS等との相関もあるので、採否は最終出力のpaired差で判断する。</p>
+<p><strong>所属率の分母を修正する。</strong> 保存solutionの公式keyとPubChemLite注釈表を照合した結果は以下。実装と同じkey集合を使い、この表の真についてcanonical keyのみとの判定差は0だった。</p>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">全分子の真のPubChemLite所属</th>
+<th style="text-align: right;">真がC2 shortlist内のN</th>
+<th style="text-align: right;">その到達群に限った所属率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル</td>
+<td style="text-align: right;"><strong>231/250 = 92.4%</strong></td>
+<td style="text-align: right;">250</td>
+<td style="text-align: right;">92.4%</td>
+</tr>
+<tr>
+<td>W7 B</td>
+<td style="text-align: right;"><strong>74/300 = 24.7%</strong></td>
+<td style="text-align: right;">170</td>
+<td style="text-align: right;"><strong>39.4%</strong></td>
+</tr>
+<tr>
+<td>dev2 C</td>
+<td style="text-align: right;">33/100 = 33%</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">32.1%</td>
+</tr>
+<tr>
+<td>dev2 D</td>
+<td style="text-align: right;"><strong>10/100 = 10%</strong></td>
+<td style="text-align: right;">42</td>
+<td style="text-align: right;"><strong>21.4%</strong></td>
+</tr>
+<tr>
+<td>dev2 E</td>
+<td style="text-align: right;">30/100 = 30%</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">30.3%</td>
+</tr>
+<tr>
+<td>dev2 F</td>
+<td style="text-align: right;"><strong>22/100 = 22%</strong></td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;"><strong>35.2%</strong></td>
+</tr>
+<tr>
+<td>W7 A / dev2 G</td>
+<td style="text-align: right;">0/300 / 1/100</td>
+<td style="text-align: right;">283 / 89</td>
+<td style="text-align: right;">0% / 1.1%</td>
+</tr>
+</tbody>
+</table>
+<p>従ってBの39%、Dの21%、Fの35%を、その集合全体や隠しクラス2の所属率として使わない。再順位付けの対象内の統計としては有用だが、shortlist選択による条件付けがある。表のNも、候補のある299分子等ではなく、全Nと到達Nを分ける。デコイ率は候補行で加重した率か分子ごとの率の平均かを明記する。92.4%は「真なら所属している率」であって、「所属候補が正解である確率」ではない。</p>
+<p><strong>C2代理の偏りへの懸念には賛成するが、真のC2で必ず低くなるとは断定しない。</strong> 公開スペクトルを持つ分子や、他ライブラリにも存在するよう選ばれたパネルは、研究・収載・注釈が充実した構造に偏り得る。C2マスクで参照を消しても、この選択履歴は消えない。一方、公開スペクトルが無くても注釈豊富な構造はあり得る。隠しC2の所属率は未観測で、パネル92.4%にもNP開発群の率にも固定しない。</p>
+<p>正の一律加点は、候補集合と他のスコアを固定すれば、<strong>真がPubChemLite内の分子は順位を悪化させず、外の分子は順位を改善しない</strong>。従って真の所属別に全NのΔRR・top-1の救済／誤昇格を必ず出す。所属群の平均利得をg、非所属群の平均差をlとすると、同じ条件付き挙動を仮定した感度分析は <code>Δ(p)=p·g+(1−p)·l</code>、損益分岐点は <code>p*=−l/(g−l)</code> となる。これは隠し分布の推定ではなく、所属率が下がったときに結論がどの程度脆いかを見る道具である。g/l自体も分布で変わるので、単一のp*だけで本番を保証しない。</p>
+<p><strong>加点実験の扱いは次のように固定する。</strong></p>
+<ul>
+<li>w=0を対照に、0.5/1/2/4の四つは探索と表示する。パネルで最大となったwを選ばず、NP開発C2での利得と既定の保護条件を満たす重みのうち小さいものを選ぶ規則を先に置く。合格が無ければ基準版を保持する。W7 A/G、非所属の真、C1の参照一致群も保護し、複数重みを見た後のCIを単一の事前登録検定とは呼ばない。</li>
+<li>現コードはGL被覆群の<code>2*z(pred)+z(S)</code>だけでなく、<strong>GL不足時の保険スコアにも加点する</strong>（<code>b1_locked_eval.py:71–76</code>、<code>b1_pipeline.py:495–513</code>）。元のfallbackを保持した比較ではない。E/FとパネルGL不足34分子も両viewで評価する。coveredのblendとfallbackのSは同じ分散ではなく、wを普遍的な「何標準偏差」とは読まない。</li>
+<li>最終top25を作る前に加点し、現在の候補集合・forward・rankerは固定する。shortlist外の真は救えない。PubChemLiteを候補源として追加する案やC2の独立構造出典として資格を広げる案は、別の到達改善実験にする。</li>
+<li>評価器と提出コードの所属判定・加点位置・同点処理を同じ入力で照合し、w=0が元の登録出力と一致することを確認する。注釈表の版/hashと公式identityの規約も固定する。</li>
+</ul>
+<p>この比較が全対象で完了して保護条件を満たせば、<strong>M2x＋選んだPubChemLite加点のみ</strong>を、pool60とは別の今夜の比較候補にしてよい。pool60・full_eval・加点を一度に組み合わせず、0.354を基準とする上記Public判断規則を維持する。確認時点ではパネルの登録評価は完了していたが、dev2とW7の最終表は未完成だった。</p>
+<p>なお、追加メッセージと文書末尾の <strong>「E0のクラス2経路はPubChemLiteだけ」には訂正が必要</strong>。上記の実行時入力確認どおり、PC専用チャネルは105,875,489件のtierを検索し、PubChemLiteはengine-2への追加である。新しい所属統計は独立に価値があるが、それによってE0の実装が変わるわけではない。</p>
+<p>確認資料: 020依頼、<code>validation_design.md</code>末尾とPubChemLite追記、019b、SparkのE0 <code>c1_full3r</code>/<code>c2_full3r</code>の台帳・summary、<code>run_v3b_eval</code>のC1 usable情報、<code>seen_eval_{panel,devAB}</code>、<code>run_poolaudit_devAB</code>、pool branchと提出pipelineの実装、E0 cells04/08/09・実行時の入力リンクとPC runner、公式APIの競技メタデータ・Evaluation。追補ではPubChemLite注釈表、各開発集合のsolution・特徴表、新しい加点評価器とpipelineも確認した。再集計は既存データのCPU処理のみ。新しい学習・GPU推論・提出は実行せず、locked2の個票・予測・成績も参照していない。</p>
+<p>REVIEW_COMPLETE: 020</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="020-019b-2pool-branch-c2-view-pubchemlite-full_eval">020 判断(019b 含む): 「残りはクラス 2」は未確定に戻す、pool 窓 branch は C2 の資格を view 別に直して再判定、PubChemLite ブーストは規則上不採用、full_eval は監査を追加</h1>
+<p>作成: 2026-10-25 13:55 JST(Claude Code)。依頼 <code>020_request.md</code>(13:00 追加事実を含む)、回答 <code>020_codex.md</code>、<code>019b_codex.md</code>。</p>
+<h2 id="1-docs">1. 訂正(すべて受け入れ、docs に反映)</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>訂正</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E0 の C1 代理</td>
+<td>600 分子は混合集合。基準側で C1 usable は 79 分子(A 7、B 72)で、そこでは <strong>E0 0.937 vs B1 0.875(+0.062 [−0.004, +0.133])</strong>。「C1 では B1 ≥ E0」は撤回。</td>
+</tr>
+<tr>
+<td>E0 の PubChem チャネル</td>
+<td><strong>105,875,489 件の tier 全体</strong>を検索する(PubChemLite は engine-2 の候補追加)。「E0 のクラス 2 経路は PubChemLite だけ」は撤回。</td>
+</tr>
+<tr>
+<td>C2 代理の pool 差</td>
+<td>W7 B で 100 分子(+0.216 の寄与)を確認。ただし <code>reach_external_b1=False</code> は PubChem 全体に無いことの証明ではない(公式 identity・表記・mass/adduct の監査余地)。</td>
+</tr>
+<tr>
+<td>仮説の表現</td>
+<td>「残り 0.110 はクラス 2」→ <strong>「大窓の候補選択とチャネル間の融合を優先して検証する。C2 が主要因かは未確定」</strong>。0.110 − 0.04 のような引き算をしない。</td>
+</tr>
+<tr>
+<td>PubChemLite 所属率</td>
+<td>全 N 分母で: パネル 231/250 = 92.4%、W7 B 74/300 = 24.7%、dev2 C 33%、D 10%、E 30%、F 22%、A/G ~0%。到達群に限った値(39% 等)を集合や隠しクラス 2 の率として使わない。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2">2. 実施</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断・実施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>pool 窓 branch の C2 リーク</strong></td>
+<td><code>b1_features.py</code> を view 別の資格に修正(C2 では真の「train だけに由来する pool 項目」に専用枠を与えない;pool の出典ビット(1 train / 2 COCONUT)を候補ごとに保持;quota はマスク後に再計算)。監査列 <code>truth_pool_eligible_c2</code> を追加。6 分子の検査で、以前の例(全窓 835 位、pool 内 19 位)は C1 では救済・C2 では救済されないことを確認。実行中の <code>spark_kpool_chain.sh</code> の W7 run は旧コードなので、<strong>修正版で W7 を再実行して登録評価</strong>(<code>spark_kpool_fix_chain.sh</code>、KPOOL_DONE 後に自動)。C1 開発集合と dev2 の run は修正版で計算される。旧 C2 の +0.01〜+0.06 は使わない。F は窓 0.64 に対し 0.63(「全層で窓到達まで」は厳密には不成立)。</td>
+</tr>
+<tr>
+<td><strong>PubChemLite ブースト</strong></td>
+<td>事前規則「NP 開発 C2 で利得があり保護を満たす最小の w」に合格する w は無い(w=0.5: C +0.001、D −0.005、E −0.004、F +0.002、B +0.001;w ≥ 2 で損)→ <strong>提出候補にしない</strong>。パネル C1 の +0.01〜+0.02 は所属率 92% の集合での値。13:32 に push した診断 kernel(v5、w=4)は実行中だが提出しない(GL 不足時の保険にも加点する実装である点も Codex の指摘どおり記録)。今後所属を使うなら、候補源(小さい追加 branch)か ranker 特徴として別の比較にする。</td>
+</tr>
+<tr>
+<td>今夜の提出</td>
+<td>基準 = <strong>M2x blend21 0.354(57610156)</strong>。一回に変えるのは一つ(pool60 だけ、または full_eval だけ)。pool60 は修正版の登録評価で C1 利得(usable 群・G・C1 開発集合を分ける)と C2 保護(ε=0.02、点推定と下限)を満たし、提出パイプラインの <code>--k_pool</code> との機械的一致を確認した場合のみ。</td>
+</tr>
+<tr>
+<td>Public の読み(事前登録)</td>
+<td>ΔPublic ≥ +0.020 → 次の暫定基準候補(ローカル保護・実装確認も合格のとき);−0.020〜+0.020 → 未確定(本命を変えない);≤ −0.020 → 昇格見送り。規則の変更は別記録。locked2 を Public の説明探しに使わない。130 は Public 分母の仮定値。</td>
+</tr>
+<tr>
+<td>full_eval(019b)</td>
+<td>名称は「<strong>学習済み identity・query 由来の重複を除外した C1 代理</strong>」(取得の独立性は未確認)。追加監査: (1) 重複検索をパネルの identity group 全体(265 key、別 key 15 件・490 spectra を含む)に広げる;(2) 各パネル query について最も近い残存学習スペクトル(類似度・前駆体差・adduct・出典)を保存し、監査済み/不明の群を評価前に固定;(3) hold/lock との交差を実際の <code>Data.tr</code>(サンプラ)から算出(prep の 0 は直書き)。full_eval の評価は現行 M2x + full_eval のみ(pool60 と混ぜない)、パネルの利得だけで採用しない。記憶の切り分けには同レシピの「パネル他ライブラリ取得を含む/除く」対照が必要(今日は実施しない)。</td>
+</tr>
+</tbody>
+</table></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
