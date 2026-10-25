@@ -121,3 +121,5 @@
 - **訂正(Codex 020)**: E0 の C1 代理で真に C1 usable な 79 分子では E0 0.937 vs B1 0.875(E0 が上);「C1 では B1 ≥ E0」を撤回。残りの差の所在は「大窓の候補選択とチャネル融合を優先して検証、C2 が主要因かは未確定」。
 - **Kaggle 認証**が 13:20〜13:32 に切れた(ログイントークンの期限切れと思われる;再ログインで復旧)。
 - 今夜の提出(事前登録、基準 0.354): pool60 だけ、または full_eval だけを一回ずつ。ΔPublic ≥ +0.02 で暫定基準候補、±0.02 は未確定、≤ −0.02 は見送り。
+- **15:56 実装確認(Codex 022)**: 提出パイプライン(`--fpnet_ckpt` で自前 checkpoint)と評価器の表を、分岐を網羅したパネル 16 分子・両 view・共有 forward で比較 → **PARITY PASS**(候補集合・主出力と保険の順序付き top-25 公式 identity が 16/16 一致、GL 不足 4 分子を含む、manifest に checkpoint sha256 5b8d1c31… を記録)。
+- **16:05 阻害要因**: 自前 checkpoint(190 MB)を Kaggle の private dataset にアップロードしようとしたが、アカウントの private 容量の残りが 29 MB で作成不可(容量は別コンペ RSNA knee の private dataset 群が使用)。他コンペの資産は触らない。選択肢(ユーザー判断): (1) 古い private dataset を削除して容量を空ける、(2) 重みを public dataset として公開する、(3) Kaggle の notebook 内で同じレシピで学習し、その出力を提出 kernel の入力にする(GPU 約 8 時間)。full_eval の評価が合格した場合に判断を依頼する。
