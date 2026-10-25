@@ -1,0 +1,10 @@
+{
+  "ownerSlug": "hayatetaf",
+  "title": "casmi26-b1-fpnet-fulleval",
+  "slug": "casmi26-b1-fpnet-fulleval",
+  "subtitle": "Private FPNet checkpoint trained by us for the CASMI 2026 B1 pipeline",
+  "isPrivate": true,
+  "description": "# Model Summary\nPrivate FPNet checkpoint (spectrum -> fingerprint logits, 49.7M parameters) trained on 2026-10-25 with the public fold-safe training recipe on the competition train.parquet only (no NIST-derived data). Used by the B1 submission pipeline via --fpnet_ckpt full_eval_final.pt.\n\n# Model Characteristics\n8 layers, d 512, 8 heads, 10,226 fingerprint bits (fp_bits.npy of the public v2 pool). sha256 5b8d1c311d1171089374379c10cb82fdcc36457a7ab02ec0dddc6f12059b616d.\n\n# Data Overview\nCompetition train.parquet minus all enveda-np-examples spectra (1,184) and 12 same-molecule duplicates; identity groups of our dev2/locked2 evaluation sets held out. Training code, manifest and records are included in the instance files.\n\n# Evaluation Results\nHeld-out dev2 identities MRR@25 (FP only) 0.712. See TRAINING_MANIFEST.json.\n",
+  "publishTime": "",
+  "provenanceSources": ""
+}

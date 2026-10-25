@@ -1,0 +1,14 @@
+{
+  "ownerSlug": "hayatetaf",
+  "modelSlug": "casmi26-b1-fpnet-fulleval",
+  "instanceSlug": "full-eval",
+  "framework": "pyTorch",
+  "overview": "FPNet checkpoint full_eval_final.pt (sha256 5b8d1c31...) with its training code (code/), training manifest and records (records/). See README.md.",
+  "usage": "# Model Format\nPyTorch checkpoint loaded with casmi.fpnet.load_model (casmi package of ahmedberatozer/casmi26-v3-models).\n\n# Training Data\nCompetition train.parquet only (rows listed in records/dropped_train_rows.json removed; dev2/locked2 identity groups held out).\n\n# Model Inputs\nPreprocessed MS/MS spectrum (casmi spectrum cache format).\n\n# Model Outputs\nFingerprint logits over 10,226 bits.\n\n# Model Usage\nB1 pipeline: --fpnet_ckpt full_eval_final.pt (https://github.com/Satsuki-Tam/CASMI2026).\n\n# Fine-tuning\nNot intended.\n\n# Changelog\n2026-10-25 first version.\n",
+  "licenseName": "CC BY-NC 4.0",
+  "fineTunable": false,
+  "trainingData": [],
+  "modelInstanceType": "Unspecified",
+  "baseModelInstanceId": 0,
+  "externalBaseModelUrl": ""
+}

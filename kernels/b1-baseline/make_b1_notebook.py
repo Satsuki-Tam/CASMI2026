@@ -11,6 +11,7 @@ ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--src_d
 ap.add_argument("--emit", default="main", choices=["main", "insurance", "probe_train", "probe_nontrain", "probe_coconut", "probe_pubchem", "probe_pool"], help="which list becomes submission.csv (one Kaggle submission per kernel version); "
                 "probe_* = DIAGNOSTIC class-decomposition probes (Codex 023), needs a pipeline that writes submission_probe_*.csv")
 ap.add_argument("--pipeline_args", default="", help="extra b1_pipeline.py arguments, e.g. '--k_short 200 --k_pop 50 --w_ice 0'")
+ap.add_argument("--smoke_n", type=int, default=0, help="commit-run smoke switch (E0 recipe): when test.parquet is the visible dummy (spectrum-id md5 654e030e...) and the run is not a competition rerun, run the pipeline on its first N molecules only (--limit; the other ids get the CCO placeholder) (saves ~3 h of GPU quota per version); 0 = off")
 A = ap.parse_args()
 files = {n: open(os.path.join(A.src_dir, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py", "b1_rankfeats.py")}
 print("embedding sources from", A.src_dir)
@@ -47,9 +48,19 @@ print('inputs:', sorted(os.listdir('/kaggle/input'))[:20], '| competitions:', so
 ''')
 cells.append(f'''PIPELINE_ARGS = {json.dumps(A.pipeline_args.split())}
 EMBEDDED_SHA256 = {json.dumps(shas)}
+SMOKE_N = {A.smoke_n}   # >0: commit-run smoke on the visible dummy test only (never on the competition rerun)
 EMIT = {json.dumps(A.emit)}   # 'main' = the pipeline's main list is submission.csv; 'insurance' = the fixed rule + library priority list is submission.csv (separate kernel version per Kaggle submission)
 ''' + '''import subprocess, sys, time, json, os, shutil, glob
 t0 = time.time()
+import hashlib, pandas as pd
+COMP_TEST = sorted(glob.glob('/kaggle/input/**/enveda-CASMI26-molecule-id-mass-spectra/test.parquet', recursive=True))[0]
+_te = pd.read_parquet(COMP_TEST, columns=['molecule_id', 'spectrum_id'])
+TEST_SIG = hashlib.md5(','.join(sorted(_te.spectrum_id.astype(str))).encode()).hexdigest()
+IS_RERUN = bool(os.getenv('KAGGLE_IS_COMPETITION_RERUN')) or TEST_SIG != '654e030e4173780e945252b4a5adf70b'   # visible dummy test signature
+SMOKE = SMOKE_N > 0 and not IS_RERUN
+if SMOKE:   # commit run on the visible dummy: the pipeline processes its first SMOKE_N molecules and writes the CCO placeholder for the other ids (--limit)
+    PIPELINE_ARGS = PIPELINE_ARGS + ['--limit', str(SMOKE_N)]
+print('test', COMP_TEST, 'molecules', _te.molecule_id.nunique(), 'signature', TEST_SIG, '| rerun', IS_RERUN, '| SMOKE', SMOKE, SMOKE_N, flush=True)
 cmd = [sys.executable, '-X', 'utf8', '/kaggle/working/b1/b1_pipeline.py', '--out', '/kaggle/working'] + PIPELINE_ARGS
 print('running', ' '.join(cmd), flush=True)
 with open('/kaggle/working/b1_pipeline.log', 'w') as lf:
@@ -76,7 +87,7 @@ elif EMIT.startswith('probe_'):
     os.replace('/kaggle/working/submission.csv', '/kaggle/working/submission_main.csv'); shutil.copy(f'/kaggle/working/submission_{EMIT}.csv', '/kaggle/working/submission.csv')
     print(f'EMIT {EMIT}: DIAGNOSTIC probe -- submission.csv = the main list filtered by candidate group (main list kept as submission_main.csv)', flush=True)
 sub = check('/kaggle/working/submission.csv')
-meta = dict(emit=EMIT, pipeline_rc=rc, pipeline_args=PIPELINE_ARGS, embedded_sha256=EMBEDDED_SHA256,
+meta = dict(emit=EMIT, pipeline_rc=rc, pipeline_args=PIPELINE_ARGS, embedded_sha256=EMBEDDED_SHA256, test_signature=TEST_SIG, is_rerun=IS_RERUN, smoke=SMOKE, smoke_n=SMOKE_N,
             files={os.path.basename(f_): hashlib.sha256(open(f_, 'rb').read()).hexdigest() for f_ in sorted(glob.glob('/kaggle/working/submission*.csv'))},
             run_manifest=json.load(open('/kaggle/working/b1_run_manifest.json')))
 json.dump(meta, open('/kaggle/working/submission_meta.json', 'w'), indent=1); print(json.dumps(meta)[:3000], flush=True)
