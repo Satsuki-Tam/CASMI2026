@@ -1,0 +1,14 @@
+{
+  "ownerSlug": "hayatetaf",
+  "modelSlug": "casmi26-b1-fpnet-fullrk",
+  "instanceSlug": "full-rk",
+  "framework": "pyTorch",
+  "overview": "FPNet checkpoint full_rk_final.pt (sha256 1f47f1ba...) with its training code (code/), training manifest and records (records/). See README.md.",
+  "usage": "# Model Format\nPyTorch checkpoint loaded with casmi.fpnet.load_model (casmi package of ahmedberatozer/casmi26-v3-models).\n\n# Training Data\nCompetition train.parquet only (query acquisitions of the evaluation molecules removed; dev2/locked2/ranker-fit identity groups held out).\n\n# Model Inputs\nPreprocessed MS/MS spectrum (casmi spectrum cache format).\n\n# Model Outputs\nFingerprint logits over 10,226 bits.\n\n# Model Usage\nB1 pipeline: --fpnet_ckpt full_rk_final.pt (https://github.com/Satsuki-Tam/CASMI2026).\n\n# Fine-tuning\nNot intended.\n\n# Changelog\n2026-10-25 first version.\n",
+  "licenseName": "CC BY-NC 4.0",
+  "fineTunable": false,
+  "trainingData": [],
+  "modelInstanceType": "Unspecified",
+  "baseModelInstanceId": 0,
+  "externalBaseModelUrl": ""
+}

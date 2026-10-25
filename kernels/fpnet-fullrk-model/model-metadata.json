@@ -1,0 +1,10 @@
+{
+  "ownerSlug": "hayatetaf",
+  "title": "casmi26-b1-fpnet-fullrk",
+  "slug": "casmi26-b1-fpnet-fullrk",
+  "subtitle": "Private FPNet checkpoint (ranker-table variant) trained by us for the CASMI 2026 B1 pipeline",
+  "isPrivate": true,
+  "description": "# Model Summary\nPrivate FPNet checkpoint (spectrum -> fingerprint logits, 49.7M parameters) trained on 2026-10-25 with the public fold-safe training recipe on the competition train.parquet only (no NIST-derived data); the query acquisitions of our evaluation molecules are removed and the dev2 / locked2 / ranker-fit identity groups held out. Used by the B1 submission pipeline via --fpnet_ckpt full_rk_final.pt.\n\n# Model Characteristics\n8 layers, d 512, 8 heads, 10,226 fingerprint bits. sha256 1f47f1ba56725319678e6aefa642d48665f3fa785f35cc6260790a30878fd916.\n\n# Data Overview\nSee README.md and TRAINING_MANIFEST.json in the instance files.\n\n# Evaluation Results\nHeld-out identities MRR@25 (FP only) 0.700 (n 717).\n",
+  "publishTime": "",
+  "provenanceSources": ""
+}
