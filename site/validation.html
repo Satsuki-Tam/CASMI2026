@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 09:02 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 09:09 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -44,6 +44,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#e0-merge-cells14pye0-0750">E0 の最終 merge 規則(cells/14.py、E0 比較の読みのために記録、07:50)</a></li>
 <li><a href="#dev2-v2-m2x-run_p2dev_v3rank_v4bw_ice-0probe0845">dev2 v2 の速報(M2x 構成の特徴表 run_p2dev_v3、rank_v4b・w_ice 0、probe、08:45;チェーンの登録評価は後続)</a></li>
 <li><a href="#gl-rankerrank_v4b_nogl-fallback-0851probe-csv-lib_max-09-lib">GL なし ranker(rank_v4b_nogl)と fallback 分岐の比較(08:51;probe の分子別 CSV、保険は lib_max ≥ 0.9 → lib 順位の近似)</a></li>
+<li><a href="#0910-test-codex-017">【訂正 09:10】公開ダミー test と隠しテストの区別(Codex 017)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -495,7 +496,7 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <li><code>p2_select.py</code>(seed 5、fold_identity 0、identity group を開発集合と排他、層間排他、dev2 = 各層先頭 100 / locked2 = 次の 100): C_np_crosslib(NP、参照 ≥20、≥2 ライブラリ;query ライブラリ = spectra 最多の NP ライブラリ)、D_np_single(NP、単一ライブラリ、参照 ≤2)、E_np_negonly(NP、負イオンのみ)、F_np_uncovered(NP、正イオンあり・[M+H]+/[M+Na]+ なし)、G_tims_crosslib(enveda-180 query、≥2 ライブラリ)。適格 identity group: E 649 / F 241 / C 284 / G 303 / D 2,016。</li>
 <li>出力: <code>eval_set2/p2_dev_molecules.csv</code>(500)、<code>locked_eval2/p2_locked_molecules.csv</code>(500、<strong>未開封</strong>)、<code>eval_set2/p2_select_manifest.json</code>。dev2 の test ファイル <code>eval_test_p2dev/</code>(共通 selector、max 8): 1,511 spectra / 500 分子;層別 query 平均本数 C 5.0 / D 1.35 / E 2.1 / F 2.2 / G 4.4、E は負イオン 100%。</li>
 <li>読みの規則(案、016 で確認): 層ごとに paired Δ と CI のみ報告、層の重み付けはしない。dev2 で手を加えた構成は locked2 で 1 回だけ最終確認。</li>
-<li><strong>隠しテストの被覆(公開 test メタデータ、<code>data/processed/test_meta.parquet</code>、400 分子 / 1,213 spectra;07:10 集計)</strong>: [M+H]+ か [M+Na]+ を持つ分子 371 (92.8%)、負イオンのみ 27 (6.8%)、NH4 のみ 2 (0.5%)、被覆正イオンなし 29 (7.2%)、うち正イオンあり 2 (0.5%)、≥3 adduct 5 (1.2%)、単一 spectrum 55 (13.8%)。adduct 構成は [M+H]+ 959 / [M-H]- 193 / [M+CH2O2-H]- 31 / [M+Na]+ 22 / [M+NH4]+ 4 / [M+Cl]- 2 / [M+K]+ 2。分子あたり平均 3.0 spectra(中央値 3、最大 9)。含意: forward 不在の層(E)は本番の約 7%(最大 ≈ 0.07 MRR 相当、実際の損失はその一部)、F(NH4/K/脱水のみ)は 0.5% で proxy の上限は ≈ 0.005 — F は診断用に留め、E と C/G/D を優先する。これは LB からの逆算ではなく test メタデータの観測値。</li>
+<li><strong>【訂正 09:10、Codex 017】以下は公開ダミー test(train 由来の例、採点時に置換される;<code>docs/official/pages/data-description.md</code>)の集計であり、隠しテストの性質ではない。感度分析としてのみ残す。</strong> 公開ダミーの被覆(<code>data/processed/test_meta.parquet</code>、400 分子 / 1,213 spectra;07:10 集計): [M+H]+ か [M+Na]+ を持つ分子 371 (92.8%)、負イオンのみ 27 (6.8%)、NH4 のみ 2 (0.5%)、被覆正イオンなし 29 (7.2%)、うち正イオンあり 2 (0.5%)、≥3 adduct 5 (1.2%)、単一 spectrum 55 (13.8%)。adduct 構成は [M+H]+ 959 / [M-H]- 193 / [M+CH2O2-H]- 31 / [M+Na]+ 22 / [M+NH4]+ 4 / [M+Cl]- 2 / [M+K]+ 2。分子あたり平均 3.0 spectra(中央値 3、最大 9)。(撤回)この構成から隠しテストの被覆率・層の重みは推定できない。公式に使える隠しテストの情報は「query は timsTOF、約 400 分子、3 クラス」のみ。</li>
 </ul>
 <h2 id="query-w7-eval_test_full3m2x-blend21-0715">query 本数と成績(W7 <code>eval_test_full3</code>、M2x blend21 の提出パイプライン出力、07:15 集計)</h2>
 <table>
@@ -510,7 +511,7 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 </thead>
 <tbody>
 <tr>
-<td>B_nplib C2 main(固定)</td>
+<td>B_nplib C2 main(固定)【main = blend21 の提出リスト】</td>
 <td>n=123: 0.340 (0.268)</td>
 <td>n=77: 0.360 (0.306)</td>
 <td>n=40: 0.538 (0.510)</td>
@@ -535,8 +536,8 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <ul>
 <li>NP 化学(B)では query 本数が成績を強く左右する(C2 で 1 本 0.34 → 4 本以上 0.70)。B の 41%(123/300)が 1 本の分子だが、隠しテストは 1 本が 13.8%、中央値 3 本(公開メタデータ)。<strong>query 本数は観測可能な test の性質であり、開発集合の分布が本番と違う</strong> → 層別の報告に n_query 層を追加し、本番分布での事後層別(post-stratification)平均も併記する(LB からの逆算ではない)。</li>
 <li>B で負イオン query を持つ分子(37)は持たない分子より高い(C2 0.64 vs 0.42)— 負イオンがあること自体より、複数 adduct を持つ分子は spectra が多い(参照も多い)ことの反映と読む。</li>
-<li>隠しテストの分子あたり spectra 数(公開メタデータ): 1 本 55 / 2 本 97 / 3 本 99 / 4 本以上 149(400 分子;13.8 / 24.3 / 24.8 / 37.3%)。W7 600 分子は 124 / 95 / 111 / 270、dev2 500 分子は 187 / 97 / 57 / 159。同一 adduct 内の CE 変種は test で (molecule, adduct) あたり 1〜4 本(136 / 155 / 121 / 101)。</li>
-<li><strong>n_query 層で本番分布に事後層別した W7(M2x blend21 パイプライン出力)</strong>: B C2 main 0.443 → 0.527、固定 0.374 → 0.457;B C1 main 0.665 → 0.731、固定 0.620 → 0.684;A は 1 本の層が 1 分子しか無く不安定(C2 main 0.790 → 0.762)。読み: NP 化学の開発集合は本番より「1 本の分子」に偏っており、生の平均は本番条件での値を過小に見せる方向。ただし Public(固定 0.334 / 学習 0.322)は B C2 の生の値よりさらに低く、隠しテストにはこの層別では説明できない難しさ(novel クラス = 全員 0、候補生成の失敗、クラス混合)がある。</li>
+<li>【訂正 09:10】公開ダミー test の分子あたり spectra 数(隠しテストの分布ではない): 1 本 55 / 2 本 97 / 3 本 99 / 4 本以上 149(400 分子;13.8 / 24.3 / 24.8 / 37.3%)。W7 600 分子は 124 / 95 / 111 / 270、dev2 500 分子は 187 / 97 / 57 / 159。同一 adduct 内の CE 変種は test で (molecule, adduct) あたり 1〜4 本(136 / 155 / 121 / 101)。</li>
+<li><strong>n_query 層で公開ダミーの構成に再重み付けした W7(感度分析;「本番分布」ではない。M2x blend21 パイプライン出力)</strong>: B C2 main 0.443 → 0.527、固定 0.374 → 0.457;B C1 main 0.665 → 0.731、固定 0.620 → 0.684;A は 1 本の層が 1 分子しか無く不安定(C2 main 0.790 → 0.762)。読み(訂正): query 本数と MRR の相関は観測されるが、同じ分子の spectra を増やした因果効果ではなく、ダミーの構成が本番と同じとも言えない。Public(固定 0.334 / 学習 0.322)が B C2 の生の値より低い理由(novel クラス、候補生成、クラス混合)はこの集計では説明できない。</li>
 </ul>
 <h3 id="p2-v2codex-016-query-0745p2_select_v2pyseed-5fold-01-100-dev2-100-locked2">p2 v2(Codex 016 の指示で query 基準に再定義、07:45;<code>p2_select_v2.py</code>、seed 5、fold 0、識別群排他、1 つの並べ替えの先頭 100 = dev2 / 次の 100 = locked2)</h3>
 <ul>
@@ -557,12 +558,12 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <tr>
 <th>層 / view</th>
 <th style="text-align: right;">n(shortlist 内)</th>
-<th style="text-align: right;">GL fallback 分子</th>
+<th style="text-align: right;">GL fallback 分子(shortlist 内のみ;全分子の分母は下の訂正)</th>
 <th style="text-align: right;">learned</th>
-<th style="text-align: right;">pipeline(blend21 + fallback)</th>
+<th style="text-align: right;">pipeline(= learned + GL 不足時は保険;<strong>登録主出力 blend21 は別列</strong>)</th>
 <th style="text-align: right;">固定</th>
 <th style="text-align: right;">lib のみ</th>
-<th style="text-align: right;">guard τ0.9</th>
+<th style="text-align: right;">guard τ0.9(learned 土台、保険ではない)</th>
 </tr>
 </thead>
 <tbody>
@@ -760,6 +761,12 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 </tbody>
 </table>
 <ul>
-<li>GL なし ranker は fallback 分岐の答えではない: パネルの未被覆 34 分子で保険より −0.42(C1)/ −0.10(C2)。E/F では rank_v4b・GL なしともに保険を上回る(+0.17〜+0.24)。母集団差は消えない。</li>
-<li>共通要因の読み: パネル(timsTOF query・他装置参照)と G(同条件、合成化学)で learned が lib より大きく劣り、公開 NP ライブラリ query(E/F/B/C、参照と同系の装置)では learned が参照を活かす。装置不一致で参照類似度が 0.6〜0.85 帯に落ちる体制を ranker が学習していない(A_timstof の C1 行は 7 分子)。fallback 政策の変更よりも、この体制の学習行追加(G 型)か類似度の装置条件付けが本筋。隠しテストの未被覆 29 分子はパネル型(timsTOF)なので、当面 fallback は保険のままにする。</li>
+<li>【訂正 09:10、Codex 017】上の表の保険は近似(lib_max ≥ 0.9 のみ)で、E/C2 0.483・F/C2 0.490 は shortlist 内条件付き。正確な保険(<code>r_fguard0.9_0.2</code>)と strict 分母(真が shortlist 外 = 0)の再集計: パネル GL 不足 C1 34: rank_v4b 0.680 / GL なし 0.402 / 保険 0.809;C2 34: 0.749 / 0.707 / 0.809;E C1 usable 59: 0.856 / 0.790 / 0.561;E C2 全 100: 0.308 / 0.367 / 0.235;F C1 38: 0.866 / 0.833 / 0.590;F C2 全 100: 0.264 / 0.265 / 0.229。探索的 paired bootstrap(Codex、20,000 回): パネル C1 GL なし − 保険 −0.407 [−0.535, −0.270];rank_v4b − 保険 −0.129 [−0.276, +0.016]、C2 −0.060 [−0.209, +0.088];E C1 +0.295 [+0.183, +0.410]、E C2 +0.073 [+0.028, +0.122];F C1 +0.276 [+0.127, +0.426]、F C2 +0.036 [+0.001, +0.071]。GL なし ranker は全 fallback への採用根拠なし。集合間で点推定の符号は逆転するが、装置による因果まで確定していない。fallback 発生数(全分子分母): C/C2 1、E/C2 99(+候補ゼロ 1)、F/C2 100、G 8(各 view)。</li>
+<li>共通要因の読み(仮説): パネルと G(timsTOF query + 他ライブラリ参照)で learned が lib より劣る。ただし「他ライブラリ = 他装置」ではなく、C でも lib 0.957 &gt; learned 0.916、E/F でも lib が上回るので「NP query では learned ≥ lib」とは一般化しない。パネル C1 被覆 216 群は blend21 で 0.893(lib 0.914)まで回復するが、G/C1 被覆 92 群は blend21 0.646(lib 0.876)で主出力にも差が残る。装置不一致で参照類似度が 0.6〜0.85 帯に落ちる体制を ranker が学習していない(A_timstof の C1 行は 7 分子)。fallback は当面保険のまま(理由: 置き換え候補が保護条件を満たしていない;「隠しの未被覆 29 分子」は公開ダミーの数で根拠にしない)。次は rank_v4b と「fold 0 の G 型 72 群を学習行に追加した版」の一対比較(他は固定)。</li>
+</ul>
+<h2 id="0910-test-codex-017">【訂正 09:10】公開ダミー test と隠しテストの区別(Codex 017)</h2>
+<ul>
+<li><code>data/raw/test.parquet</code> = <code>data/processed/test_meta.parquet</code>(1,213 行・400 ID、ID 列の SHA256 f300cbe4…)は公開ダミー(train 由来の例、採点時に置換)。kernel の commit 実行の出力(<code>b1_run_manifest.json</code> の GL 371 / fallback 29、<code>b1_stage_stats.csv</code> の lib_max 分布: ≥0.9 が 88/400、中央値 0.78)もダミーに対する値で、ダミーは train 分子なので参照一致が高いのは構成上の当然。隠しテストについて公式に使えるのは「query は timsTOF、約 400 分子、3 クラス」のみ。以後の集計には <code>data_role = public_dummy / development / hidden_rerun</code> と入力 ID hash を付ける。</li>
+<li>E0 の gate についても訂正: <code>lib_max &gt;= 0.9</code> で BASE 全体を維持する規則は、B1 保険の「margin ≥ 0.2 を伴う lib 候補優先」と同じ出力規則ではない。同じ τ でも gate が差 0.13 を説明しないとは言えず、E0 段階比較では BASE 前後・最終 merge 前後の順位差を残す。</li>
+<li>probe の表記: <code>r_pipeline</code> = learned + GL 不足時は保険;登録した M2x 主出力は <code>r_blend21</code>(G/C1 0.600、G/C2 0.637)。保険は <code>r_fguard0.9_0.2</code>。</li>
 </ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 09:02 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 09:09 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -5435,7 +5435,16 @@ p1 + p2 + p3 = 1
 <p>今回開封した seed 4 は、そのモデル・規則を確認した結果として凍結する。今後これを見てモデルや評価条件を変えるなら、それらの変更に対する未使用評価とは呼べない。次の最終確認には identity が独立した locked 2 を、次案の選択前に確保する。</p>
 <p><strong>(d)の proxy・FIORA 等は、欠けた forward 証拠が実測の損失原因だった層に絞る。</strong> 先に、MSG非重複の実測 NH4／水脱離と H の対応分子で H を隠す比較を行う。新しいモデルを増やす前に、被覆が増えることと順位が改善することを分けて測る。負モードの新モデルは、その層の対照ができてから扱う。</p>
 <p>確認範囲：指定された開封結果・manifest・分子別登録差、Spark の shared parity と空候補出力、最新パネル probe、手元の二つの Notebook。登録差は再計算で一致を確認し、分子単位20,000回、seed=20261025の bootstrap でも判定は変わらなかった。新候補の locked 再評価、学習、GPU推論、提出、既存実験ファイルの変更は行っていない。</p>
-<p>REVIEW_COMPLETE: 015</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="015-2-2">015 判断: 昇格見送り・両候補保持を確定、朝の 2 提出は「2 つの最終出力ポリシーの比較」として実施、表現を訂正</h1>
+<p>REVIEW_COMPLETE: 015</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 採否(すべて受け入れ)</a></li>
+<li><a href="#2">2. 提出の記録様式(完走後に埋める)</a><ul>
+<li><a href="#21-2026-10-25-0902-jst">2.1 提出の記録(2026-10-25 09:02 JST)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div><h1 id="015-2-2">015 判断: 昇格見送り・両候補保持を確定、朝の 2 提出は「2 つの最終出力ポリシーの比較」として実施、表現を訂正</h1>
 <p>作成: 2026-10-25 05:35 JST(Claude Code)。依頼 <code>015_request.md</code>、回答 <code>015_codex.md</code>。</p>
 <h2 id="1">1. 採否(すべて受け入れ)</h2>
 <table>
@@ -5469,7 +5478,46 @@ p1 + p2 + p3 = 1
 </tbody>
 </table>
 <h2 id="2">2. 提出の記録様式(完走後に埋める)</h2>
-<p>提出 ID、Notebook 版(本命 <code>casmi26-b1-baseline</code> v4 / 保険 <code>casmi26-b1-insurance</code> v1)、出力ファイル、<code>b1_run_manifest.json</code>(被覆・fallback・learned 件数・時間)、Public 値、比較目的、読み。</p></details></article><article><h1>016: 016 依頼: (c) query 選択の共通関数化の完了報告、(a) E0 自前分子実行の開始、(b) 検証集合の層追加(p2 / locked 2)の設計確認</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<p>提出 ID、Notebook 版(本命 <code>casmi26-b1-baseline</code> v4 / 保険 <code>casmi26-b1-insurance</code> v1)、出力ファイル、<code>b1_run_manifest.json</code>(被覆・fallback・learned 件数・時間)、Public 値、比較目的、読み。</p>
+<h3 id="21-2026-10-25-0902-jst">2.1 提出の記録(2026-10-25 09:02 JST)</h3>
+<table>
+<thead>
+<tr>
+<th>提出 ID</th>
+<th>Notebook 版</th>
+<th>出力</th>
+<th>manifest(被覆・fallback・learned・時間)</th>
+<th>Public</th>
+<th>比較目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>57610156</td>
+<td><code>casmi26-b1-baseline</code> v4</td>
+<td>M2x blend21(submission.csv)</td>
+<td>400 採点、GL 371、fallback_gl_cover 29、lib_priority 59、learned 371、11,341 s</td>
+<td>採点待ち</td>
+<td>M1 0.322 / 固定 0.334 との差 = 変更全体の総合効果</td>
+</tr>
+<tr>
+<td>57610167</td>
+<td><code>casmi26-b1-insurance</code> v1</td>
+<td>固定 + libpri τ0.9(submission.csv、本命リストは submission_main.csv に保存)</td>
+<td>同じ統計、12,007 s</td>
+<td>採点待ち</td>
+<td>固定 0.334 との差、本命との差 = 出力ポリシーの差</td>
+</tr>
+<tr>
+<td>読みの規則は §1 のとおり(±0.02 は運用閾値)。提出枠は 1 日 5 回(残り 3)。</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></details></article><article><h1>016: 016 依頼: (c) query 選択の共通関数化の完了報告、(a) E0 自前分子実行の開始、(b) 検証集合の層追加(p2 / locked 2)の設計確認</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-c-docsvalidation_designmd-commit-f92ca5f">1. (c) 完了(docs/validation_design.md 末尾、commit f92ca5f)</a></li>
 <li><a href="#2-a">2. (a) 開始</a></li>
@@ -6002,4 +6050,245 @@ p1 + p2 + p3 = 1
 <ul>
 <li>残りの fold 0 の G 型(enveda-180 query・≥2 ライブラリ、dev2/locked2 v2 と既存集合の group を除外)は <strong>72 group</strong> しか無い(E 632 / F 63 / C 21 / D 1,654)。学習行の特徴表(M2x 構成、GL のみ)は <code>spark_fitpool_chain.sh</code> で E/D を 300 に抑えた 756 分子を、パネル pipeline run の後に計算する予定(キュー済み)。</li>
 <li>fold 1〜4 には G 型が <strong>約 1,822 group</strong>(441 / 439 / 475 / 467)ある。<code>data/external/fold_safe_fpnet/</code> には <code>fpnet_fold0..4.pt</code> の 5 fold モデルがあり、<code>b1_features.py</code> は現在 fold 0 モデルだけを使う。分子の fold に応じてその分子を学習に含まない fold モデルで FP 特徴を計算するように評価器を fold 対応にすれば、fold 制約を緩めずに(FP 特徴の楽観化なしに)G 型の学習行を約 25 倍にできる。GL/ICE は MSG 学習で fold と無関係(MSG 分子は除外済み)。この拡張を提案 2 の第一候補にしたい — 懸念点(fold モデル間の校正差が FP の z 化に与える影響、ranker の学習表と評価表で FP の出所が混ざること)を指摘してほしい。</li>
-</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul></details><details><summary>回答(Codex)</summary><h1 id="017-dev2-v2fallbackg">017 レビュー: dev2 v2、fallback、G 型の追加学習</h1>
+<p>2026-10-25 09:01 JST。依頼の §4・§5 の追記を含めて確認した。</p>
+<p><strong>結論は、4の既存段階出力の点検を先行・並行し、次の改善実験は2の「残り fold 0 の G 型72群」を使う。3はその結果を受けた追加比較とする。1の今回の <code>rank_v4b_nogl</code> は不採用でよい。</strong> 4の完了待ちで2の準備を止める必要はない。§5の1,822群への拡張は有用な候補だが、既存の5モデルを振り分けるだけでは、現在の dev2/locked2 に対する厳密な未見評価は維持できない。</p>
+<p>当面 fallback を保険のまま保持する判断には賛成する。ただし理由は「全体に置き換えられる候補が保護条件を満たしていない」ことであり、「隠しテストの未被覆29分子がパネル型だから」ではない。後者の根拠は公開ダミーの集計である。</p>
+<p><strong>判断の前提となる数値の訂正</strong></p>
+<p><code>b1_learned_probe.py:78–82</code> では、<code>r_pipeline</code> は learned + GL不足時の保険、登録した M2x の主出力は別列の <strong><code>r_blend21</code></strong> である。依頼 §1 と <code>validation_design.md</code> の「pipeline(blend21)」という見出しを訂正してほしい。例えば G/C1 は learned 0.652、pipeline 0.587、<strong>blend21 0.600</strong>。G/C2 の blend21 は0.637。</p>
+<p>保険も近似を使わず <strong><code>r_fguard0.9_0.2</code></strong> で比較する。<code>lib_max &gt;= 0.9</code> のみで lib 順位へ切り替える近似は、margin 条件と残りの候補の並べ方が異なる。<code>r_guard0.9_0.2</code> は learned を土台にする別案であり、保険ではない。</p>
+<p>保存CSVを分子IDで整列し、shortlistに真が無い分子を RR=0 とした再集計は次のとおり。</p>
+<table>
+<thead>
+<tr>
+<th>評価対象 / view</th>
+<th style="text-align: right;">分母</th>
+<th style="text-align: right;">生 rank_v4b</th>
+<th style="text-align: right;">生 rank_v4b_nogl</th>
+<th style="text-align: right;">正確な保険</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル GL不足 / C1</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">0.680</td>
+<td style="text-align: right;">0.402</td>
+<td style="text-align: right;"><strong>0.809</strong></td>
+</tr>
+<tr>
+<td>パネル GL不足 / C2</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">0.749</td>
+<td style="text-align: right;">0.707</td>
+<td style="text-align: right;"><strong>0.809</strong></td>
+</tr>
+<tr>
+<td>E / C1 usable</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;"><strong>0.856</strong></td>
+<td style="text-align: right;">0.790</td>
+<td style="text-align: right;">0.561</td>
+</tr>
+<tr>
+<td>E / C2 全分子</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.308</td>
+<td style="text-align: right;"><strong>0.367</strong></td>
+<td style="text-align: right;">0.235</td>
+</tr>
+<tr>
+<td>F / C1 usable</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;"><strong>0.866</strong></td>
+<td style="text-align: right;">0.833</td>
+<td style="text-align: right;">0.590</td>
+</tr>
+<tr>
+<td>F / C2 全分子</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.264</td>
+<td style="text-align: right;">0.265</td>
+<td style="text-align: right;">0.229</td>
+</tr>
+</tbody>
+</table>
+<p><code>validation_design.md</code> の GLなし比較表の E/C2=0.483、F/C2=0.490 は、それぞれ真が shortlist 内の76・54分子に条件付けた値である。先行する strict MRR の表と同じ分母ではない。「E/Fで一律に +0.17〜+0.24」も成立せず、strict の差で記載する。</p>
+<p>探索的な paired bootstrap を保存CSVから20,000回、seed=20261025で再計算した。パネル C1 の <strong>nogl−保険 = −0.407、95%区間 [−0.535,−0.270]</strong> で、この版を全fallbackへ採用する根拠はない。一方、生 rank_v4b−保険はパネル C1 −0.129 [−0.276,+0.016]、C2 −0.060 [−0.209,+0.088]。E/C1 +0.295 [+.183,+.410]、E/C2 +0.073 [+.028,+.122]、F/C1 +0.276 [+.127,+.426]、F/C2 +0.036 [+.001,+.071] だった。<strong>集合間で点推定の符号が逆転した、とは言えるが、パネルでの生rankerの劣性や装置による因果効果まで確定したわけではない。</strong> これらは既に探索に使った集合上の区間で、多重比較や再学習の変動を含む正式な採用検定ではない。</p>
+<p>fallback件数にも分母の問題がある。probeは真がshortlistに無い分子を先にスキップするため、見出しの件数は「真がshortlist内の分子に限ったGL不足数」である。保存特徴表とGLスコアを全分子で確認すると以下になる。</p>
+<table>
+<thead>
+<tr>
+<th>層 / view</th>
+<th style="text-align: right;">全N</th>
+<th style="text-align: right;">GL被覆十分</th>
+<th style="text-align: right;">候補あり・GL不足</th>
+<th style="text-align: right;">候補ゼロ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C / C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">97</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>D / C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>E / C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">99</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td>F / C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>G / C1、C2それぞれ</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p>Eの76、Fの54、Gの7をfallbackの発生率として使わない。候補ゼロは理由を分け、得点の分母には残す。D/C1はN=0のNAとしてC2評価を続ける。D/C2の再実行結果は確認でき、shortlist到達42/100、blend21 0.267だった。候補不在58件が大きい一方、同じshortlistでも上限0.420まで約0.153の差があり、「順位付けの改善余地は小さい」とまで断定しない。</p>
+<p><strong>Q1: 順序、保護集合、許容損失</strong></p>
+<ol>
+<li><strong>提案4の段階比較を利用する。</strong> E/F/Gに加えてDも見る。候補窓→shortlist→各engine→BASE→PC mergeの真の所属・順位・ΔRR、GL被覆、選ばれた分岐を、同じquery/maskと全分子分母で記録する。既存016の列要件を引き継げばよい。E0の学習済みidentityは挙動診断として表示する。E0/B1の差をそのまま未見性能の差としない。</li>
+<li><strong>次の学習比較は、現行 rank_v4b と「G72群を追加した版」の一対にする。</strong> query、shortlist、特徴集合、hyperparameter、C1の重み、blend21とfallbackの規則をまず固定し、学習例の追加を検証する。追加identityのC1と対応するC2を両方含め、C2では真の参照を隠した上で、類似した誤候補の参照は残す。G/C1の回復とG/C2の誤昇格を一緒に評価する。</li>
+<li><strong>提案3は、2で残った失敗に対して一つの条件付き案を比較する。</strong> 「装置が違う／参照が少ないならτを下げる」という方向はまだ仮説。参照が少ないと証拠が弱くなる場合もある。候補ごとの実測可能な参照類似度・1位と2位のmargin・adduct/極性・装置情報を使い、C1救済件数だけでなくC2の誤昇格とΔRRを測る。真のクラス、真候補の参照数、真の層ラベルを推論時の分岐条件にしない。装置不明は独立した状態として扱う。</li>
+</ol>
+<p>現在キュー済みのfit pool756群の特徴生成は、この比較に使える。しかし最初からE300/D300/F63/C21も全て混ぜると、G追加の効果と分布・重み変更が分離できない。最初はG72群だけを追加するのがよい。</p>
+<p><strong>実装上の接続漏れがある。</strong> Sparkの現行 <code>b1_rank_train.py:22</code> は <code>for s in ("A_timstof", "B_nplib")</code> と固定されている。C〜Gの特徴表を作り、<code>--runs</code> に足すだけでは学習されない。追加集合の明示的な読込と、実際に使ったidentity数・C1/C2群数・positiveを含む学習群数の出力が必要。756群や72群は選択時の数で、学習に有効な群数とは分ける。C1の3倍反復も独立標本数を3倍にはしない。</p>
+<p>保護条件は次のように置く。</p>
+<table>
+<thead>
+<tr>
+<th>変更</th>
+<th>主に確認する利得</th>
+<th>保護する出力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2: G学習例の追加、fallback維持</td>
+<td>dev2 G/C1の <strong>主出力blend21</strong></td>
+<td>G/C2、C/DのC2、既存A/BのC2とC1評価集合、パネル両view。E/FとG・パネルのfallback出力は同一性を確認</td>
+</tr>
+<tr>
+<td>将来1を再検討しfallbackを変更</td>
+<td>E/Fの各view、GのGL不足群</td>
+<td>パネルGL不足34群の両view、GのGL不足群の両view。GL被覆十分な分子の出力は構造的に同一であること</td>
+</tr>
+</tbody>
+</table>
+<p>損失幅は015と整合させ、まず <strong>各保護対象のΔMRRに ε=0.02</strong> を事前登録する。点推定が−0.02を超えて悪化していないことに加え、非劣性を宣言するには事前に決めた区間の下限が−0.02以上であることを求める。N=34や8では広い区間になりやすいが、それを理由に事後に幅を緩めない。「未確定」として既存候補を保持する。改善対象の利得で他の保護層の損失を相殺せず、同じidentityのC1/C2は独立標本として合算しない。locked2開封前に主比較・保護層・許容幅を固定する。</p>
+<p><strong>2だけではfallbackそのものは改善しない。</strong> GのGL不足8群では、C1の生rankerが0.875、保険＝blend21が0.0625だった。fallbackを保険に固定したままrankerを改善しても、この枝は変わらない。2ではまず被覆群で学習例不足の仮説を検証し、将来fallbackを変更するなら別の出力方針として保護試験を行う。</p>
+<p>なお、Gとパネルを同程度の「本命の崩壊」と読むのも修正が必要。全分子のGL判定で分けるとG/C1被覆92群は learned 0.633、<strong>blend21 0.646、lib 0.876</strong>。パネルC1被覆216群は learned 0.746だが、<strong>blend21 0.893、lib 0.914</strong>まで回復している。Gの問題は現行主出力でも残る一方、パネルはblendによってかなり緩和されている。</p>
+<p>「timsTOF C1の学習例が7分子」は今回は実学習入力でも確認できた。<code>run_v3_p1</code>のA/C1 fitが5群、<code>run_v3_eval</code>のA/C1 fitが2群で計7群、いずれも真がshortlist内。学習例不足は有力な仮説である。ただし、他ライブラリ＝必ず他装置ではない。<code>lib_same</code>はコード上、同じadductの参照類似度であって装置一致フラグでもない。装置、化学領域、参照数、極性、prior、query数は分離して調べる。「NP queryでは learned ≥ lib」はCで0.916&lt;0.957、E/Fでもlibが上回るので一般化しない。</p>
+<p><strong>Q2: fold 0 の72群を先に使う。1,822群の単純なfold振り分けは最終評価用には保留</strong></p>
+<p>fit poolのCSV・manifestを確認した。Gの適格数は既存集合・p2除外後82群、層間割当て後72群。選択済みfitはG72/C21/F63/E300/D300の計756identity groupだった。初稿の333−200=133群ではなく、追記の72群が正しい。manifestはp2のdev2/locked2と既存集合の除外・交差ゼロを記録している。なおfit poolのmanifestの<code>split_method</code>にはdev2/locked2という選択器由来の名称が残るため、<code>fit_molecules.csv</code>の実採用数と用途を別に明記する。</p>
+<p>fold対応は二つの問題を分けて考える必要がある。</p>
+<ul>
+<li><strong>各学習行自身に対するOOF:</strong> fold kのqueryを <code>fpnet_foldk</code> で計算すれば、そのidentityをFPNetが学習済みという直接の楽観化は避けられる。fold 1〜4の分子を現在のfold0モデルで採点する案より適切。</li>
+<li><strong>外側のdev2/locked2に対する未見性:</strong> 配布モデルkはfold kとパネルを除外しているが、k≠0ではfold 0を学習対象に含む。<code>fold_safe_fpnet/README.md</code> と <code>make_split.py:23</code> もその定義である。現在のdev2/locked2はfold 0なので、それを見たFPNetが生成した学習特徴を介してrankerへ情報が入り得る。rankerのfit行からdev2/locked2を除くだけでは、この経路は消えない。</li>
+</ul>
+<p>従って「各行はOOFだから、locked2を含めて楽観化なし」とは承認しない。locked2の個票を開く必要はなく、上流モデルの学習集合との交差をメタデータで監査すればよい。厳密に拡張するなら、例えばfold kの追加fit用モデルは <strong>fold 0とfold kの両方を除外</strong>して学習するなど、外側の保留集合を全ての上流モデルから外す構成が必要になる。追加の学習コストとモデル分布差があるため、まず既存fold0モデルとG72群で仮説を検証する。既存5モデルによる1,822群版は、別名の探索実験としては有用だが、そのまま現在のlocked2を独立した最終性能確認とは呼べない。</p>
+<p>校正と実装については、foldを拡張する段階で以下を満たす。</p>
+<ul>
+<li><code>z_fp</code>は同じ候補集合に対する正の線形なスケール・オフセットの違いは消すが、順位・裾・誤りの違いは消さない。現行23特徴には<strong>生の<code>fp</code>も残る</strong>。窓内でのshortlist生成とshortlist内のz化は別なので、zだけで校正済みとしない。</li>
+<li>queryのidentity groupのfoldでモデルを選び、候補ごとのfoldで振り分けない。C1/C2のqueryは同じモデルを使う。チェックポイント・bit順序・前処理hash・fold・候補集合hashをキャッシュキーとmanifestに含める。</li>
+<li>FP上位候補、FP+prior候補、<code>fp_rank_window</code>、shortlist所属からその未見モデルで作り直す。見たモデルが選んだshortlistのFP列だけ交換してもOOFにはならない。候補変更に伴うforwardスコアの不足も監査する。</li>
+<li>fold別にstrict shortlist recall、FP-only MRR、raw FPの位置・尺度、候補内gap、最終ΔRRを出す。foldとquery装置・層の比率の違いも記録する。校正や重みの選択はfit/tune側で行い、locked2で調整しない。</li>
+<li>提出時のFPNetをfold0のままにするなら、その条件の評価を主にする。複数foldの平均へ変更するなら候補生成から変わる別案であり、別途検証する。混合出所の学習表で良くなっただけで本番への一致を仮定しない。</li>
+</ul>
+<p><strong>Q3: 朝の報告は「開発集合上の出力方針の診断」とする</strong></p>
+<p>そのまま使える記述例:</p>
+<blockquote>
+<p>dev2 v2の保存特徴表を用いた開発用probeでは、GL不足時の出力方針に集合依存の差が見つかった。生rank_v4bはE/Fで正確な保険を上回る一方、パネルのGL不足34分子では点推定が下回った。GL列を除いた今回の再学習版はパネルC1を0.809から0.402へ下げたため、全fallbackへの採用を見送る。G/C1では現行の主出力blend21が0.600、lib単独が0.876で、被覆群にも差が残る。次は他集合と排他なfold0のG型72群を追加し、G/C1の改善とC2への損失を同時に検証する。これらは隠しテストの頻度やPublic LB改善を示す結果ではなく、登録評価・提出経路での確認前の診断である。</p>
+</blockquote>
+<p>表には <code>run/モデル/主出力列/全N/shortlist内N/GL不足数の分母/strictか条件付きか</code> を明記する。CIを載せない場合は「CI未計算、点推定」とする。上記の探索的CIを引用する場合はその再集計方法も併記し、正式な事前登録比較と混ぜない。C1でNが減る理由はusable参照条件、C2でNを減らさない理由は候補到達失敗も評価対象であることを記載する。既に予定した比較提出の構成と、このレビューから派生する次版は区別して記録する。</p>
+<p><strong>朝の資料から除くべき隠し分布の推論</strong></p>
+<p>Sparkの <code>data/raw/test.parquet</code> と <code>data/processed/test_meta.parquet</code> はともに1,213行・400IDで、昇順のunique IDを改行結合したSHA256も双方
+<code>f300cbe427300469664a60d074db35c0f02cf2ad184f0778599ceec7175d6802</code>
+と一致した。これは011で確認した<strong>公開ダミー</strong>である。公式保存資料 <code>docs/official/pages/data-description.md:6</code> は、可視testがtrain由来の例で採点時に置換されることを明記している。</p>
+<p>従って、<code>validation_design.md</code>末尾と依頼内の次の含意は撤回・修正してほしい。</p>
+<ul>
+<li>「隠しの被覆不足29/400」「Eは本番の約7%」「Fは0.5%、改善上限0.005」「隠しの未被覆29分子はパネル型」。いずれも公開ダミーからは分からない。</li>
+<li>ダミーのquery本数の比率で再重み付けした0.527等を「本番分布での平均」や「本番値の過小評価の補正」と呼ぶこと。残すなら<strong>ダミー構成を使った感度分析</strong>と明示する。query数とMRRの相関も、同じ分子のスペクトルを増やした因果効果ではない。</li>
+</ul>
+<p>公式に示された「隠しqueryはtimsTOF」という情報は使える。それと、隠しのadduct被覆率・novelty比率を観測したという主張は別である。今後の集計に<code>data_role=public_dummy/development/hidden_rerun</code>と入力ID hashを付け、この取り違えを防ぐのがよい。</p>
+<p>E0のgateについても訂正が必要。保存Notebookの最終mergeは <code>lib_max &gt;= 0.9</code> なら<strong>BASE全体を維持</strong>し、それ以外でPCを挿入・昇格する。B1保険の「margin≥0.2を伴うlib候補優先」と同じ出力規則ではない。同じτだからgateは0.13の差を説明しない、とは言えない。提案4ではBASE前後と最終merge前後の順位差を残し、gateの影響も検証対象とする。</p>
+<p>確認資料: <code>017_request.md</code>、<code>016_decision.md</code>、共同作業手順、<code>validation_design.md</code>末尾、Sparkの <code>diag/probe_p2dev_v3_*_rank_v4b.md/csv</code>、<code>probe_panel_v3b_rank_v4b_{c1,c2}.csv</code> とnogl版、<code>probe_p2dev_{C,E,F,G}_rank_v4b_nogl*</code>、<code>run_p2dev_v3</code>の既存特徴表・GLキャッシュ、fit pool CSV/manifest、rank_v4の学習入力・コード、fold-safe FPNetの配布READMEとsplitコード、保存E0 Notebook。rank_v4b hashは <code>237710b6…</code>、noglは <code>131f5f0a…</code>。Sparkでは既存データの読取・CPU集計のみ実施し、locked2の個票・予測・採点結果は参照していない。</p>
+<p>REVIEW_COMPLETE: 017</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="017-gl-ranker-rank_v4b-vsfold-0-g-72">017 判断: 公開ダミーに基づく「隠しテスト」の推論を撤回、GL なし ranker は不採用、次は rank_v4b vs「fold 0 の G 型 72 群を追加」の一対比較</h1>
+<p>作成: 2026-10-25 09:15 JST(Claude Code)。依頼 <code>017_request.md</code>(§4・§5 追記含む)、回答 <code>017_codex.md</code>。</p>
+<h2 id="1">1. 採否(すべて受け入れ、実施状況)</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断・実施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>公開ダミーの取り違え</td>
+<td><strong>撤回・訂正済み</strong>(<code>docs/validation_design.md</code>、朝の報告、memory に教訓を保存)。<code>test.parquet</code> = 公開ダミー(train 由来、採点時に置換)。kernel 出力の被覆統計もダミー。隠しテストについて使えるのは公式の「timsTOF query、約 400 分子、3 クラス」のみ。以後の集計に <code>data_role</code> と入力 ID hash を付ける。</td>
+</tr>
+<tr>
+<td>表記の訂正</td>
+<td><code>r_pipeline</code> ≠ 登録主出力。登録主出力は <code>r_blend21</code>(G/C1 0.600、G/C2 0.637)。保険は <code>r_fguard0.9_0.2</code>(近似を撤回)。strict 分母に統一(E/C2 0.308 / 0.367 / 0.235、F/C2 0.264 / 0.265 / 0.229)。fallback 発生数は全分子分母(E 99+1、F 100、G 8)。</td>
+</tr>
+<tr>
+<td>提案 1(GL なし ranker)</td>
+<td><strong>不採用</strong>(パネル GL 不足 C1 0.809 → 0.402、探索的 CI −0.407 [−0.535, −0.270])。fallback は保険のまま(理由は「置き換え候補が保護条件を満たさない」)。</td>
+</tr>
+<tr>
+<td>順序</td>
+<td>(4) E0 段階比較(c2_full3 実行中)を先行・並行 → (2) rank_v4b vs「G 72 群追加」の一対比較(query・shortlist・特徴・hyperparameter・C1 重み・blend21/fallback 規則を固定)→ (3) 条件付き guard は 2 の残存失敗に対する一比較。</td>
+</tr>
+<tr>
+<td>提案 2 の実装</td>
+<td><code>b1_rank_train.py</code> の固定 <code>("A_timstof","B_nplib")</code> を run 内の特徴表と eval CSV の集合から自動検出に変更(済み)。使用 identity / C1・C2 群数 / positive を含む群数の出力を追加する。fit pool の特徴生成は <strong>G 72 群のみ</strong>に限定して再キュー(E/D/F/C を混ぜると G 追加の効果と分布変更が分離できない)。</td>
+</tr>
+<tr>
+<td>保護条件(事前登録)</td>
+<td>主確認: dev2 G/C1 の主出力 blend21。保護: G/C2、C/D の C2、既存 A/B の C2 と C1 評価集合、パネル両 view;E/F と G・パネルの fallback 出力の同一性。ε = 0.02(点推定 −0.02 未満の悪化なし、非劣性宣言は区間下限 ≥ −0.02)。利得で他層の損失を相殺しない。同 identity の C1/C2 を独立標本として合算しない。locked2 開封前に固定。</td>
+</tr>
+<tr>
+<td>fold 拡張(§5)</td>
+<td>保留。配布 fold k モデル(k≠0)は fold 0 を学習に含むため、fold 0 の dev2/locked2 への未見性が FP 特徴経由で崩れる。厳密には「fold 0 と fold k を両方除外した」モデルが必要。まず fold 0 モデル + G 72 群で仮説を検証。校正・実装要件(query の fold でモデル選択、候補生成からの作り直し、fold 別の recall/FP-only MRR 記録、提出 FPNet は fold 0 のまま)は拡張時に適用。</td>
+</tr>
+<tr>
+<td>E0 gate</td>
+<td>「同じ τ だから gate は差を説明しない」を撤回。E0 の <code>lib_max ≥ 0.9</code> は BASE 全体の維持で、B1 保険の margin 付き lib 優先とは別規則。段階比較で BASE 前後・最終 merge 前後の順位差を残す。</td>
+</tr>
+<tr>
+<td>D の読み</td>
+<td>「順位付けの余地は小さい」を撤回。shortlist 到達 42/100 だが同 shortlist でも上限 0.420 まで約 0.153 の差。</td>
+</tr>
+<tr>
+<td>報告の表現</td>
+<td>Codex の文案を採用(朝の報告に追記済み)。表には run / モデル / 主出力列 / 全 N / shortlist 内 N / GL 不足の分母 / strict か条件付きかを明記。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2">2. 次の実装(この順)</h2>
+<ol>
+<li><code>b1_rank_train.py</code> に USED 台帳(run × set: identity 数、C1/C2 群数、positive を含む群数)を出力 → Spark 同期。</li>
+<li>fit pool G 72 群の特徴表(<code>run_fitpool_v3</code>、パネル pipeline run の後に自動開始)→ <code>rank_v6g</code> = rank_v4b の設定 + G 72 群(C1 と対応 C2)→ dev2(C/D/E/F/G)・A/B・パネルで登録評価器(<code>b1_locked_eval.py</code> 相当、blend21 主出力)により一対比較。</li>
+<li>E0 段階比較(c2_full3 → c1_full3 → パネル)の結果を読み、D/E/F/G で E0 の候補窓・shortlist・engine・BASE・merge の挙動を確認(018)。</li>
+</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

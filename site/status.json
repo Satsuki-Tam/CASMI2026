@@ -84,14 +84,20 @@
   {
    "state": "done",
    "name": "GL なし ranker(fallback 分岐用候補、rank_v4b_nogl)",
-   "detail": "不採用: パネル未被覆 34 分子で保険 0.824 に対し 0.402(C1)。E/F では rank_v4b・GL なしとも保険を +0.17〜+0.24 上回るが、隠しテストの未被覆 29 分子はパネル型(timsTOF)なので fallback は保険のまま。共通要因は timsTOF query + 他装置参照(類似度 0.6〜0.85 帯)の体制を ranker が学習していないこと",
+   "detail": "不採用: パネル GL 不足 34 分子で正確な保険 0.809 に対し 0.402(C1)。E/F では rank_v4b・GL なしとも保険を上回る(strict: E/C2 0.308 / 0.367 / 0.235)。fallback は保険のまま(置き換え候補が保護条件を満たさないため)。共通要因の仮説: timsTOF query + 他ライブラリ参照の体制の学習行不足(7 分子)",
    "eta": "08:51 完了"
   },
   {
-   "state": "running",
+   "state": "done",
    "name": "Codex 017(fallback 出力ポリシー、timsTOF クラス 1 の学習行追加)",
-   "detail": "依頼 08:48 送付",
-   "eta": "回答待ち"
+   "detail": "回答 09:01: 公開ダミーに基づく「隠しテスト」推論を撤回(test.parquet は train 由来のダミー)、GL なし ranker 不採用、次は rank_v4b vs G 72 群追加の一対比較(保護層・ε=0.02 事前登録)、fold 拡張は保留",
+   "eta": "完了"
+  },
+  {
+   "state": "queued",
+   "name": "ranker 一対比較: rank_v4b vs +G 72 群(fold 0、他集合と排他)",
+   "detail": "fit pool G の特徴表(パネル run 後に自動開始)→ 学習 → dev2/A/B/パネルで登録評価。主確認 G/C1 blend21、保護 G/C2・C/D C2・A/B・パネル両 view、ε=0.02",
+   "eta": "午後"
   }
  ],
  "next": [
