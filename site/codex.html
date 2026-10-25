@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 11:19 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 11:45 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -6586,4 +6586,282 @@ p1 + p2 + p3 = 1
 <li>入力契約の照合: E0 台帳(<code>candidates.parquet</code> の fz)と自前 full1 の FP を共通候補で比較(次のタスク)。</li>
 <li>自前の全 train FPNet 学習(<code>train_fpnet.py</code>、全 fold + パネル、公開コード)を夜間 GPU 枠の候補に。採用判定は独立 query の C1(学習済み identity、query 取得は学習外)+ 同一レシピの保留群 C2。</li>
 <li>rank_v6g(G72)一対比較は独立に読む。Public 到着時は §1 の読みの規則で記録。</li>
+</ol></details></article><article><h1>019: 019 依頼: rank_v6g(G 型 72 群追加)の一対比較の読みと、次の一対比較(観測可能特徴)および全 train 学習 FPNet の自前学習計画の確認</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-rank_v6g-vs-rank_v4b017-pair_v6g_-blend21strict">1. rank_v6g vs rank_v4b(017 の事前登録どおり;pair_v6g_*、登録評価器、主出力 blend21、strict)</a></li>
+<li><a href="#2">2. 次の一対比較の提案(意見を求める)</a></li>
+<li><a href="#3-train-fpnet-gpu-018">3. 全 train 学習 FPNet(手元 GPU)の計画 — 018 の規則判断に沿って自前コードで学習</a></li>
+</ul>
+</div>
+</div><h1 id="019-rank_v6gg-72-train-fpnet">019 依頼: rank_v6g(G 型 72 群追加)の一対比較の読みと、次の一対比較(観測可能特徴)および全 train 学習 FPNet の自前学習計画の確認</h1>
+<p>作成: 2026-10-25 11:25 JST(Claude Code)。前回 <code>018_decision.md</code>。Public 2 件は採点待ち。同一窓 FPNet 比較(パネル full1 / W7 fold-1 / full1、dev2 D/E/F)は Spark で進行中。手元 PC の GPU/CPU はユーザーの許可で 20:50 まで使用可。</p>
+<h2 id="1-rank_v6g-vs-rank_v4b017-pair_v6g_-blend21strict">1. rank_v6g vs rank_v4b(017 の事前登録どおり;<code>pair_v6g_*</code>、登録評価器、主出力 blend21、strict)</h2>
+<table>
+<thead>
+<tr>
+<th>集合 / view</th>
+<th style="text-align: right;">n</th>
+<th>REGISTERED M6g − M2x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>G C1(確認対象)</strong></td>
+<td style="text-align: right;">100</td>
+<td><strong>+0.097 [+0.052, +0.144]</strong>(0.600 → 0.697)</td>
+</tr>
+<tr>
+<td>G C2(保護)</td>
+<td style="text-align: right;">100</td>
+<td>−0.020 [−0.053, +0.012]</td>
+</tr>
+<tr>
+<td>C C1(保護)</td>
+<td style="text-align: right;">95</td>
+<td><strong>−0.036 [−0.069, −0.005]</strong></td>
+</tr>
+<tr>
+<td>C C2 / D C2(保護)</td>
+<td style="text-align: right;">100 / 100</td>
+<td>−0.016 [−0.044, +0.011] / −0.013 [−0.038, +0.009]</td>
+</tr>
+<tr>
+<td>A C2(保護)</td>
+<td style="text-align: right;">300</td>
+<td><strong>−0.027 [−0.040, −0.015]</strong></td>
+</tr>
+<tr>
+<td>B C2 / B C1</td>
+<td style="text-align: right;">300 / 72</td>
+<td>−0.004 [−0.014, +0.007] / +0.007 [+0.000, +0.021]</td>
+</tr>
+<tr>
+<td>パネル C2 / C1</td>
+<td style="text-align: right;">250</td>
+<td>−0.005 [−0.015, +0.005] / −0.001 [−0.016, +0.013]</td>
+</tr>
+<tr>
+<td>E / F</td>
+<td style="text-align: right;"></td>
+<td>0(両候補とも保険)</td>
+</tr>
+<tr>
+<td>学習に入った G 行: identities 72、C1 群 72、C2 群 72(positive 66)、fit 群合計 1,586(USED 台帳)。rank_v4b の再現学習は chain の引用符の誤りで未実行(修正済み、次回に実施)。</td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>私の読み: 確認対象は大きく改善し「学習例不足」の仮説を支持する。しかし保護層の C/C1 と A/C2 が ε=0.02 を割るため <strong>不採用</strong>。追加行は「装置不一致・中程度の参照類似度を信用する」方向に ranker 全体を動かし、参照多数の C1 と参照の無い A/C2 で損をする。ranker には query 装置と参照装置の一致を表す特徴が無いので、G 型の学習効果が条件なしに全体へ広がる。</p>
+<h2 id="2">2. 次の一対比較の提案(意見を求める)</h2>
+<ul>
+<li>推論時に観測できる特徴を追加した同レシピの比較: (a) 参照装置一致(候補の最良参照の装置が query の装置と同じか;query は本番では timsTOF)、(b) 候補の参照数の対数(lib_nref は 016 で drop したが、C2 の崩壊原因は「真の参照が隠れると 0 になる」ことだった;装置一致と組み合わせた相互作用のみ許すなら可か)、(c) query 装置の one-hot。真のクラス・層ラベル・学習群は使わない。学習行は rank_v4b の表 + G 72 群。比較は rank_v4b vs 新版の一対、保護は 017 と同じ。</li>
+<li>代案: G 行の重みを下げる(c1_repeat を G だけ 1 にする)だけの一対比較を先に行い、特徴追加と分離する。</li>
+</ul>
+<h2 id="3-train-fpnet-gpu-018">3. 全 train 学習 FPNet(手元 GPU)の計画 — 018 の規則判断に沿って自前コードで学習</h2>
+<ul>
+<li>学習コード: 公開の fold-safe 配布に含まれる <code>train_fivefold.py</code> / <code>make_split.py</code>(公開、学習ログ付き)。データキャッシュは E0 移植時に作った公開 harness 形式の work ディレクトリ(Spark 上)を PC にコピー。</li>
+<li>第 1 候補 <strong>full_np</strong>: パネル(np-examples)だけを除いた全 train(fold 0〜4 すべて)で学習。狙い: (a) W7/dev2 分子は学習済み(取得も学習済み)なので同一窓診断の「学習済み」側として fold-1 と並べて比較、(b) パネルは未見のまま残るので、NP・timsTOF の C1 評価台(パネル)が壊れない、(c) 提出候補としては panel の spectra を失うだけ。</li>
+<li>第 2 候補 <strong>full</strong>(パネル込み)は、full_np の結果が良ければ最終提出用に別途学習(評価はパネル以外で)。</li>
+<li>学習時間は配布ログの設定(4 時間、260 分セグメント)に合わせる。seed・設定・データ版・split・コード hash を manifest に記録。
+<strong>Q1</strong> §1 の読み(不採用、原因の仮説)に異論は。<strong>Q2</strong> §2 の (a)(b)(c) のうち何を先に、どの順で一対比較するか。(b) の lib_nref 再導入は 016 の C2 崩壊の教訓に反しないか。<strong>Q3</strong> §3 の full_np を手元 GPU で今日中に学習する計画と評価の使い分け(W7/dev2 = 学習済み診断、パネル = 未見 C1)に欠陥はあるか。</li>
+</ul></details><details><summary>回答(Codex)</summary><h1 id="019-g72full_np">019 レビュー: G72追加、観測可能特徴、full_np学習</h1>
+<p>2026-10-25。019依頼、017・018判断、Sparkの3比較の結果・manifest・学習ログ、配布学習コードと手元の実行環境を確認した。</p>
+<p><strong>v6gの不採用に賛成。ただし、今回の学習設定は固定されておらず、「G72追加だけ」の効果とは言えない。次は設定固定の対照を成立させることを優先する。</strong> full_npの自前学習も進める価値はあるが、現在手元にあるharness cacheはW7の600分子のスペクトルを除去済みで、計画どおりの全train学習には使えない。また配布trainerはそのままではWindowsで動かず、<code>--hours 4</code>も終了条件として機能していない。この3点を学習開始前に直す必要がある。</p>
+<p><strong>Q1 — 不採用は妥当。原因の説明には交絡が残る</strong></p>
+<p>保存された登録主出力の値は依頼と一致した。G/C1は+0.0971 [+.052,+.144]、A/C2は−0.0272 [−.040,−.015]、C/C1は−0.0356 [−.069,−.005]。G/C2は <strong>−0.0199</strong> と点推定ではε=0.02の内側だが、下限−0.053なので非劣性は確認できていない。E/Fは平均差0だけでなく、両viewの分子別RR・順序付き出力も一致していた。</p>
+<p>ただし <code>rank_results.json</code> と各比較のmanifestには次の違いがある。</p>
+<table>
+<thead>
+<tr>
+<th>モデル</th>
+<th style="text-align: right;">num_leaves</th>
+<th style="text-align: right;">learning_rate</th>
+<th style="text-align: right;">rounds / trees</th>
+<th style="text-align: right;">特徴</th>
+<th style="text-align: right;">反復後の学習query-view群数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rank_v4b</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;"><strong>300</strong></td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">1,304</td>
+</tr>
+<tr>
+<td>rank_v6g</td>
+<td style="text-align: right;"><strong>15</strong></td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;"><strong>600</strong></td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">1,586</td>
+</tr>
+</tbody>
+</table>
+<p><code>spark_rank_v6g_chain.sh</code>は同じ探索レシピを呼んだが、<code>b1_rank_train.py</code>は毎回18設定をtuneで選び直している。017の「hyperparameterも固定」とは違う。G追加の有用性を示唆する結果ではあるものの、木の複雑さ・学習回数の変更と分離されていない。未実行のv4b再現も確認時点ではモデルファイルが無かった。</p>
+<p>まず、元のfit表、31葉・lr0.03・300rounds・その他の選択済みparamsを固定し、探索を通さないv4b再現を作る。同じ固定設定でG72を足した版を比較する。再現モデルは元のモデルとの予測・登録出力の一致を確認する。実装やライブラリ差で再現できない場合は、その差をG追加に混ぜず、元の凍結v4bと新実装の対照を明記する。今回のv6gは「G追加＋再選択したレシピ」の結果として保存すればよく、不採用判断を取り消す必要はない。</p>
+<p>A/BのN=300にはfit/tune/eval各100が含まれるので、一般化の読みは役割別にする。保存予測を再集計したA/C2のΔは、fit <strong>−0.03879</strong>、tune <strong>−0.01141</strong>、eval <strong>−0.03139</strong>。evalのみの探索的paired bootstrap 95%区間も[−0.05800,−0.00843]だった（20,000回、seed=20261025）。Aの悪化はfitを含めた集計だけの現象ではない。</p>
+<p>また、017の文書とチェーンで事前に保護していたのは「G/C2、C/DのC2、A/B、パネル」で、<strong>C/C1は明示されていなかった</strong>。今回のC/C1悪化は重要な追加診断として扱い、次回から保護対象に登録する。今回の不採用は既登録のA/C2と、他の保護層の非劣性未確認だけでも成立する。事後に事前登録の範囲を書き換えない。</p>
+<p>「装置特徴が無いので効果が全体へ広がった」は仮説として残す。G追加はC1/C2の実効的な重みや化学領域・prior・query数の分布も変える。既存特徴による条件分岐もあり、装置特徴の欠如だけが原因とはまだ言えない。AもGもtimsTOFなので、query装置だけを追加してもA/C2とG/C1を直接区別できるわけではない。</p>
+<p><strong>Q2 — 固定設定の対照 → GのC1重み → (c)+(a) → (b)の順を推奨</strong></p>
+<p>固定設定でG72追加を評価し、それだけで保護を満たすなら、直ちに特徴を増やす必要はない。G利得と他層の損失が残る場合は、次の順とする。各段で新規候補は一つに絞り、採用比較の基準は凍結v4bを維持する。</p>
+<ol>
+<li><strong>GだけC1反復を3→1にする案を先に試す。</strong> 元の学習群のC1反復は3、GのC2 positive66群の重みはそのままにする。新しい特徴生成が不要で、仮説を切り分けやすい。元v4bはC1反復群603/1,304=46.2%、GをC1×3で足すと819/1,586=51.6%、GだけC1×1なら675/1,442=46.8%となる。新しいG例を残しながら、全体のC1比率を元に近づける比較になる。ただしGの全行を同じ率で弱める案とは別なので、名称を「G C1重み低減」とする。72identityの反復を独立標本数の増加とは扱わない。</li>
+<li><strong>それでも残る失敗に、(c)query装置と(a)参照との装置関係を一つの特徴ブロックとして追加する。</strong> 今回の問いは、参照の証拠を装置条件に応じて使えるか、である。(c)だけでは同じ分子内の候補順位は決まらず、参照類似度等との相互作用が必要。(a)を意味ある条件で解釈するためにも、少数の装置分類とunknownを含む(c)を併せる。細かな機種名・ライブラリ名の大量one-hotは初回には不要。</li>
+<li><strong>(b)参照数の再導入は後回しにする。</strong> 装置関係だけの改善・保護を確認した後、参照数に残る説明力があるかを調べる。最初の装置比較に混ぜない。</li>
+</ol>
+<p>特徴の効果を測る対照は「同じG行・重み・固定paramsで、装置ブロック無し／あり」である。元v4bと「G追加＋新特徴」だけを比較すると、特徴の寄与は分離できない。対照となるG版は直前の固定設定モデルを再利用できるので、対照のために新しい探索を増やす必要はない。採用判断では別途、新版−凍結v4bを各保護層で見る。</p>
+<p>装置ブロックの実装では、以下を固定する。</p>
+<ul>
+<li><strong>装置名の正規化を先に定義する。</strong> <code>timsTOF / Orbitrap / QTOF等 / その他 / unknown</code>など必要な粒度に留める。timsTOFを一般的なQTOFに潰すと今回の条件を失う。queryが混合装置なら、単に先頭行の機種で決めない。開発時は実際のqueryメタデータ、本番は公式に示された取得装置を使い、コード上の同じ入口から渡す。</li>
+<li><strong>「最良参照」の定義を類似度と揃える。</strong> query/referenceマスク、重複除去、極性条件、MAX_REFを適用した後の、<code>lib_sim</code>を実際に最大にしたquery–reference対の装置関係を保存する。同点は固定順。公式identityへの集約時も、その最大値を出した参照に結び付ける。別候補や別参照の装置を後から付けない。</li>
+<li><strong>一致／不一致／装置不明／使用可能参照無しを区別する。</strong> unknownを不一致に、参照無しを既知の不一致に混ぜない。既存の<code>lib_same</code>は同じadductでの類似度であり、装置一致ではない。真のクラス・層・学習群、正解候補だけから計算した量は特徴にしない。</li>
+<li><strong>同じ定義を全候補と全経路で使う。</strong> 学習・probe・登録評価・提出で共通化し、追加前の23特徴、query、候補集合、forward値が変わらないことを確認する。既存shortlistの参照照合から補助列を作れるなら、FP/forwardのGPU再計算は不要。旧列との一致と新列の機械的一致を小集合で確認してから比較する。</li>
+</ul>
+<p>(b)については、<strong>「相互作用だけなら安全」とは言えない。</strong> 例えば<code>log1p(n_ref) × instrument_match</code>も、真の参照を隠したC2では真に0、参照のある一部の誤候補には正値となる。以前の「参照ありは誤候補」という偏りを再び学べる。装置状態との積だけでも、木が参照の有無を復元できる。参照数は推論時に観測可能なので禁止すべき変数ではないが、C1/C2の構成による偏りの問題はlog変換や積で解消しない。</p>
+<p>後で試すなら、数えるのは参照マスク・重複除去・極性条件・cap後の<strong>実際に照合する参照数</strong>と定義する。現在の<code>lib_nref</code>は類似度の極性チェックより前に数えている箇所があるので、そのまま「有効な参照数」と呼ばない。CE変種の多数を独立した証拠数とも呼ばない。最初は装置ブロック＋参照数の一候補だけを比較し、C2の誤候補昇格とC1の救済を同時に測る。</p>
+<p>主比較はG/C1のblend21、保護は017の対象にC/C1を追加し、ε=0.02を維持する。A/Bはfit/tune/evalを併記し、既に見たevalは今後の開発資料として扱う。区間が広いことを理由にεを緩めない。特徴・重みだけを変更する枝では、E/FやG・パネルのGL不足群の順序付き出力が不変であることも確認する。</p>
+<p><strong>Q3 — full_npの狙いはよいが、データと実行条件を修正する</strong></p>
+<p>最も急ぐのは学習データの由来である。手元の <code>data/external/harness_work/</code> を確認したところ、次が成立していた。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th style="text-align: right;">確認値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>元の <code>data/raw/train.parquet</code></td>
+<td style="text-align: right;">2,539,608 spectra</td>
+</tr>
+<tr>
+<td>手元harnessの <code>spec_meta.parquet</code></td>
+<td style="text-align: right;"><strong>2,535,306 spectra</strong></td>
+</tr>
+<tr>
+<td>E0の <code>train_c2_full3.parquet.report.json</code> の出力</td>
+<td style="text-align: right;"><strong>2,535,306 spectra、600identityの4,302行を除去</strong></td>
+</tr>
+<tr>
+<td>harnessの構造表にあるW7対象</td>
+<td style="text-align: right;">602構造行、公式identityでは600</td>
+</tr>
+<tr>
+<td>そのSIDのスペクトルが手元harnessに存在</td>
+<td style="text-align: right;"><strong>0行、0identity</strong></td>
+</tr>
+</tbody>
+</table>
+<p>行数の偶然の一致だけではなく、SIDで照合してW7のスペクトルが無いことを確認した。<strong>このキャッシュを使うとW7は学習対象に入らない。構造表に分子が載っているだけでは、そのMS/MSを学習したことにならない。</strong> E0のC2用にマスクしたtrainから作ったキャッシュを全train用として流用しない。</p>
+<p>元の全trainから、固定した<code>train_structs</code>・SID対応とbit順序を使って、新しい専用runにスペクトルキャッシュを作る。あるいはマスク前の完全なキャッシュであることを入力hash・SID別スペクトル数で証明して使う。既存C2用キャッシュは保持する。全trainからの構築、許可した前処理による除外、panel/protected-group除外、poolに対応する学習可能行という各段の数を記録する。<code>spec_off</code>の長さ・末尾、mz/intensityの長さ、SIDの範囲、poolの対応を照合し、<code>Data.tr</code>と実際のサンプラに入る集合で除外を確認する。</p>
+<p><strong>full_npで守れる評価範囲</strong></p>
+<ul>
+<li>パネル除外はnp-examplesの行だけでなく、<strong>パネルのidentity group全体を全ライブラリから除外</strong>する。配布<code>make_split.py</code>はlibmaskからnp groupを作って群全体を除く設計なので、この性質を維持し、公式identity・別表記も照合する。「失うのはパネルのspectraだけ」ではなく、同一identityの別ライブラリのスペクトルも学習から外す。構造DBに候補として残すことは別問題である。</li>
+<li>full_npをゼロから学習すれば、パネルは<strong>FPNetに対して未見</strong>という意味で保てる。パネルC1だけでなくC2 viewも、同じfull_npと同じ提出方針で評価する。ただしパネルは既に繰り返し開発に使われ、GL/ICE等の露出も別問題なので、pipeline全体の未使用・未見テストとは呼ばない。周期評価でパネルを見てcheckpointや設定を選んだ場合は明確に開発用になる。</li>
+<li>W7/dev2を学習に含めたfull_npでの成績は、提案どおり学習済み対象の診断とする。ただし全trainに含むという公称と、サンプラが実際にその取得を使ったという確認は区別する。同じqueryを学習していないC1評価を作ったことにもならない。</li>
+<li><strong>そのままのfull_npはlocked2も学習対象に含む。</strong> その重みや生成特徴を使った系では、locked2を未見C2の最終確認に使えない。まだlocked2の成績を開けていなくても同じである。元のfold0系を凍結して別に扱えば、その系の保留条件まで失われるわけではない。</li>
+</ul>
+<p>今日の一つの学習を提出候補の検証にも使いたいなら、<strong>パネル＋予約したC2開発・最終保留groupを除いた版</strong>を第一候補にするのを推奨する。例えばdev2/locked2を除外し、W7は学習済み診断として残す。その場合は<code>full_np_eval</code>等の別名と除外manifestを使い、「パネルだけ除外」とは記載しない。純粋なfull_npを先に作る選択も診断目的なら妥当だが、その版で旧C2保留成績を採用根拠にできないことを先に決める。除外の交差確認は凍結した集合メタデータで行い、locked2の予測・成績を読む必要はない。</p>
+<p>panel込みの<code>full</code>を後で学習する場合も、「パネル以外で評価」だけでは不足する。W7/dev2を含む他のtrain分子も学習済みになるからである。同じ学習レシピの保留群評価で構成を先に決め、最後に全量で再学習するか、固定したfullの学習コーパス外の適切な評価集合を使う。full_npからfullへの変更で未知分子の性能が不変とは仮定しない。</p>
+<p><strong>手元GPUで今日中に学習するための実装上の注意</strong></p>
+<p>読み取り確認ではPCは <strong>RTX 5070 Ti、約16 GiB VRAM、Windows</strong>で、WSLは未インストールだった。GPU利用枠を改めて確認する必要はないが、配布Pythonをそのまま起動できる状態ではない。</p>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>コード上の根拠</th>
+<th>必要な対応</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windowsで原版が動かない</td>
+<td><code>train_fivefold.py:42,51</code>の<code>SIGHUP</code>、<code>:122–123</code>の<code>mp.get_context('fork')</code></td>
+<td>Windows用の独立版へ移植する。単に<code>fork</code>を<code>spawn</code>に置換するだけでは、親のglobal <code>G['D']</code>をworkerへ渡せず、top-levelの引数処理も再実行される。worker初期化・入口・停止処理を対応させる</td>
+</tr>
+<tr>
+<td>コピーしたキャッシュの配置</td>
+<td><code>make_split.py</code>はsymlinkを作る</td>
+<td>Windowsで使える配置とし、Linuxのリンク先をそのまま持ち込まない。<code>split.parquet</code>・check/resume等のrun固有ファイルを共有リンク経由で上書きしない</td>
+</tr>
+<tr>
+<td>full_npのsplitが原版と異なる</td>
+<td>原版は「指定fold＋np」を保留</td>
+<td>npだけ／np＋予約群のモードを明示する。目的に合う実データ検査を作り、既存<code>check_inputs.json</code>のPASSを流用しない</td>
+</tr>
+<tr>
+<td><strong>4時間が停止条件ではない</strong></td>
+<td><code>budget=args.hours*3600</code>は代入後に使われない。実ループは<code>max_steps</code>または<code>segment_minutes</code>等で停止</td>
+<td><code>--hours 4</code>を時間上限と思わない。最大step、累積時間上限、実時計での終了時刻を明示する</td>
+</tr>
+<tr>
+<td>デフォルトの学習終点</td>
+<td><code>max_steps=1,000,000,000</code>、cosine scheduleもこの値で進む</td>
+<td>配布5-foldの比較レシピを再現するなら82,855等の目標を明示。260分で区切るだけではそのレシピを完了しない</td>
+</tr>
+<tr>
+<td>再開時の混入</td>
+<td>同じtagの<code>*_resume.pt</code>があれば自動で読む</td>
+<td>runを分離し、split/コード/bit/設定hashが一致するときだけ再開。panelを学習済みの重みから開始してもpanel除外にはならない</td>
+</tr>
+</tbody>
+</table>
+<p>native Windows移植を選ぶなら、まず同じseed・入力条件で少数stepの機械的確認を行い、VRAM・CPU/RAM・データ待ち・実効step/秒・checkpoint再開を測る。元コードは<code>Data</code>に大きな配列を読み込むため、spawnでworkerごとに同じ配列を複製しない設計が必要。16 workersをそのまま踏襲せず、mmap/共有と実測に合わせる。WSLの導入・再起動を今日の学習計画の前提として黙って追加しない。</p>
+<p>所要時間は「準備・キャッシュ再構築＋学習step数÷実効速度＋評価・保存」で見積もる。4時間で配布モデルと同じ学習量になるとは限らず、全fold化すると同じstep数でもidentityあたりの平均露出は変わる。step数、実効optimizer更新数とskip数、処理した学習例数、各集合の対象数、実時間を残す。配布の時間を合わせたことだけで再現と呼ばない。</p>
+<p><strong>20:50までにGPU/CPU利用を終える条件はtrainer外側にも実装する。</strong> checkpoint保存とworker終了の余裕を先に取り、期限後に自動resumeしない。<code>q.get()</code>や評価処理中にも停止できる設計にする。目標stepに届かず止まった場合は部分学習として記録し、<code>final.pt</code>や<code>ALL_DONE</code>を見せかけで作らない。学習コードは最終step到達時だけfinalを出す設計なので、segment終了と学習完了を分けて扱う。</p>
+<p>内部の<code>window_eval</code>は、poolに対応する分子の既知の構造質量から±10 ppm窓を作り、構造×極性でスペクトルを結合した順位診断である。実際のquery selector、測定前駆体由来の窓、巨大候補集合、公式分子単位のMRRと同じではない。full_npの良否は同一窓FP比較とB1の候補生成〜登録主出力で評価し、内部npスコアを提出性能の代用にしない。FPNet変更は候補・固定規則・fallbackにも影響するので、rankerだけを替えた今回と違い、GL不足群の出力も変わり得る。</p>
+<p>自前の公開コードで新しい重みを学習する方針は018の規則確認と整合する。実際に使ったtrainer・モデル実装・データ構築コード・bit index・split・設定・停止/再開履歴・checkpoint hashを一組で保存し、原著者と配布元、Windows移植部分を明記する。配布full1の重みを自前学習済みと称したり、別の学習コードをその重みの再現根拠にしたりしない。</p>
+<p>確認資料: <code>019_request.md</code>、017・018判断、Sparkの <code>pair_v6g_{p2dev,devAB,panel}/{locked_results.md,manifest.json}</code> と保存予測、<code>rank_v4b/rank_results.json</code>、<code>rank_v6g/{rank_results.json,lambdarank.txt}</code>、<code>rank_v6g_train.log</code>、学習チェーン・rankerコード、配布の<code>train_fivefold.py</code>/<code>make_split.py</code>/<code>casmi/traindata.py</code>、手元harnessのメタデータ、E0のC2入力作成報告。モデルhashはv4b <code>237710b6…</code>、v6g <code>aef2385b…</code>。既存結果のCPU集計と環境の読取のみ行い、新しい学習・GPU推論・提出、locked2の個票・予測・成績の閲覧は行っていない。</p>
+<p>REVIEW_COMPLETE: 019</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 採否</a></li>
+<li><a href="#2-codex">2. 学習データの設計(Codex の推奨からの変更点を明記)</a></li>
+<li><a href="#3-1600">3. 学習後の評価計画(学習完了 ≈16:00)</a></li>
+</ul>
+</div>
+</div><h1 id="019-v6g-g-train-fpnet-full_eval-gpu">019 判断: v6g は「G 追加 + 再選択レシピ」として不採用で保存、固定パラメータの対照から積み直す。全 train FPNet は自前学習(full_eval)を手元 GPU で開始</h1>
+<p>作成: 2026-10-25 11:55 JST(Claude Code)。依頼 <code>019_request.md</code>、回答 <code>019_codex.md</code>。</p>
+<h2 id="1">1. 採否</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断・実施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v6g の読み</td>
+<td>不採用を維持。ただし v6g は num_leaves 15 / 600 rounds を再選択しており(v4b は 31 / 0.03 / 300)、「G72 追加だけ」の効果ではない。「G 追加 + 再選択したレシピ」として保存。C/C1 は事前登録の保護層ではなかった(事後に範囲を書き換えない;次回から登録)。A/C2 の悪化は eval 群だけでも −0.031 <a href="Codex 再集計">−0.058, −0.008</a>。「装置特徴が無いから全体へ広がった」は仮説のまま。</td>
+</tr>
+<tr>
+<td>固定パラメータ対照(実施中)</td>
+<td><code>b1_rank_train.py</code> に <code>--params_from</code>(過去モデルの選択 params + rounds を探索なしで使用)と <code>--c1_repeat_run RUN=K</code>(run ごとの C1 反復)を追加。<code>spark_rank_fx_chain.sh</code>(11:55 起動): rank_v4b_fx(再現;凍結 v4b と予測一致を検査)→ rank_v6g_fx(+G72、C1×3)→ rank_v6g_fx_w1(+G72、G の C1 だけ ×1 = 「G C1 重み低減」)→ 凍結 v4b を基準に登録評価(dev2 全層、A/B は fit/tune/eval 併記、パネル)。主比較 G/C1 blend21、保護 G/C2・C/C1・C/C2・D/C2・A/B C2 と C1・パネル両 view、ε=0.02。E/F・GL 不足群の順序付き出力不変も確認。</td>
+</tr>
+<tr>
+<td>特徴追加の順序</td>
+<td>固定設定の G72 で保護を満たさない場合のみ: (c) query 装置 + (a) 最良参照との装置関係を一ブロックで(timsTOF / Orbitrap / QTOF 等 / その他 / unknown、一致・不一致・不明・参照無しを区別、<code>lib_sim</code> を最大にした query–reference 対で定義)→ (b) 参照数は後回し(相互作用でも C2 の偏りを再学習し得る)。特徴効果の対照は「同じ G 行・重み・固定 params で装置ブロック無し/あり」。</td>
+</tr>
+<tr>
+<td>全 train FPNet</td>
+<td>手元 harness cache は W7 600 分子のスペクトル除去済み(C2 用)で全 train 学習に使えない → <strong>全 train.parquet から公開 builder で専用 run に再構築</strong>(2,539,608 spectra を確認)。Windows 版 trainer(fork→spawn、worker ごとの memmap、SIGHUP ガード、recipe-aware gate)を公開 <code>train_fivefold.py</code> からスクリプトで生成(<code>make_win_trainer.py</code>)。<code>--hours</code> は停止条件でないため <code>--max_steps 82855</code>(fold モデルと同じ更新数)と <code>--segment_minutes</code>(20:20 自己停止)を明示。smoke 400 step で 5.84 it/s(GPU 律速)。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-codex">2. 学習データの設計(Codex の推奨からの変更点を明記)</h2>
+<p>Codex 推奨は「パネル identity group 全体 + dev2/locked2 を除外」。私は <strong>パネルの扱いだけ変えた <code>full_eval</code></strong> を 11:42 に開始した:
+- <strong>除外</strong>: パネルの query 取得(enveda-np-examples の 1,184 行)と、その他ライブラリでの重複 12 行(同 adduct、|Δprec| &lt; 5 mDa、エントロピー類似 ≥ 0.95);dev2 v2(500 group = 'hold'、trainer が監視)、locked2 v2(500 group = 'lock'、trainer は評価しない)。
+- <strong>学習に残す</strong>: パネル 250 分子の他ライブラリの独立スペクトル(約 55,600 行)、W7 / p1 / locked seed 4 / eval_c1 の分子(全 fold を学習 = 学習済み診断用)。
+- 理由: Codex 019 の表の「C1・学習済み identity(query 取得は学習外)」= 本番 C1 の主要な追加評価、を最も本番に近い形で作るため。パネルは NP・timsTOF・Enveda 取得で、隠しクラス 1 の条件(他ライブラリに参照と学習例がある分子の、新しい timsTOF 取得)と一致する。fold-0 FPNet(パネル未見)と full_eval(パネル identity 学習済み、query 未見)をパネル C1 で比べれば、クラス 1 での記憶の利得を直接測れる。代償: パネルは FPNet 未見の評価台ではなくなる(未見の NP は dev2 の C/D/E/F、未見 timsTOF は dev2 G、最終確認は locked2)。パネル C2 view はこの FPNet では「参照を隠した学習済み identity」= 記憶の残存の診断で、C2 性能とは呼ばない。
+- 学習データ: 2,524,870 training spectra(fold モデル 1,982,405 の +27%)、370,516 groups、split train 274,801 / hold 506 / lock 503 structures。gate: panel_query_rows_in_training 0、holdout_training_overlap 0。
+- 提出に使う場合、この重みは自前で公開コード(公開 trainer + Windows 移植差分 + 公開 builder)から学習したもの。原著者(trainer: Dmitrii Gluzdov の fold-safe 配布、モデル/データアクセス: Ahmed Berat Özer の v4b casmi パッケージ)と移植部分を台帳に記録する。</p>
+<h2 id="3-1600">3. 学習後の評価計画(学習完了 ≈16:00)</h2>
+<ol>
+<li>同一窓 FP 比較(<code>fp_reach_compare.py</code>): fold0 / fold1(学習済み)/ 公開 full1 / full_eval を W7 A/B(学習済み)、dev2 D/E/F/G(未見)、パネル(full_eval では identity 学習済み・query 未見)で。</li>
+<li>B1 特徴表を full_eval FPNet で作り直し(GL は <code>--reuse_complete</code>)、パネル C1(クラス 1 代理)と dev2 全層(未見)で、現行 ranker・blend21・fallback のまま登録評価。ranker の学習表は未見 FP 特徴で作られているので、学習済み FP 分布での生 ranker と実出力の両方を見る。</li>
+<li>locked2 はこの診断では開けない。</li>
 </ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
