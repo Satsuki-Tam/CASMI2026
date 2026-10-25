@@ -100,10 +100,10 @@
    "eta": "11:30 頃"
   },
   {
-   "state": "running",
+   "state": "done",
    "name": "同一特徴表での切り分け(M1 構成の表上で rank_v2 learned vs rank_v4b blend21)",
-   "detail": "候補構成を固定して ranker/出力ポリシーの効果だけを見る",
-   "eta": "10:25"
+   "detail": "rank_v4b blend21 − rank_v2 learned(同じ候補): C/C1 +0.040、D/C2 −0.042 [−0.078, −0.009]、C/C2 −0.031、G/C2 −0.020、G/C1 +0.020、E/F 0(保険同一)。M2x の損は ranker/ICE 無しと候補拡大の両方",
+   "eta": "10:40 完了"
   },
   {
    "state": "done",
