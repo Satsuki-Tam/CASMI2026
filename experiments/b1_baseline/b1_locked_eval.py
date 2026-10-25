@@ -28,7 +28,15 @@ def runner(run, s, model):
     p = f"{run}/work/{model}_{s}.json"
     if not os.path.exists(p) or not os.path.exists(p + ".meta.json"): return None, None, p
     meta = json.load(open(p + ".meta.json"))
-    return (json.load(open(p)) if meta.get("status") in ("ok", "partial") else None), meta, p
+    if meta.get("status") in ("ok", "partial"): return json.load(open(p)), meta, p
+    # a runner that had NOTHING to score (no forward-coverable query in the set, e.g. negative-only or NH4-only strata) reports status
+    # 'error' with n_mols_scored 0 and an all-null output: that is a legitimate empty result (every molecule takes the GL-cover fallback),
+    # recorded as runner_empty in the manifest, not a validation failure (dev2 strata E/F, 2026-10-25)
+    if meta.get("status") == "error" and int(meta.get("n_mols_scored") or 0) == 0:
+        try: out = json.load(open(p))
+        except Exception: return None, meta, p
+        if all(v is None for d in out.values() for v in (d or {}).values()): meta = dict(meta, runner_empty=True); return {}, meta, p
+    return None, meta, p
 
 
 def scores_for(view, g, mid, gl, ice, gl_ok, ice_ok, c, M, tau, margin, min_gl_cover):
@@ -104,8 +112,8 @@ def main():
             gl, glm, glp = runner(run, s, "gl"); ice, icm, icp = runner(run, s, "ice")
             if gl is None: problems.append(f"{name}/{s}: GL output unusable ({glp}, status {glm and glm.get('status')})")
             if c["w_ice"] > 0 and ice is None: problems.append(f"{name}/{s}: ICE output unusable ({icp}, status {icm and icm.get('status')})")
-            for p in (glp, icp):
-                if os.path.exists(p): manifest["inputs"][p] = sha(p); manifest["inputs"][p + ".meta.json"] = json.load(open(p + ".meta.json")).get("status")
+            for p, mm in ((glp, glm), (icp, icm)):
+                if os.path.exists(p): manifest["inputs"][p] = sha(p); manifest["inputs"][p + ".meta.json"] = ("empty (nothing to score)" if (mm or {}).get("runner_empty") else json.load(open(p + ".meta.json")).get("status"))
             if problems: continue
             F = pd.read_parquet(fpq); F["molecule"] = F["molecule"].astype(str); M = pd.read_csv(mcsv).set_index("molecule"); M.index = M.index.astype(str)
             if c["w_ice"] == 0: ice = {}
@@ -142,6 +150,8 @@ def main():
             for view in ("c2", "c1"):
                 mols = ledger if view == "c2" else c1_ledger; preds = {"learned": {}, "insurance": {}, "fixed": {}, "switch": {}, "blend21": {}, "blend11": {}}; n_fb = 0; covers = []
                 MOLS_OF[(s, view)] = list(mols)
+                if len(mols) == 0:   # e.g. a stratum without usable C1 references (D_np_single): recorded as n=0, not scored (the official scorer rejects an empty submission)
+                    md.append(f"| {s} | {view} (n=0) | {c['name']} | - | no molecules in this view (not scored) | - | - |"); print(md[-1], flush=True); continue
                 for mid in mols:
                     g = view_frame(d["F"], d["M"], mid, view)
                     if len(g) == 0 or mid not in d["M"].index: continue
