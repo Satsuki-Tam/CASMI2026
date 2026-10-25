@@ -307,6 +307,11 @@ def main():
                 alt_short = {"fp200": _top(fp_s, 200) | top_fpp | top_lib["c2"], "fpp200": top_fp | _top(fpp_s, 200) | top_lib["c2"],
                              "fp200_fpp200": _top(fp_s, 200) | _top(fpp_s, 200) | top_lib["c2"], "pop50": short_v["c2"] | _top(pop_s, 50), "pop100": short_v["c2"] | _top(pop_s, 100),
                              "fpp200_pop50": top_fp | _top(fpp_s, 200) | top_lib["c2"] | _top(pop_s, 50)}
+                # pool-window branch audit (2026-10-25, E0 comparison): E0's engine-1 ranks only the v2-pool structures of the window (~50-120);
+                # hypothetical branch = current C2 shortlist + FP top-K among pool structures (pid >= 0). Audit only: the stored shortlist is unchanged.
+                in_pool = pid >= 0; pool_fp_s = np.where(in_pool, fp_s, -np.inf); n_pool = int(in_pool.sum())
+                def _top_pool(k_): return set(np.argsort(-pool_fp_s, kind="stable")[:min(k_, n_pool)].tolist()) if n_pool else set()
+                alt_short["pool60"] = short_v["c2"] | _top_pool(60); alt_short["pool100"] = short_v["c2"] | _top_pool(100)
                 s_smiles = [smiles[rep[keys[i]]["i"]] for i in short]
                 okeys = [k for rr in wp.map(_okey, [s_smiles[i:i + 25] for i in range(0, len(s_smiles), 25)]) for k in rr]
                 best = {}
@@ -346,6 +351,8 @@ def main():
                                      truth_fp_rank=min([rank_of(fpu, i) for i in truth_idx], default=-1), truth_pop_rank=min([rank_of(pop + 1e-6 * zf, i) for i in truth_idx], default=-1),
                                      truth_fppop_rank=min([rank_of(zf + SHORTLIST_LAM * pop, i) for i in truth_idx], default=-1), truth_fppop50_rank=min([rank_of(zf + 0.5 * pop, i) for i in truth_idx], default=-1),
                                      truth_lib_rank_c2=min([rank_of(L["c2"], i) for i in truth_idx], default=-1), truth_lib_rank_c1=min([rank_of(L["c1"], i) for i in truth_idx], default=-1),
+                                     n_pool_window=n_pool, truth_fp_rank_pool=min([rank_of(pool_fp_s, i) for i in truth_idx if in_pool[i]], default=-1),
+                                     truth_pool_train_only=bool(truth_idx) and all(in_pool[i] and not (in_tier[i] or in_coco[i]) for i in truth_idx),
                                      **{f"n_short_{k_}": len(v_) for k_, v_ in alt_short.items()}, **{f"truth_in_short_{k_}": bool(truth_set & v_) for k_, v_ in alt_short.items()},
                                      seconds=time.time() - tm0))
                 if (n_i + 1) % 20 == 0 or n_i == len(ms) - 1:
