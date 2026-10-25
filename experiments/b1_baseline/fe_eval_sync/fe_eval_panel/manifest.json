@@ -1,0 +1,102 @@
+{
+ "eval_csv": "experiments/b1_baseline/panel_np250/p1_molecules.csv",
+ "eval_csv_sha": "a715c6c7b0153a4561f41deb6013a35507d12463d5aab5e6ed30075736385a8e",
+ "tau": 0.9,
+ "margin": 0.2,
+ "min_gl_cover": 0.5,
+ "sets": [
+  "P_np250"
+ ],
+ "registered_main": {
+  "M2x": "blend21",
+  "M2x_fe": "blend21"
+ },
+ "candidates": [
+  {
+   "name": "M2x",
+   "run": "experiments/b1_baseline/run_panel_v3b",
+   "model": "experiments/b1_baseline/rank_v4b/lambdarank.txt",
+   "model_sha": "237710b6ee11ea7186882a9d5016088b0b84e7467097dfd15cd2380f5a353a93",
+   "n_trees": 300,
+   "n_features": 23,
+   "features": [
+    "z_fp",
+    "z_gl",
+    "fp",
+    "gl",
+    "pop_public",
+    "lsid",
+    "lpmid",
+    "lsynonyms",
+    "np_bit",
+    "src_bit",
+    "lotus",
+    "lib_sim",
+    "lib_same",
+    "lib_margin",
+    "lib_max_mol",
+    "in_tier",
+    "in_coconut",
+    "ppm_err",
+    "fp_rank_window",
+    "n_cands",
+    "gl_missing",
+    "n_query",
+    "ce_known"
+   ],
+   "w_ice": 0.0
+  },
+  {
+   "name": "M2x_fe",
+   "run": "experiments/b1_baseline/run_panel_fe",
+   "model": "experiments/b1_baseline/rank_v4b/lambdarank.txt",
+   "model_sha": "237710b6ee11ea7186882a9d5016088b0b84e7467097dfd15cd2380f5a353a93",
+   "n_trees": 300,
+   "n_features": 23,
+   "features": [
+    "z_fp",
+    "z_gl",
+    "fp",
+    "gl",
+    "pop_public",
+    "lsid",
+    "lpmid",
+    "lsynonyms",
+    "np_bit",
+    "src_bit",
+    "lotus",
+    "lib_sim",
+    "lib_same",
+    "lib_margin",
+    "lib_max_mol",
+    "in_tier",
+    "in_coconut",
+    "ppm_err",
+    "fp_rank_window",
+    "n_cands",
+    "gl_missing",
+    "n_query",
+    "ce_known"
+   ],
+   "w_ice": 0.0
+  }
+ ],
+ "inputs": {
+  "experiments/b1_baseline/run_panel_v3b/b1_features_P_np250.parquet": "0b39b59dca67dcdcf99960245d7fe0dd578c3b1c2312a2e6678251423e782dfc",
+  "experiments/b1_baseline/run_panel_v3b/b1_molecules_P_np250.csv": "dd5c31b7b56cbb7bc8aac53b91dd8050453430de8e8b03980eecb2813a1faf8e",
+  "experiments/b1_baseline/run_panel_v3b/work/gl_P_np250.json": "1cdf2f0c82def2e68c23a68de88b256cb0684f83f8f454816283fe3d4801f2fc",
+  "experiments/b1_baseline/run_panel_v3b/work/gl_P_np250.json.meta.json": "partial",
+  "experiments/b1_baseline/run_panel_v3b/work/ice_P_np250.json": "f3e57db5d1477da4f9f830d9640a6b1f16860ef3aecbe3820394c58a3764e222",
+  "experiments/b1_baseline/run_panel_v3b/work/ice_P_np250.json.meta.json": "partial",
+  "experiments/b1_baseline/run_panel_fe/b1_features_P_np250.parquet": "6c7bbcaee82f5bf62866b6e3cf21bbeaa114ab21f551d463e2755cf9bd36dfe0",
+  "experiments/b1_baseline/run_panel_fe/b1_molecules_P_np250.csv": "c799474dafa63084fbfded440bab5146a31cbce1154460bc0be6b603feaba82e",
+  "experiments/b1_baseline/run_panel_fe/work/gl_P_np250.json": "4dead194706068669bf293a5f10d6d3da2a62695fec1b2f21382484e40e49c66",
+  "experiments/b1_baseline/run_panel_fe/work/gl_P_np250.json.meta.json": "partial"
+ },
+ "code": {
+  "b1_locked_eval.py": "bd4a1c05a11aff01733118613cdb10f982587205a56bf06e16d679fa7a774f7d",
+  "b1_rankfeats.py": "6e4d6e1d0b71294d203b2490ec9a93fab4214abfae7550857a6abe4b554a3e7f",
+  "b1_evaluate.py": "4c4948ff756af96b798684b449ef9e462a798818b7ff8bbb5cc17077f5781817",
+  "metric.py": "4fc66b39a622621db77c84c27345419ec32213831480c928682a997139665f7c"
+ }
+}

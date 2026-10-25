@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 15:36 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 18:11 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -59,6 +59,9 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#fpnet-diagfp_reach_devabp2devpanelmd1348-run-fp">同一窓での FPNet 比較(diag/fp_reach_{devAB,p2dev,panel}.md、13:48;窓は全 run で同一、真の FP 順位から算出、学習済み = 診断)</a></li>
 <li><a href="#e0-vs-b1-experimentse0_offlinerunspanel_c2c1comparereportmd1419e0-query">E0 vs B1 のパネル比較(experiments/e0_offline/runs/panel_{c2,c1}/compare/report.md、14:19;E0 のモデルはパネル query 取得も学習済み)</a></li>
 <li><a href="#pool-branchk_pool-601520-blend21-rank_v4bc1-dev2-c2-w7-w7-c2">pool 窓 branch(k_pool 60)の端から端の一対比較(15:20;登録出力 blend21、現行 rank_v4b、C1 開発集合と dev2 は C2 資格修正版、W7 は修正前 — W7 の C2 は参考値)</a></li>
+<li><a href="#full_eval-spark_fulleval_chainsh1742m2x-rank_v4bblend21-fallback-fpnet-full_eval022">full_eval の登録評価(spark_fulleval_chain.sh、17:42;M2x 構成・rank_v4b・blend21 + fallback のまま FPNet だけ full_eval、022 の基準は評価前に固定)</a></li>
+<li><a href="#1800-fpnet-1-80-fpnet-identity-query">新しい読み(18:00): 開発・評価はすべて「FPNet 未見」の領域、隠しクラス 1 の約 80% は現行 FPNet の「identity 既見・query 未見」の領域</a></li>
+<li><a href="#probecodex-023-1805">クラス分解の probe(Codex 023 で提案、18:05)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -1608,4 +1611,107 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <td></td>
 </tr>
 </tbody>
-</table></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</table>
+<h2 id="full_eval-spark_fulleval_chainsh1742m2x-rank_v4bblend21-fallback-fpnet-full_eval022">full_eval の登録評価(<code>spark_fulleval_chain.sh</code>、17:42;M2x 構成・rank_v4b・blend21 + fallback のまま FPNet だけ full_eval、022 の基準は評価前に固定)</h2>
+<table>
+<thead>
+<tr>
+<th>集合 / view</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">M2x</th>
+<th style="text-align: right;">M2x_fe</th>
+<th>Δ [95% CI]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>パネル C1 clean(固定 CSV sha 961ceb94…)</strong></td>
+<td style="text-align: right;">202</td>
+<td style="text-align: right;">0.862</td>
+<td style="text-align: right;">0.897</td>
+<td><strong>+0.035 [+0.009, +0.062]</strong>(改善 23 / 悪化 12)</td>
+</tr>
+<tr>
+<td>パネル C1 uncertain</td>
+<td style="text-align: right;">48</td>
+<td style="text-align: right;">0.965</td>
+<td style="text-align: right;">0.976</td>
+<td>+0.010 [−0.021, +0.042]</td>
+</tr>
+<tr>
+<td>パネル C1 全体 / C2 全体(C2 は identity 学習済み、保護外)</td>
+<td style="text-align: right;">250</td>
+<td style="text-align: right;">0.882 / 0.905</td>
+<td style="text-align: right;">0.912 / 0.952</td>
+<td>+0.030 [+0.008, +0.054] / +0.048 [+0.026, +0.071]</td>
+</tr>
+<tr>
+<td>dev2 C C2 / C1</td>
+<td style="text-align: right;">100 / 95</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>−0.011 [−0.047, +0.026] / −0.013 [−0.039, +0.010]</td>
+</tr>
+<tr>
+<td>dev2 D C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>−0.016 [−0.049, +0.014]</td>
+</tr>
+<tr>
+<td>dev2 E C2 / C1</td>
+<td style="text-align: right;">100 / 59</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>+0.005 [−0.023, +0.033] / +0.006 [−0.030, +0.044]</td>
+</tr>
+<tr>
+<td>dev2 F C2 / C1</td>
+<td style="text-align: right;">100 / 38</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>+0.005 [−0.031, +0.037] / +0.041 [−0.013, +0.098]</td>
+</tr>
+<tr>
+<td>dev2 G C2 / C1</td>
+<td style="text-align: right;">100 / 100</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>+0.012 [−0.018, +0.043] / +0.004 [−0.032, +0.040]</td>
+</tr>
+<tr>
+<td>W7 A C2 / B C2 / B C1(学習済み、診断)</td>
+<td style="text-align: right;">300 / 300 / 72</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>+0.032 / +0.029 / +0.024</td>
+</tr>
+<tr>
+<td>- 022 の表では 2 行目(clean C1 の点推定が正、保護層の点推定はすべて ≥ −0.02、下限 &lt; −0.02 が C/C2・C/C1・D/C2・E/C2・E/C1・F/C2・G/C1)=「非劣性未確定の一回の比較提出として可」。</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+<tr>
+<td>- 同じ窓の FP 単独(<code>diag/fp_reach_*_fe.md</code>): パネル FP-only MRR fold0 0.226 → full_eval 0.628(full1 0.806)。dev2 は fold0 と同程度(未見のまま)。</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="1800-fpnet-1-80-fpnet-identity-query">新しい読み(18:00): 開発・評価はすべて「FPNet 未見」の領域、隠しクラス 1 の約 80% は現行 FPNet の「identity 既見・query 未見」の領域</h2>
+<ul>
+<li>現行 FPNet(fold-safe <code>fpnet_fold0.pt</code>)の学習除外は identity fold 0(55,102 構造)とパネル NP 群(265)だけ(<code>make_split.py</code>、<code>SPLIT_AUDIT.json</code>;学習 identity 219,155 = 約 80%)。パネル 250 は fold 0〜4 に 54/57/44/49/46 と散らばるが、fold-0 FPNet の FP-only MRR は fold ごとに 0.20〜0.26(群ごと除外)、full_eval では 0.57〜0.68。</li>
+<li>dev2・locked2・W7・p1 は全分子が identity fold 0。→ 私たちの評価はすべて未見 FPNet の領域。隠しクラス 1(train にある)の分子は identity fold がランダムなら約 80% が fold-0 FPNet の既見 identity で、パネルでの full_eval と同じ「identity 既見・query 未見」の領域に現行のまま入っている。</li>
+<li>帰結: full_eval が隠しテストで変えるのはクラス 1 の約 20%(fold 0)だけ → 期待 ΔPublic ≈ 0.2 × p1 × (+0.03〜+0.05) ≈ +0.002〜+0.008。±0.02 の読みでほぼ確実に未確定 → 比較提出は見送りを提案(Codex 023)。rank_v4b は未見 FP の特徴でしか学習していないので、隠しクラス 1 の大半で FP の分布が学習範囲外(021 の C1-seen 行の動機は現行 FPNet でも成り立つ)。</li>
+</ul>
+<h2 id="probecodex-023-1805">クラス分解の probe(Codex 023 で提案、18:05)</h2>
+<ul>
+<li>登録主出力(M2x、v4 の pipeline そのもの = commit 7e84ed6 / sha 2dc30c5c5954)の最終リストを、候補が train 構造か(pool の train bit を公式 identity で OR した <code>in_train</code>)で絞った 2 版: probe T(train のみ)/ probe N(train 以外のみ)。順序は主出力のまま。<code>experiments/b1_probe023/</code>(差分は追加のみ)。</li>
+<li>不等式: P_T ≥ 主出力のクラス 1 寄与、P_N ≥ クラス 2 寄与、P_T + P_N − 0.354 = クラス間の取り違えの総量、p_train ≥ P_T。</li>
+<li>パネル 16 分子の確認(Spark、現行 pipeline に同じ追加): C1 view main 0.891 → T 0.922 / N 0;C2 view(真の identity を隠す)main 0.891 → N 0.969 / T 0。不等式はすべて成立。C2 view では 16 中 3 分子で「train 構造のデコイが真を押し下げていた」。</li>
+</ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

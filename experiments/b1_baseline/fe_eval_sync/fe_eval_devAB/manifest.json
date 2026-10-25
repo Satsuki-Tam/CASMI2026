@@ -1,0 +1,109 @@
+{
+ "eval_csv": "experiments/b1_baseline/eval_set/p1_molecules.csv",
+ "eval_csv_sha": "bbfd686c9ae9effb7c25f777dd96396af66d96fdff20f2b18b1c2cd907a60811",
+ "tau": 0.9,
+ "margin": 0.2,
+ "min_gl_cover": 0.5,
+ "sets": [
+  "A_timstof",
+  "B_nplib"
+ ],
+ "registered_main": {
+  "M2x": "blend21",
+  "M2x_fe": "blend21"
+ },
+ "candidates": [
+  {
+   "name": "M2x",
+   "run": "experiments/b1_baseline/run_v3b_eval",
+   "model": "experiments/b1_baseline/rank_v4b/lambdarank.txt",
+   "model_sha": "237710b6ee11ea7186882a9d5016088b0b84e7467097dfd15cd2380f5a353a93",
+   "n_trees": 300,
+   "n_features": 23,
+   "features": [
+    "z_fp",
+    "z_gl",
+    "fp",
+    "gl",
+    "pop_public",
+    "lsid",
+    "lpmid",
+    "lsynonyms",
+    "np_bit",
+    "src_bit",
+    "lotus",
+    "lib_sim",
+    "lib_same",
+    "lib_margin",
+    "lib_max_mol",
+    "in_tier",
+    "in_coconut",
+    "ppm_err",
+    "fp_rank_window",
+    "n_cands",
+    "gl_missing",
+    "n_query",
+    "ce_known"
+   ],
+   "w_ice": 0.0
+  },
+  {
+   "name": "M2x_fe",
+   "run": "experiments/b1_baseline/run_v3b_eval_fe",
+   "model": "experiments/b1_baseline/rank_v4b/lambdarank.txt",
+   "model_sha": "237710b6ee11ea7186882a9d5016088b0b84e7467097dfd15cd2380f5a353a93",
+   "n_trees": 300,
+   "n_features": 23,
+   "features": [
+    "z_fp",
+    "z_gl",
+    "fp",
+    "gl",
+    "pop_public",
+    "lsid",
+    "lpmid",
+    "lsynonyms",
+    "np_bit",
+    "src_bit",
+    "lotus",
+    "lib_sim",
+    "lib_same",
+    "lib_margin",
+    "lib_max_mol",
+    "in_tier",
+    "in_coconut",
+    "ppm_err",
+    "fp_rank_window",
+    "n_cands",
+    "gl_missing",
+    "n_query",
+    "ce_known"
+   ],
+   "w_ice": 0.0
+  }
+ ],
+ "inputs": {
+  "experiments/b1_baseline/run_v3b_eval/b1_features_A_timstof.parquet": "542dda88005156a546fed1d476c56cc147d1eead2a886e2dd0ddd892cad55b2e",
+  "experiments/b1_baseline/run_v3b_eval/b1_molecules_A_timstof.csv": "2f77c385dafdbc3fc8cdd4a1fe1fec2609f65fade5e691a4fed2377729585235",
+  "experiments/b1_baseline/run_v3b_eval/work/gl_A_timstof.json": "f7ef782cf0ef32a2e20750a29ff4d6484af0d9dfc2c8d0637503319c0b99c49d",
+  "experiments/b1_baseline/run_v3b_eval/work/gl_A_timstof.json.meta.json": "ok",
+  "experiments/b1_baseline/run_v3b_eval/b1_features_B_nplib.parquet": "d7210040735f5420987f513e8f9faf2911831a0407f4973664034d914be576a3",
+  "experiments/b1_baseline/run_v3b_eval/b1_molecules_B_nplib.csv": "2bb6b2825ae2cd8b34a583d43f0cb5d47744cc188692e9fccec80f0fde809720",
+  "experiments/b1_baseline/run_v3b_eval/work/gl_B_nplib.json": "d0442e7a673f58ac7ed38b26004af87f47e7bda324939774d50a761d77605a0d",
+  "experiments/b1_baseline/run_v3b_eval/work/gl_B_nplib.json.meta.json": "partial",
+  "experiments/b1_baseline/run_v3b_eval_fe/b1_features_A_timstof.parquet": "e844f4b15d118f1fcdec87c5d73f1ecbae42ee27c120be134394768407aff33f",
+  "experiments/b1_baseline/run_v3b_eval_fe/b1_molecules_A_timstof.csv": "ec73a007eaad1d115bcf1402257d6092fa89a376882ba25de1ef2e8f8466a2b5",
+  "experiments/b1_baseline/run_v3b_eval_fe/work/gl_A_timstof.json": "ba4cd1430ffacf37e00739724a41bc65fc350b22380ff5302f4c10d3d6d3ab97",
+  "experiments/b1_baseline/run_v3b_eval_fe/work/gl_A_timstof.json.meta.json": "ok",
+  "experiments/b1_baseline/run_v3b_eval_fe/b1_features_B_nplib.parquet": "ca881fd5695d06f91c826548cf37ea530db29994ba5fd6a8a3accfe60fb9f7b6",
+  "experiments/b1_baseline/run_v3b_eval_fe/b1_molecules_B_nplib.csv": "746752d0ffff93a40f240cedad2a54fc09beda0c37373639521e9ff3625bda56",
+  "experiments/b1_baseline/run_v3b_eval_fe/work/gl_B_nplib.json": "5c2caa1e2d9ac66f6e72adcba55c8ac3381d52047122a431c2ea446aa52fa61a",
+  "experiments/b1_baseline/run_v3b_eval_fe/work/gl_B_nplib.json.meta.json": "partial"
+ },
+ "code": {
+  "b1_locked_eval.py": "bd4a1c05a11aff01733118613cdb10f982587205a56bf06e16d679fa7a774f7d",
+  "b1_rankfeats.py": "6e4d6e1d0b71294d203b2490ec9a93fab4214abfae7550857a6abe4b554a3e7f",
+  "b1_evaluate.py": "4c4948ff756af96b798684b449ef9e462a798818b7ff8bbb5cc17077f5781817",
+  "metric.py": "4fc66b39a622621db77c84c27345419ec32213831480c928682a997139665f7c"
+ }
+}

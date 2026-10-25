@@ -475,6 +475,7 @@ def main():
         except Exception as e:
             booster = None; log("learned fusion unavailable -> fixed rule:", repr(e))
     sub, sub_fixed, fused_stats = [], [], Counter()
+    sub_probe = {"train": [], "nontrain": []}   # DIAGNOSTIC class-decomposition probes (Codex 023): the final main list filtered to training / non-training structures
     PCL_KEYS = set()
     if args.pcl_boost:
         pp = args.pcl_keys or (find("pubchemlite_annotations.parquet") if KAGGLE else os.path.join(os.environ.get("CASMI_ROOT", r"C:\kaggle\CASMI" if os.name == "nt" else os.path.expanduser("~/CASMI2026")),
@@ -483,7 +484,10 @@ def main():
         log(f"PubChemLite boost {args.pcl_boost} on the main list: {len(PCL_KEYS):,} keys from {pp}")
     for mid in all_ids:
         rows = feats.get(str(mid), [])
-        if not rows: sub.append((mid, "CCO")); sub_fixed.append((mid, "CCO")); fused_stats["empty"] += 1; continue
+        if not rows:
+            sub.append((mid, "CCO")); sub_fixed.append((mid, "CCO")); fused_stats["empty"] += 1
+            for v_ in sub_probe.values(): v_.append((mid, "CCO"))
+            continue
         fp = np.array([r["fp"] if r["fp"] is not None else np.nan for r in rows]); pop = np.array([r["pop"] for r in rows]); lib = np.array([r["lib"] for r in rows])
         g = np.array([(GL.get(str(mid)) or {}).get(r["smiles"], np.nan) if (GL.get(str(mid)) or {}).get(r["smiles"]) is not None else np.nan for r in rows], float)
         ic = np.array([(ICE.get(str(mid)) or {}).get(r["smiles"], np.nan) if (ICE.get(str(mid)) or {}).get(r["smiles"]) is not None else np.nan for r in rows], float)
@@ -514,7 +518,11 @@ def main():
             in_pcl = np.array([r["key"] in PCL_KEYS for r in rows], float); fused_stats["pcl_boost_mols"] += int(in_pcl.any())
             order = np.argsort(-(np.asarray(main_sc, float) + args.pcl_boost * in_pcl), kind="stable")
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
+        for name_, want_ in (("train", True), ("nontrain", False)):   # same order as the main list; a molecule with no kept candidate gets a placeholder
+            kept_ = [i for i in order if bool(rows[i]["in_train"]) == want_]
+            sub_probe[name_].append((mid, ";".join(rows[i]["smiles"] for i in kept_[:25]) if kept_ else "CCO"))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
+    for name_, v_ in sub_probe.items(): pd.DataFrame(v_, columns=["molecule_id", "smiles"]).to_csv(f"{P['work']}/submission_probe_{name_}.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
     json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
@@ -530,8 +538,13 @@ def main():
             pred = s_.set_index("molecule_id").loc[so.molecule_id, "smiles"]
             return official, so.assign(rr=[metric.per_molecule_reciprocal_rank(t_, str(p_).split(";")) for t_, p_ in zip(so.smiles, pred)])
         official, per = _score(df); official_fixed, per_fixed = _score(df_fixed)
-        per = per.merge(per_fixed[["molecule_id", "rr"]].rename(columns={"rr": "rr_fixed"}), on="molecule_id", how="left"); per.to_csv(f"{P['work']}/eval_per_molecule.csv", index=False)
-        out_ = dict(official_mrr25=official, official_mrr25_fixed=official_fixed, learned_model=(model_path if booster is not None else None), n=len(per), masks=dict(rows=len(EXCL_ROWS), identities=len(EXCL_IDS), per_molecule=len(MASK)))
+        per = per.merge(per_fixed[["molecule_id", "rr"]].rename(columns={"rr": "rr_fixed"}), on="molecule_id", how="left")
+        probe_scores = {}
+        for name_ in ("train", "nontrain"):   # diagnostic probes (Codex 023)
+            o_, pp_ = _score(pd.read_csv(f"{P['work']}/submission_probe_{name_}.csv")); probe_scores[name_] = o_
+            per = per.merge(pp_[["molecule_id", "rr"]].rename(columns={"rr": f"rr_probe_{name_}"}), on="molecule_id", how="left")
+        per.to_csv(f"{P['work']}/eval_per_molecule.csv", index=False)
+        out_ = dict(official_mrr25=official, official_mrr25_fixed=official_fixed, official_mrr25_probe=probe_scores, learned_model=(model_path if booster is not None else None), n=len(per), masks=dict(rows=len(EXCL_ROWS), identities=len(EXCL_IDS), per_molecule=len(MASK)))
         for col in ("set", "group", "lib"):
             if col in per.columns: out_[f"by_{col}"] = {str(k): dict(main=round(float(g_.rr.mean()), 4), fixed=round(float(g_.rr_fixed.mean()), 4)) for k, g_ in per.groupby(col)}
         json.dump(out_, open(f"{P['work']}/eval_scores.json", "w"), indent=1)

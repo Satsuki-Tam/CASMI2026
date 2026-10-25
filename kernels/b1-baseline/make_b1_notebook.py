@@ -6,12 +6,14 @@ import json, os, sys, hashlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SRC = os.path.join(ROOT, "experiments", "b1_baseline")
-files = {n: open(os.path.join(SRC, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py", "b1_rankfeats.py")}
 import argparse
-ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--model", default=os.path.join(SRC, "rank", "lambdarank.txt"), help="LambdaRank model to embed ('' = none -> fixed rule)")
-ap.add_argument("--emit", default="main", choices=["main", "insurance"], help="which list becomes submission.csv (one Kaggle submission per kernel version)")
+ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--src_dir", default=SRC, help="directory holding b1_common.py / b1_pipeline.py / b1_rankfeats.py to embed (default: experiments/b1_baseline)"); ap.add_argument("--model", default=os.path.join(SRC, "rank", "lambdarank.txt"), help="LambdaRank model to embed ('' = none -> fixed rule)")
+ap.add_argument("--emit", default="main", choices=["main", "insurance", "probe_train", "probe_nontrain", "probe_coconut", "probe_pubchem", "probe_pool"], help="which list becomes submission.csv (one Kaggle submission per kernel version); "
+                "probe_* = DIAGNOSTIC class-decomposition probes (Codex 023), needs a pipeline that writes submission_probe_*.csv")
 ap.add_argument("--pipeline_args", default="", help="extra b1_pipeline.py arguments, e.g. '--k_short 200 --k_pop 50 --w_ice 0'")
 A = ap.parse_args()
+files = {n: open(os.path.join(A.src_dir, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py", "b1_rankfeats.py")}
+print("embedding sources from", A.src_dir)
 model = A.model
 if model and os.path.exists(model): files["lambdarank.txt"] = open(model, encoding="utf-8").read(); print("embedding model", model)
 else: print("no model embedded -> fixed rule")
@@ -58,6 +60,9 @@ assert os.path.exists('/kaggle/working/submission.csv'), 'submission.csv missing
 if EMIT == 'insurance':
     os.replace('/kaggle/working/submission.csv', '/kaggle/working/submission_main.csv'); shutil.copy('/kaggle/working/submission_fixed.csv', '/kaggle/working/submission.csv')
     print('EMIT insurance: submission.csv = fixed rule + library priority (main list kept as submission_main.csv)', flush=True)
+elif EMIT.startswith('probe_'):
+    os.replace('/kaggle/working/submission.csv', '/kaggle/working/submission_main.csv'); shutil.copy(f'/kaggle/working/submission_{EMIT}.csv', '/kaggle/working/submission.csv')
+    print(f'EMIT {EMIT}: DIAGNOSTIC probe -- submission.csv = the main list filtered by training-structure membership (main list kept as submission_main.csv)', flush=True)
 import pandas as pd
 sub = pd.read_csv('/kaggle/working/submission.csv'); samp = pd.read_csv('/kaggle/input/enveda-CASMI26-molecule-id-mass-spectra/sample_submission.csv')
 assert len(sub) == len(samp) and set(sub.molecule_id) == set(samp.molecule_id), (len(sub), len(samp))
