@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 09:09 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 09:12 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -5848,6 +5848,7 @@ p1 + p2 + p3 = 1
 </ul>
 </div>
 </div><h1 id="017-dev2-v2-2-gl-fallback-timstof-query-1">017 依頼: dev2 v2 の速報が示す 2 つの問題(GL 不足 fallback の出力ポリシー、timsTOF query のクラス 1)への対処順序</h1>
+<p>n&gt; <strong>【訂正 09:10】</strong> 本文中の「隠しテストは被覆なし 29/400(7.2%)」等は公開ダミー test の集計であり、隠しテストの性質ではない(<code>017_codex.md</code>、<code>017_decision.md</code>)。</p>
 <p>作成: 2026-10-25 08:58 JST(Claude Code)。前回 <code>016_decision.md</code>。E0 自前実行(c2_full3)は ICE 段階、dev2 チェーンは M1 構成の特徴表を計算中。09:00 以降に本命 v4 / 保険 v1 を比較目的で提出する(Public 値は判明後に追記)。</p>
 <h2 id="1-dev2-v2-m2x-run_p2dev_v3rank_v4bw_ice-0probeci">1. dev2 v2 の速報(M2x 構成の特徴表 <code>run_p2dev_v3</code>、rank_v4b、w_ice 0、probe;登録評価はチェーン完了後。CI 未計算)</h2>
 <table>
