@@ -59,11 +59,17 @@ for s in a.sets:
                     if tr[i]: return 1.0 / (k + 1)
                 return 0.0
             ins_order = np.argsort(-np.asarray(ins, float), kind="stable")
+            def hedge(base_order, alt, k):   # tail hedge (2026-10-26): main top-(25-k), then the best k by an alternative score among the remaining candidates
+                head = list(base_order[:25 - k]); hs = set(head)
+                rest = [i for i in np.argsort(-np.asarray(alt, float), kind="stable") if i not in hs]
+                return head + rest[:k]
             rows.append(dict(base, truth_group=tgroup, n_cand=len(g), gl_cover_ok=bool(gl_ok), main=rr(order), insurance=rr(ins_order), pool=rr(order, trn | coco), pc=rr(order, ~(trn | coco)),
                              train=rr(order, trn), coconut_only=rr(order, coco & ~trn), nontrain=rr(order, ~trn),
-                             **{f"pcd{w:g}": rr(np.argsort(-(np.asarray(score, float) - w * (~(trn | coco)).astype(float)), kind="stable")) for w in (0.5, 1.0, 2.0, 4.0)}))
+                             **{f"pcd{w:g}": rr(np.argsort(-(np.asarray(score, float) - w * (~(trn | coco)).astype(float)), kind="stable")) for w in (0.5, 1.0, 2.0, 4.0)},
+                             **{f"tail{k}_{nm}": rr(hedge(order, alt, k)) for k in (3, 5) for nm, alt in (("fp", fp), ("pop", pop), ("gl", np.nan_to_num(glv, nan=-1e9)), ("lib", lib), ("poolfp", np.where(trn | coco, np.nan_to_num(fp, nan=-1e9), -1e18)))},
+                             truth_rank=(int(np.flatnonzero(tr[order])[0]) + 1 if tr.any() else 0)))
 R = pd.DataFrame(rows); os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True); R.to_csv(a.out + ".csv", index=False)
-cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "pcd0.5", "pcd1", "pcd2", "pcd4"]
+cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
 summ = R.fillna({k: 0.0 for k in cols}).groupby(["set", "view", "truth_group"])[cols].agg(["mean"]).round(4); summ.columns = cols
 summ["n"] = R.groupby(["set", "view", "truth_group"]).size()
 print(f"parity mismatches vs evaluator top-25: {mism} of {int((R.n_cand > 0).sum())}"); print(summ.to_string())
