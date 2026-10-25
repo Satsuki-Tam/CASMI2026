@@ -17,3 +17,8 @@
 ## 3. 質問
 **Q1** §1 の読み(隠しでは (b) の除外は損失しか生まない)は妥当か。見落としている危険(例: 隠しの query と同じ取得が公開 library に入っている可能性、同一化合物でない高類似の参照が真を押し下げる場合)はあるか。
 **Q2** §2 の一変更比較を今日の空き枠で出すことは、028 の運用(局所の根拠が無い変更の扱い)に照らして妥当か。妥当なら、読みと実装確認に足すべきことは何か。
+
+## 追記(07:55): train 構造の timsTOF 参照(Spark、`train_structs.n_tims`)
+- train の 275,810 構造のうち **183,191(66%)が timsTOF のスペクトルを持つ**。うち 180,653 は timsTOF のみ(ほぼ enveda-180 = Enveda の合成化合物 library、質量の 5/50/95% 点 268 / 330 / 391 Da)。COCONUT にもある timsTOF 構造は 300(パネル 250 を含む)。
+- 隠しテストの定義は「confirmed natural products, hypothesised natural products, natural product analogs, and **synthetic molecules that might plausibly occur in nature**」。dev2 の G 層(enveda-180 の query + 他 library の参照)はこの型を模したもの。隠しのクラス 1 に enveda-180 の化合物が入っていれば、その真は **Enveda 自身の timsTOF 参照**を train に持ち、隠しの query(同じ Enveda の timsTOF の新規取得)と ≥ 0.98 になり得る → 推論時の DUP フィルタがそれを捨てる。局所の G の C1 view は query library(enveda-180)の参照を真から除くので、この「同じ装置の独立取得の参照がある」状況をそもそも測っていない。
+- → §2 の一変更比較は、B1 と E0 の差のうち「G 型のクラス 1」で起きているかもしれない部分を直接試す。
