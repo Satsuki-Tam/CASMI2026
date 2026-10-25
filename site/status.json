@@ -125,10 +125,10 @@
    "eta": "11:00 完了"
   },
   {
-   "state": "running",
+   "state": "done",
    "name": "全 train FPNet の自前学習(full_eval、手元 RTX 5070 Ti)",
-   "detail": "公開 trainer の Windows 版、82,855 更新(fold モデルと同じ)、5.8 it/s。学習データ 2,524,870 spectra(fold モデルの +27%)。パネルの query 取得のみ除外(パネル C1 = 学習済み identity・query 未見 = 隠しクラス 1 の代理)、dev2/locked2 は group ごと除外。完了後に Spark で自動評価",
-   "eta": "16:00 頃(20:20 で自己停止)"
+   "detail": "完了 15:33(82,855 更新、3.84 h;dev2 保留 MRR 0.712、学習 0.979;sha256 5b8d1c31…)。Spark で現行 M2x + full_eval の登録評価中",
+   "eta": "15:33 完了"
   },
   {
    "state": "done",
@@ -137,16 +137,22 @@
    "eta": "12:39 完了"
   },
   {
-   "state": "running",
+   "state": "done",
    "name": "pool 窓 branch(k_pool 60)端から端の比較",
-   "detail": "C2 view のリーク(真の train 由来 pool 項目に専用枠)を修正して再実行。C1 利得と C2 保護(ε=0.02)を満たし、提出パイプラインとの機械的一致を確認したら今夜 1 提出",
-   "eta": "16:00 頃"
+   "detail": "不採用: 端から端で C1 利得なし(0〜負)、G C1 −0.040 [−0.069, −0.013]。今夜の候補から外した",
+   "eta": "15:20 完了"
   },
   {
    "state": "done",
    "name": "PubChemLite 事前分布の検証",
    "detail": "パネル: 真 92.4% vs デコイ 4.9%。ブーストはパネル C1 +0.01〜0.02、NP 開発 C2 は 0〜負 → 事前規則で不採用",
    "eta": "13:20 完了"
+  },
+  {
+   "state": "running",
+   "name": "二本目の FPNet 学習 full_rk(ranker 学習表用、手元 GPU)",
+   "detail": "p1_run1 を identity ごと除外、W7・eval_c1・パネルは query 取得のみ除外(C1-seen / C2-unseen の ranker 行を同じ FPNet で作る、Codex 021)。15:34 開始、20:19 自己停止",
+   "eta": "19:30 頃"
   }
  ],
  "next": [

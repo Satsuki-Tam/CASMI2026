@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 13:39 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 15:36 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -56,6 +56,9 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#pubchemlite-vs-1300b1-c2-view-shortlist-key-pubchemlite_annotationsparquet-385760">PubChemLite への所属: 真 vs デコイ(13:00;B1 の C2 view の shortlist、公式 key で照合、pubchemlite_annotations.parquet 385,760 化合物)</a></li>
 <li><a href="#pubchemlite-paired-diagpcl_boost_reportmd1320-blend21-w1pubchemlitew-z">PubChemLite ブーストの paired 評価(diag/pcl_boost_report.md、13:20;登録出力 blend21 + w·1[PubChemLite]、w は z 単位)</a></li>
 <li><a href="#1355codex-020">【訂正 13:55、Codex 020】</a></li>
+<li><a href="#fpnet-diagfp_reach_devabp2devpanelmd1348-run-fp">同一窓での FPNet 比較(diag/fp_reach_{devAB,p2dev,panel}.md、13:48;窓は全 run で同一、真の FP 順位から算出、学習済み = 診断)</a></li>
+<li><a href="#e0-vs-b1-experimentse0_offlinerunspanel_c2c1comparereportmd1419e0-query">E0 vs B1 のパネル比較(experiments/e0_offline/runs/panel_{c2,c1}/compare/report.md、14:19;E0 のモデルはパネル query 取得も学習済み)</a></li>
+<li><a href="#pool-branchk_pool-601520-blend21-rank_v4bc1-dev2-c2-w7-w7-c2">pool 窓 branch(k_pool 60)の端から端の一対比較(15:20;登録出力 blend21、現行 rank_v4b、C1 開発集合と dev2 は C2 資格修正版、W7 は修正前 — W7 の C2 は参考値)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -1433,4 +1436,176 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <li>PubChemLite ブーストは事前規則(NP 開発 C2 での利得 + 保護)に合格する w が無く、提出候補にしない。</li>
 <li>pool 窓 branch の C2 監査・比較は、真の train 由来 pool 項目に C2 の専用枠を与えていた(リーク)。view 別資格に修正して再実行中。修正前の C2-strict +0.01〜+0.06 は使わない。</li>
 <li>残りの差の所在は「大窓の候補選択とチャネル間の融合を優先して検証。C2 が主要因かは未確定」と表現する。</li>
-</ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul>
+<h2 id="fpnet-diagfp_reach_devabp2devpanelmd1348-run-fp">同一窓での FPNet 比較(<code>diag/fp_reach_{devAB,p2dev,panel}.md</code>、13:48;窓は全 run で同一、真の FP 順位から算出、学習済み = 診断)</h2>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th>FP-only MRR@25: fold0(未見)→ fold1(学習済み)/ full1(学習済み)</th>
+<th>FP+prior MRR</th>
+<th>R@200(FP-only)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W7 A(timsTOF 合成)</td>
+<td>0.506 → 0.710 / 0.749</td>
+<td>0.504 → 0.696 / 0.731</td>
+<td>0.983 → 0.997 / 0.997</td>
+</tr>
+<tr>
+<td>W7 B(NP)</td>
+<td>0.367 → 0.570 / 0.636</td>
+<td>0.418 → 0.593 / 0.634</td>
+<td>0.817 → 0.897 / 0.910</td>
+</tr>
+<tr>
+<td>dev2 D(NP 単一)</td>
+<td>0.428 → 0.568 / 0.665</td>
+<td>0.426 → 0.610 / 0.594</td>
+<td>0.820 → 0.910 / 0.900</td>
+</tr>
+<tr>
+<td>dev2 E(負のみ)</td>
+<td>0.248 → 0.570 / 0.583</td>
+<td>0.304 → 0.548 / 0.502</td>
+<td>0.800 → 0.900 / 0.900</td>
+</tr>
+<tr>
+<td>dev2 F(被覆なし)</td>
+<td>0.156 → 0.431 / 0.386</td>
+<td>0.240 → 0.405 / 0.391</td>
+<td>0.460 → 0.630 / 0.630</td>
+</tr>
+<tr>
+<td>パネル</td>
+<td>0.226 → — / 0.806</td>
+<td>0.792 → — / 0.937</td>
+<td>0.896 → — / 0.996</td>
+</tr>
+<tr>
+<td>(dev2 は fold 0 なので fold-1 モデルも学習済み。CI は各 md;FP-only の Δ MRR は全集合で +0.14〜+0.58、下限はすべて正。)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- 読み: 同じ窓で比べると、学習済み FPNet は FP 単独の順位を大きく上げる(NP で +0.20〜+0.34、パネルで +0.58)。それなのに登録出力(現行 rank_v4b + blend21)の利得は +0.03〜+0.04 に留まった → <strong>現行 ranker(未見 FP の特徴で学習)が強い FP 信号を使い切れていない</strong>のが、記憶の利得を最終出力に通す上での律速。パネルは prior 単独でも強い(FP+prior 0.792、未見 FP でも)。</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- full_eval(identity は学習済み・パネル query は未見)のパネル値は fold0 と full1 の間に入るはずで、これが隠しクラス 1 の代理として決定的な測定(16:30 頃)。dev2 の full_eval 値は未見分子での挙動(過信・デコイ昇格のリスク)を測る。</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- 次の設計課題: 学習済み FPNet を使う提出では、ranker を FP の分布に合わせ直す必要がある(C1 行は学習済み FP、C2 行は未見 FP で作る学習表)。今夜は Codex 020 の規則どおり「現行 M2x + full_eval のみ」で評価・提出し、ranker の合わせ直しは別の一対比較にする。</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="e0-vs-b1-experimentse0_offlinerunspanel_c2c1comparereportmd1419e0-query">E0 vs B1 のパネル比較(<code>experiments/e0_offline/runs/panel_{c2,c1}/compare/report.md</code>、14:19;E0 のモデルはパネル query 取得も学習済み)</h2>
+<table>
+<thead>
+<tr>
+<th>view</th>
+<th style="text-align: right;">E0 final</th>
+<th style="text-align: right;">B1 main(blend21)</th>
+<th style="text-align: right;">B1 保険</th>
+<th>E0 − B1 [95% CI]</th>
+<th>勝 / 負 / 同</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C2(真の参照を隠す)</td>
+<td style="text-align: right;">0.906</td>
+<td style="text-align: right;">0.905</td>
+<td style="text-align: right;">0.858</td>
+<td>+0.001 [−0.032, +0.034]</td>
+<td>26 / 27 / 197</td>
+</tr>
+<tr>
+<td>C1(他ライブラリ参照あり)</td>
+<td style="text-align: right;"><strong>0.948</strong></td>
+<td style="text-align: right;">0.882</td>
+<td style="text-align: right;">0.865</td>
+<td><strong>+0.066 [+0.037, +0.096]</strong></td>
+<td>43 / 10 / 197</td>
+</tr>
+<tr>
+<td>- E0 の段階: base-60 0.967 / 0.956 → merge 0.872 / 0.881 → GL 融合 0.909 / 0.946 → final 0.906 / 0.948(C2 / C1)。</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- 読み: C2 では同等、C1 では E0 が上。ただし E0 は query 取得まで学習済み(記憶の上限)。B1 に学習済み FPNet(full1、query も学習済み)を入れた診断では C1 blend21 0.926(+0.044)。full_eval(identity 学習済み・query 未見)の値が、隠しクラス 1 での実際の差を示す。</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="pool-branchk_pool-601520-blend21-rank_v4bc1-dev2-c2-w7-w7-c2">pool 窓 branch(k_pool 60)の端から端の一対比較(15:20;登録出力 blend21、現行 rank_v4b、C1 開発集合と dev2 は C2 資格修正版、W7 は修正前 — W7 の C2 は参考値)</h2>
+<table>
+<thead>
+<tr>
+<th>集合 / view</th>
+<th style="text-align: right;">n</th>
+<th>M2x_pool − M2x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1 開発集合 B C2 / C1</td>
+<td style="text-align: right;">300 / 261</td>
+<td>−0.003 [−0.017, +0.010] / −0.004 [−0.016, +0.006]</td>
+</tr>
+<tr>
+<td>dev2 C C2 / C1</td>
+<td style="text-align: right;">100 / 95</td>
+<td>−0.005 / −0.005</td>
+</tr>
+<tr>
+<td>dev2 D C2</td>
+<td style="text-align: right;">100</td>
+<td>−0.009 [−0.025, +0.003]</td>
+</tr>
+<tr>
+<td>dev2 E C2 / C1 · F C2 / C1</td>
+<td style="text-align: right;"></td>
+<td>−0.001 / −0.001 · −0.002 / −0.004</td>
+</tr>
+<tr>
+<td><strong>dev2 G C2 / C1</strong></td>
+<td style="text-align: right;">100 / 100</td>
+<td>−0.021 [−0.045, +0.000] / <strong>−0.040 [−0.069, −0.013]</strong></td>
+</tr>
+<tr>
+<td>W7 A C1 / B C1(C1 は修正の影響なし)</td>
+<td style="text-align: right;">7 / 72</td>
+<td>−0.005 / +0.002</td>
+</tr>
+<tr>
+<td>- 判定: C1 の利得は無く(全層で 0 〜負)、G では有意に損 → <strong>不採用、今夜の提出候補から外す</strong>。修正版 W7 の再実行と提出パイプラインとの parity は不要になったので停止(GPU を full_eval の評価に回す)。</td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+<tr>
+<td>- 読み: 監査で救済された真は全窓 FP 順位が数百〜数千で、現行 ranker・固定規則はそれを上位 25 に上げない。追加された pool 候補(分子あたり十数〜45)は G で正解を押し下げる。学習済み FPNet では真の FP が高くなり、もともと FP top-200 に入るので、pool branch の役割は小さい。E0 の小窓設計の利点は「窓を絞ること」より「学習済み FPNet で小窓を順位付けすること」にある、という読みと整合する。</td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+</tbody>
+</table></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
