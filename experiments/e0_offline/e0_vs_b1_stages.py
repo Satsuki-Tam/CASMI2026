@@ -169,7 +169,8 @@ for r in sol.itertuples(index=False):
                   identity_group=int(get("identity_group", -1)), stratum_coverage=cov, stratum_nref_bin=nref_bin, n_spectra_lib=int(get("n_spectra_lib", -1)), instruments=inst_of.get(m, ""),
                   query_rows=json.dumps(q_rows.get(m, [])), query_rows_hash=sha(json.dumps(q_rows.get(m, []))), n_query=len(q_rows.get(m, [])), adducts="|".join(adds), polarity=mode_of.get(m, ""),
                   ce_present_frac=ce_frac, ce_units=ce_units, truth_in_e0_external_refs=T in ext_keys,
-                  truth_in_pool_as_train_struct=bool(pool_sid.get(T, -1) is not None and pool_sid.get(T, -1) >= 0), truth_fpnet_fold=fold_of.get(m, "unknown"))
+                  truth_in_pool_as_train_struct=bool(pool_sid.get(T, -1) is not None and pool_sid.get(T, -1) >= 0), truth_fpnet_fold=fold_of.get(m, "unknown"),
+                  e0_engine2_covered=(m in eng))   # engine 2 returns no list for molecules whose candidate window is empty (the notebook asserts there; the port records it)
     # ---------------- E0 stages
     e1 = e1c_by.get(m); e1_keys = list(e1.key.astype(str)) if e1 is not None else []
     e1_truth = e1[e1.key.astype(str) == T] if e1 is not None else None
@@ -184,7 +185,7 @@ for r in sol.itertuples(index=False):
         lst = fn(m) or []; ids = idents(lst); rk = rank_in(ids, T); e0_ranks[name] = rk
         stages.append(dict(run_id=RUN_ID, system="E0", molecule_id=m, view=A.view, stage=name, stage_order=order, n_in=prev, n_out=len(lst), n_identities_out=len(ids), identity_source="official",
                            truth_present=T in ids, truth_rank=rk, top1_identity=ids[0] if ids else None, top25_identities="|".join(ids[:25]), rr25=(None if name in UNRANKED_E0 else rr(rk)),
-                           ranked=name not in UNRANKED_E0, failure_reason=None if lst else ("no PubChem list (gate / channel)" if name.startswith("pc_") else "empty list"),
+                           ranked=name not in UNRANKED_E0, failure_reason=None if lst else ("engine 2 returned no list (empty candidate window)" if name == "e2_list40" and m not in eng else ("no PubChem list (gate / channel)" if name.startswith("pc_") else "empty list")),
                            elapsed_s=cell_s(E0_STAGE_CELL[name]), elapsed_scope="run", note=None))
         prev = len(lst)
     r_final = e0_ranks["final_rank2_c22"]; in_any = any(e0_ranks[k] is not None for k in ("e1_base60", "e2_list40", "pc_list25")) or r_window is not None
@@ -338,7 +339,8 @@ S = dict(run_id=RUN_ID, view=A.view, e0_run=E0, b1_run=B1, n_solution=int(len(df
                             b1_truth_lib_nref_max=(float(D.b1_truth_lib_nref.max()) if D.b1_truth_lib_nref.notna().any() else None), b1_truth_in_train_flag_any=bool(D.b1_truth_in_train_flag.fillna(False).astype(bool).any())),
          overall=paired(D), by_set=by("set"), by_lib=by("query_lib"), by_coverage=by("stratum_coverage"), by_nref_bin=by("stratum_nref_bin", ["1-2", "3-5", "6-10", "11+"]), by_group=by("group"),
          by_external_ref_flag=by("truth_in_e0_external_refs"), by_e0_merge_branch=by("e0_merge_branch"), by_e0_loss_class=by("e0_loss_class"), by_b1_stage=by("b1_stage"),
-         by_e0_gl_cover={"e0_gl_finite>0": paired(D[D.e0_gl_finite > 0]), "e0_gl_finite=0": paired(D[D.e0_gl_finite == 0])},
+         by_e0_gl_cover={"e0_gl_finite>0": paired(D[D.e0_gl_finite > 0]), "e0_gl_finite=0": paired(D[D.e0_gl_finite == 0])}, by_engine2_covered=by("e0_engine2_covered"),
+         engine2_uncovered=sorted(D.loc[~D.e0_engine2_covered, "molecule_id"]),
          by_b1_fallback={str(v): paired(D[D.b1_fallback_insurance == v]) for v in (False, True) if (D.b1_fallback_insurance == v).any()},
          cross_stage={}, e0_wins_by_b1_stage={}, e0_losses_by_e0_loss_class={}, only_e0_right_by_b1_stage={}, only_b1_right_by_e0_loss_class={},
          e0_forward=port.get("forward"), e0_budgets=port.get("budgets"), e0_coverage=audit.get("coverage"), b1_manifest_fusion=b1_man.get("fusion"), b1_consistency={})
@@ -380,6 +382,7 @@ R = [f"# E0 (offline, public 0.464 lineage) vs B1 — {A.view.upper()} proxy, {l
      tbl(S["by_coverage"], "By forward-model adduct coverage of the query spectra"), tbl(S["by_nref_bin"], "By number of spectra of the truth in its library (molecule property)"),
      tbl(S["by_external_ref_flag"], "By 'identity in E0's external reference library' (True = diagnostic only)"), tbl(S["by_e0_merge_branch"], "By E0 merge branch"),
      tbl(S["by_e0_loss_class"], "By E0 loss class"), tbl(S["by_b1_stage"], "By B1 stage"), tbl(S["by_e0_gl_cover"], "By E0 GLACIER coverage"), tbl(S["by_b1_fallback"], "By B1 GL-cover fallback (True = insurance list emitted)"),
+     tbl(S["by_engine2_covered"], "By E0 engine-2 coverage (False = engine 2 returned no list; molecules kept their other lists)"), f"Engine-2 uncovered molecules: {json.dumps(S['engine2_uncovered'])}", "",
      "### Cross table: E0 stage × B1 stage (n, Σ ΔRR = E0 − B1 main)", "", "| cell | n | Σ Δ | mean Δ |", "|---|---:|---:|---:|"] + \
     [f"| {k} | {v['n']} | {v['sum_delta_main']:+.3f} | {v['mean_delta_main']:+.4f} |" for k, v in S["cross_stage"].items()] + [
      "", f"Molecules only E0 gets right (top-1), by the B1 stage that lost them: {json.dumps(S['only_e0_right_by_b1_stage'])}",

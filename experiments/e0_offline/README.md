@@ -58,4 +58,28 @@ This turns the LB gap (E0 0.464 vs B1 fixed 0.334 / learned 0.322) into "where e
   Known gaps: B1's fused per-candidate score is not written by the pipeline (lists only); E0 stage times are run-level (the notebook does not time per molecule);
   E0 window identity counts use E0's own score_key (top lists are re-canonicalised with src/metric.py); the truth remains a pool train structure in E0's analog set
   (structure-level membership, flagged per molecule, not removable without rebuilding sha-pinned assets).
+- 2026-10-25 09:41 JST: c2_full3 **failed at cell 17**: `AssertionError('Engine 2 did not cover all active molecules')` — engine 2 returned 593 of 600 lists. The 7 missing
+  molecules (all B_nplib: 6 gnps, 1 massbank; positive mode) have an EMPTY candidate window in engine 2 (`casmi_engine.py`: `if not len(r["cand"]): continue`, no entry written):
+  5 of them have low-precision / wrong precursor m/z (203.7, 353.8, 278.4, 1181.02 → 780–144,000 ppm; LDXZRRQKXWEUAR 10.9 ppm, just outside ±10 ppm; `window_any` False in
+  p1_molecules.csv — B1 also scores 0 on all 7), 2 are multi-adduct ToF molecules (UTULUEQFRJAYOL, YKFXSYSRTPPQBX: [M+H]+/[M+K]+/[M+NH4]+/water losses) whose window is tiny
+  (pool 5 / 14) and empty in engine 2 (its single target mass over mixed adducts). Engine-1 base lists are empty for all 7; the PubChem channel returned lists for 5.
+  ICE (596/596, 3870 s) and GL (595/596) had finished; cells 08 1002 s, 09 816 s, 12 498 s, 13 4671 s, 15 111 s.
+- Patch (recorded in `e0_port_manifest.json`, 45 patch records): cells 17 and 19 record the coverage instead of asserting (`e0_engine2_coverage.json`, `engine2_uncovered` in
+  `e0_run_audit.json`; `eng[mid]` → `eng.get(mid, {})` in the cell-19 payload); the ledger has `e0_engine2_covered` per molecule and a stratum table. `--reuse <work dir>`
+  (job env `REUSE_FROM`) copies engine-2 / PubChem lists, restores the engine-1 base lists + candidate audit, seeds ICE/GL through `ice_resume.py --seed --reuse_complete`
+  and copies the N1 output when its input is identical; refused unless test sha / limit / proxy train file match. `--dry_run` patches + compiles every cell and checks
+  that every `E0_*` name a patched cell uses exists in the namespace (the first relaunch at 09:55 failed on exactly that: helpers not injected into the cell namespace).
+- 2026-10-25 09:57 JST: `spark/jobs/spark_e0_chain2.sh` launched (old chain bash stopped; its child c1_full3 left running to collect caches): **c2_full3r** (reuse of
+  `runs/c2_full3/work`: all lists reused, ICE 595 reused + 1 rerun = 596/596 in 13 s, GL 595/596 partial as before, cell 17 recorded 593/600) → wait for the first c1_full3
+  to end (it will fail at cell 17 at about 11:50) → **c1_full3r** (reuse of `runs/c1_full3/work`) → panel_c2 → panel_c1; the ledger runs after each W7 run.
+- 2026-10-25 10:18 JST: **c2_full3r done** (E0 10:10, ledger 10:18; `runs/c2_full3r/{work,compare}`, mirrored locally without the large per-candidate files).
+  Headline (600 paired molecules, C2 proxy, official scorer replica, unreached truth = 0): E0 final **0.681** vs B1 main (blend21 + fallback) **0.616** / insurance 0.510;
+  Δ(E0 − B1 main) **+0.065 [+0.028, +0.102]**; A_timstof −0.071 [−0.116, −0.026] (E0 0.718 / B1 0.790), B_nplib **+0.201 [+0.145, +0.255]** (E0 0.644 / B1 0.443);
+  by split role: fit (B1 ranker training groups) −0.002, tune +0.084, eval **+0.112 [+0.049, +0.176]**. Leak audit: truth train rows remaining 0/0 (E0/B1), truth in E0's
+  external refs 1 molecule, all 600 truths are pool train structures (E0 structure-level membership flag). E0 stage MRR on the same molecules: engine-1 base-60 0.939
+  (model-level overlap: engine-1's models saw every molecule) → merge 0.907 → **fuse2 + GLACIER (cell 15) 0.696** → final 0.681: on these molecules E0's own fusion with
+  engine 2 / GLACIER costs 0.21 against its (leaky) engine-1 list. The PubChem channel never holds the truth here (recall 0.000) because it lists keys NOT in the pool and
+  every truth is a pool structure — its hidden-test value is unmeasurable on train-derived sets. B1 recall: window 0.958, **shortlist 0.755**; molecules only E0 gets right
+  (top-1) by the B1 stage that lost them: not_in_shortlist **54**, rank>1 40, lost_fusion 1; E0 wins Σ Δ +79 over 120 molecules B1 lost at the shortlist. Where both have
+  the truth (E0 loss class reranked_lower, n 269) B1 is better (0.538 vs 0.393). Engine 2 covered 593/600 (7 empty windows, both systems 0 there).
 

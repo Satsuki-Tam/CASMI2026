@@ -7,7 +7,7 @@ Usage (repo root):
   python -X utf8 run_e0_offline.py --cells experiments/e0_offline/cells --input <run>/kaggle_input --work <run>/work --runner_python .venv-ice/bin/python
                                    --resume spark/jobs/ice_resume.py --ice_budget 21600 --gl_budget 10800 --n1_budget 3600 [--receipt]
 """
-import argparse, glob, hashlib, json, os, subprocess, sys, time, traceback
+import argparse, glob, hashlib, json, os, shutil, subprocess, sys, time, traceback, types
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--cells", required=True); ap.add_argument("--input", required=True); ap.add_argument("--work", required=True)
@@ -15,12 +15,20 @@ ap.add_argument("--runner_python", required=True)
 ap.add_argument("--resume", default=None, help="spark/jobs/ice_resume.py: restart the ICEBERG/GLACIER runner after a GB10 CUDA crash and merge; omit = plain runner")
 ap.add_argument("--ice_budget", type=float, default=21600); ap.add_argument("--gl_budget", type=float, default=10800); ap.add_argument("--n1_budget", type=float, default=3600)
 ap.add_argument("--receipt", action="store_true", help="also run cell 23 (mounted-input inventory hashes; optional)")
+ap.add_argument("--reuse", default=None, help="work dir of an earlier run of the SAME inputs: reuse its engine-2 / PubChem lists, engine-1 base lists + audit, ICE/GL outputs (ice_resume seed) and N1 output")
+ap.add_argument("--dry_run", action="store_true", help="prepare (patch) every cell and exit without executing anything")
 A = ap.parse_args()
 INPUT, WORK = os.path.realpath(A.input), os.path.realpath(A.work); os.makedirs(WORK, exist_ok=True)
 RUNNER_PY = os.path.abspath(A.runner_python); RESUME = os.path.realpath(A.resume) if A.resume else None
 CELLS = sorted(glob.glob(os.path.join(os.path.realpath(A.cells), "[0-9][0-9].py"))); assert len(CELLS) == 24, CELLS
+REUSE = os.path.realpath(A.reuse) if A.reuse else None
+if REUSE:   # only for the same inputs (test file, molecule limit, proxy train file)
+    _oi, _ni = os.path.join(os.path.dirname(REUSE), "run_inputs.json"), os.path.join(os.path.dirname(WORK), "run_inputs.json")
+    _old = json.load(open(_oi)) if os.path.exists(_oi) else {}; _new = json.load(open(_ni)) if os.path.exists(_ni) else {}
+    if not _old or not _new or any(_old.get(k) != _new.get(k) for k in ("test_sha256", "limit")) or os.path.basename(str(_old.get("train"))) != os.path.basename(str(_new.get("train"))):
+        print("[port] --reuse refused: inputs differ", _old.get("test_sha256"), _old.get("limit"), _old.get("train"), "vs", _new.get("test_sha256"), _new.get("limit"), _new.get("train"), flush=True); REUSE = None
 os.chdir(WORK); os.environ["PYTHONHASHSEED"] = "0"
-MANIFEST = dict(input=INPUT, work=WORK, runner_python=RUNNER_PY, resume=RESUME, budgets=dict(ice=A.ice_budget, gl=A.gl_budget, n1=A.n1_budget),
+MANIFEST = dict(input=INPUT, work=WORK, runner_python=RUNNER_PY, resume=RESUME, reuse=REUSE, reused=[], budgets=dict(ice=A.ice_budget, gl=A.gl_budget, n1=A.n1_budget),
                 python=sys.version, started=time.strftime("%Y-%m-%dT%H:%M:%S"), cells={}, patches=[], status="running",
                 threads={k: os.environ.get(k) for k in ("OMP_NUM_THREADS", "NUMBA_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")})
 
@@ -39,7 +47,10 @@ def E0_RUN_FORWARD(kind, pkg, items, workdir, budget):
     json.dump(items, open(fin, "w"))
     runner = os.path.join(pkg, "ice_runner.py" if kind == "ice" else "gl_runner.py")
     rargs = ["--device", "cuda", "--site", "none", "--budget", str(float(budget)), "--any-rdkit"]
-    cmd = ([RUNNER_PY, RESUME, "--python", RUNNER_PY, runner, pkg, fin, fout, "--"] + rargs) if RESUME else ([RUNNER_PY, runner, pkg, fin, fout] + rargs)
+    seed = os.path.join(REUSE, f"{kind}_work", f"{kind}_out.json") if REUSE else None
+    seed_args = ["--seed", seed, "--reuse_complete"] if (RESUME and seed and os.path.exists(seed)) else []   # ice_resume keeps molecules whose every candidate already has a score
+    if seed_args: MANIFEST["reused"].append(f"{kind}_out.json (seed)"); print(f"[port] {kind} runner seeded from {seed}", flush=True)
+    cmd = ([RUNNER_PY, RESUME] + seed_args + ["--python", RUNNER_PY, runner, pkg, fin, fout, "--"] + rargs) if RESUME else ([RUNNER_PY, runner, pkg, fin, fout] + rargs)
     t0 = time.time(); logp = os.path.join(workdir, f"{kind}_runner.log")
     print(f"[port] {kind} runner: {len(items)} molecules, {sum(len(it['cands']) for it in items)} candidates, budget {budget:.0f}s -> {logp}", flush=True)
     with open(logp, "w") as lf: rc = subprocess.run(cmd, stdout=lf, stderr=subprocess.STDOUT).returncode
@@ -75,8 +86,42 @@ def E0_RECORD_CANDS(mid, C, X, score, info):
 
 def dump_cands():
     import pyarrow as _pa, pyarrow.parquet as _pq
+    if "_reused" in E0_INFO: print("[port] engine-1 candidate audit reused (copied)", flush=True); return
     if E0_CANDS: _pq.write_table(_pa.Table.from_pylist(E0_CANDS), os.path.join(WORK, "e0_engine1_candidates.parquet"))
     dump("e0_engine1_info.json", E0_INFO); print(f"[port] engine-1 candidate audit: {len(E0_CANDS)} rows, {len(E0_INFO)} molecules", flush=True)
+
+
+E0_REUSED_RESULT = types.SimpleNamespace(stdout="[port] reused from an earlier run of the same inputs\n", stderr="", returncode=0)
+
+
+def E0_REUSE(name):
+    """copy <reuse>/<name> into the work dir (engine-2 / PubChem lists) and skip the subprocess that would produce it"""
+    if not REUSE or not os.path.exists(os.path.join(REUSE, name)): return False
+    shutil.copy(os.path.join(REUSE, name), os.path.join(WORK, name)); MANIFEST["reused"].append(name); save_manifest(); print(f"[port] reused {name} from {REUSE}", flush=True); return True
+
+
+def E0_REUSE_BASE(BASE):
+    """restore the engine-1 base lists (BASE tuples) and the candidate audit of the reused run; cell 12's per-molecule loop is then skipped"""
+    src = os.path.join(REUSE, "e0_base_lists.json") if REUSE else None
+    if not src or not os.path.exists(src): return False
+    d = json.load(open(src))
+    for m, v in d.items(): BASE[m] = (list(v["smiles"]), list(v["keys"]), float(v["lib_max"]), list(v["scores"]), list(v["forms"]))
+    for f in ("e0_engine1_candidates.parquet", "e0_engine1_info.json"):
+        if os.path.exists(os.path.join(REUSE, f)): shutil.copy(os.path.join(REUSE, f), os.path.join(WORK, f))
+    E0_INFO["_reused"] = REUSE; MANIFEST["reused"].append("e0_base_lists.json (BASE) + engine-1 audit"); save_manifest()
+    print(f"[port] reused engine-1 base lists of {len(d)} molecules from {REUSE}", flush=True); return True
+
+
+def E0_N1_REUSE(fin, fout):
+    """copy the reused run's N1 driver output when its input is identical; returns a stand-in result or None (= run the driver)"""
+    if not REUSE: return None
+    oi, oo = os.path.join(REUSE, "n1_work", "n1_in.json"), os.path.join(REUSE, "n1_work", "n1_out.json")
+    try:
+        if os.path.exists(oi) and os.path.exists(oo) and os.path.exists(oo + ".meta.json") and json.load(open(oi)) == json.load(open(fin)):
+            shutil.copy(oo, fout); shutil.copy(oo + ".meta.json", fout + ".meta.json"); MANIFEST["reused"].append("n1_out.json"); save_manifest(); print("[port] reused the N1 driver output", flush=True)
+            return types.SimpleNamespace(stdout="[port] reused N1 output\n", returncode=0)
+    except Exception as e: print("[port] N1 reuse check failed:", repr(e), flush=True)
+    return None
 
 
 def patch(nn, src, old, new, count=1):
@@ -122,7 +167,14 @@ def prepare(nn, src):
     if nn == 6:
         src = patch(nn, src, "    assert platform.python_version_tuple()[:2] == ('3', '12')", "    assert platform.python_version_tuple()[:2] in (('3', '11'), ('3', '12'))  # [port] .venv is 3.11")
         src = patch(nn, src, "    assert 'T4' in gpu, gpu", "    assert gpu, gpu  # [port] GB10 instead of T4")
+    if nn == 8:
+        src = patch(nn, src, "    rr = subprocess.run([sys.executable, os.path.join(ENG_DIR, 'eng_runner.py'), os.path.join(COMP, 'test.parquet'),",
+                    "    rr = E0_REUSED_RESULT if E0_REUSE('eng_lists.json') else subprocess.run([sys.executable, os.path.join(ENG_DIR, 'eng_runner.py'), os.path.join(COMP, 'test.parquet'),")
+    if nn == 9:
+        src = patch(nn, src, "    rr = subprocess.run([sys.executable, '/kaggle/working/pc_runner.py', V3CODE, V3MOD, POOL_DIR, PC_DIR,",
+                    "    rr = E0_REUSED_RESULT if E0_REUSE('pc_lists.json') else subprocess.run([sys.executable, '/kaggle/working/pc_runner.py', V3CODE, V3MOD, POOL_DIR, PC_DIR,")
     if nn == 12:
+        src = patch(nn, src, "for gi, (mid, sub) in enumerate(mols):", "for gi, (mid, sub) in enumerate([] if E0_REUSE_BASE(BASE) else mols):")
         src = patch(nn, src, "                score = rank_score(np.concatenate([X, F], 1), list(FEATURES) + list(names))",
                     "                score = rank_score(np.concatenate([X, F], 1), list(FEATURES) + list(names)); E0_RECORD_CANDS(mid, C, X, score, info)")
     if nn == 13:
@@ -140,6 +192,8 @@ def prepare(nn, src):
                     "N1_WORK, N1_SITE, N1_DEVICE, N1_DRIVER_EXTRA = '/kaggle/working/n1_work', 'none', 'cuda', []")
         src = patch(nn, src, "    cmd = [sys.executable, os.path.join(N1_WORK, 'glb_driver.py'), GL_PKG, fin, fout, '--device', N1_DEVICE,",
                     "    cmd = [E0_RUNNER_PY, os.path.join(N1_WORK, 'glb_driver.py'), GL_PKG, fin, fout, '--device', N1_DEVICE,")
+        src = patch(nn, src, "        r = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors='replace',",
+                    "        r = E0_N1_REUSE(fin, fout) or subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors='replace',")
     if nn == 14:
         src = patch(nn, src, "rows, stats = [], dict(untouched=0, gentle=0, aggressive=0, no_pc=0, promoted=0)",
                     "rows, stats, E0_MERGE = [], dict(untouched=0, gentle=0, aggressive=0, no_pc=0, promoted=0), {}")
@@ -152,10 +206,17 @@ def prepare(nn, src):
                     "        if (S is not None and float(S) > S_TAU and pop_top >= POP_TAU) or (rel > 150.0):")
         src = patch(nn, src, "            stats['promoted'] += 1", "            stats['promoted'] += 1; E0_MERGE[mid]['promoted'] = True")
     if nn == 17:
+        src = patch(nn, src, "assert _active <= set(map(str, ENG)), 'Engine 2 did not cover all active molecules'",
+                    "E0_ENGINE2_UNCOVERED = sorted(_active - set(map(str, ENG))); print('[port] engine 2 covered', len(_active) - len(E0_ENGINE2_UNCOVERED), 'of', len(_active), 'active molecules;"
+                    " uncovered (the notebook asserts here; recorded instead, those molecules keep their other lists):', E0_ENGINE2_UNCOVERED, flush=True)")
         src = patch(nn, src, "assert _stage_meta['ice'].get('status') == 'ok', _stage_meta['ice']",
                     "print('[port] ICE stage meta status:', _stage_meta['ice'].get('status'), '(hard assert relaxed; recorded)', flush=True)")
         src = patch(nn, src, "if (te.adduct == '[M+H]+').any():\n    assert _stage_meta['glacier'].get('status') == 'ok', _stage_meta['glacier']",
                     "print('[port] GLACIER stage meta status:', _stage_meta['glacier'].get('status'), '(hard assert relaxed; recorded)', flush=True)")
+    if nn == 19:
+        src = patch(nn, src, "    assert processed <= set(map(str, eng))", "    print('[port] postflight engine-2 coverage', len(processed & set(map(str, eng))), '/', len(processed), '(assert relaxed; recorded in e0_engine2_coverage.json)', flush=True)")
+        src = patch(nn, src, "        'engine2': {mid: eng[mid] for mid in sorted(processed)},", "        'engine2': {mid: eng.get(mid, {}) for mid in sorted(processed)},")
+        src = patch(nn, src, "                  engine2_nonempty=sum(bool(eng[mid]['smiles']) for mid in processed),", "                  engine2_nonempty=sum(bool(eng.get(mid, {}).get('smiles')) for mid in processed),")
     n_in, n_wk = src.count("/kaggle/input"), src.count("/kaggle/working")
     src = src.replace("/kaggle/input", INPUT).replace("/kaggle/working", WORK)
     if n_in or n_wk: MANIFEST["patches"].append(dict(cell=nn, old=f"/kaggle/input x{n_in}, /kaggle/working x{n_wk}", new="run input tree / work dir"))
@@ -174,6 +235,7 @@ HOOKS = {
                     dump("e0_n1.json", dict(n1_mids=sorted(ns["N1_MIDS"]), n1_gl_mids=sorted(ns["N1_GL_MIDS"]), health=ns["N1_HEALTH"], stats=ns["N1_STATS"],
                                             ice_health=ns["CLAW_ICE_HEALTH"], gl_health=ns["CLAW_GL_HEALTH"], ice_stats=ns["ice_stats"], gl_stats=ns["gl_stats"]))),
     14: lambda ns: dump("e0_merge_decisions.json", dict(per_molecule=ns["E0_MERGE"], stats=ns["stats"], LIB_TAU=ns["LIB_TAU"], REL_TH=ns["REL_TH"], S_TAU=ns["S_TAU"], POP_TAU=ns["POP_TAU"])),
+    17: lambda ns: dump("e0_engine2_coverage.json", dict(uncovered=ns.get("E0_ENGINE2_UNCOVERED", []), n_active=len(ns["_active"]), covered=sorted(set(map(str, ns["ENG"])) & set(ns["_active"])))),
     20: lambda ns: dump("e0_frag_gap.json", ns["FRAG_GAP"]),
 }
 
@@ -181,10 +243,18 @@ import pandas as pd
 try: pd.options.future.infer_string = False; MANIFEST["pandas"] = dict(version=pd.__version__, infer_string=False)   # Kaggle ran pandas 2.x (object strings)
 except Exception as e: MANIFEST["pandas"] = dict(version=pd.__version__, infer_string=repr(e))
 
-ns = {"__name__": "__main__", "E0_RUNNER_PY": RUNNER_PY, "E0_RUN_FORWARD": E0_RUN_FORWARD, "E0_RECORD_CANDS": E0_RECORD_CANDS}
+ns = {"__name__": "__main__", "E0_RUNNER_PY": RUNNER_PY, "E0_RUN_FORWARD": E0_RUN_FORWARD, "E0_RECORD_CANDS": E0_RECORD_CANDS,
+      "E0_REUSE": E0_REUSE, "E0_REUSE_BASE": E0_REUSE_BASE, "E0_REUSED_RESULT": E0_REUSED_RESULT, "E0_N1_REUSE": E0_N1_REUSE}
 last = 23 if A.receipt else 22
 print(f"[port] {time.strftime('%H:%M:%S')} input {INPUT} work {WORK} runner {RUNNER_PY} resume {RESUME} budgets ice {A.ice_budget:.0f} gl {A.gl_budget:.0f} n1 {A.n1_budget:.0f}", flush=True)
 save_manifest()
+if A.dry_run:
+    for path in CELLS:
+        nn = int(os.path.basename(path)[:2]); src_ = prepare(nn, open(path, encoding="utf-8").read()); compile(src_, f"<cell{nn:02d}>", "exec")
+        import re as _re
+        missing_names = sorted(set(_re.findall(r"\bE0_[A-Z0-9_]+\b", src_)) - set(ns) - {"E0_ENGINE2_UNCOVERED", "E0_MERGE"})
+        assert not missing_names, (nn, "patched cell uses names the namespace does not provide", missing_names)
+    print(f"[port] dry run: all {len(CELLS)} cells patched and compiled; {len(MANIFEST['patches'])} patch records; namespace names checked"); sys.exit(0)
 for path in CELLS:
     nn = int(os.path.basename(path)[:2])
     if nn > last: break
@@ -218,6 +288,8 @@ try:   # run audit (Codex 016): budgets vs usage, runner coverage, part metas, c
         aud["coverage"][kind] = dict(molecules_in=len(d), molecules_with_finite=sum(1 for v in d.values() if isinstance(v, dict) and any(isinstance(x, (int, float)) and x == x for x in v.values())),
                                      candidates_finite=sum(1 for v in d.values() if isinstance(v, dict) for x in v.values() if isinstance(x, (int, float)) and x == x))
     aud["budget_cutoff"] = {k: (v.get("meta", {}).get("status") not in ("ok",)) for k, v in (MANIFEST.get("forward") or {}).items()}
+    aud["engine2_uncovered"] = (json.load(open(os.path.join(WORK, "e0_engine2_coverage.json"))) if os.path.exists(os.path.join(WORK, "e0_engine2_coverage.json")) else None)
+    aud["reused"] = MANIFEST.get("reused"); aud["reuse_dir"] = REUSE
     json.dump(aud, open(os.path.join(WORK, "e0_run_audit.json"), "w"), indent=1, default=str)
 except Exception as e: print("[port] run audit failed:", repr(e), flush=True)
 MANIFEST["outputs"] = {f: os.path.getsize(os.path.join(WORK, f)) for f in sorted(os.listdir(WORK)) if os.path.isfile(os.path.join(WORK, f))}
