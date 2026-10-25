@@ -22,3 +22,10 @@
 2. `spark_fullrk_chain.sh`(Spark、READY 待ちで起動済み): full_rk で p1 run1(rkfit 保留)・W7・eval_c1・dev2・パネルの特徴表を作り(GL は既存 run から seed)、ranker を rank_v4b の params/rounds のまま学習。**C2 行は露出台帳で FPNet 既見の分子だけ落とす**(`b1_rank_train.py --c2_drop_exposure`;W7 の 516 分子・eval_c1 の 19 分子は query 除去後に学習取得 0 = 未見なので C2 行を残す)。C1 行は既見・未見の両方を残し、評価で分けて読む。対照に同じ表で落とさない版(rank_rk_fx0)。
 3. 主比較 **full_rk + 旧 v4b(RK_old)対 full_rk + 新 ranker(RK_new)**、採用の対照として凍結 M2x を併記。dev2(未見)、パネル(C1 既見)、W7(fit 群は学習に使ったので tune/eval 群で読む)。T/N gate・pool60・PCL はこの比較に混ぜない。
 4. fold-0 への移植は別の一対比較(fold0 + 旧 vs fold0 + 新)が必要。今夜はしない。
+
+## 4. full_rk の ranker 一対比較の事前登録(18:50、結果を見る前に固定;`spark_fullrk_chain.sh` の出力 `rk_eval_{panel,p2dev,devAB}`)
+- 主比較: **パネル C1(full_rk で identity 既見・query 未見 = 隠しクラス 1 の代理)の RK_new − RK_old(blend21 + fallback、同じ表)**。点推定が正であること。clean 202 / uncertain 48 も併記(固定 CSV)。
+- 保護: dev2(full_rk の hold 群 = 未見)の C2(C/D/E/F/G)と C1(C/E/F/G)で、点推定と 95% 下限がともに ≥ −0.02。パネル C2 は identity 既見なので保護に使わない。
+- W7: ranker の fit 群は学習に使ったので、tune/eval 群だけを読む(露出台帳で既見 C1 と未見を分ける)。
+- 対照: RK_new0(既見 C2 行を落とさない版)— RK_new との差は「既見 C2 行を除く」効果。M2x(fold-0 の表 + rank_v4b)は採用の対照(FPNet も違うので、ranker の効果とは読まない)。
+- 判断: 主比較が正で保護が合格 → 「full_rk + RK_new」を比較提出の候補にする(Kaggle に checkpoint を置く手段 = ユーザー判断が前提)。保護の下限だけが −0.02 を割る場合は 022 と同じく「非劣性未確定の一回の比較提出として可」。保護の点推定が −0.02 未満、または主比較が 0 以下 → 見送り。
