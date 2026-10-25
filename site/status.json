@@ -110,6 +110,12 @@
    "name": "E0 自前実行 c2_full3r(W7 600、C2 代理)と段階台帳",
    "detail": "E0 0.681 vs B1 blend21 0.616(保険 0.510)。B1 到達: 窓 0.958 / shortlist 0.755。E0 engine-1 base-60 0.939(全分子学習済み)、GLACIER 融合で 0.696 に低下。Engine 2 の未被覆 7 分子は記録化。c1_full3r → パネル C2/C1 へ自動継続(ETA 12:10 / 14:15 / 16:30)",
    "eta": "10:18 完了"
+  },
+  {
+   "state": "queued",
+   "name": "決定実験: 学習済み FPNet(公開 full1 / fold-1 モデル)で B1 特徴表を作り直す(パネル C1、W7 A/B)",
+   "detail": "仮説「隠しクラス 1 では train 全体で学習したモデルの記憶が正当な強み」を測る。M2x(fold-0 FPNet)vs M2x_seen を登録評価器で比較、shortlist 到達も記録。fit pool の後に自動開始(Codex 018 の回答で設計を確定)",
+   "eta": "午後"
   }
  ],
  "next": [
