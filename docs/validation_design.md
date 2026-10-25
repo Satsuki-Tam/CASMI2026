@@ -519,3 +519,20 @@ C1 代理では、学習融合はパイプラインの中でも固定規則よ�
 ## full_eval の Public(01:00): **0.370**(基準 0.354 から +0.016)
 - 020/022 の読み: ±0.02 の内側 → 「未確定」(基準 0.354 を保持)。点推定は B1 の最高値で、022 の登録評価(パネル C1 clean +0.035、dev2 保護層の点はすべて ≥ −0.02)と同じ向き。
 - **較正の予測は外れた**: 結果前の予測 −0.002 [−0.006, +0.000](q_seen 0.8)、q_seen 0.5 / 0.2 / 0.0 でも −0.001 / +0.000 / +0.001。→ 局所の型の混合では FPNet 変更の効果を説明できない。欠落の候補: 「全構成で 0 点の成分」は fold-0 系の構成で 0 という意味しかなく、FPNet を替えると shortlist が変わり、その成分の一部(fold-0 で未見のクラス 1 の真が shortlist に入らず 0 点だった分子など)が得点し得る。パネルでは fold-0 未見 → full_eval 既見で真の FP top-200 到達が 0.896 → 0.996。130 分子で +0.016 は約 2 分子分なので、数分子の救済で説明できる。→ 較正モデルは「同じ FPNet・同じ shortlist の内側での変更」(pcd、ranker の一部)にしか使えない、と限定して記録する。
+
+## 公開系譜(E0)の Public の増分表(E0 notebook の "Growth Pattern"、01:55 再読)と、私たちの読みの規則への含意
+| 版 | 主な変更 | ΔLB | Public |
+|---|---|---:|---:|
+| v4i(Gluzdov "From Spectra to Structures") | 160 特徴・LightGBM 4 本・独立の PubChem チャネル・ICEBERG/GLACIER | — | 0.373 |
+| v4l | ICE/GL の重み 1.0 | +0.007 | 0.380 |
+| v4n-e5c | 二エンジン融合 + BIO(ChEBI + LIPID MAPS)/ AFIX(式由来の質量) | +0.006 | 0.386 |
+| v4n-engine-fusion | **fpnet_full1(全 train FPNet)**+ forward 融合 | **+0.013** | 0.399 |
+| V10 Apex | popularity prior | +0.002 | 0.401 |
+| V44 PairTail | **LambdaRank + top-1 保護** | **+0.016** | 0.417 |
+| V1 | PubChem の昇格 + GLACIER rerank | +0.008 | 0.425 |
+| V1.1 | metric-safe tail | +0.008 | 0.433 |
+| E004 / ICE fallback / E006 / FragGap | identity 投票 / GLACIER 不在時の ICEBERG / window-40 / MetFrag-lite | +0.003 / +0.002 / +0.002 / +0.001 | 0.441 |
+| Data Behind v20 | **5-fold FPNet ensemble** + NP・LOTUS・同義語 prior + proxy rescoring + 候補挿入 | **+0.023** | 0.464 |
+(表の注記どおり、連続した公開スコアの差で因果効果の分離ではない。)
+- **B1 + full_eval(0.370)は系譜の v4i(0.373)とほぼ同じ位置**。私たちの全 train FPNet の +0.016 は系譜の fpnet_full1 の +0.013 と整合。
+- 0.373 → 0.464 は +0.001〜+0.023 の多数の小さな段の積み重ね。**一段ごとの効果の多くは私たちの ±0.02 の読みの内側**で、一変更ずつ Public で「確定」させる今の運用では、本物の改善もほとんど確定しない。→ 次の段階の運用の論点(Codex と相談): (a) 局所の登録評価で保護条件を満たした変更を束ねて一回の比較にする、(b) Public の向きを局所の証拠と組み合わせて採否に使う規則(±0.02 以外の判断材料)、(c) 系譜の部品の移植の優先順位(FPNet ensemble = ENS2 を検証中、LambdaRank の top-1 保護、NP / LOTUS / 同義語 prior は B1 も特徴として一部保持、proxy rescoring は B1 の `--adduct_proxy` がパネルで利得なし、BIO / AFIX の候補源は未実装)。
