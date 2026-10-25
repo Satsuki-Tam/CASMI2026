@@ -43,7 +43,7 @@ sub("    D = G['D']" + NL, WORKER_DATA)
 sub("mp.get_context('fork')", "mp.get_context('spawn')", count=2)
 GATE_OLD = "    assert gate['passed'] and gate['panel_training_overlap']==0 and gate['fold_training_overlap']==0" + NL
 GATE_NEW = NL.join([
-    "    if gate.get('recipe_variant') == 'full_eval':   # [win] recipe-aware gate: no held fold; panel query acquisitions removed; dev2/locked2 held out",
+    "    if gate.get('recipe_variant') in ('full_eval', 'full_rk'):   # [win] recipe-aware gate: no held fold; query acquisitions removed; identity-group holdouts",
     "        assert gate['passed'] and gate['panel_query_rows_in_training']==0 and gate['holdout_training_overlap']==0",
     "    else:",
     "        assert gate['passed'] and gate['panel_training_overlap']==0 and gate['fold_training_overlap']==0",
