@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 10:15 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 10:24 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -45,6 +45,8 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#dev2-v2-m2x-run_p2dev_v3rank_v4bw_ice-0probe0845">dev2 v2 の速報(M2x 構成の特徴表 run_p2dev_v3、rank_v4b・w_ice 0、probe、08:45;チェーンの登録評価は後続)</a></li>
 <li><a href="#gl-rankerrank_v4b_nogl-fallback-0851probe-csv-lib_max-09-lib">GL なし ranker(rank_v4b_nogl)と fallback 分岐の比較(08:51;probe の分子別 CSV、保険は lib_max ≥ 0.9 → lib 順位の近似)</a></li>
 <li><a href="#0910-test-codex-017">【訂正 09:10】公開ダミー test と隠しテストの区別(Codex 017)</a></li>
+<li><a href="#dev2-v2-p2dev_eval1005m1-run_p2dev_v2k_fpp-100-k_pop-0glicerank_v2main-learnedm2x-run_p2dev_v3k_fpp-200-k_pop-50gl-rank_v4bmain-blend21-scorer-strict-locked">dev2 v2 の登録評価(p2dev_eval/、10:05;M1 = run_p2dev_v2(k_fpp 100 / k_pop 0、GL+ICE、rank_v2、main learned)、M2x = run_p2dev_v3(k_fpp 200 / k_pop 50、GL のみ、rank_v4b、main blend21)、公式 scorer 複製、strict 分母、locked 開封と同じ評価器)</a></li>
+<li><a href="#e0-1-w7-600-c2-experimentse0_offlinerunsc2_full3rcomparereportmd1018-scorer-0">E0 自前実行の第 1 結果(W7 600 分子、C2 代理、experiments/e0_offline/runs/c2_full3r/compare/report.md、10:18;公式 scorer 複製、未到達 = 0)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -770,4 +772,143 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <li>E0 の gate についても訂正: <code>lib_max &gt;= 0.9</code> で BASE 全体を維持する規則は、B1 保険の「margin ≥ 0.2 を伴う lib 候補優先」と同じ出力規則ではない。同じ τ でも gate が差 0.13 を説明しないとは言えず、E0 段階比較では BASE 前後・最終 merge 前後の順位差を残す。</li>
 <li>probe の表記: <code>r_pipeline</code> = learned + GL 不足時は保険;登録した M2x 主出力は <code>r_blend21</code>(G/C1 0.600、G/C2 0.637)。保険は <code>r_fguard0.9_0.2</code>。</li>
 <li>要確認(09:55): B1 パイプラインのパネル run(E0 比較用、<code>runs/_shared/eval_test_panel/run_c2</code>)のログに <code>lib_max&gt;=0.6: 0</code>(250 分子)。特徴表ベースの probe ではパネル C2 の lib_max 中央値 0.497・≥0.6 が 38% なので、パイプラインの C2 mask(識別子 + 行の除外)と評価器の C2 view の参照集合が同じか、E0 段階台帳の lib_max 列で照合する(W7 では両者一致を確認済み;パネルは未確認)。</li>
+</ul>
+<h2 id="dev2-v2-p2dev_eval1005m1-run_p2dev_v2k_fpp-100-k_pop-0glicerank_v2main-learnedm2x-run_p2dev_v3k_fpp-200-k_pop-50gl-rank_v4bmain-blend21-scorer-strict-locked">dev2 v2 の登録評価(<code>p2dev_eval/</code>、10:05;M1 = run_p2dev_v2(k_fpp 100 / k_pop 0、GL+ICE、rank_v2、main learned)、M2x = run_p2dev_v3(k_fpp 200 / k_pop 50、GL のみ、rank_v4b、main blend21)、公式 scorer 複製、strict 分母、locked 開封と同じ評価器)</h2>
+<table>
+<thead>
+<tr>
+<th>層 / view</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">M1 learned(登録主出力)</th>
+<th style="text-align: right;">M1 保険</th>
+<th style="text-align: right;">M1 固定</th>
+<th style="text-align: right;">M2x blend21(登録主出力)</th>
+<th style="text-align: right;">M2x 保険</th>
+<th style="text-align: right;">M2x 固定</th>
+<th><strong>REGISTERED M2x − M1</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.622</td>
+<td style="text-align: right;">0.535</td>
+<td style="text-align: right;">0.535</td>
+<td style="text-align: right;">0.612</td>
+<td style="text-align: right;">0.507</td>
+<td style="text-align: right;">0.507</td>
+<td>−0.010 [−0.056, +0.034]</td>
+</tr>
+<tr>
+<td>C C1</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">0.874</td>
+<td style="text-align: right;">0.793</td>
+<td style="text-align: right;">0.654</td>
+<td style="text-align: right;">0.912</td>
+<td style="text-align: right;">0.775</td>
+<td style="text-align: right;">0.623</td>
+<td><strong>+0.038 [−0.000, +0.080]</strong></td>
+</tr>
+<tr>
+<td>D C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.283</td>
+<td style="text-align: right;">0.250</td>
+<td style="text-align: right;">0.250</td>
+<td style="text-align: right;">0.267</td>
+<td style="text-align: right;">0.237</td>
+<td style="text-align: right;">0.237</td>
+<td>−0.016 [−0.048, +0.018]</td>
+</tr>
+<tr>
+<td>E C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.290</td>
+<td style="text-align: right;">0.290</td>
+<td style="text-align: right;">0.290</td>
+<td style="text-align: right;">0.235</td>
+<td style="text-align: right;">0.235</td>
+<td style="text-align: right;">0.235</td>
+<td><strong>−0.055 [−0.095, −0.017]</strong></td>
+</tr>
+<tr>
+<td>E C1</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">0.595</td>
+<td style="text-align: right;">0.595</td>
+<td style="text-align: right;">0.304</td>
+<td style="text-align: right;">0.561</td>
+<td style="text-align: right;">0.561</td>
+<td style="text-align: right;">0.220</td>
+<td>−0.034 [−0.077, +0.004]</td>
+</tr>
+<tr>
+<td>F C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.248</td>
+<td style="text-align: right;">0.248</td>
+<td style="text-align: right;">0.248</td>
+<td style="text-align: right;">0.229</td>
+<td style="text-align: right;">0.229</td>
+<td style="text-align: right;">0.229</td>
+<td>−0.019 [−0.043, +0.003]</td>
+</tr>
+<tr>
+<td>F C1</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">0.618</td>
+<td style="text-align: right;">0.618</td>
+<td style="text-align: right;">0.448</td>
+<td style="text-align: right;">0.590</td>
+<td style="text-align: right;">0.590</td>
+<td style="text-align: right;">0.396</td>
+<td>−0.028 [−0.071, +0.007]</td>
+</tr>
+<tr>
+<td>G C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.673</td>
+<td style="text-align: right;">0.586</td>
+<td style="text-align: right;">0.593</td>
+<td style="text-align: right;">0.637</td>
+<td style="text-align: right;">0.537</td>
+<td style="text-align: right;">0.544</td>
+<td><strong>−0.036 [−0.068, −0.009]</strong></td>
+</tr>
+<tr>
+<td>G C1</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.621</td>
+<td style="text-align: right;">0.659</td>
+<td style="text-align: right;">0.652</td>
+<td style="text-align: right;">0.600</td>
+<td style="text-align: right;">0.598</td>
+<td style="text-align: right;">0.591</td>
+<td>−0.021 [−0.065, +0.020]</td>
+</tr>
+<tr>
+<td>(D C1 は usable 参照 0 で n=0、採点なし。E/F は全分子が GL 不足 → 両候補とも learned = 保険。)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>読み: 新層では <strong>M2x が M1 を上回るのは C/C1 のみ</strong>(他ライブラリ参照多数、+0.038)。E/C2 と G/C2 は M1 が有意に良い。E/F では両候補の出力は保険(固定 + 参照優先)なので、差は <strong>候補構成の差</strong>(M2x の k_fpp 200 + k_pop 50 の拡大 shortlist が、forward 不在で FP + prior しか無いときに decoy を増やす)として読める。G/C2 でも M1(ICE あり・小 shortlist)が良い。locked(差なし)と合わせると、M2x の「候補 2 倍 + ICE 無し」は NP 層で損、C1 修正(rank_v4b)は参照多数の層でのみ得。→ 次の分解: 同じ特徴表(M1 構成)の上で rank_v2 learned と rank_v4b blend21 を比較し、ranker/出力ポリシーの効果を候補構成の効果から切り分ける(10:15 実行中、<code>p2dev_eval_sametable/</code>)。</li>
+</ul>
+<h2 id="e0-1-w7-600-c2-experimentse0_offlinerunsc2_full3rcomparereportmd1018-scorer-0">E0 自前実行の第 1 結果(W7 600 分子、C2 代理、<code>experiments/e0_offline/runs/c2_full3r/compare/report.md</code>、10:18;公式 scorer 複製、未到達 = 0)</h2>
+<ul>
+<li><strong>E0 final 0.681 vs B1 main(blend21)0.616(保険 0.510): Δ +0.065 [+0.028, +0.102]</strong>。A_timstof −0.071 <a href="B1 が良い">−0.116, −0.026</a>、<strong>B_nplib +0.201 [+0.145, +0.255]</strong>(E0 が良い)。B1 の ranker 学習群(fit)では −0.002、tune +0.084、eval +0.112。</li>
+<li>E0 の段階 MRR: engine-1 base-60 <strong>0.939</strong> → merge 0.907 → GLACIER 融合 0.696 → final 0.681。E0 の engine-1 窓/base-60 の到達は 0.953 = 窓到達そのもの(FPNet が真を常に上位 60 に置く)。<strong>ただし E0 の FPNet(A/B/full1)と ranker は train.parquet 全体で学習しており、600 分子すべてを学習済み(重みレベルの重複、分子ごとに flag)。</strong> B1 の到達: 窓 0.958、<strong>shortlist 0.755</strong>(fold 0 の FPNet は dev 分子を未見)。</li>
+<li>E0 だけが 1 位を当てる分子を B1 の損失段階で分類: shortlist 落ち 54、順位 &gt;1 が 40、融合で落ち 1。B1 が shortlist で落とした 120 分子で E0 は ΣΔRR +79。両者が真を持つ 269 分子では B1 の順位が良い(0.538 vs 0.393)。PubChem チャネルは pool 外の key を出すためここでは真を持たない(到達 0;train 由来の集合では評価不能)。</li>
+<li>Engine 2 は 7 分子(前駆体 m/z が ±10 ppm 外、または多 adduct)でリストを返さず(B1 も 0 点)。GLACIER 融合は E0 の学習済み分子では −0.24 の損(engine-1 が既に正解を置いているため)。</li>
+<li><strong>読み(仮説、018 で確認)</strong>: 差の主因は <strong>shortlist 到達</strong>(B1 0.755 vs E0 ≈ 窓到達)で、E0 側は学習済み FPNet による「記憶」が効いている。隠しテストのクラス 1(train に参照がある分子)に対しては、train 全体で学習したモデルの記憶は正当な強み(禁止されていない)であり、B1 の fold-0 FPNet(train の 80% で学習)は fold 0 相当の分子で不利。クラス 2/3 には無関係。→ 検証案: パネル(NP・timsTOF・train 内分子)の C1 view で、fold-0 FPNet と train 全体で学習した FPNet(公開資産 <code>fpnet_full1.pt</code>、学習コード公開)を差し替えて B1 を比較し、クラス 1 条件での「記憶」の利得を測る。開発評価は C1 = 学習済みモデル可(隠しクラス 1 の代理)、C2 = fold-safe(クラス 2/3 の代理)に分ける。</li>
 </ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

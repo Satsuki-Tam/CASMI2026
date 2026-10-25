@@ -104,6 +104,12 @@
    "name": "同一特徴表での切り分け(M1 構成の表上で rank_v2 learned vs rank_v4b blend21)",
    "detail": "候補構成を固定して ranker/出力ポリシーの効果だけを見る",
    "eta": "10:25"
+  },
+  {
+   "state": "done",
+   "name": "E0 自前実行 c2_full3r(W7 600、C2 代理)と段階台帳",
+   "detail": "E0 0.681 vs B1 blend21 0.616(保険 0.510)。B1 到達: 窓 0.958 / shortlist 0.755。E0 engine-1 base-60 0.939(全分子学習済み)、GLACIER 融合で 0.696 に低下。Engine 2 の未被覆 7 分子は記録化。c1_full3r → パネル C2/C1 へ自動継続(ETA 12:10 / 14:15 / 16:30)",
+   "eta": "10:18 完了"
   }
  ],
  "next": [
