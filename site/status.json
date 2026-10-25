@@ -70,10 +70,10 @@
    "eta": "07:45 完了"
   },
   {
-   "state": "running",
+   "state": "done",
    "name": "dev2 v2 の評価チェーン(M1 構成 / M2x 構成の特徴表 → 登録出力の評価器)",
-   "detail": "spark_p2dev_chain.sh、07:45 起動、E0 と GPU 共有。層別(C/D/E/F/G)に M1 learned と M2x blend21、固定、保険を両 view で採点",
-   "eta": "数時間"
+   "detail": "登録評価完了(10:05): M2x − M1 は C/C1 +0.038 [−0.000, +0.080] のみ正、E/C2 −0.055 [−0.095, −0.017]、G/C2 −0.036 [−0.068, −0.009]、D/F は −0.016〜−0.028。M2x の拡大 shortlist(k_fpp 200 + k_pop 50)は forward 不在層で損、C1 修正は参照多数層でのみ得",
+   "eta": "10:05 完了"
   },
   {
    "state": "queued",
@@ -98,6 +98,12 @@
    "name": "ranker 一対比較: rank_v4b vs +G 72 群(fold 0、他集合と排他)",
    "detail": "fit pool G の特徴表(パネル run 後に自動開始)→ 学習 → dev2/A/B/パネルで登録評価。主確認 G/C1 blend21、保護 G/C2・C/D C2・A/B・パネル両 view、ε=0.02",
    "eta": "午後"
+  },
+  {
+   "state": "running",
+   "name": "同一特徴表での切り分け(M1 構成の表上で rank_v2 learned vs rank_v4b blend21)",
+   "detail": "候補構成を固定して ranker/出力ポリシーの効果だけを見る",
+   "eta": "10:25"
   }
  ],
  "next": [

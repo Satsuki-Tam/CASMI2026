@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 09:47 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 10:15 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -769,4 +769,5 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <li><code>data/raw/test.parquet</code> = <code>data/processed/test_meta.parquet</code>(1,213 行・400 ID、ID 列の SHA256 f300cbe4…)は公開ダミー(train 由来の例、採点時に置換)。kernel の commit 実行の出力(<code>b1_run_manifest.json</code> の GL 371 / fallback 29、<code>b1_stage_stats.csv</code> の lib_max 分布: ≥0.9 が 88/400、中央値 0.78)もダミーに対する値で、ダミーは train 分子なので参照一致が高いのは構成上の当然。隠しテストについて公式に使えるのは「query は timsTOF、約 400 分子、3 クラス」のみ。以後の集計には <code>data_role = public_dummy / development / hidden_rerun</code> と入力 ID hash を付ける。</li>
 <li>E0 の gate についても訂正: <code>lib_max &gt;= 0.9</code> で BASE 全体を維持する規則は、B1 保険の「margin ≥ 0.2 を伴う lib 候補優先」と同じ出力規則ではない。同じ τ でも gate が差 0.13 を説明しないとは言えず、E0 段階比較では BASE 前後・最終 merge 前後の順位差を残す。</li>
 <li>probe の表記: <code>r_pipeline</code> = learned + GL 不足時は保険;登録した M2x 主出力は <code>r_blend21</code>(G/C1 0.600、G/C2 0.637)。保険は <code>r_fguard0.9_0.2</code>。</li>
+<li>要確認(09:55): B1 パイプラインのパネル run(E0 比較用、<code>runs/_shared/eval_test_panel/run_c2</code>)のログに <code>lib_max&gt;=0.6: 0</code>(250 分子)。特徴表ベースの probe ではパネル C2 の lib_max 中央値 0.497・≥0.6 が 38% なので、パイプラインの C2 mask(識別子 + 行の除外)と評価器の C2 view の参照集合が同じか、E0 段階台帳の lib_max 列で照合する(W7 では両者一致を確認済み;パネルは未確認)。</li>
 </ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
