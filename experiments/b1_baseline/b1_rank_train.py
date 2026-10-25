@@ -102,6 +102,10 @@ def main():
                     "re-weighting the ranker learns 'has references -> decoy' from the C2 majority)")
     ap.add_argument("--c2_nolib", action="store_true", help="zero every library feature in the C2-view fit rows (the C2 view hides the truth's references, so there "
                     "'has a reference' is a perfect negative label; with this flag the use of reference evidence is learned from the C1 rows only)")
+    ap.add_argument("--params_from", default="", help="Codex 019: reuse the SELECTED params + rounds of an earlier rank_results.json (no search) so that a pair "
+                    "comparison changes only the training rows")
+    ap.add_argument("--c1_repeat_run", nargs="*", default=[], help="Codex 019: per-run C1 replication RUN_BASENAME=K overriding --c1_repeat for that run's C1 fit groups "
+                    "(e.g. run_fitpool_v3=1 = 'G C1 weight reduced')")
     ap.add_argument("--monotone_lib", action="store_true", help="monotone constraints incl. the library similarities (reference evidence may only raise a candidate)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); FE = [f for f in FEATSETS[a.feats] if f not in set(a.drop)]
     if a.monotone_lib: a.monotone = True
@@ -120,27 +124,32 @@ def main():
     if a.c2_nolib:
         LIBF = [f for f in ("lib_sim", "lib_same", "lib_nref", "lib_margin", "lib_max_mol", "in_train", "lib_rank", "in_train_x_lib") if f in FE]
         fit_t = fit_t.copy(); fit_t.loc[fit_t.view == "c2", LIBF] = 0.0; print("c2 fit rows: library features zeroed:", LIBF)
-    if a.c1_repeat > 1:
-        c1 = fit_t[fit_t.view == "c1"]
-        fit_t = pd.concat([fit_t] + [c1.assign(molecule=c1.molecule.astype(str) + f"#r{k}") for k in range(1, a.c1_repeat)], ignore_index=True)
+    REP = {kv.split("=")[0]: int(kv.split("=")[1]) for kv in a.c1_repeat_run}
+    rep_of = fit_t.run.map(lambda r: REP.get(os.path.basename(str(r)), a.c1_repeat)) if REP else pd.Series(a.c1_repeat, index=fit_t.index)
+    if int(rep_of.max()) > 1:
+        c1 = fit_t[fit_t.view == "c1"]; c1_rep = rep_of[fit_t.view == "c1"]
+        fit_t = pd.concat([fit_t] + [c1[c1_rep > k].assign(molecule=c1[c1_rep > k].molecule.astype(str) + f"#r{k}") for k in range(1, int(rep_of.max()))], ignore_index=True)
+        if REP: print("per-run c1 replication:", REP, "(others", a.c1_repeat, ")")
         print("fit groups after c1 replication:", fit_t.groupby(["molecule", "view"]).ngroups, "| c1 share:", round(float((fit_t.groupby(['molecule', 'view']).view.first() == 'c1').mean()), 3))
     def to_ds(d):
         d = d.sort_values(["molecule", "view"], kind="stable")
         sizes = d.groupby(["molecule", "view"], sort=False).size().values
         return lgb.Dataset(d[FE].values, label=d.is_truth.values, group=sizes, free_raw_data=False, feature_name=list(FE)), d
     ds_fit, fit_s = to_ds(fit_t)
+    FIXED = json.load(open(a.params_from))["selected"] if a.params_from else None
+    if FIXED: print("params fixed from", a.params_from, ":", {k: FIXED["params"][k] for k in ("num_leaves", "learning_rate")}, "rounds", FIXED["rounds"], "(no search)")
     grid = [dict(num_leaves=nl, learning_rate=lr, min_data_in_leaf=20, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=1, lambda_l2=1.0, verbose=-1, objective="lambdarank",
                  metric="ndcg", eval_at=[25], label_gain=[0, 1], seed=0, **({"monotone_constraints": [MONO_USED.get(f, 0) for f in FE], "monotone_constraints_method": "advanced"} if a.monotone else {}))
             for nl in (7, 15, 31) for lr in (0.03, 0.1)]
     results = []
-    for params in grid:
+    for params in ([] if FIXED else grid):
         for rounds in (100, 300, 600):
             bst = lgb.train(params, ds_fit, num_boost_round=rounds)
             tune = tune.copy(); tune["pred"] = bst.predict(tune[FE].values)
             m = mrr_of(tune, "pred"); results.append(dict(params=params, rounds=rounds, tune_c2_strict=m.get("c2", {}).get("strict"), tune_c1=m.get("c1", {}).get("mrr"), tune_c2=m.get("c2", {}).get("mrr")))
             print(f"  leaves {params['num_leaves']} lr {params['learning_rate']} rounds {rounds}: tune C2 strict {m.get('c2', {}).get('strict', float('nan')):.4f} | C1 {m.get('c1', {}).get('mrr', float('nan')):.4f}", flush=True)
     base_tune = mrr_of(tune, "S_fixed"); print("fixed rule S(2,1,0.5) on tune:", base_tune); print("fixed rule S(2,1,0.15) on tune:", mrr_of(tune, "S_fixed15"))
-    best = max(results, key=lambda r: (r["tune_c2_strict"] or 0) + 0.5 * (r["tune_c1"] or 0))
+    best = FIXED if FIXED else max(results, key=lambda r: (r["tune_c2_strict"] or 0) + 0.5 * (r["tune_c1"] or 0))
     print("selected:", best)
     bst = lgb.train(best["params"], ds_fit, num_boost_round=best["rounds"])
     ev = ev.copy(); ev["pred"] = bst.predict(ev[FE].values)

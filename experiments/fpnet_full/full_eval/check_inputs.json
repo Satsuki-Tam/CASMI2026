@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "recipe_variant": "full_eval",
+  "recipe": "public fold-safe recipe, no held-out identity fold; panel query acquisitions (+ cross-library duplicates) removed; dev2 v2 = hold, locked2 v2 = lock",
+  "spectra_total_train_parquet": 2539608,
+  "spectra_in_cache": 2538412,
+  "rows_dropped": 1196,
+  "panel_query_rows_dropped": 1184,
+  "panel_duplicate_rows_dropped": 12,
+  "panel_query_rows_in_training": 0,
+  "panel_identities_trained_via_other_libraries": 250,
+  "panel_identities": 250,
+  "hold_identity_groups": 500,
+  "lock_identity_groups": 500,
+  "holdout_training_overlap": 0,
+  "split_counts": {
+    "train": 274801,
+    "hold": 506,
+    "lock": 503
+  },
+  "panel_training_overlap": null,
+  "fold_training_overlap": null,
+  "dup_sim": 0.95,
+  "train_parquet_sha256": "9423f90ec08b941a9646b535bf0606183e86ff0c5a297978f5a70693d41bcd98",
+  "folds_sha256": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
+  "hold_csv_sha256": "fd013e44c88ce65d2ec8b7c2c4d65ad7060ce30a6c4ab071bf247b27dffb414b",
+  "lock_csv_sha256": "f86a068a782dff00e87fff928e0bf7ad75fee3cce440b06e11fa2fbd1ad63ba4",
+  "built": "2026-10-25T11:42:17"
+}
