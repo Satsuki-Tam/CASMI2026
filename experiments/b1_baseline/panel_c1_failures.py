@@ -58,7 +58,7 @@ L = [f"# {a.view.upper()} failures: {a.run} / {a.set} / {a.model} (blend21 + GL 
      f"no truth in shortlist: {int((R.status != 'ok').sum())} | parity mismatches vs evaluator top-25: {mism}", "",
      "| top decoy group | n molecules | lost RR | decoy lib > truth lib | libpri fired | GL fallback | median truth lib | median decoy lib |", "|---|---:|---:|---:|---:|---:|---:|---:|"]
 for gname, gg in miss.groupby("top_group"):
-    L.append(f"| {gname} | {len(gg)} | {float((1 - gg.rr).sum()):.2f} | {int(gg.top_lib_gt_truth.sum())} | {int(gg.libpri_fired.sum())} | {int((~gg.gl_cover_ok).sum())} | {gg.truth_lib.median():.3f} | {gg.top_lib.median():.3f} |")
+    L.append(f"| {gname} | {len(gg)} | {float((1 - gg.rr).sum()):.2f} | {int(gg.top_lib_gt_truth.sum())} | {int(gg.libpri_fired.sum())} | {int((gg.gl_cover_ok.astype(str) == "False").sum())} | {gg.truth_lib.median():.3f} | {gg.top_lib.median():.3f} |")
 L += ["", "| truth library similarity | n | MRR | rank 1 share | molecules with a train decoy on top |", "|---|---:|---:|---:|---:|"]
 for lo, hi in ((0, 0.5), (0.5, 0.7), (0.7, 0.8), (0.8, 0.9), (0.9, 1.01)):
     s = ok[(ok.truth_lib >= lo) & (ok.truth_lib < hi)]
