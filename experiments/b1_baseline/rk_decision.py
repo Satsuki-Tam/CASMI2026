@@ -14,6 +14,9 @@ import argparse, os, numpy as np, pandas as pd
 ap = argparse.ArgumentParser(); ap.add_argument("--out", default="diag/rk_decision.md"); ap.add_argument("--boot", type=int, default=10000)
 ap.add_argument("--audit", default="../fpnet_full/full_eval_audit/panel_molecule_audit_groups.csv"); ap.add_argument("--exposure", default="../fpnet_full/full_rk/query_identity_exposure.csv")
 ap.add_argument("--w7", default="eval_set/p1_molecules.csv"); ap.add_argument("--output", default="blend21"); ap.add_argument("--eps", type=float, default=0.02)
+ap.add_argument("--prefix", default="rk_eval", help="evaluation dirs <prefix>_{panel,p2dev,devAB}")
+ap.add_argument("--comps", nargs="*", default=["main: RK_new - RK_old=RK_new:RK_old", "control: RK_new - RK_new0=RK_new:RK_new0", "adoption: RK_new - M2x=RK_new:M2x", "FPNet only: RK_old - M2x=RK_old:M2x"],
+                help="LABEL=CAND:REF; labels starting with 'main' or 'whole' get the protection column")
 a = ap.parse_args()
 rng = np.random.default_rng(0)
 
@@ -37,7 +40,7 @@ def row(label, cand, ref, mols=None):
 
 audit = pd.read_csv(a.audit); clean = set(audit[audit.audit_group.str.startswith("clean")].molecule); unc = set(audit.molecule) - clean
 ex = pd.read_csv(a.exposure); w7 = pd.read_csv(a.w7, usecols=["set", "group", "molecule"])
-lines = ["# full_rk ranker pair: pre-registered decision table (023_decision section 4)", "",
+lines = [f"# pre-registered decision table ({a.prefix}; comparisons {a.comps})", "",
          f"Main output = {a.output} (+ GL-cover fallback, registered evaluator). Paired molecule-level bootstrap ({a.boot:,}, seed 0). eps = {a.eps}.", ""]
 def table(title, rows, protect=None):
     lines.extend([f"## {title}", "", "| stratum | n | cand | ref | Δ | 95% CI | better / worse |" + (" protection |" if protect else ""), "|---|---:|---:|---:|---:|---|---|" + ("---|" if protect else "")])
@@ -50,19 +53,20 @@ def table(title, rows, protect=None):
         lines.append(f"| {r['stratum']} | {r['n']} | {r['cand']:.4f} | {r['ref']:.4f} | {r['delta']:+.4f} | [{r['lo']:+.4f}, {r['hi']:+.4f}] | {r['better']} / {r['worse']} |" + flag)
     lines.append("")
 
-for comp, cn, rn in (("main: RK_new - RK_old", "RK_new", "RK_old"), ("control: RK_new - RK_new0", "RK_new", "RK_new0"), ("adoption: RK_new - M2x", "RK_new", "M2x"), ("FPNet only: RK_old - M2x", "RK_old", "M2x")):
-    d = "rk_eval_panel"; rows = []
+for spec in a.comps:
+    comp, cr = spec.split("="); cn, rn = cr.split(":")
+    d = f"{a.prefix}_panel"; rows = []
     for v in ("c1", "c2"):
         c, r = pred(d, "P_np250", v, cn), pred(d, "P_np250", v, rn)
         rows += [row(f"panel {v.upper()} all", c, r), row(f"panel {v.upper()} clean", c, r, clean), row(f"panel {v.upper()} uncertain", c, r, unc)]
     table(f"{comp} -- panel (identity seen by full_rk, query unseen; C2 view not a protection layer)", rows)
-    d = "rk_eval_p2dev"; rows = []
+    d = f"{a.prefix}_p2dev"; rows = []
     for s in ("C_np_crosslib", "D_np_single", "E_np_negonly", "F_np_uncovered", "G_tims_crosslib"):
         for v in ("c1", "c2"):
             rows.append(row(f"{s} {v.upper()}", pred(d, s, v, cn), pred(d, s, v, rn)))
     prot = lambda st: (st.endswith("C2") or (st.endswith("C1") and not st.startswith("D_")))
-    table(f"{comp} -- dev2 (full_rk hold groups = unseen)", rows, protect=prot if comp.startswith("main") else None)
-    d = "rk_eval_devAB"; rows = []
+    table(f"{comp} -- dev2 (full_rk hold groups = unseen)", rows, protect=prot if comp.startswith(("main", "whole")) else None)
+    d = f"{a.prefix}_devAB"; rows = []
     for s in ("A_timstof", "B_nplib"):
         for v in ("c1", "c2"):
             c, r = pred(d, s, v, cn), pred(d, s, v, rn)
