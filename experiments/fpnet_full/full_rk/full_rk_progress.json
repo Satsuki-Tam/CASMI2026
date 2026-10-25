@@ -1,0 +1,11 @@
+{
+  "step": 82855,
+  "optimizer_updates": 82855,
+  "skipped_scaled_steps": 0,
+  "elapsed_seconds": 13859.322256803513,
+  "device": "NVIDIA GeForce RTX 5070 Ti",
+  "peak_allocated_bytes": 10751173632,
+  "complete": true,
+  "recipe": "public fold/panel; 82855 update cosine schedule",
+  "resume_sampling": "worker RNGs after last consumed batch; asynchronous arrival order is nondeterministic"
+}

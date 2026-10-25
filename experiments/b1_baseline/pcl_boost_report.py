@@ -14,9 +14,9 @@ for d in a.dirs:
     for base in sorted(glob.glob(os.path.join(d, f"pred_*_{a.cand}_blend21.csv"))):
         m = re.match(rf"pred_(.+)_(c[12])_{a.cand}_blend21\.csv", os.path.basename(base)); s, view = m.group(1), m.group(2)
         b = pd.read_csv(base)
-        for f in sorted(glob.glob(os.path.join(d, f"pred_{s}_{view}_{a.cand}_blend21_{a.prefix}*.csv")), key=lambda x: float(re.search(rf"{a.prefix}([0-9.]+|inf)\.csv", x).group(1))):
+        for f in sorted(glob.glob(os.path.join(d, f"pred_{s}_{view}_{a.cand}_blend21_{a.prefix}*.csv")), key=lambda x: os.path.basename(x)):
             o = pd.read_csv(f); assert list(o.molecule_id) == list(b.molecule_id)
             dd = o.rr.values - b.rr.values; lo, hi = ci(dd)
-            md.append(f"| {os.path.basename(d)} | {s} | {view} | {len(b)} | {b.rr.mean():.3f} | {os.path.basename(f).split('_')[-1][:-4]} | {o.rr.mean():.3f} | {dd.mean():+.3f} [{lo:+.3f}, {hi:+.3f}] |")
+            md.append(f"| {os.path.basename(d)} | {s} | {view} | {len(b)} | {b.rr.mean():.3f} | {os.path.basename(f).rsplit('blend21_', 1)[-1][:-4]} | {o.rr.mean():.3f} | {dd.mean():+.3f} [{lo:+.3f}, {hi:+.3f}] |")
 text = "\n".join(md); print(text)
 if a.out: open(a.out, "w", encoding="utf-8").write(text + "\n")

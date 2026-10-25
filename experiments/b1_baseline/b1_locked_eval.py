@@ -43,6 +43,8 @@ PCL = set()          # PubChemLite keys (official candidate_key + raw ik14), fil
 PCL_W = []           # boost weights: extra outputs blend21_pcl<w> = blend21 + w * 1[candidate in PubChemLite]
 PC_SLOTS = []        # E0-style slotting (Codex 023b follow-up): Pc candidates (neither training structure nor COCONUT) may only occupy the listed 1-based
                      # positions of the final top-25 (e.g. 4,8,12,16,20); both groups keep the blend21 order; outputs blend21_slot<name>
+GATE_DEM = []        # gated demotion (2026-10-25 19:30): when the best library similarity among the view's TRAINING candidates is >= theta (observable
+                     # class-1 evidence), subtract w from the non-training candidates (target N) or only the PubChem-tier-only ones (target P); outputs blend21_gd<T><theta>w<w>
 PCD_W = []           # Pc demotion (Codex 023b follow-up): extra outputs blend21_pcd<w> = blend21 - w * 1[candidate neither a training structure (view) nor in COCONUT];
                      # w = inf gives blend21_pcdinf = the pool-only filter of the FULL order (the local counterpart of the pool probe kernel)
 
@@ -85,6 +87,12 @@ def scores_for(view, g, mid, gl, ice, gl_ok, ice_ok, c, M, tau, margin, min_gl_c
                 sc_ = np.asarray(blend21, float); keep_ = np.flatnonzero(~is_pc); o_ = keep_[np.argsort(-sc_[keep_], kind="stable")][:25]
                 out["blend21_pcdinf"] = [str(g.smiles.values[i]) for i in o_] or ["CCO"]   # empty pool list -> placeholder, as the probe kernels (never a test mass)
             else: variants.append((f"blend21_pcd{w:g}", np.asarray(blend21, float) - w * is_pc.astype(float)))
+    if GATE_DEM:
+        is_t_ = g[f"in_train_{view}"].values.astype(bool); is_pc2 = ~(is_t_ | g.in_coconut.values.astype(bool))
+        lt_ = np.asarray(g[f"lib_sim_{view}"].values, float); libmax_t = float(np.nanmax(np.where(is_t_, lt_, -1.0))) if is_t_.any() else -1.0
+        for tgt_, th_, w_ in GATE_DEM:
+            mask_ = (~is_t_) if tgt_ == "N" else is_pc2
+            variants.append((f"blend21_gd{tgt_}{th_:g}w{w_:g}", np.asarray(blend21, float) - (w_ * mask_.astype(float) if libmax_t >= th_ else 0.0)))
     if PC_SLOTS:
         is_pc_ = ~(g[f"in_train_{view}"].values.astype(bool) | g.in_coconut.values.astype(bool)); full_ = np.argsort(-np.asarray(blend21, float), kind="stable")
         A_ = [i for i in full_ if not is_pc_[i]]; P_ = [i for i in full_ if is_pc_[i]]
@@ -113,6 +121,7 @@ def main():
     ap.add_argument("--out", required=True); ap.add_argument("--sets", nargs="*", default=["A_timstof", "B_nplib"])
     ap.add_argument("--pcl_keys", default="", help="PubChemLite annotation parquet (candidate_key, ik14): adds outputs blend21_pcl<w>")
     ap.add_argument("--pcl_w", nargs="*", default=["0.5", "1", "2", "4"], help="boost weights for the blend21_pcl<w> outputs")
+    ap.add_argument("--gate_dem", nargs="*", default=[], help="gated demotion specs TARGET:THETA:W (TARGET N = non-training, P = PubChem-tier only), e.g. N:0.7:2")
     ap.add_argument("--pc_slots", nargs="*", default=[], help="E0-style slotting of Pc candidates: NAME=4,8,12,16,20 ... (outputs blend21_slot<NAME>)")
     ap.add_argument("--pcd_w", nargs="*", default=[], help="Pc demotion weights (z units; 'inf' = remove Pc candidates): outputs blend21_pcd<w>")
     ap.add_argument("--main_of", nargs="*", default=[], help="registered MAIN output per candidate, NAME=OUTPUT (default learned), e.g. M1=learned M2x=blend21; "
@@ -127,6 +136,9 @@ def main():
     for sp_ in a.pc_slots:
         nm_, sl_ = sp_.split("="); PC_SLOTS.append((nm_, set(int(x) for x in sl_.split(","))))
     if PC_SLOTS: print(f"Pc slotting {PC_SLOTS}", flush=True)
+    for sp_ in a.gate_dem:
+        t_, th_, w_ = sp_.split(":"); GATE_DEM.append((t_, float(th_), float(w_)))
+    if GATE_DEM: print(f"gated demotion {GATE_DEM}", flush=True)
     if os.path.exists(os.path.join(a.out, "locked_results.json")) or os.path.exists(os.path.join(a.out, "manifest.json")):
         print(f"REFUSED: {a.out} already holds an opening (locked_results.json / manifest.json); the locked set is opened once"); sys.exit(3)
     os.makedirs(a.out, exist_ok=True)
@@ -189,7 +201,7 @@ def main():
         for c in cands:
             d = data[(c["name"], s)]
             for view in ("c2", "c1"):
-                mols = ledger if view == "c2" else c1_ledger; preds = {n_: {} for n_ in ["learned", "insurance", "fixed", "switch", "blend21", "blend11"] + [f"blend21_pcl{w:g}" for w in PCL_W] + [f"blend21_pcd{w:g}" for w in PCD_W] + [f"blend21_slot{nm_}" for nm_, _ in PC_SLOTS]}; n_fb = 0; covers = []
+                mols = ledger if view == "c2" else c1_ledger; preds = {n_: {} for n_ in ["learned", "insurance", "fixed", "switch", "blend21", "blend11"] + [f"blend21_pcl{w:g}" for w in PCL_W] + [f"blend21_pcd{w:g}" for w in PCD_W] + [f"blend21_slot{nm_}" for nm_, _ in PC_SLOTS] + [f"blend21_gd{t_}{th_:g}w{w_:g}" for t_, th_, w_ in GATE_DEM]}; n_fb = 0; covers = []
                 MOLS_OF[(s, view)] = list(mols)
                 if len(mols) == 0:   # e.g. a stratum without usable C1 references (D_np_single): recorded as n=0, not scored (the official scorer rejects an empty submission)
                     md.append(f"| {s} | {view} (n=0) | {c['name']} | - | no molecules in this view (not scored) | - | - |"); print(md[-1], flush=True); continue
