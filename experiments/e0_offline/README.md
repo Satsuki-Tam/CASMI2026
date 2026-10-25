@@ -82,4 +82,8 @@ This turns the LB gap (E0 0.464 vs B1 fixed 0.334 / learned 0.322) into "where e
   every truth is a pool structure — its hidden-test value is unmeasurable on train-derived sets. B1 recall: window 0.958, **shortlist 0.755**; molecules only E0 gets right
   (top-1) by the B1 stage that lost them: not_in_shortlist **54**, rank>1 40, lost_fusion 1; E0 wins Σ Δ +79 over 120 molecules B1 lost at the shortlist. Where both have
   the truth (E0 loss class reranked_lower, n 269) B1 is better (0.538 vs 0.393). Engine 2 covered 593/600 (7 empty windows, both systems 0 there).
+- 2026-10-25 10:3x JST: B1 panel pipeline runs (M2x blend21, eval mode) are at `runs/_shared/eval_test_panel/run_{c2,c1}`; chain2 had been launched with empty
+  `B1_PANEL_*`, so `spark/jobs/spark_e0_panel_compare.sh` (detached) waits for each panel E0 run and produces `runs/panel_{c2,c1}/compare/` against them.
+  Ledger note: B1 library values come from `b1_stage_stats.csv` / `b1_candidates.parquet`, never from pipeline log lines (the progress-line "lib_max>=0.6" statistic
+  contradicts the 21 lib_priority firings in C1 and is not used).
 

@@ -374,7 +374,8 @@ R = [f"# E0 (offline, public 0.464 lineage) vs B1 — {A.view.upper()} proxy, {l
      "**Reading rules.** Same query spectra, same proxy view on both sides. Weight-level training exposure cannot be removed: E0's FPNet A/B/full1 + fold models and ranker were trained on train.parquet, "
      "which contains every molecule here (ledger `e0_overlap_*`); B1's ranker saw the `fit` groups (`b1_overlap_ranker`). `truth_in_e0_external_refs` = the identity is in E0's external reference library "
      "(knowledge table) and can be matched by spectrum even in the C2 proxy -> diagnostic only for the class-2 question. `truth_in_pool_as_train_struct` = the truth stays a pool structure "
-     "(DB candidate; allowed) but also a member of E0's analog-structure set (structure-level membership, not removable without rebuilding pinned assets).", "",
+     "(DB candidate; allowed) but also a member of E0's analog-structure set (structure-level membership, not removable without rebuilding pinned assets). "
+     "B1 library values come from b1_stage_stats.csv / b1_candidates.parquet, never from pipeline log lines (the progress-line 'lib_max>=0.6' statistic is unreliable).", "",
      f"C2 leak audit: {json.dumps(S['c2_leak_audit'])}", "", f"E0 forward runners: {json.dumps(S['e0_forward'], default=str)[:700]}", f"E0 budgets {json.dumps(S['e0_budgets'])}; coverage {json.dumps(S['e0_coverage'])}", "",
      f"B1 fusion counts: {json.dumps(S['b1_manifest_fusion'])}", "", "### E0 stage MRR (same molecules; ranked outputs only)", "", "| list | MRR@25 |", "|---|---:|"] + \
     [f"| {k} | {v:.4f} |" for k, v in S["e0_stage_mrr"].items()] + ["", f"E0 channel recall: {json.dumps(S['e0_channel_recall'])}; B1 recall: {json.dumps(S['b1_recall'])}", "",
