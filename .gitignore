@@ -31,3 +31,7 @@ kernels/**/*.download.log
 experiments/**/ice_in_*.json
 experiments/**/candidates_top*.parquet
 experiments/**/*_work/
+
+# model checkpoints staged for Kaggle datasets (published separately, never committed)
+kernels/**/*.pt
+experiments/fpnet_full/**/*.pt
