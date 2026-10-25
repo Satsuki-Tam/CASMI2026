@@ -60,9 +60,10 @@ for s in a.sets:
                 return 0.0
             ins_order = np.argsort(-np.asarray(ins, float), kind="stable")
             rows.append(dict(base, truth_group=tgroup, n_cand=len(g), gl_cover_ok=bool(gl_ok), main=rr(order), insurance=rr(ins_order), pool=rr(order, trn | coco), pc=rr(order, ~(trn | coco)),
-                             train=rr(order, trn), coconut_only=rr(order, coco & ~trn), nontrain=rr(order, ~trn)))
+                             train=rr(order, trn), coconut_only=rr(order, coco & ~trn), nontrain=rr(order, ~trn),
+                             **{f"pcd{w:g}": rr(np.argsort(-(np.asarray(score, float) - w * (~(trn | coco)).astype(float)), kind="stable")) for w in (0.5, 1.0, 2.0, 4.0)}))
 R = pd.DataFrame(rows); os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True); R.to_csv(a.out + ".csv", index=False)
-cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain"]
+cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "pcd0.5", "pcd1", "pcd2", "pcd4"]
 summ = R.fillna({k: 0.0 for k in cols}).groupby(["set", "view", "truth_group"])[cols].agg(["mean"]).round(4); summ.columns = cols
 summ["n"] = R.groupby(["set", "view", "truth_group"]).size()
 print(f"parity mismatches vs evaluator top-25: {mism} of {int((R.n_cand > 0).sum())}"); print(summ.to_string())
