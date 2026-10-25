@@ -1,0 +1,165 @@
+{
+ "selected": {
+  "params": {
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "min_data_in_leaf": 20,
+   "feature_fraction": 0.8,
+   "bagging_fraction": 0.8,
+   "bagging_freq": 1,
+   "lambda_l2": 1.0,
+   "verbose": -1,
+   "objective": "lambdarank",
+   "metric": "ndcg",
+   "eval_at": [
+    25
+   ],
+   "label_gain": [
+    0,
+    1
+   ],
+   "seed": 0
+  },
+  "rounds": 300,
+  "tune_c2_strict": 0.5595193031606075,
+  "tune_c1": 0.9064646464646464,
+  "tune_c2": 0.5595193031606075
+ },
+ "tune_fixed": {
+  "c1": {
+   "mrr": 0.635227501403972,
+   "n": 111,
+   "strict": 0.635227501403972
+  },
+  "c2": {
+   "mrr": 0.3178697691197691,
+   "n": 300,
+   "strict": 0.3178697691197691
+  }
+ },
+ "eval_lambdarank": {
+  "c1": {
+   "mrr": 0.8666150476485824,
+   "n": 107,
+   "strict": 0.8666150476485824
+  },
+  "c2": {
+   "mrr": 0.3280188297541239,
+   "n": 300,
+   "strict": 0.3280188297541239
+  }
+ },
+ "eval_fixed": {
+  "c1": {
+   "mrr": 0.5059031393266514,
+   "n": 107,
+   "strict": 0.5059031393266514
+  },
+  "c2": {
+   "mrr": 0.3060426161529103,
+   "n": 300,
+   "strict": 0.3060426161529103
+  }
+ },
+ "eval_fixed15": {
+  "c1": {
+   "mrr": 0.5315989021362854,
+   "n": 107,
+   "strict": 0.5315989021362854
+  },
+  "c2": {
+   "mrr": 0.30404819717319714,
+   "n": 300,
+   "strict": 0.30404819717319714
+  }
+ },
+ "importance": {
+  "z_fp": 21784,
+  "z_gl": 139224,
+  "fp": 7580,
+  "gl": 8853,
+  "pop_public": 11063,
+  "lsid": 3451,
+  "lpmid": 4629,
+  "lsynonyms": 7405,
+  "np_bit": 2003,
+  "src_bit": 597,
+  "lotus": 913,
+  "lib_sim": 18560,
+  "lib_same": 2620,
+  "lib_margin": 35009,
+  "lib_max_mol": 5173,
+  "in_tier": 4,
+  "in_coconut": 1069,
+  "ppm_err": 3277,
+  "fp_rank_window": 28352,
+  "n_cands": 2304,
+  "gl_missing": 0,
+  "n_query": 1139,
+  "ce_known": 1636
+ },
+ "n_fit_rows": 282915,
+ "n_fit_groups": 1200,
+ "feats": "v2_noice",
+ "feature_names": [
+  "z_fp",
+  "z_gl",
+  "fp",
+  "gl",
+  "pop_public",
+  "lsid",
+  "lpmid",
+  "lsynonyms",
+  "np_bit",
+  "src_bit",
+  "lotus",
+  "lib_sim",
+  "lib_same",
+  "lib_margin",
+  "lib_max_mol",
+  "in_tier",
+  "in_coconut",
+  "ppm_err",
+  "fp_rank_window",
+  "n_cands",
+  "gl_missing",
+  "n_query",
+  "ce_known"
+ ],
+ "monotone": false,
+ "drop": [
+  "lib_nref",
+  "in_train"
+ ],
+ "c1_repeat": 3,
+ "c1_only_runs": [],
+ "c2_drop_exposure": "experiments/fpnet_full/full_rk/query_identity_exposure.csv",
+ "eval_delta": {
+  "c1": {
+   "delta": 0.3607119083219311,
+   "ci95": [
+    0.28513430166742426,
+    0.43653644165223326
+   ],
+   "delta_strict": 0.3607119083219311,
+   "ci95_strict": [
+    0.2864032054875962,
+    0.43602140959002733
+   ],
+   "n": 107
+  },
+  "c2": {
+   "delta": 0.03642466342742586,
+   "ci95": [
+    -0.0031981230930085334,
+    0.0761103618175238
+   ],
+   "delta_strict": 0.03642466342742586,
+   "ci95_strict": [
+    -0.0024587104478232193,
+    0.07608260215121601
+   ],
+   "n": 181
+  }
+ }
+}
