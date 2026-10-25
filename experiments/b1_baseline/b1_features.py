@@ -191,7 +191,7 @@ def main():
                     lo = int(np.searchsorted(pmass, M - tol, "left")); hi = int(np.searchsorted(pmass, M + tol, "right"))
                     for s_, sr_, pi_, pk_, m_ in zip(psmi[lo:hi], psrc[lo:hi], ppid[lo:hi], pkey[lo:hi], pmass[lo:hi]):
                         d = src.setdefault(str(s_), dict(tier=False, train=False, coco=False, trow=-1, pid=-1, pkey=None, mass=float(m_)))
-                        d["train"] |= int(sr_) in (1, 3); d["coco"] |= int(sr_) in (2, 3)
+                        d["train"] |= int(sr_) in (1, 3); d["coco"] |= int(sr_) in (2, 3); d["psrc"] = d.get("psrc", 0) | int(sr_)   # pool source bits (1 train, 2 COCONUT)
                         if d["pid"] < 0: d["pid"] = int(pi_); d["pkey"] = str(pk_)
                     clo = int(np.searchsorted(cmass, M - tol, "left")); chi = int(np.searchsorted(cmass, M + tol, "right"))
                     for s_, m_ in zip(csmi[clo:chi], cmass[clo:chi]):
@@ -221,9 +221,9 @@ def main():
                     if k is None: continue
                     d = src[smiles[i]]
                     if k not in rep:
-                        rep[k] = dict(i=i, tier=d["tier"], train=d["train"], coco=d["coco"], trow=d["trow"], pid=d["pid"], pkey=d["pkey"], mass=d["mass"], fp=float(fp[i]) if np.isfinite(fp[i]) else -np.inf)
+                        rep[k] = dict(i=i, tier=d["tier"], train=d["train"], coco=d["coco"], trow=d["trow"], pid=d["pid"], pkey=d["pkey"], mass=d["mass"], fp=float(fp[i]) if np.isfinite(fp[i]) else -np.inf, psrc=d.get("psrc", 0))
                     else:
-                        p = rep[k]; p["tier"] |= d["tier"]; p["train"] |= d["train"]; p["coco"] |= d["coco"]
+                        p = rep[k]; p["tier"] |= d["tier"]; p["train"] |= d["train"]; p["coco"] |= d["coco"]; p["psrc"] = p.get("psrc", 0) | d.get("psrc", 0)
                         if p["trow"] < 0: p["trow"] = d["trow"]
                         if p["pid"] < 0: p["pid"] = d["pid"]; p["pkey"] = d["pkey"]
                         if np.isfinite(fp[i]) and fp[i] > p["fp"]: p["fp"] = float(fp[i])
@@ -299,9 +299,13 @@ def main():
                 top_fp = set(np.argsort(-np.nan_to_num(fpu, nan=-1e18), kind="stable")[:K].tolist()); top_fpp = set(np.argsort(-(zf + SHORTLIST_LAM * pop), kind="stable")[:K2].tolist())
                 top_lib = {v: {int(i) for i in np.argsort(-L[v], kind="stable")[:K_LIB] if L[v][i] > LIB_MIN} for v in ("c1", "c2")}
                 top_pop = set(np.argsort(-(pop + 1e-6 * zf), kind="stable")[:min(a.k_pop, n_u)].tolist()) if a.k_pop > 0 else set()   # prior-only branch (audit 2026-10-24)
-                _pm = pid >= 0
-                top_pool = set(np.argsort(-np.where(_pm, np.nan_to_num(fpu, nan=-1e18), -np.inf), kind="stable")[:min(a.k_pool, int(_pm.sum()))].tolist()) if (a.k_pool > 0 and _pm.any()) else set()
-                short_v = {v: top_fp | top_fpp | top_lib[v] | top_pop | top_pool for v in ("c1", "c2")}
+                psrc_a = np.array([int(rep[k].get("psrc", 0)) for k in keys], dtype=np.int64)
+                truth_mask = np.zeros(n_u, bool); truth_mask[list(truth_idx)] = True
+                pool_elig = {"c1": pid >= 0, "c2": (pid >= 0) & ~(truth_mask & (psrc_a != 0) & ((psrc_a & ~1) == 0))}   # C2: no train-only pool slot for the truth
+                def _top_pool_v(v, k_):
+                    m_ = pool_elig[v]
+                    return set(np.argsort(-np.where(m_, np.nan_to_num(fpu, nan=-1e18), -np.inf), kind="stable")[:min(k_, int(m_.sum()))].tolist()) if (k_ > 0 and m_.any()) else set()
+                short_v = {v: top_fp | top_fpp | top_lib[v] | top_pop | _top_pool_v(v, a.k_pool) for v in ("c1", "c2")}
                 short = sorted(short_v["c1"] | short_v["c2"])
                 # shortlist audit (Codex 008 Q2): hypothetical branch allocations measured without forward models (sizes + truth membership)
                 def _top(score, k_): return set(np.argsort(-score, kind="stable")[:min(k_, n_u)].tolist())
@@ -312,8 +316,7 @@ def main():
                 # pool-window branch audit (2026-10-25, E0 comparison): E0's engine-1 ranks only the v2-pool structures of the window (~50-120);
                 # hypothetical branch = current C2 shortlist + FP top-K among pool structures (pid >= 0). Audit only: the stored shortlist is unchanged.
                 in_pool = pid >= 0; pool_fp_s = np.where(in_pool, fp_s, -np.inf); n_pool = int(in_pool.sum())
-                def _top_pool(k_): return set(np.argsort(-pool_fp_s, kind="stable")[:min(k_, n_pool)].tolist()) if n_pool else set()
-                alt_short["pool60"] = short_v["c2"] | _top_pool(60); alt_short["pool100"] = short_v["c2"] | _top_pool(100)
+                alt_short["pool60"] = short_v["c2"] | _top_pool_v("c2", 60); alt_short["pool100"] = short_v["c2"] | _top_pool_v("c2", 100)   # C2-eligible pool (Codex 020)
                 s_smiles = [smiles[rep[keys[i]]["i"]] for i in short]
                 okeys = [k for rr in wp.map(_okey, [s_smiles[i:i + 25] for i in range(0, len(s_smiles), 25)]) for k in rr]
                 best = {}
@@ -355,6 +358,7 @@ def main():
                                      truth_lib_rank_c2=min([rank_of(L["c2"], i) for i in truth_idx], default=-1), truth_lib_rank_c1=min([rank_of(L["c1"], i) for i in truth_idx], default=-1),
                                      n_pool_window=n_pool, truth_fp_rank_pool=min([rank_of(pool_fp_s, i) for i in truth_idx if in_pool[i]], default=-1),
                                      truth_pool_train_only=bool(truth_idx) and all(in_pool[i] and not (in_tier[i] or in_coco[i]) for i in truth_idx),
+                                     truth_pool_eligible_c2=bool(any(pool_elig["c2"][i] for i in truth_idx)),
                                      **{f"n_short_{k_}": len(v_) for k_, v_ in alt_short.items()}, **{f"truth_in_short_{k_}": bool(truth_set & v_) for k_, v_ in alt_short.items()},
                                      seconds=time.time() - tm0))
                 if (n_i + 1) % 20 == 0 or n_i == len(ms) - 1:
