@@ -33,3 +33,6 @@
 - 回帰試験(合格が前提): 台帳なしの再学習が rank_rk_fx と同一のモデル、評価器の rank_v4b の予測が既存の rk_eval_panel と同一。
 - 評価 (A) full_rk の表(full_rk 台帳): RK_exp − RK_new(特徴の効果)、RK_exp − RK_old。(B) **採用先 = full_eval の表(full_eval 台帳)**: FE_exp − M2x_fe(作業用基準)、FE_exp − FE_new、FE_exp − M2x(累積)。
 - **主指標 J** = 0.5 × パネル C1 clean の Δ + 0.5 × dev2 の C/D/E/F の C2 の Δ の均等平均(FE_exp − M2x_fe)。判定: J の点推定 > 0、かつ FE_exp − M2x_fe と FE_exp − M2x の両方で dev2 の全保護層(C2 の C/D/E/F/G、C1 の C/E/F/G)の点推定 ≥ −0.02。区間と各層を併記。合格しても Public 提出は parity と束の凍結の後(ENS2×RK_new の束と同時には混ぜない)。
+
+## 6. metric-safe tail の監査(03:15、作業用基準 M2x_fe の出力、パネル + dev2 の 1,292 リスト)
+- 無効な SMILES 0、リスト内の公式 identity の重複 0、25 件未満のリスト 33(2.6%、空き枠は平均 0.42)。→ E0 の metric-safe tail(無効・重複の除去と空き枠の補充)は B1 ではほぼ恒等変換で、移植しない(空き枠の補充だけなら上限でも 2.6% の分子の 21〜25 位)。
