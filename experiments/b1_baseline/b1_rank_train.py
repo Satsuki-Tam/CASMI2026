@@ -7,7 +7,7 @@ the TUNE groups; the EVAL groups are scored once with the selected setting and r
 Usage: python -X utf8 b1_rank_train.py --runs RUN:eval_csv[:group_override] ... [--out DIR]   (e.g. run_p1:...:fit uses all P1 molecules as fit)
        e.g. --runs experiments/b1_baseline/run1:experiments/b1_baseline/eval_set/p1_molecules.csv experiments/b1_baseline/run_c1:...
 """
-import argparse, json, os, sys
+import glob, argparse, json, os, sys
 import numpy as np, pandas as pd
 import lightgbm as lgb
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -19,9 +19,12 @@ from b1_rankfeats import FEATS, FEATSETS, MONO, MONO_LIB, feature_matrix
 def load_run(run, eval_csv, group_override=None, feats=FEATS):
     ev = pd.read_csv(eval_csv).set_index("molecule")
     out = []
-    for s in ("A_timstof", "B_nplib"):
+    # Codex 017: sets are discovered from the run (b1_features_<set>.parquet) and restricted to the sets of the evaluation CSV, instead of the
+    # former hard-coded ("A_timstof", "B_nplib"); the identities / groups actually used are reported per run and set (USED ledger).
+    sets_here = sorted(set(ev["set"].astype(str)) & {os.path.basename(f)[len("b1_features_"):-len(".parquet")] for f in glob.glob(f"{run}/b1_features_*.parquet")})
+    if not sets_here: print(f"WARNING: no feature table of {run} matches the sets of {eval_csv}", flush=True)
+    for s in sets_here:
         fp_ = f"{run}/b1_features_{s}.parquet"
-        if not os.path.exists(fp_): continue
         F = pd.read_parquet(fp_); M = pd.read_csv(f"{run}/b1_molecules_{s}.csv").set_index("molecule")
         def load(model):
             p = f"{run}/work/{model}_{s}.json"
