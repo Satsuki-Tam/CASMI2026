@@ -11,6 +11,7 @@ ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--src_d
 ap.add_argument("--emit", default="main", choices=["main", "insurance", "probe_train", "probe_nontrain", "probe_coconut", "probe_pubchem", "probe_pool"], help="which list becomes submission.csv (one Kaggle submission per kernel version); "
                 "probe_* = DIAGNOSTIC class-decomposition probes (Codex 023), needs a pipeline that writes submission_probe_*.csv")
 ap.add_argument("--pipeline_args", default="", help="extra b1_pipeline.py arguments, e.g. '--k_short 200 --k_pop 50 --w_ice 0'")
+ap.add_argument("--expect_ckpt_sha", default="", help="full sha256 the loaded --fpnet_ckpt must have (asserted from the run manifest; empty = not checked)")
 ap.add_argument("--smoke_n", type=int, default=0, help="commit-run smoke switch (E0 recipe): when test.parquet is the visible dummy (spectrum-id md5 654e030e...) and the run is not a competition rerun, run the pipeline on its first N molecules only (--limit; the other ids get the CCO placeholder) (saves ~3 h of GPU quota per version); 0 = off")
 A = ap.parse_args()
 files = {n: open(os.path.join(A.src_dir, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py", "b1_rankfeats.py")}
@@ -48,19 +49,27 @@ print('inputs:', sorted(os.listdir('/kaggle/input'))[:20], '| competitions:', so
 ''')
 cells.append(f'''PIPELINE_ARGS = {json.dumps(A.pipeline_args.split())}
 EMBEDDED_SHA256 = {json.dumps(shas)}
+EXPECT_CKPT_SHA = {json.dumps(A.expect_ckpt_sha)}
 SMOKE_N = {A.smoke_n}   # >0: commit-run smoke on the visible dummy test only (never on the competition rerun)
 EMIT = {json.dumps(A.emit)}   # 'main' = the pipeline's main list is submission.csv; 'insurance' = the fixed rule + library priority list is submission.csv (separate kernel version per Kaggle submission)
 ''' + '''import subprocess, sys, time, json, os, shutil, glob
 t0 = time.time()
 import hashlib, pandas as pd
-COMP_TEST = sorted(glob.glob('/kaggle/input/**/enveda-CASMI26-molecule-id-mass-spectra/test.parquet', recursive=True))[0]
+_tests = sorted(glob.glob('/kaggle/input/**/enveda-CASMI26-molecule-id-mass-spectra/test.parquet', recursive=True))
+assert len(_tests) == 1, ('competition test.parquet must be unique', _tests)   # Codex 025: one input decides both the mode and the pipeline input
+COMP_TEST = _tests[0]; COMP_DIR = os.path.dirname(COMP_TEST)
+TEST_FILE_SHA = hashlib.sha256(open(COMP_TEST, 'rb').read()).hexdigest()
 _te = pd.read_parquet(COMP_TEST, columns=['molecule_id', 'spectrum_id'])
 TEST_SIG = hashlib.md5(','.join(sorted(_te.spectrum_id.astype(str))).encode()).hexdigest()
-IS_RERUN = bool(os.getenv('KAGGLE_IS_COMPETITION_RERUN')) or TEST_SIG != '654e030e4173780e945252b4a5adf70b'   # visible dummy test signature
+KNOWN_DUMMY = (TEST_SIG == '654e030e4173780e945252b4a5adf70b' and TEST_FILE_SHA == '2fa29c4aa06e93b48e0cd6619fd2de3f4e956f0019d242141678b7287f2b43e0')   # visible dummy: spectrum ids AND file bytes
+IS_RERUN = bool(os.getenv('KAGGLE_IS_COMPETITION_RERUN')) or not KNOWN_DUMMY   # anything not provably the dummy -> full run
 SMOKE = SMOKE_N > 0 and not IS_RERUN
 if SMOKE:   # commit run on the visible dummy: the pipeline processes its first SMOKE_N molecules and writes the CCO placeholder for the other ids (--limit)
     PIPELINE_ARGS = PIPELINE_ARGS + ['--limit', str(SMOKE_N)]
-print('test', COMP_TEST, 'molecules', _te.molecule_id.nunique(), 'signature', TEST_SIG, '| rerun', IS_RERUN, '| SMOKE', SMOKE, SMOKE_N, flush=True)
+else:
+    assert not any(a == '--limit' or a.startswith('--limit=') for a in PIPELINE_ARGS), 'full run must not carry --limit'
+PIPELINE_ARGS = PIPELINE_ARGS + ['--test', COMP_TEST]
+print('test', COMP_TEST, 'molecules', _te.molecule_id.nunique(), 'signature', TEST_SIG, 'file sha256', TEST_FILE_SHA, '| known dummy', KNOWN_DUMMY, '| rerun', IS_RERUN, '| SMOKE', SMOKE, SMOKE_N, flush=True)
 cmd = [sys.executable, '-X', 'utf8', '/kaggle/working/b1/b1_pipeline.py', '--out', '/kaggle/working'] + PIPELINE_ARGS
 print('running', ' '.join(cmd), flush=True)
 with open('/kaggle/working/b1_pipeline.log', 'w') as lf:
@@ -71,7 +80,13 @@ with open('/kaggle/working/b1_pipeline.log', 'w') as lf:
 print('pipeline rc', rc, f'{time.time()-t0:.0f}s', flush=True)
 assert rc == 0, f'pipeline failed (rc {rc}); no submission file is promoted'   # Codex 023b: never promote outputs of a failed run
 import pandas as pd, hashlib
-samp = pd.read_csv(sorted(glob.glob('/kaggle/input/**/enveda-CASMI26-molecule-id-mass-spectra/sample_submission.csv', recursive=True))[0])
+samp = pd.read_csv(os.path.join(COMP_DIR, 'sample_submission.csv'))
+# completeness (Codex 025): every test molecule was processed in a full run (zero-candidate molecules still get a stats row); smoke processes only its first SMOKE_N
+_stats = pd.read_csv('/kaggle/working/b1_stage_stats.csv'); PROCESSED = set(_stats['molecule'].astype(str)); TEST_IDS = set(_te.molecule_id.astype(str))
+if SMOKE: assert len(PROCESSED) == min(SMOKE_N, len(TEST_IDS)) and PROCESSED <= TEST_IDS, (len(PROCESSED), SMOKE_N)
+else: assert PROCESSED == TEST_IDS, ('full run did not process every test molecule', len(PROCESSED), len(TEST_IDS))
+_man = json.load(open('/kaggle/working/b1_run_manifest.json'))
+if EXPECT_CKPT_SHA: assert _man['params'].get('fpnet_ckpt_sha256') == EXPECT_CKPT_SHA, ('loaded FPNet checkpoint differs', _man['params'].get('fpnet_ckpt_sha256'))
 def check(path):   # every molecule id once, non-empty SMILES lists of at most 25
     s_ = pd.read_csv(path)
     assert len(s_) == len(samp) and set(s_.molecule_id) == set(samp.molecule_id) and s_.molecule_id.is_unique, (path, len(s_), len(samp))
@@ -87,7 +102,7 @@ elif EMIT.startswith('probe_'):
     os.replace('/kaggle/working/submission.csv', '/kaggle/working/submission_main.csv'); shutil.copy(f'/kaggle/working/submission_{EMIT}.csv', '/kaggle/working/submission.csv')
     print(f'EMIT {EMIT}: DIAGNOSTIC probe -- submission.csv = the main list filtered by candidate group (main list kept as submission_main.csv)', flush=True)
 sub = check('/kaggle/working/submission.csv')
-meta = dict(emit=EMIT, pipeline_rc=rc, pipeline_args=PIPELINE_ARGS, embedded_sha256=EMBEDDED_SHA256, test_signature=TEST_SIG, is_rerun=IS_RERUN, smoke=SMOKE, smoke_n=SMOKE_N,
+meta = dict(emit=EMIT, pipeline_rc=rc, pipeline_args=PIPELINE_ARGS, embedded_sha256=EMBEDDED_SHA256, test_signature=TEST_SIG, test_file_sha256=TEST_FILE_SHA, known_dummy=KNOWN_DUMMY, is_rerun=IS_RERUN, smoke=SMOKE, smoke_n=SMOKE_N, n_test=len(TEST_IDS), n_processed=len(PROCESSED), expect_ckpt_sha=EXPECT_CKPT_SHA,
             files={os.path.basename(f_): hashlib.sha256(open(f_, 'rb').read()).hexdigest() for f_ in sorted(glob.glob('/kaggle/working/submission*.csv'))},
             run_manifest=json.load(open('/kaggle/working/b1_run_manifest.json')))
 json.dump(meta, open('/kaggle/working/submission_meta.json', 'w'), indent=1); print(json.dumps(meta)[:3000], flush=True)
