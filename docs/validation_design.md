@@ -310,3 +310,14 @@ C1 代理では、学習融合はパイプラインの中でも固定規則よ�
 | F | 0.64 | 0.57 → 0.63 | 0.54 → 0.60 | 6 | 229 → 234 | 738 |
 | G | 1.00 | 0.96 → 1.00 | 0.89 → 0.93 | 4 | 255 → 300 | 3442 |
 - 全層で +pool60 が shortlist 到達を窓到達まで引き上げる(W7 B も 0.877 → 0.923)。救済された真は全窓 FP 順位が数百〜数千なので、上位に来るかは参照類似・GL・ranker 次第 → 端から端までの一対比較(`spark_kpool_chain.sh`)で判定する。
+
+## PubChemLite への所属: 真 vs デコイ(13:00;B1 の C2 view の shortlist、公式 key で照合、`pubchemlite_annotations.parquet` 385,760 化合物)
+| 集合 | n | 真が PubChemLite | デコイの PubChemLite 率 | shortlist 中央値 | うち PubChemLite 中央値 |
+|---|---:|---:|---:|---:|---:|
+| **パネル P_np250(Enveda NP、test 型)** | 250 | **0.924** | 0.049 | 232 | 8 |
+| W7 B_nplib | 299 | 0.394 | 0.038 | 241 | 5 |
+| dev2 C / D / E / F(NP) | 100 each | 0.32 / 0.21 / 0.30 / 0.35 | 0.025〜0.060 | 224〜240 | 3〜6 |
+| W7 A / dev2 G(合成、enveda-180) | 300 / 100 | 0.000 / 0.011 | 0.02 | 254 / 255 | 5 |
+- 読み: Enveda の NP 例(パネル)では真の 92% が PubChemLite に属し、デコイは 5%。shortlist 内の PubChemLite 候補は中央値 8 個。E0 のクラス 2 経路は PubChemLite だけを候補にするチャネル + ゲートで、隠しテストの真がパネルに似ているなら、この強い事前分布を直接使っている。B1 の prior(lsid / lpmid / lsynonyms / np / spectral-library bit / LOTUS)は相関はするが所属そのものは使っていない。
+- 注意(代理の偏り): C2 代理の真は train 分子(公開スペクトルを持つ)なので、PubChemLite の「同定」系注釈や spectral-library 由来の注釈の分だけ、本物のクラス 2(公開スペクトル無し)より所属率が高く出る可能性がある。パネルはクラス 1 型(全分子が他ライブラリ参照あり)。
+- 検証: 登録出力 blend21 に w·1[PubChemLite] を加えた出力(w = 0.5, 1, 2, 4、z 単位)を評価器に追加し(`b1_locked_eval_pcl.py`、`--pcl_keys`)、パネル・dev2・W7 で paired 比較中。
