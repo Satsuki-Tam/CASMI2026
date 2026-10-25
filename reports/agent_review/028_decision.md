@@ -36,3 +36,8 @@
 
 ## 6. metric-safe tail の監査(03:15、作業用基準 M2x_fe の出力、パネル + dev2 の 1,292 リスト)
 - 無効な SMILES 0、リスト内の公式 identity の重複 0、25 件未満のリスト 33(2.6%、空き枠は平均 0.42)。→ E0 の metric-safe tail(無効・重複の除去と空き枠の補充)は B1 ではほぼ恒等変換で、移植しない(空き枠の補充だけなら上限でも 2.6% の分子の 21〜25 位)。
+
+## 7. 撤回(03:20): §5 の rank_rk_exp は**漏洩**のため無効(出力は Spark の `experiments/b1_baseline/void_leak_negpool/` に隔離、評価結果は見ずに停止)
+- **negpool の漏洩**: 学習・評価の分子はすべて train 構造なので、C2 view(真の参照を隠してクラス 2 を模した view)でも真は v2 pool に入っている(train 由来の項目)。→ negpool = 1 が「真」、0 が「PubChem のみのデコイ」を区別し、学習済みモデルの gain は negpool が首位(204,245、z_gl の約 4 倍)= 実質「Pc を全部落とす」規則。隠しのクラス 2 の真は COCONUT 経由でしか pool に入らない(Public の pool probe は −0.018)。view に整合させると negpool ≈ in_train ∨ in_coconut で、意図的に外した in_train を戻すことになる。
+- **fp_pos の漏洩(逆向き)**: ranker の fit 群(rkfit)と dev2・locked2 は identity ごと FPNet から保留されているので、その C1 行では**真だけが「正例でない train 候補」**(他の train デコイはほぼ正例)。→ 「fp_pos = 0 の train 候補 = 真」を学べてしまい、dev2 C1 の評価も水増しされる。隠しのクラス 1 の真は全 train FPNet で既見(fp_pos = 1)なので逆。C2 行の真は fp_pos = 0(保留か除外済み)で隠しのクラス 2 と整合。
+- 帰結: 露出の特徴は保留設計と絡み合う。漏洩のない設計の案(Codex 029 で確認): **C1 行は identity 既見・query 未見の分子だけ**(eval_c1 の既見 281、W7 の既見 84;fp_pos = 1 の真 = 隠しのクラス 1 と同じ条件)、**C2 行は identity 未見の分子だけ**(rkfit 600、W7 未見 516、eval_c1 未見 19;真の fp_pos = 0 = 隠しのクラス 2)、対照は同じ構成で特徴なしに再学習した ranker(一変更)。評価はパネル C1(既見)と dev2 C2(未見)、dev2 C1 は保留のため露出モデルの評価に使わない(漏洩)。negpool は使わない。
