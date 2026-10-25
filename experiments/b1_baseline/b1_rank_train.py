@@ -102,6 +102,8 @@ def main():
                     "re-weighting the ranker learns 'has references -> decoy' from the C2 majority)")
     ap.add_argument("--c2_nolib", action="store_true", help="zero every library feature in the C2-view fit rows (the C2 view hides the truth's references, so there "
                     "'has a reference' is a perfect negative label; with this flag the use of reference evidence is learned from the C1 rows only)")
+    ap.add_argument("--c1_only_runs", nargs="*", default=[], help="Codex 021: run basenames whose CLASS-2 view rows are dropped from fit/tune/eval (their identities are "
+                    "seen by the FPNet that built the table, so a hidden-reference C2 row only measures memory residue)")
     ap.add_argument("--params_from", default="", help="Codex 019: reuse the SELECTED params + rounds of an earlier rank_results.json (no search) so that a pair "
                     "comparison changes only the training rows")
     ap.add_argument("--c1_repeat_run", nargs="*", default=[], help="Codex 019: per-run C1 replication RUN_BASENAME=K overriding --c1_repeat for that run's C1 fit groups "
@@ -112,6 +114,10 @@ def main():
     MONO_USED = MONO_LIB if a.monotone_lib else MONO
     print("features:", len(FE), "| dropped:", a.drop, "| c1_repeat:", a.c1_repeat, "| c2_nolib:", a.c2_nolib, "| monotone:", a.monotone, "lib" if a.monotone_lib else "")
     data = pd.concat([load_run(*r.split(":"), feats=FE) for r in a.runs], ignore_index=True)   # RUN:eval_csv[:group_override]
+    if a.c1_only_runs:
+        drop_ = data.run.map(lambda r: os.path.basename(str(r)) in set(a.c1_only_runs)) & (data.view == "c2")
+        print(f"c1-only runs {a.c1_only_runs}: dropping {int(drop_.sum()):,} C2 rows ({data[drop_].groupby(['molecule']).ngroups} groups)", flush=True)
+        data = data[~drop_].reset_index(drop=True)
     print("rows", len(data), "| molecules", data.molecule.nunique(), "| groups", data.groupby("group").molecule.nunique().to_dict(), "| views", data.groupby("view").molecule.nunique().to_dict())
     fit, tune, ev = (data[data.group == g].copy() for g in ("fit", "tune", "eval"))
     ig = {g: set(data[(data.group == g) & (data.identity_group >= 0)].identity_group) for g in ("fit", "tune", "eval")}
@@ -155,7 +161,7 @@ def main():
     ev = ev.copy(); ev["pred"] = bst.predict(ev[FE].values)
     out = dict(selected=best, tune_fixed=base_tune, eval_lambdarank=mrr_of(ev, "pred"), eval_fixed=mrr_of(ev, "S_fixed"), eval_fixed15=mrr_of(ev, "S_fixed15"),
                importance=dict(zip(FE, [int(x) for x in bst.feature_importance("gain").round().astype(int)])), n_fit_rows=len(fit_t), n_fit_groups=int(fit_t.groupby(["molecule", "view"]).ngroups),
-               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat))
+               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat), c1_only_runs=list(a.c1_only_runs))
     # paired bootstrap on eval (per molecule-view)
     rows = []
     for (mid, view), g in ev.groupby(["molecule", "view"], sort=False):
