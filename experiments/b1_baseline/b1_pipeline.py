@@ -188,6 +188,8 @@ def main():
     ap.add_argument("--k_short", type=int, default=K_SHORT, help="FP branch size of the shortlist (default 100)")
     ap.add_argument("--k_fpp", type=int, default=None, help="FP+prior branch size (default = --k_short)")
     ap.add_argument("--k_pop", type=int, default=0, help="prior-only branch size added to the shortlist (default 0 = off)")
+    ap.add_argument("--fpnet_ckpt", default="", help="load this FPNet checkpoint instead of <fold_safe>/fpnet_fold{k}.pt (a path, or on Kaggle a file name searched "
+                    "under /kaggle/input); same architecture and fingerprint bits (fp_bits.npy of the fold-safe set) required")
     ap.add_argument("--k_pool", type=int, default=0, help="pool-window FP branch: FP top-k among the window's v2-pool structures (E0 engine-1 analogue; default 0 = off)")
     ap.add_argument("--w_ice", type=float, default=W_ICE, help="ICE weight in the fixed rule; 0 skips the ICEBERG runner entirely")
     ap.add_argument("--tau", type=float, default=TAU, help="library-priority threshold of the fixed rule (default 2.0 = off)")
@@ -239,7 +241,15 @@ def main():
     order = np.argsort(pool["mass"].to_numpy(), kind="stable")
     pmass = pool["mass"].to_numpy()[order]; psmi = pool["smiles"].to_numpy()[order]; psrc = pool["src"].to_numpy()[order]; ppid = pool["pid"].to_numpy()[order]; pkey = pool["key"].to_numpy()[order]
     folds = [int(x) for x in args.folds.split(",")]
-    models = [fpnet.load_model(f"{P['fold_safe']}/fpnet_fold{k}.pt", dev) for k in folds]; dtype = fpnet.autocast_dtype(dev)
+    if args.fpnet_ckpt:   # own full-data checkpoint (2026-10-25): one model replaces the fold models
+        CKPT = args.fpnet_ckpt if os.path.exists(args.fpnet_ckpt) else find(args.fpnet_ckpt)
+        import hashlib
+        with open(CKPT, "rb") as fh: CKPT_SHA = hashlib.sha256(fh.read()).hexdigest()
+        models = [fpnet.load_model(CKPT, dev)]; log(f"FPNet checkpoint {CKPT} sha256 {CKPT_SHA[:16]}")
+    else:
+        CKPT, CKPT_SHA = None, None
+        models = [fpnet.load_model(f"{P['fold_safe']}/fpnet_fold{k}.pt", dev) for k in folds]
+    dtype = fpnet.autocast_dtype(dev)
     log(f"FPNet folds {folds} loaded on {dev}; tier rows {tmass.shape[0]:,}; pool {pool.height:,}")
 
     def spectrum(row, shift=0.0):
@@ -492,7 +502,7 @@ def main():
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
