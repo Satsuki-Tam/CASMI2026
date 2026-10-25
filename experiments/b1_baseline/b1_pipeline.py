@@ -188,6 +188,7 @@ def main():
     ap.add_argument("--k_short", type=int, default=K_SHORT, help="FP branch size of the shortlist (default 100)")
     ap.add_argument("--k_fpp", type=int, default=None, help="FP+prior branch size (default = --k_short)")
     ap.add_argument("--k_pop", type=int, default=0, help="prior-only branch size added to the shortlist (default 0 = off)")
+    ap.add_argument("--k_pool", type=int, default=0, help="pool-window FP branch: FP top-k among the window's v2-pool structures (E0 engine-1 analogue; default 0 = off)")
     ap.add_argument("--w_ice", type=float, default=W_ICE, help="ICE weight in the fixed rule; 0 skips the ICEBERG runner entirely")
     ap.add_argument("--tau", type=float, default=TAU, help="library-priority threshold of the fixed rule (default 2.0 = off)")
     ap.add_argument("--margin", type=float, default=MARGIN, help="library-priority margin over the runner-up (default 0.2)")
@@ -381,6 +382,8 @@ def main():
             top_lib = [i for i in np.argsort(-lib, kind="stable")[:K_LIB] if lib[i] > LIB_MIN]
             short = np.union1d(np.union1d(top_fp, top_fpp), np.array(top_lib, dtype=np.int64))
             if args.k_pop > 0: short = np.union1d(short, np.argsort(-(pop + 1e-6 * zf), kind="stable")[:min(args.k_pop, n_u)])   # prior-only branch (Codex 008 Q2)
+            if args.k_pool > 0 and (pid >= 0).any():   # pool-window FP branch (2026-10-25): FP top-k among the window's v2-pool structures
+                short = np.union1d(short, np.argsort(-np.where(pid >= 0, np.nan_to_num(fpu, nan=-1e18), -np.inf), kind="stable")[:min(args.k_pool, int((pid >= 0).sum()))])
             short = np.array([i for i in short if not rep[keys[i]].get("excluded")], dtype=np.int64)
             s_smiles = [smiles[rep[keys[i]]["i"]] for i in short]
             okeys = [k for rr_ in wp.map(_okey, [s_smiles[i:i + 25] for i in range(0, len(s_smiles), 25)]) for k in rr_]
@@ -489,7 +492,7 @@ def main():
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:

@@ -101,7 +101,7 @@ def main():
     ap = argparse.ArgumentParser()
     for k in ("eval_csv", "store", "tier", "pop", "pool", "coco", "fold_safe", "v3", "out"): ap.add_argument(f"--{k}", required=True)
     ap.add_argument("--k", type=int, default=100); ap.add_argument("--workers", type=int, default=12); ap.add_argument("--max_spectra", type=int, default=8)
-    ap.add_argument("--k_fpp", type=int, default=None, help="FP+prior branch size (default = --k)"); ap.add_argument("--k_pop", type=int, default=0, help="prior-only branch size (default 0 = off)")
+    ap.add_argument("--k_fpp", type=int, default=None, help="FP+prior branch size (default = --k)"); ap.add_argument("--k_pool", type=int, default=0, help="pool-window FP branch size: FP top-k among the window's v2-pool structures (default 0 = off)"); ap.add_argument("--k_pop", type=int, default=0, help="prior-only branch size (default 0 = off)")
     ap.add_argument("--sets", nargs="*", default=["A_timstof", "B_nplib"]); ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--adduct_proxy", action="store_true", help="forward-model proxies for molecules without a covered positive spectrum: [M+NH4]+ / [M-H2O+H]+ scored as [M+H]+ (public N1A arm A)")
     ap.add_argument("--neg_proxy", action="store_true", help="EXPERIMENTAL: also map negative-mode spectra of such molecules onto the positive axis (see b1_common.forward_proxies)")
@@ -299,7 +299,9 @@ def main():
                 top_fp = set(np.argsort(-np.nan_to_num(fpu, nan=-1e18), kind="stable")[:K].tolist()); top_fpp = set(np.argsort(-(zf + SHORTLIST_LAM * pop), kind="stable")[:K2].tolist())
                 top_lib = {v: {int(i) for i in np.argsort(-L[v], kind="stable")[:K_LIB] if L[v][i] > LIB_MIN} for v in ("c1", "c2")}
                 top_pop = set(np.argsort(-(pop + 1e-6 * zf), kind="stable")[:min(a.k_pop, n_u)].tolist()) if a.k_pop > 0 else set()   # prior-only branch (audit 2026-10-24)
-                short_v = {v: top_fp | top_fpp | top_lib[v] | top_pop for v in ("c1", "c2")}
+                _pm = pid >= 0
+                top_pool = set(np.argsort(-np.where(_pm, np.nan_to_num(fpu, nan=-1e18), -np.inf), kind="stable")[:min(a.k_pool, int(_pm.sum()))].tolist()) if (a.k_pool > 0 and _pm.any()) else set()
+                short_v = {v: top_fp | top_fpp | top_lib[v] | top_pop | top_pool for v in ("c1", "c2")}
                 short = sorted(short_v["c1"] | short_v["c2"])
                 # shortlist audit (Codex 008 Q2): hypothetical branch allocations measured without forward models (sizes + truth membership)
                 def _top(score, k_): return set(np.argsort(-score, kind="stable")[:min(k_, n_u)].tolist())
@@ -364,7 +366,7 @@ def main():
             json.dump(runner, open(f"{a.out}/b1_runner_{set_name}_in.json", "w"))
             print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} shortlist rows ({time.time()-t0:.0f}s)", flush=True)
     import rdkit
-    json.dump(dict(k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, adduct_proxy=bool(a.adduct_proxy), neg_proxy=bool(a.neg_proxy), shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=DUP_SIM, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
+    json.dump(dict(k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, k_pool=a.k_pool, adduct_proxy=bool(a.adduct_proxy), neg_proxy=bool(a.neg_proxy), shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=DUP_SIM, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
                    rdkit=rdkit.__version__, seconds=round(time.time() - t0)), open(f"{a.out}/b1_features_manifest.json", "w"), indent=1)
     print(f"done {time.time()-t0:.0f}s")
 
