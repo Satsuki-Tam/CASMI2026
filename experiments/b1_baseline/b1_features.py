@@ -108,6 +108,8 @@ def main():
     ap.add_argument("--lib_conditions", action="store_true", help="Codex 030: also store, per candidate and view, the library support by query CONDITION "
                     "(adduct x 10-eV CE bucket; unknown CE = own bucket): lib_sup2_* = second-highest per-condition max similarity (NaN if < 2 comparable "
                     "conditions), lib_ncond_* = number of comparable conditions; same references, masks and caps as lib_sim_* (default off = unchanged)")
+    ap.add_argument("--sym_lib_mask", action="store_true", help="DIAGNOSTIC (Codex 030 audit): in the C1 view remove the query library's references for EVERY candidate, "
+                    "not only for the truth (symmetric mask), to check that library features do not exploit the evaluation mask; never for training tables")
     ap.add_argument("--extra_ckpts", nargs="*", default=[], help="additional FPNet checkpoints; the query fingerprint logits are averaged over <fold_safe>/fpnet_fold0.pt and these "
                     "(same rule as b1_pipeline with several models); default none = single model, unchanged")
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True)
@@ -289,7 +291,7 @@ def main():
                     # its usable other-library references because the cap used to run before the same-library exclusion). C1 view: the truth's
                     # own-library references are removed; C2 view: every reference of the truth is removed; other candidates keep all references.
                     for tag, pool in (("", kept), ("_keepdup", kept + kept_susp)):
-                        refs1 = cap([x for x in pool if not (is_truth_cand and lib_of_row[x] == lib)])
+                        refs1 = cap([x for x in pool if not ((is_truth_cand or a.sym_lib_mask) and lib_of_row[x] == lib)])
                         b1 = s1 = 0.0; n1 = ns1 = 0; cmax_ = {}
                         for x in refs1:
                             (rmz, rit), rprec = ref_cache[x]
