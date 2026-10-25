@@ -76,10 +76,10 @@
    "eta": "10:05 完了"
   },
   {
-   "state": "queued",
+   "state": "done",
    "name": "B1 パイプラインのパネル run(E0 比較用、M2x blend21、C2/C1)",
-   "detail": "spark_panel_pipe_chain.sh、dev2 チェーン完了後に起動。E0 のパネル run と段階台帳で比較する",
-   "eta": "dev2 完了後 1〜2 時間"
+   "detail": "完了 10:21: C2 main 0.905 / 固定 0.858、C1 main 0.882 / 固定 0.865(GL 不足 fallback 34)。E0 のパネル run と段階台帳で比較する(E0 担当に通知済み)",
+   "eta": "10:21 完了"
   },
   {
    "state": "done",
@@ -94,10 +94,10 @@
    "eta": "完了"
   },
   {
-   "state": "queued",
+   "state": "running",
    "name": "ranker 一対比較: rank_v4b vs +G 72 群(fold 0、他集合と排他)",
-   "detail": "fit pool G の特徴表(パネル run 後に自動開始)→ 学習 → dev2/A/B/パネルで登録評価。主確認 G/C1 blend21、保護 G/C2・C/D C2・A/B・パネル両 view、ε=0.02",
-   "eta": "午後"
+   "detail": "fit pool G の特徴表(パネル run 後に自動開始)→ 学習 → dev2/A/B/パネルで登録評価。主確認 G/C1 blend21、保護 G/C2・C/D C2・A/B・パネル両 view、ε=0.02。fit pool G 72 群の特徴表 10:28 完了、GL runner 実行中 → 学習・評価へ",
+   "eta": "11:30 頃"
   },
   {
    "state": "running",
