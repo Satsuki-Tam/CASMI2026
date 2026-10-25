@@ -46,6 +46,7 @@ import rdkit; print('rdkit', rdkit.__version__, flush=True)
 print('inputs:', sorted(os.listdir('/kaggle/input'))[:20], '| competitions:', sorted(os.listdir('/kaggle/input/competitions')) if os.path.isdir('/kaggle/input/competitions') else None, flush=True)
 ''')
 cells.append(f'''PIPELINE_ARGS = {json.dumps(A.pipeline_args.split())}
+EMBEDDED_SHA256 = {json.dumps(shas)}
 EMIT = {json.dumps(A.emit)}   # 'main' = the pipeline's main list is submission.csv; 'insurance' = the fixed rule + library priority list is submission.csv (separate kernel version per Kaggle submission)
 ''' + '''import subprocess, sys, time, json, os, shutil, glob
 t0 = time.time()
@@ -57,18 +58,28 @@ with open('/kaggle/working/b1_pipeline.log', 'w') as lf:
         print(line, end='', flush=True); lf.write(line)
     rc = p.wait()
 print('pipeline rc', rc, f'{time.time()-t0:.0f}s', flush=True)
-assert os.path.exists('/kaggle/working/submission.csv'), 'submission.csv missing'
+assert rc == 0, f'pipeline failed (rc {rc}); no submission file is promoted'   # Codex 023b: never promote outputs of a failed run
+import pandas as pd, hashlib
+samp = pd.read_csv(sorted(glob.glob('/kaggle/input/**/enveda-CASMI26-molecule-id-mass-spectra/sample_submission.csv', recursive=True))[0])
+def check(path):   # every molecule id once, non-empty SMILES lists of at most 25
+    s_ = pd.read_csv(path)
+    assert len(s_) == len(samp) and set(s_.molecule_id) == set(samp.molecule_id) and s_.molecule_id.is_unique, (path, len(s_), len(samp))
+    assert s_.smiles.notna().all() and s_.smiles.map(lambda x: len(str(x).split(';'))).max() <= 25, path
+    return s_
+check('/kaggle/working/submission.csv')
 if EMIT == 'insurance':
+    check('/kaggle/working/submission_fixed.csv')
     os.replace('/kaggle/working/submission.csv', '/kaggle/working/submission_main.csv'); shutil.copy('/kaggle/working/submission_fixed.csv', '/kaggle/working/submission.csv')
     print('EMIT insurance: submission.csv = fixed rule + library priority (main list kept as submission_main.csv)', flush=True)
 elif EMIT.startswith('probe_'):
+    for f_ in glob.glob('/kaggle/working/submission_probe_*.csv'): check(f_)
     os.replace('/kaggle/working/submission.csv', '/kaggle/working/submission_main.csv'); shutil.copy(f'/kaggle/working/submission_{EMIT}.csv', '/kaggle/working/submission.csv')
-    print(f'EMIT {EMIT}: DIAGNOSTIC probe -- submission.csv = the main list filtered by training-structure membership (main list kept as submission_main.csv)', flush=True)
-import pandas as pd
-sub = pd.read_csv('/kaggle/working/submission.csv'); samp = pd.read_csv(sorted(glob.glob('/kaggle/input/**/enveda-CASMI26-molecule-id-mass-spectra/sample_submission.csv', recursive=True))[0])
-assert len(sub) == len(samp) and set(sub.molecule_id) == set(samp.molecule_id), (len(sub), len(samp))
-assert sub.smiles.notna().all() and sub.smiles.map(lambda s: len(str(s).split(';'))).max() <= 25
-print(json.load(open('/kaggle/working/b1_run_manifest.json')))
+    print(f'EMIT {EMIT}: DIAGNOSTIC probe -- submission.csv = the main list filtered by candidate group (main list kept as submission_main.csv)', flush=True)
+sub = check('/kaggle/working/submission.csv')
+meta = dict(emit=EMIT, pipeline_rc=rc, pipeline_args=PIPELINE_ARGS, embedded_sha256=EMBEDDED_SHA256,
+            files={os.path.basename(f_): hashlib.sha256(open(f_, 'rb').read()).hexdigest() for f_ in sorted(glob.glob('/kaggle/working/submission*.csv'))},
+            run_manifest=json.load(open('/kaggle/working/b1_run_manifest.json')))
+json.dump(meta, open('/kaggle/working/submission_meta.json', 'w'), indent=1); print(json.dumps(meta)[:3000], flush=True)
 print('OK', sub.shape, flush=True)
 ''')
 nb = {"cells": [{"cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [], "source": c.splitlines(keepends=True)} for c in cells],
