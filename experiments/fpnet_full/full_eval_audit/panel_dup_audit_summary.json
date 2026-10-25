@@ -1,0 +1,23 @@
+{
+ "panel_queries": 1184,
+ "panel_molecules": 250,
+ "identity_groups": 250,
+ "group_keys": 265,
+ "extra_keys_beyond_panel": 15,
+ "rows_removed": 1196,
+ "remaining_rows": 56077,
+ "queries_with_no_remaining_same_polarity": 9,
+ "queries_nearest_sim_ge_0.99": 0,
+ "molecules_with_query_nearest_sim_ge_0.99": 0,
+ "queries_nearest_sim_ge_0.99_and_dprec_lt_5mDa_same_adduct": 0,
+ "queries_nearest_sim_ge_0.95": 0,
+ "molecules_with_query_nearest_sim_ge_0.95": 0,
+ "queries_nearest_sim_ge_0.95_and_dprec_lt_5mDa_same_adduct": 0,
+ "queries_nearest_sim_ge_0.9": 67,
+ "molecules_with_query_nearest_sim_ge_0.9": 48,
+ "queries_nearest_sim_ge_0.9_and_dprec_lt_5mDa_same_adduct": 63,
+ "queries_nearest_sim_ge_0.8": 399,
+ "molecules_with_query_nearest_sim_ge_0.8": 175,
+ "queries_nearest_sim_ge_0.8_and_dprec_lt_5mDa_same_adduct": 374,
+ "queries_nearest_from_other_key_in_group": 18
+}
