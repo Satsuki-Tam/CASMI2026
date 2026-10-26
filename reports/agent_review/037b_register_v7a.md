@@ -15,3 +15,6 @@
 - **Branch A** (57650023 − 0.370 < +0.008: anaw0.5 not promoted): v7a is compared with **FE 0.370**. Reading: Δ ≥ +0.008 → provisional working baseline (all protection layers vs FE and M2x pass); −0.015 < Δ < +0.008 → FE stays, v7a held as a fixed pending candidate; Δ ≤ −0.015 → not promoted, inspect the analog source / neighbourhood distribution and the run.
 - **Branch B** (57650023 − 0.370 ≥ +0.008: anaw0.5 provisionally promoted): v7a is compared with **anaw0.5's Public score S_a** as a replacement. Its C/G unseen-C1 losses vs anaw0.5 (and panel clean −0.012) are recorded as an **operational exception, not a protection pass**; the 035 D exception is not extended. Reading: Δ vs S_a ≥ +0.008 → replace; −0.015 < Δ < +0.008 → keep anaw0.5, v7a held; Δ ≤ −0.015 → keep anaw0.5, inspect.
 - No re-weighting / path change after any Public observation; the proxy combination is not mixed in (its path switching needs its own evaluation).
+
+## Kaggle smoke of the frozen kernel (casmi26-b1-fpnet-v7a v1, 12 molecules on the visible dummy)
+- rc 0; manifest analog_w 0 / analog_w_fallback 1 / ap / dup 0.98 / ckpt 5b8d1c31; learned model = the embedded 600-tree rank_v7a (27 features); learned path 11, fallback + analog 1; 24.9 s/mol (same as the analog kernel), analog store 981,821 representatives. Ready for submission after the branch decision; not submitted.
