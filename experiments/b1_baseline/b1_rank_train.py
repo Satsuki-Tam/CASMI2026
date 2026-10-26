@@ -16,6 +16,7 @@ from b1_rankfeats import FEATS, FEATSETS, MONO, MONO_LIB, feature_matrix
 
 
 
+FRG = {}    # (set, molecule) -> {smiles: frag} from --frag_parquet (039)
 ANA = {}    # (set, view, molecule) -> {smiles: (ap, mean_tan)} from --analog_parquet (analog_probe.py); used only when the feature list asks for the analog block
 EXPO = {}   # official key -> (fp_pos, negpool) from --exposure_ledger (Codex 028); used only when the feature list asks for the exposure block
 
@@ -66,6 +67,7 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                                    n_window=float(m["n_unique"]) if "n_unique" in M.columns and np.isfinite(float(m["n_unique"])) else np.nan, feats=feats,
                                    exposure=exposure_of(g.official_key.values) if EXPO else None,
                                    libcond=(dict(sup2=g[f"lib_sup2_{view}"].values, ncond=g[f"lib_ncond_{view}"].values) if f"lib_sup2_{view}" in g.columns else None),
+                                   frag=([FRG.get((s, mid), {}).get(str(sm), 0.0) for sm in g.smiles] if FRG else None),
                                    analog=(dict(ap=[ANA.get((s, view, mid), {}).get(str(sm), (0.0, 0.0))[0] for sm in g.smiles], mean_tan=[ANA.get((s, view, mid), {}).get(str(sm), (0.0, 0.0))[1] for sm in g.smiles]) if ANA else None))
                 d = pd.DataFrame(X, columns=feats)
                 d.insert(0, "is_truth", g.is_truth.values.astype(int)); d.insert(0, "identity", mid); d.insert(0, "group", group_override or m.group); d.insert(0, "view", view)
@@ -124,10 +126,15 @@ def main():
                     "view rows of molecules whose identity is trained by that FPNet (exposure c1_seen) are dropped, rows of unseen_after_removal molecules are kept")
     ap.add_argument("--c1_seen_only", default="", help="query_identity_exposure.csv: keep CLASS-1 view rows only for molecules whose identity the table-building FPNet "
                     "was trained on (exposure c1_seen; molecules absent from the table count as unseen) -- leak-free design for FPNet-exposure features (Codex 029)")
+    ap.add_argument("--frag_parquet", default="", help="frag_probe.py features of the training tables (v2_noice_ana_frag)")
     ap.add_argument("--analog_parquet", default="", help="analog_probe.py features of the training tables (needed by the v2_noice_ana feature set)")
     ap.add_argument("--exposure_ledger", default="", help="ledger_<checkpoint>.parquet (key, fp_pos, negpool) of the FPNet that built the tables; needed by the v2_noice_exp feature set")
     ap.add_argument("--monotone_lib", action="store_true", help="monotone constraints incl. the library similarities (reference evidence may only raise a candidate)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); FE = [f for f in FEATSETS[a.feats] if f not in set(a.drop)]
+    if a.frag_parquet:
+        F_ = pd.read_parquet(a.frag_parquet); F_ = F_[F_.view == "c1"]; F_["molecule"] = F_["molecule"].astype(str)
+        for k_, h_ in F_.groupby(["set", "molecule"]): FRG[k_] = dict(zip(h_.smiles.astype(str), h_.frag.astype(float)))
+        print(f"frag features {a.frag_parquet}: {len(FRG):,} (set, molecule) groups", flush=True)
     if a.analog_parquet:
         A_ = pd.read_parquet(a.analog_parquet); A_["molecule"] = A_["molecule"].astype(str)
         for k_, h_ in A_.groupby(["set", "view", "molecule"]): ANA[k_] = dict(zip(h_.smiles.astype(str), zip(h_.ap.astype(float), h_.mean_tan.astype(float))))

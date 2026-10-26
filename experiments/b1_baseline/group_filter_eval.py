@@ -65,7 +65,8 @@ for s in a.sets:
                 X = feature_matrix(fp, glv, icv, pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values, lib,
                                    g[f"lib_same_{v}"].values, g[f"lib_nref_{v}"].values, g.in_tier.values, g[f"in_train_{v}"].values, g.in_coconut.values, g.ppm_err.values,
                                    g.fp_rank_window.values, float(M.loc[mid, "n_query"]), float(M.loc[mid, "ce_known"]), n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=c["feats"],
-                                   analog=(dict(ap=anaf["ap"], mean_tan=anaf["mean_tan"]) if anaf else None))
+                                   analog=(dict(ap=anaf["ap"], mean_tan=anaf["mean_tan"]) if anaf else None),
+                                   frag=(np.array([float(FRG.get((s, v, mid), {}).get(sm, 0.0)) for sm in g.smiles.astype(str)]) if FRG is not None else None))
                 score = 2 * z(np.asarray(bst.predict(X), float)) + z(np.asarray(S, float))
             else: score = ins
             order = np.argsort(-np.asarray(score, float), kind="stable")
