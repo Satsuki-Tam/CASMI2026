@@ -1,0 +1,9 @@
+# 038 pre-registration: in-silico fragmentation score (MetFrag-lite, own implementation) — written before the full tables
+
+Motivation: Public probes put most of B1's score on non-train truths, whose remaining errors are same-formula isomers / library-supported train analogs. Connectivity evidence from fragmentation is the one structure-dependent signal the forum reports as LB-transferable when large (topic 743254: held-out +0.023 on isomer panels with 2-bond ×0.6, linear intensity, 0.005 Da, H shifts −2..+3); E0 uses MetFrag-lite only where no forward model scores. B1 has GLACIER (learned) but no combinatorial fragmenter.
+Settings (fixed): b1_frag.py — 1 bridge / 2 bridges / 2 bonds of one SSSR ring, fragments = heavy atoms + attached H, ions = mass + h·H ± proton (h −2..+3), top 40 peaks below precursor − 0.5 Da, explained-intensity fraction with parsimony 1.0 / 0.6, max over the query spectra. A 20-molecule smoke (dev2 C/G) only checked speed and that the truth scores high (top 6 in 10/19); no variant was compared.
+
+Variants (z(frag) within the molecule's shortlist; analog/learned routing as registered):
+- on the working baseline: frg_{0.25,0.5,1} = FE score + w·z(frag);
+- on the registered v7a combination (rank_v7a blend21 when GL covered, insurance + 1·z(ap) otherwise): v7f_{0.25,0.5,1} = + w·z(frag) on both paths; v7ffb_{0.25,0.5,1} = + w·z(frag) on the fallback path only.
+Selection: the 036 11-layer class-2 objective; constraints: every class-2 layer ≥ −0.02, panel C1 clean ≥ −0.01 and C / G C1 not more than 0.01 below the v7a combination; a v7f/v7ffb variant replaces the registered v7a candidate only if its objective is ≥ +0.005 above v7a's. Then confirmation against the v7a combination on conf3 + fit pool + fit pool 2 (reused sets, fold-0) with paired intervals; Codex review before any Public use.
