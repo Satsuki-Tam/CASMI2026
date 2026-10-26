@@ -10,9 +10,12 @@ import argparse
 import numpy as np, pandas as pd
 
 ap = argparse.ArgumentParser(); ap.add_argument("--prefix", default="gf4"); ap.add_argument("--confirm", nargs="*", default=[]); ap.add_argument("--out", default="diag/analog_select.md")
+ap.add_argument("--cands", nargs="*", default=None, help="candidate variants (default: the 034 first family)"); ap.add_argument("--ref", default=None, help="reference variant: the selected one must beat its objective by --min_gain")
+ap.add_argument("--min_gain", type=float, default=0.005)
 ap.add_argument("--audit_csv", default="../fpnet_full/full_eval_audit/panel_molecule_audit_groups.csv")
 a = ap.parse_args()
-CANDS = ["anaw0.5", "anaw1", "anamt0.5", "anamt1", "anamt2", "anaxw0.5", "anaxw1", "anamtx0.5", "anamtx1", "anamtx2"]
+CANDS = a.cands or ["anaw0.5", "anaw1", "anamt0.5", "anamt1", "anamt2", "anaxw0.5", "anaxw1", "anamtx0.5", "anamtx1", "anamtx2"]
+if a.ref and a.ref not in CANDS: CANDS = CANDS + [a.ref]
 grp = pd.read_csv(a.audit_csv).set_index("molecule").audit_group
 
 
@@ -40,6 +43,9 @@ for v in CANDS:
 R = pd.DataFrame(rows).sort_values("objective", ascending=False)
 ok = R[R.passes]
 sel_v = ok.iloc[0]["variant"] if len(ok) else None
+if a.ref and sel_v and sel_v != a.ref:
+    ref_obj = float(R[R.variant == a.ref].objective.iloc[0])
+    if float(ok.iloc[0]["objective"]) < ref_obj + a.min_gain: print(f"best {sel_v} does not beat the reference {a.ref} by {a.min_gain}: keep {a.ref}"); sel_v = a.ref
 L = ["# 034 analog selection (rule fixed before the tables)", "", R.round(4).to_string(index=False), "", f"**selected: {sel_v}**", ""]
 if sel_v:
     L += ["| layer | n | main | delta |", "|---|---:|---:|---:|"] + [f"| {nm} | {int(sel.sum())} | {T[sel]['main'].mean():.3f} | {d(T, sel, sel_v):+.4f} |" for nm, T, sel in LAYERS + [C1] + SIDE]
@@ -47,10 +53,15 @@ if sel_v:
         rng = np.random.default_rng(0)
         Cf = pd.concat([pd.read_csv(f) for f in a.confirm], ignore_index=True)
         Cf[sel_v] = Cf[sel_v].fillna(0.0); Cf["main"] = Cf["main"].fillna(0.0)
+        if a.ref and a.ref != sel_v: Cf[a.ref] = Cf[a.ref].fillna(0.0)
         L += ["", f"## Confirmation (fresh sets, fold-0 tables): {a.confirm}", "", "| layer | n | main | delta [95% paired bootstrap] |", "|---|---:|---:|---|"]
         for (s, v), g in Cf.groupby(["set", "view"]):
             x = (g[sel_v] - g["main"]).to_numpy(); bs = [rng.choice(x, len(x)).mean() for _ in range(4000)]
             L.append(f"| {s} {v.upper()} | {len(g)} | {g['main'].mean():.3f} | {x.mean():+.4f} [{np.percentile(bs, 2.5):+.4f}, {np.percentile(bs, 97.5):+.4f}] |")
+        if a.ref and a.ref != sel_v:
+            for (s_, v_), g_ in Cf.groupby(["set", "view"]):
+                x_ = (g_[sel_v] - g_[a.ref]).to_numpy(); bs_ = [rng.choice(x_, len(x_)).mean() for _ in range(4000)]
+                L.append(f"| {s_} {v_.upper()} ({sel_v} - {a.ref}) | {len(g_)} | | {x_.mean():+.4f} [{np.percentile(bs_, 2.5):+.4f}, {np.percentile(bs_, 97.5):+.4f}] |")
         c2 = Cf[Cf.view == "c2"]; x = (c2[sel_v] - c2["main"]).to_numpy(); bs = [rng.choice(x, len(x)).mean() for _ in range(4000)]
         L.append(f"| all C2 (pooled) | {len(c2)} | {c2['main'].mean():.3f} | {x.mean():+.4f} [{np.percentile(bs, 2.5):+.4f}, {np.percentile(bs, 97.5):+.4f}] |")
 open(a.out, "w", encoding="utf-8").write("\n".join(L)); print("\n".join(L))
