@@ -16,3 +16,6 @@
 - 最初の比較: 旧 v4b の学習行 + fold-3/4 の新 pool を**固定パラメータ**(`--params_from rank_v4b/rank_results.json`)で学習した候補 vs 旧レシピの再現、同じ特徴・drop・C1 反復・blend21・fallback。新 pool は `RUN:CSV:fit` で明示的に fit に割り当てる。層 × view × fold の重みと、実際に学習に入る query group 数(正解到達・GL 被覆・C1 usable)を性能を見る前に記録。
 - C1 ×3 は重みであり「identity 既見・query 未見」の学習条件ではない。その条件(query 取得群を除外し同 identity の独立取得を残すモデル)が作れれば追加学習の第一候補、できなければ未見行の追加実験として進めパネル C1 clean で保護する。
 - fpnet_fold3/4 は fold-0/1/2 の identity を学習している → fold-1/2 での評価は「ranker の fit 行と評価 group が重ならない開発比較」であり、全モデル未見の独立確認とは呼ばない。各特徴の checkpoint・除外 fold・露出を台帳に記録。
+
+## ggt3 の累積 D(提出前の記録、22:04)
+- dev2 v2 の D/C2: ggt3 − anaw0.5 = **+0.000000**(変化した分子 0)、M2x 比の累積は anaw0.5 と同じ −0.022733(gt3 は −0.000738、累積 −0.023471)。→ ggt3 は D の追加損失なし。035 の例外(anaw0.5 自体の累積未達)は既知のリスクとして引き継ぐ。
