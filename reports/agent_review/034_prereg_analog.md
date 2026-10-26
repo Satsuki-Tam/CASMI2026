@@ -1,4 +1,4 @@
-# 034 pre-registration: analog channel probe (written 10:05 JST, before any analog result)
+# 034 pre-registration: analog channel probe (written 09:47 JST, before any analog result)
 
 Motivation: B1 uses the library only as references of the candidate's own structure. The public lineage's starting point (analog propagation,
 0.254 alone on Public) also uses library analogs (similar spectra of other structures, mass shift allowed) as a neighbourhood. B1 has no such

@@ -1,4 +1,4 @@
-# 033 decision (09:50 JST)
+# 033 decision (09:35 JST)
 
 Adopted from Codex 033 (all points):
 1. The community twin probe (0.275) is a lead, not an observation of B1's twin. Model B stays as a sensitivity analysis only. The twin-promotion rule of 033_request is withdrawn (033_prereg §4).
@@ -10,7 +10,7 @@ Adopted from Codex 033 (all points):
 
 Next (local, Spark): the joint table Codex asked for (same molecules: B1 wrong & twin right vs B1 right & twin wrong, by sim / margin / twin rank / reference coverage), split by regime (panel clean 202 seen; panel uncertain; dev2 G unseen), to decide whether any twin form can help the working baseline. Today's last slot: decided after the DUP result.
 
-## Joint audit result (10:00, `experiments/b1_baseline/twin_joint_audit.py` -> `diag/twin_joint_audit.md`, rule twin1m_t0.7_m0.1 fixed)
+## Joint audit result (09:40, `experiments/b1_baseline/twin_joint_audit.py` -> `diag/twin_joint_audit.md`, rule twin1m_t0.7_m0.1 fixed)
 | regime | n | main | rule | main@1 & twin right | main wrong & twin right | main@1 & twin wrong | both wrong |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | panel C1 clean, full_eval (identity seen, query unseen = hidden class 1 of the working baseline) | 202 | 0.897 | 0.907 | 153 | 16 | 18 | 15 |
