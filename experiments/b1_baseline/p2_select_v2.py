@@ -111,7 +111,7 @@ for role, d_ in (("dev2", a.out_dir), ("locked2", a.locked_dir)):
     os.makedirs(d_, exist_ok=True); part = df.filter(pl.col("role") == role).drop("role"); part.write_csv(f"{d_}/p2_molecules.csv"); print(role, part.height, "->", f"{d_}/p2_molecules.csv")
 dev_g = set(df.filter(pl.col("role") == "dev2")["identity_group"]); loc_g = set(df.filter(pl.col("role") == "locked2")["identity_group"])
 checks = dict(dev2_locked2_group_intersection=len(dev_g & loc_g), selected_vs_used_groups=len((dev_g | loc_g) & used_groups), selected_vs_used_keys=len(set(df["molecule"]) & used), one_per_group=int(df["identity_group"].n_unique() == df.height))
-man = dict(version="v2", seed=a.seed, n_per_stratum=a.n, split_method="one permutation per stratum: first n = dev2, next n = locked2", max_spectra=a.max_spectra, ref_min=a.ref_min, fold_identity=0,
+man = dict(version="v2", seed=a.seed, n_per_stratum=a.n, split_method="one permutation per stratum: first n = dev2, next n = locked2", max_spectra=a.max_spectra, ref_min=a.ref_min, fold_identity=a.fold,
            strata=[s[0] for s in S], stratum_priority="E, F, C, G, D (exclusive by identity group)", query_library_policy="fixed-seed choice among qualifying libraries of the stratum family; enveda-180 fixed for G",
            reference_count_definition="other-library spectra whose polarity matches a selected query, metadata de-dup on (adduct, precursor 3dp, CE 1dp, n_peaks) minus cross-library copies of a query; before MAX_REF; upper bound of usable C1 refs",
            counts=counts, strata_counts=strata_counts, checks=checks, used_identities=len(used), used_groups=len(used_groups), exclude=a.exclude, exclude_sha256=excl_sha,

@@ -226,9 +226,8 @@ if __name__ == "__main__":
             os.makedirs(os.path.join(HERE, a.emit_gl), exist_ok=True); json.dump(outl, open(os.path.join(HERE, a.emit_gl, f"gl_gen_{s}_in.json"), "w"))
             log(f"{s}: GL input for {len(outl)} molecules, {sum(len(d_['cands']) for d_ in outl)} structures"); continue
         GLG = {}
-        if a.gl_gen:
-            try: GLG = json.load(open(os.path.join(HERE, f"{a.gl_gen}_{s}.json")))
-            except Exception as e: log(f"{s}: no generated GL scores ({e!r})")
+        if a.gl_gen:   # Codex 044: a missing or unreadable file stops the evaluation (no silent empty GL)
+            GLG = json.load(open(os.path.join(HERE, f"{a.gl_gen}_{s}.json")))
         for mid, mm in MM.items():
             for v in VIEWS:
                 vv = "c1" if v == "c1" else "c2"
@@ -275,29 +274,32 @@ if __name__ == "__main__":
                 fz3 = float(fp[order[2]]) if len(order) >= 3 and np.isfinite(fp[order[2]]) else -np.inf
                 out["gt3"] = ins_at(3, nov[0][0]) if (nov and nov[0][2] >= fz3) else out["main"]
                 out["gk3all"] = ins_at(3, alln[0][0]) if alln else out["main"]
-                if a.gl_gen:   # common FP + 2 GL scale fixed on the database shortlist of the view
-                    gfin = np.isfinite(glv)
-                    mfp, sfp = float(np.nanmean(fp)), float(np.nanstd(fp)) + 1e-9
-                    mgl, sgl = (float(np.nanmean(glv[gfin])), float(np.nanstd(glv[gfin])) + 1e-9) if gfin.sum() >= 2 else (np.nan, np.nan)
-                    Sdb = (fp - mfp) / sfp + (2 * (np.nan_to_num(glv, nan=np.nan) - mgl) / sgl if np.isfinite(mgl) else 0.0)
+                if a.gl_gen:   # Codex 044: common FP + 2 GL scale fixed on the DB shortlist of the view; candidates = THIS view's top-K novel by f.z only
+                    gfin = np.isfinite(glv); ffin = np.isfinite(fp)
+                    mfp, sfp = (float(np.mean(fp[ffin])), float(np.std(fp[ffin]))) if ffin.sum() >= 2 else (np.nan, 0.0)
+                    mgl, sgl = (float(np.mean(glv[gfin])), float(np.std(glv[gfin]))) if gfin.sum() >= 2 else (np.nan, 0.0)
+                    scale_ok = bool(np.isfinite(mfp) and sfp > 1e-6 and np.isfinite(mgl) and sgl > 1e-6)   # GL scale valid: >= 2 finite DB values and a non-degenerate spread
                     gg = (GLG.get(mid) or {})
+                    topk = nov[:a.gl_k]                                    # the view's own pre-selected top-K ledger
                     cand = []
-                    for p_ in nov:
+                    for p_ in topk:
                         gsc = gg.get(p_[1])
-                        if gsc is None or not np.isfinite(mgl): continue
-                        cand.append((float((p_[2] - mfp) / sfp + 2 * (float(gsc) - mgl) / sgl), p_[0]))
+                        if gsc is None or not np.isfinite(float(gsc)) or not np.isfinite(p_[2]) or not scale_ok: continue
+                        sc_ = float((p_[2] - mfp) / sfp + 2 * (float(gsc) - mgl) / sgl)
+                        if np.isfinite(sc_): cand.append((sc_, p_[0]))
                     cand.sort(key=lambda x: (-x[0], x[1]))
-                    def sdb_at(k):
+                    Sdb = ((fp - mfp) / sfp + 2 * (glv - mgl) / sgl) if scale_ok else np.full(len(fp), np.nan)
+                    def sdb_at(k):   # fewer than k DB candidates: the slot is free (as gt3); a DB candidate without a finite S is never beaten
                         if len(order) < k: return -np.inf
                         v_ = Sdb[order[k - 1]]
-                        return float(v_) if np.isfinite(v_) else np.inf   # a DB candidate without GL is not beaten on this scale
-                    out["gg3"] = ins_at(3, cand[0][1]) if (cand and cand[0][0] >= sdb_at(3)) else out["main"]
-                    out["gg2"] = ins_at(2, cand[0][1]) if (cand and cand[0][0] >= sdb_at(2)) else out["main"]
+                        return float(v_) if np.isfinite(v_) else np.inf
+                    gl_ok_view = bool(scale_ok and cand)
+                    out["gg3"] = ins_at(3, cand[0][1]) if (gl_ok_view and cand[0][0] >= sdb_at(3)) else out["main"]
+                    out["gg2"] = ins_at(2, cand[0][1]) if (gl_ok_view and cand[0][0] >= sdb_at(2)) else out["main"]
                     for dd, nm in ((1.0, "gg1d1"), (2.0, "gg1d2")):
-                        if cand and cand[0][0] >= sdb_at(1) + dd: out[nm] = ins_at(1, cand[0][1])
-                        else: out[nm] = out["gg3"]
-                    out["n_gen_gl"] = len(cand)
-                    out["ggt3"] = out["gg3"] if np.isfinite(mgl) else out["gt3"]   # GL scale where the view has GL, the f.z gate (gt3) otherwise
+                        out[nm] = ins_at(1, cand[0][1]) if (gl_ok_view and cand[0][0] >= sdb_at(1) + dd) else out["gg3"]
+                    out["n_gen_gl"] = len(cand); out["gl_scale_ok"] = scale_ok; out["n_topk"] = len(topk)
+                    out["ggt3"] = out["gg3"] if gl_ok_view else out["gt3"]   # GL rule when the DB scale is valid AND a top-K generated structure has a finite GL; the f.z gate (gt3) otherwise
                 der = np.array([k_ in der_keys for k_ in okeys], float)
                 out.update(n_derivable=int(der.sum()), truth_derivable=bool((der * tr).sum() > 0))
                 out["dv1"] = rr_of([("db", int(i)) for i in np.argsort(-(score + 1.0 * der), kind="stable")])
@@ -308,7 +310,8 @@ if __name__ == "__main__":
     if a.emit_gl: log("GL inputs written"); sys.exit(0)
     if a.dump_choice: pd.DataFrame(choice).to_parquet(os.path.join(HERE, a.dump_choice), index=False)
     R = pd.DataFrame(rows)
-    if KEEP: R = R[[c for c in R.columns if c not in RULES or c in KEEP]]; RULES = [r_ for r_ in RULES if r_ in KEEP]
+    ALLR = {"gk2", "gk3", "gt3", "gk3all", "dv1", "gg3", "ggt3", "gg2", "gg1d1", "gg1d2"}
+    if KEEP: R = R[[c for c in R.columns if c not in ALLR or c in KEEP]]; RULES = [r_ for r_ in RULES if r_ in KEEP]
     os.makedirs(os.path.dirname(os.path.join(HERE, a.out)), exist_ok=True); R.to_csv(os.path.join(HERE, a.out + ".csv"), index=False)
     L = [f"# 042 v2 generation merge ({time.strftime('%Y-%m-%d %H:%M')}; f.z parity max {max(parity) if parity else float('nan'):.4f}; b1_gen v2)", "",
          "| set | view | n | main | truth generated | truth loc novel/window/short | median novel | truth derivable | " + " | ".join(RULES) + " |", "|---|---|---:|---:|---:|---|---:|---:|" + "---:|" * len(RULES)]
