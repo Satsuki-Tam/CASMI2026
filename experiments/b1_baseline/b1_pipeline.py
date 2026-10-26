@@ -216,6 +216,8 @@ def main():
     ap.add_argument("--min_gl_cover", type=float, default=0.5, help="learned fusion only when GL scored at least this fraction of a molecule's candidates (else the fixed rule)")
     ap.add_argument("--main", default="learned", choices=["learned", "blend21", "blend11"], help="main list: learned model, or the blend hedge w*z(learned)+z(fixed rule) with w = 2 or 1 (GL-cover fallback unchanged)")
     ap.add_argument("--adduct_proxy", action="store_true", help="forward-model proxies for molecules without a covered positive spectrum: [M+NH4]+ / [M-H2O+H]+ scored as [M+H]+ (public N1A arm A)")
+    ap.add_argument("--twin_tau", type=float, default=None, help="twin-first (Codex 033): the candidate with the best library match goes to rank 1 of the main list when its similarity >= twin_tau and exceeds every other candidate's best match by >= --twin_margin (default off)")
+    ap.add_argument("--twin_margin", type=float, default=0.0)
     ap.add_argument("--neg_proxy", action="store_true", help="EXPERIMENTAL: also map negative-mode spectra of such molecules onto the positive axis (b1_common.forward_proxies)")
     args = ap.parse_args(); P = paths(args); os.makedirs(P["work"], exist_ok=True); T0 = time.time(); log = lambda *x: print(f"[b1 {time.time()-T0:7.0f}s]", *x, flush=True)
     test_path = args.test or (os.path.join(comp_dir(), "test.parquet") if KAGGLE else os.path.join(os.path.dirname(P["train"]), "test.parquet"))
@@ -526,6 +528,10 @@ def main():
         if args.pcl_boost:   # PubChemLite prior on the main list (2026-10-25): main score (learned/blend, or the insurance fallback) + w * membership
             in_pcl = np.array([r["key"] in PCL_KEYS for r in rows], float); fused_stats["pcl_boost_mols"] += int(in_pcl.any())
             order = np.argsort(-(np.asarray(main_sc, float) + args.pcl_boost * in_pcl), kind="stable")
+        if args.twin_tau is not None and len(lib) and lib.max() > 0:   # twin-first (Codex 033): applied to the final order of either path
+            tw_ = int(np.argmax(lib)); lib2_ = float(np.max(np.delete(lib, tw_))) if len(lib) > 1 else 0.0
+            if lib[tw_] >= args.twin_tau and lib[tw_] - lib2_ >= args.twin_margin:
+                order = np.array([tw_] + [int(i) for i in order if int(i) != tw_]); fused_stats["twin_first"] += 1
         sub.append((mid, ";".join(rows[i]["smiles"] for i in order[:25])))
         for name_, want_ in (("train", True), ("nontrain", False)):   # same order as the main list; a molecule with no kept candidate gets a placeholder
             kept_ = [i for i in order if bool(rows[i]["in_train"]) == want_]
@@ -533,7 +539,7 @@ def main():
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     for name_, v_ in sub_probe.items(): pd.DataFrame(v_, columns=["molecule_id", "smiles"]).to_csv(f"{P['work']}/submission_probe_{name_}.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:

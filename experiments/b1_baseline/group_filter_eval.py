@@ -62,6 +62,13 @@ for s in a.sets:
             lib_ = np.nan_to_num(lib, nan=0.0); tw = int(np.argmax(lib_)) if (lib_ > 0).any() else -1   # twin = best library match of the view (2026-10-26)
             def twin_first(tau):   # the twin moved to rank 1 when its similarity >= tau, the main order otherwise / below it
                 return order if (tw < 0 or lib_[tw] < tau) else [tw] + [i for i in order if i != tw]
+            lib_2nd = float(np.max(np.delete(lib_, tw))) if (tw >= 0 and len(lib_) > 1) else 0.0
+            pos_ = {int(i): k for k, i in enumerate(order)}
+            def twin_gate(tau, m=0.0, k=None):   # + margin to the best other candidate's library match, + the twin already in the main top-k
+                if tw < 0 or lib_[tw] < tau or lib_[tw] - lib_2nd < m or (k is not None and pos_[tw] >= k): return order
+                return [tw] + [i for i in order if i != tw]
+            def libw(w):   # soft variant: the registered score + w * library similarity (z units per unit similarity)
+                return np.argsort(-(np.asarray(score, float) + w * lib_), kind="stable")
             def hedge(base_order, alt, k):   # tail hedge (2026-10-26): main top-(25-k), then the best k by an alternative score among the remaining candidates
                 head = list(base_order[:25 - k]); hs = set(head)
                 rest = [i for i in np.argsort(-np.asarray(alt, float), kind="stable") if i not in hs]
@@ -71,10 +78,13 @@ for s in a.sets:
                              **{f"pcd{w:g}": rr(np.argsort(-(np.asarray(score, float) - w * (~(trn | coco)).astype(float)), kind="stable")) for w in (0.5, 1.0, 2.0, 4.0)},
                              **{f"tail{k}_{nm}": rr(hedge(order, alt, k)) for k in (3, 5) for nm, alt in (("fp", fp), ("pop", pop), ("gl", np.nan_to_num(glv, nan=-1e9)), ("lib", lib), ("poolfp", np.where(trn | coco, np.nan_to_num(fp, nan=-1e9), -1e18)))},
                              twin_only=(1.0 if tw >= 0 and tr[tw] else 0.0), twin_sim=(float(lib_[tw]) if tw >= 0 else 0.0),
-                             **{f"twin1_t{t:g}": rr(twin_first(t)) for t in (0.0, 0.5, 0.7, 0.8, 0.9)},
+                             **{f"twin1_t{t:g}": rr(twin_first(t)) for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)},
+                             **{f"twin1m_t{t:g}_m{m:g}": rr(twin_gate(t, m=m)) for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)},
+                             **{f"twin1k_t{t:g}_k{k}": rr(twin_gate(t, k=k)) for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)},
+                             **{f"libw{w:g}": rr(libw(w)) for w in (1.0, 2.0, 4.0)}, twin_rank=(pos_[tw] + 1 if tw >= 0 else 0), lib_2nd=lib_2nd,
                              truth_rank=(int(np.flatnonzero(tr[order])[0]) + 1 if tr.any() else 0)))
 R = pd.DataFrame(rows); os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True); R.to_csv(a.out + ".csv", index=False)
-cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.7, 0.8, 0.9)] + ["pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
+cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)] + [f"twin1m_t{t:g}_m{m:g}" for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)] + [f"twin1k_t{t:g}_k{k}" for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)] + [f"libw{w:g}" for w in (1.0, 2.0, 4.0)] + ["pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
 summ = R.fillna({k: 0.0 for k in cols}).groupby(["set", "view", "truth_group"])[cols].agg(["mean"]).round(4); summ.columns = cols
 summ["n"] = R.groupby(["set", "view", "truth_group"]).size()
 print(f"parity mismatches vs evaluator top-25: {mism} of {int((R.n_cand > 0).sum())}"); print(summ.to_string())

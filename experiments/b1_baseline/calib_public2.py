@@ -24,6 +24,7 @@ ap.add_argument("--q_seen", type=float, default=0.8)
 ap.add_argument("--draws", type=int, default=1000000)
 ap.add_argument("--seed", type=int, default=0)
 ap.add_argument("--out", default="diag/calib_public2.md")
+ap.add_argument("--dump_w", default=None, help="save the accepted stage-1 weights (npy) for external stage-2 computations")
 ap.add_argument("--tables", default="gf", help="prefix of the per-molecule tables (gf = original, gf2 = + twin columns, 2026-10-26)")
 a = ap.parse_args()
 OBS = {k: float(v) for k, v in (s.split("=") for s in a.obs)}
@@ -77,6 +78,7 @@ for k_, val in OBS.items():
     if k_ != "main":
         ok &= np.abs((pred1[k_] - pred1["main"]) - (val - OBS["main"])) <= a.tol
 W = Wd[ok]
+if a.dump_w: np.save(a.dump_w, W)
 
 
 # ---------------- stage 2: per-type paired deltas on valid molecules
