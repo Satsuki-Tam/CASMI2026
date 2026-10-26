@@ -20,3 +20,6 @@
 
 ## Consequence for the analog channel (pending 57650023)
 - The hidden-relevant C2 type is COCONUT-truth NP. Local anaw0.5 − main by truth group (C2): COCONUT-only +0.017 [−0.002, +0.036] (full_eval dev2 + panel), +0.013 [−0.005, +0.031] (fold-0 incl. W7), +0.071 [+0.032, +0.112] (fresh sets); PubChem-only +0.063 / +0.033 / +0.100. Positive for both groups, smaller for COCONUT truths.
+
+## band26 (12:17 JST): **0.005**
+- P_26 = 0.005 → the share of molecules with the truth at ranks 26-50 satisfies 0.005 ≤ q ≤ 0.125; main + band oracle = 0.359. Reading 027 §2 (≤ 0.01): the band's lift score is small; ranks 51+ and unreached truths cannot be told apart from this probe.
