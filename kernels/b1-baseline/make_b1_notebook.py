@@ -17,6 +17,7 @@ ap.add_argument("--smoke_n", type=int, default=0, help="commit-run smoke switch 
 A = ap.parse_args()
 files = {n: open(os.path.join(A.src_dir, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py", "b1_rankfeats.py")}
 if os.path.exists(os.path.join(A.src_dir, "b1_analog.py")): files["b1_analog.py"] = open(os.path.join(A.src_dir, "b1_analog.py"), encoding="utf-8").read()   # analog channel (2026-10-26), imported by b1_pipeline only with --analog_w
+if os.path.exists(os.path.join(A.src_dir, "b1_frag.py")): files["b1_frag.py"] = open(os.path.join(A.src_dir, "b1_frag.py"), encoding="utf-8").read()   # MetFrag-lite (038), imported only with --frag_w_fallback
 print("embedding sources from", A.src_dir)
 model = A.model
 if model and os.path.exists(model): files["lambdarank.txt"] = open(model, encoding="utf-8").read(); print("embedding model", model)

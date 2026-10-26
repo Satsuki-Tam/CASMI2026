@@ -220,6 +220,7 @@ def main():
     ap.add_argument("--twin_margin", type=float, default=0.0)
     ap.add_argument("--analog_w", type=float, default=0.0, help="library-analog channel (b1_analog, Codex 034/035): main score + analog_w * z(ap) within the molecule (ap = max Tanimoto to the top-80 analog structures x spectral similarity^3); default 0 = off")
     ap.add_argument("--analog_w_fallback", type=float, default=None, help="analog weight for molecules on the GL-coverage fallback path (034 gated variant); default = --analog_w")
+    ap.add_argument("--frag_w_fallback", type=float, default=0.0, help="MetFrag-lite (b1_frag, 038): + w * z(fragmentation score) for molecules on the GL-coverage fallback path; default 0 = off")
     ap.add_argument("--analog_feat", default="ap", choices=["ap", "mean_tan", "ap_x", "mean_tan_x"], help="analog feature used by --analog_w (_x = the candidate's own key excluded from its analogs)")
     ap.add_argument("--neg_proxy", action="store_true", help="EXPERIMENTAL: also map negative-mode spectra of such molecules onto the positive axis (b1_common.forward_proxies)")
     args = ap.parse_args(); P = paths(args); os.makedirs(P["work"], exist_ok=True); T0 = time.time(); log = lambda *x: print(f"[b1 {time.time()-T0:7.0f}s]", *x, flush=True)
@@ -279,6 +280,7 @@ def main():
         return [raw[o[i] - base:o[i + 1] - base].decode("ascii") for i in range(hi - lo)], np.arange(lo, hi), np.asarray(tmass[lo:hi], np.float64)
 
     stats, feats, runner, ref_cache, molinfo = [], {}, [], {}, {}
+    qspec_of = {}   # query spectra per molecule (fragmentation term on the fallback path, computed lazily)
     with Pool(workers, initializer=_init, initargs=(P["v3"], P["fold_safe"])) as wp, torch.no_grad():
         # (official key -> reference rows) for train structures: scorer keys from the store meta when available (local), else raw
         # InChIKey14 of the pool's train SMILES computed in the workers and matched to the store's inchikey14
@@ -456,6 +458,7 @@ def main():
                 for j_, r_ in enumerate(rows):
                     for f_name in ("ap", "mean_tan", "ap_x", "mean_tan_x"): r_["ana_" + f_name] = float(fa_[f_name][j_])
             feats[mid] = rows
+            if args.frag_w_fallback: qspec_of[mid] = [dict(mz=s_["mz"], it=s_["it"], prec=s_["prec"], mode=s_["mode"]) for s_ in q]
             molinfo[mid] = dict(n_query=len(q), ce_known=float(np.mean([s["ce"] is not None for s in q])), n_unique=float(n_u))
             rspec = [dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
                           ce_ev=s.get("ce_ev"), ce_orig=s.get("ce_orig"), ce_units=s.get("ce_units")) for s in q]
@@ -560,6 +563,11 @@ def main():
             ap_ = np.array([r["ana_" + args.analog_feat] for r in rows], float); zap_ = (ap_ - ap_.mean()) / (ap_.std() + 1e-9)
             w_ana = args.analog_w if (gl_cover_ok or args.analog_w_fallback is None) else args.analog_w_fallback   # gated: fallback molecules have no forward evidence
             if w_ana: main_sc = np.asarray(main_sc, float) + w_ana * zap_; order = np.argsort(-main_sc, kind="stable"); fused_stats["analog"] += 1
+        if args.frag_w_fallback and rows and not gl_cover_ok:   # 038: fragmentation evidence where no forward model scores
+            import b1_frag as BF
+            fr_ = np.array([BF.score(BF.fragments(r["smiles"]), qspec_of.get(mid, [])) for r in rows], float)
+            for j_, r_ in enumerate(rows): r_["frag"] = float(fr_[j_])
+            main_sc = np.asarray(main_sc, float) + args.frag_w_fallback * (fr_ - fr_.mean()) / (fr_.std() + 1e-9); order = np.argsort(-main_sc, kind="stable"); fused_stats["frag"] += 1
         if args.pcl_boost:   # PubChemLite prior on the main list (2026-10-25): main score (learned/blend, or the insurance fallback) + w * membership
             in_pcl = np.array([r["key"] in PCL_KEYS for r in rows], float); fused_stats["pcl_boost_mols"] += int(in_pcl.any())
             order = np.argsort(-(np.asarray(main_sc, float) + args.pcl_boost * in_pcl), kind="stable")
@@ -574,7 +582,7 @@ def main():
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     for name_, v_ in sub_probe.items(): pd.DataFrame(v_, columns=["molecule_id", "smiles"]).to_csv(f"{P['work']}/submission_probe_{name_}.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, analog_w_fallback=args.analog_w_fallback, analog_feat=args.analog_feat, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, analog_w_fallback=args.analog_w_fallback, analog_feat=args.analog_feat, frag_w_fallback=args.frag_w_fallback, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
