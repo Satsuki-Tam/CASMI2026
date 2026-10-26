@@ -15,11 +15,17 @@ import lightgbm as lgb
 
 ap = argparse.ArgumentParser(); ap.add_argument("--run", required=True); ap.add_argument("--sets", nargs="+", required=True); ap.add_argument("--model", required=True)
 ap.add_argument("--eval_csv", required=True); ap.add_argument("--out", required=True); ap.add_argument("--w_ice", type=float, default=0.0)
+ap.add_argument("--analog", default="", help="analog_probe.py parquet: adds the analog-channel variants ana_only / anaw<w> / anamt<w> (2026-10-26)")
 ap.add_argument("--tau", type=float, default=0.9); ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
 a = ap.parse_args()
 bst = lgb.Booster(model_file=a.model); c = dict(w_ice=a.w_ice, booster=bst, feats=bst.feature_name())
 ev = pd.read_csv(a.eval_csv); ev["molecule"] = ev["molecule"].astype(str)
 rows, mism = [], 0
+ANA = None
+if a.analog:
+    ANA = pd.read_parquet(a.analog); ANA["molecule"] = ANA["molecule"].astype(str)
+    ANA = {k: g.set_index("smiles") for k, g in ANA.groupby(["set", "view", "molecule"])}
+ANA_W = (0.25, 0.5, 1.0, 2.0)
 for s in a.sets:
     F = pd.read_parquet(f"{a.run}/b1_features_{s}.parquet"); F["molecule"] = F["molecule"].astype(str)
     M = pd.read_csv(f"{a.run}/b1_molecules_{s}.csv").set_index("molecule"); M.index = M.index.astype(str)
@@ -67,6 +73,14 @@ for s in a.sets:
             def twin_gate(tau, m=0.0, k=None):   # + margin to the best other candidate's library match, + the twin already in the main top-k
                 if tw < 0 or lib_[tw] < tau or lib_[tw] - lib_2nd < m or (k is not None and pos_[tw] >= k): return order
                 return [tw] + [i for i in order if i != tw]
+            anaf = {}
+            if ANA is not None:
+                h = ANA.get((s, v, mid))
+                for c_ in ("ap", "mean_tan"):
+                    x_ = np.array([float(h[c_].get(sm, 0.0)) if h is not None else 0.0 for sm in g.smiles.astype(str)]); anaf[c_] = x_
+            def anav(col, w):   # registered score + w * z(analog feature) within the molecule
+                x_ = anaf[col]; zx = (x_ - x_.mean()) / (x_.std() + 1e-9)
+                return np.argsort(-(np.asarray(score, float) + w * zx), kind="stable")
             def libw(w):   # soft variant: the registered score + w * library similarity (z units per unit similarity)
                 return np.argsort(-(np.asarray(score, float) + w * lib_), kind="stable")
             def hedge(base_order, alt, k):   # tail hedge (2026-10-26): main top-(25-k), then the best k by an alternative score among the remaining candidates
@@ -81,10 +95,13 @@ for s in a.sets:
                              **{f"twin1_t{t:g}": rr(twin_first(t)) for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)},
                              **{f"twin1m_t{t:g}_m{m:g}": rr(twin_gate(t, m=m)) for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)},
                              **{f"twin1k_t{t:g}_k{k}": rr(twin_gate(t, k=k)) for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)},
-                             **{f"libw{w:g}": rr(libw(w)) for w in (1.0, 2.0, 4.0)}, twin_rank=(pos_[tw] + 1 if tw >= 0 else 0), lib_2nd=lib_2nd,
+                             **{f"libw{w:g}": rr(libw(w)) for w in (1.0, 2.0, 4.0)},
+                             **({"ana_only": rr(np.lexsort((np.argsort(order), -anaf["ap"])))} if anaf else {}),
+                             **({f"anaw{w:g}": rr(anav("ap", w)) for w in ANA_W} if anaf else {}),
+                             **({f"anamt{w:g}": rr(anav("mean_tan", w)) for w in ANA_W} if anaf else {}), twin_rank=(pos_[tw] + 1 if tw >= 0 else 0), lib_2nd=lib_2nd,
                              truth_rank=(int(np.flatnonzero(tr[order])[0]) + 1 if tr.any() else 0)))
 R = pd.DataFrame(rows); os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True); R.to_csv(a.out + ".csv", index=False)
-cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)] + [f"twin1m_t{t:g}_m{m:g}" for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)] + [f"twin1k_t{t:g}_k{k}" for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)] + [f"libw{w:g}" for w in (1.0, 2.0, 4.0)] + ["pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
+cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)] + [f"twin1m_t{t:g}_m{m:g}" for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)] + [f"twin1k_t{t:g}_k{k}" for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)] + [f"libw{w:g}" for w in (1.0, 2.0, 4.0)] + (["ana_only"] + [f"anaw{w:g}" for w in ANA_W] + [f"anamt{w:g}" for w in ANA_W] if a.analog else []) + ["pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
 summ = R.fillna({k: 0.0 for k in cols}).groupby(["set", "view", "truth_group"])[cols].agg(["mean"]).round(4); summ.columns = cols
 summ["n"] = R.groupby(["set", "view", "truth_group"]).size()
 print(f"parity mismatches vs evaluator top-25: {mism} of {int((R.n_cand > 0).sum())}"); print(summ.to_string())
