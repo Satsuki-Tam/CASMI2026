@@ -16,6 +16,7 @@ import lightgbm as lgb
 ap = argparse.ArgumentParser(); ap.add_argument("--run", required=True); ap.add_argument("--sets", nargs="+", required=True); ap.add_argument("--model", required=True)
 ap.add_argument("--eval_csv", required=True); ap.add_argument("--out", required=True); ap.add_argument("--w_ice", type=float, default=0.0)
 ap.add_argument("--analog", default="", help="analog_probe.py parquet: adds the analog-channel variants ana_only / anaw<w> / anamt<w> (2026-10-26)")
+ap.add_argument("--analog_view_c2", default="c2", help="analog parquet view used for the c2 view (c2x = the same-library sensitivity)")
 ap.add_argument("--tau", type=float, default=0.9); ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
 a = ap.parse_args()
 bst = lgb.Booster(model_file=a.model); c = dict(w_ice=a.w_ice, booster=bst, feats=bst.feature_name())
@@ -75,7 +76,7 @@ for s in a.sets:
                 return [tw] + [i for i in order if i != tw]
             anaf = {}
             if ANA is not None:
-                h = ANA.get((s, v, mid))
+                h = ANA.get((s, a.analog_view_c2 if v == "c2" else v, mid))
                 for c_ in ("ap", "mean_tan", "ap_x", "mean_tan_x"):
                     x_ = np.array([float(h[c_].get(sm, 0.0)) if h is not None else 0.0 for sm in g.smiles.astype(str)]); anaf[c_] = x_
             def anav(col, w):   # registered score + w * z(analog feature) within the molecule

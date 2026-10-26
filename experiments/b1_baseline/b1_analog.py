@@ -103,7 +103,7 @@ class Store:
         if len(self._prep) < 2_000_000: self._prep[x] = out
         return out
 
-    def analogs(self, qspec, query_rows=(), drop_keys=(), relib=None, key_rows=None, n_analog=N_ANALOG, win=WIN):
+    def analogs(self, qspec, query_rows=(), drop_keys=(), relib=None, key_rows=None, n_analog=N_ANALOG, win=WIN, drop_libs=()):
         """qspec: list of dicts with mz, it, prec (electron-corrected), adduct, mode. Returns [(key, sim)] best first."""
         qset = set(int(x) for x in query_rows); best = {}
         drop_ix = {self.kix[k] for k in drop_keys if k in self.kix}
@@ -123,6 +123,7 @@ class Store:
             for kk in np.flatnonzero(sims > 0.05):
                 r = lo + int(kk)
                 if int(st["row"][r]) in qset: continue
+                if drop_libs and self.lib[int(st["row"][r])] in drop_libs: continue   # sensitivity: analogs from these libraries removed
                 ki = int(st["key"][r])
                 if ki in drop_ix or ki == re_ix: continue
                 v = float(sims[kk])

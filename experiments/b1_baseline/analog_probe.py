@@ -21,6 +21,7 @@ ap_.add_argument("--store", default="data/processed/spectra_store")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet", help="identity groups: every key of the truth's group is removed in the C2 view")
 ap_.add_argument("--runs", nargs="+", required=True, help="RUN_DIR:EVAL_CSV:SET1,SET2 (paths relative to experiments/b1_baseline)")
+ap_.add_argument("--sens_droplib", action="store_true", help="also a C2 sensitivity view 'c2x': analogs from the query's own library removed (same-depositor siblings)")
 ap_.add_argument("--out", required=True); ap_.add_argument("--max_spectra", type=int, default=8); ap_.add_argument("--threads", type=int, default=8); ap_.add_argument("--limit", type=int, default=0)
 a = ap_.parse_args()
 set_num_threads(a.threads)
@@ -71,8 +72,9 @@ for spec in a.runs:
             drop_c2 = raw_truth_keys | {truth_key} | set(GROUP_KEYS.get(KEY_GROUP.get(truth_key), set()))
             views = {"c1": store.analogs(qspec, query_rows=q, relib=(truth_key, lib), key_rows=key_rows),
                      "c2": store.analogs(qspec, query_rows=q, drop_keys=drop_c2)}
+            if a.sens_droplib: views["c2x"] = store.analogs(qspec, query_rows=q, drop_keys=drop_c2, drop_libs={lib})
             for v, an in views.items():
-                g = E.view_frame(F, M, mid, v) if mid in M.index else pd.DataFrame()
+                g = E.view_frame(F, M, mid, "c2" if v == "c2x" else v) if mid in M.index else pd.DataFrame()
                 if len(g) == 0: continue
                 afp, asim, akey = [], [], []
                 for k_, s_ in an:
