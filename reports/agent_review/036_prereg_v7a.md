@@ -18,3 +18,7 @@
 - rank_v7a_fx = v7a with rank_v4b's fixed params (300 rounds) → isolates the analog-feature effect from the 600-round selection and fits the zlib notebook.
 - rank_rka = rank_rk_fx recipe (full_rk-FPNet tables run_rk_p1/eval/c1, C2 rows of FPNet-seen identities dropped, rank_v4b params) + the analog block (analog features recomputed on the rk tables' shortlists).
 - Both evaluated with the registered combination routing (learned blend21 when GL covered, insurance + 1·z(ap) on fallback = column anag0_1 with the model). Same 11-layer rule; a model replaces the registered v7a combination only if its objective is ≥ +0.005 higher AND panel C1 clean / C, G C1 are not lower; otherwise the registered v7a candidate (037b) stays unchanged. Confirmation on the confirmation sets is required before any change of the candidate.
+
+## Family 3 result (13:01 JST)
+- 11-layer objective (with the registered combination routing): rank_v7a_fx +0.0768 (min −0.0048; panel C1 clean +0.0051), rank_rka +0.0678 (min −0.0122; panel C1 clean +0.0086), registered v7a +0.0745 (min −0.0077; panel C1 clean +0.0102), anaw0.5 +0.0408.
+- Neither passes the replacement rule (v7a_fx: +0.0023 < +0.005 and lower panel C1 clean; rka: lower objective). **The registered v7a candidate (037b) stays unchanged.** Side reading: the fixed-300-round model reproduces v7a's gain, so the gain is not an artefact of the 600-round selection; training on the seen-regime (full_rk) tables does not add to it.
