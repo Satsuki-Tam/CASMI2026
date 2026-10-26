@@ -8,7 +8,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 SRC = os.path.join(ROOT, "experiments", "b1_baseline")
 import argparse
 ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--src_dir", default=SRC, help="directory holding b1_common.py / b1_pipeline.py / b1_rankfeats.py to embed (default: experiments/b1_baseline)"); ap.add_argument("--model", default=os.path.join(SRC, "rank", "lambdarank.txt"), help="LambdaRank model to embed ('' = none -> fixed rule)")
-ap.add_argument("--emit", default="main", choices=["main", "insurance", "probe_train", "probe_nontrain", "probe_coconut", "probe_pubchem", "probe_pool", "probe_band26"], help="which list becomes submission.csv (one Kaggle submission per kernel version); "
+ap.add_argument("--emit", default="main", choices=["main", "insurance", "probe_train", "probe_nontrain", "probe_coconut", "probe_pubchem", "probe_pool", "probe_band26", "probe_prior"], help="which list becomes submission.csv (one Kaggle submission per kernel version); "
                 "probe_* = DIAGNOSTIC class-decomposition probes (Codex 023), needs a pipeline that writes submission_probe_*.csv")
 ap.add_argument("--compress", default="zlib", choices=["zlib", "lzma"], help="blob codec (lzma for large models, e.g. 600-tree rankers; default zlib = unchanged)")
 ap.add_argument("--pipeline_args", default="", help="extra b1_pipeline.py arguments, e.g. '--k_short 200 --k_pop 50 --w_ice 0'")
@@ -18,6 +18,7 @@ A = ap.parse_args()
 files = {n: open(os.path.join(A.src_dir, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py", "b1_rankfeats.py")}
 if os.path.exists(os.path.join(A.src_dir, "b1_analog.py")): files["b1_analog.py"] = open(os.path.join(A.src_dir, "b1_analog.py"), encoding="utf-8").read()   # analog channel (2026-10-26), imported by b1_pipeline only with --analog_w
 if os.path.exists(os.path.join(A.src_dir, "b1_frag.py")): files["b1_frag.py"] = open(os.path.join(A.src_dir, "b1_frag.py"), encoding="utf-8").read()   # MetFrag-lite (038), imported only with --frag_w_fallback
+if os.path.exists(os.path.join(A.src_dir, "b1_gen.py")): files["b1_gen.py"] = open(os.path.join(A.src_dir, "b1_gen.py"), encoding="utf-8").read()   # analog derivatives (042), imported only with --gen_rank / --gen_dv
 print("embedding sources from", A.src_dir)
 model = A.model
 if model and os.path.exists(model): files["lambdarank.txt"] = open(model, encoding="utf-8").read(); print("embedding model", model)

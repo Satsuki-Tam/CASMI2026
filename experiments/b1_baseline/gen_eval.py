@@ -20,6 +20,7 @@ ap_ = argparse.ArgumentParser()
 ap_.add_argument("--run", required=True); ap_.add_argument("--gen", required=True); ap_.add_argument("--sets", nargs="+", required=True)
 ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", required=True)
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
+ap_.add_argument("--dump_choice", default="", help="parity: write per (molecule, view) the chosen novel structure and the derivable official keys (parquet)")
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
 ap_.add_argument("--store", default="data/processed/spectra_store")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
@@ -78,7 +79,7 @@ if __name__ == "__main__":
     from b1_common import ADDUCT_SHIFT, ELECTRON, select_queries
     from numba import set_num_threads
     import lightgbm as lgb
-    set_num_threads(16)
+    from numba import config as _ncfg; set_num_threads(min(16, int(_ncfg.NUMBA_NUM_THREADS)))
     bst = lgb.Booster(model_file=os.path.join(HERE, a.model)); FEATS = bst.feature_name()
     ev = pd.read_csv(os.path.join(HERE, a.eval_csv)); ev["molecule"] = ev["molecule"].astype(str)
     S_MZ = np.load(f"{ROOT}/{a.store}/spec_mz.npy", mmap_mode="r"); S_IT = np.load(f"{ROOT}/{a.store}/spec_int.npy", mmap_mode="r"); S_OFF = np.load(f"{ROOT}/{a.store}/spec_off.npy")
@@ -108,10 +109,12 @@ if __name__ == "__main__":
     _idf = pd.read_parquet(f"{ROOT}/{a.folds}", columns=["scorer_key", "identity_group"]).dropna().drop_duplicates()
     GROUP_KEYS = _idf.groupby("identity_group").scorer_key.apply(lambda x: set(x.astype(str))).to_dict(); KEY_GROUP = dict(zip(_idf.scorer_key.astype(str), _idf.identity_group))
     _winit(os.path.join(ROOT, a.v3), os.path.join(ROOT, a.fold_safe))
-    rows, parity = [], []
+    rows, parity, choice = [], [], []
     VARIANTS = [f"gk{k}" for k in (1, 2, 3, 6, 11)] + [f"gd{d:g}_k{k}" for d in (0, 2, 5, 10) for k in (6, 26)]
     DV = (0.5, 1.0, 2.0)
     VARIANTS += [f"dv{w:g}" for w in DV]
+    HEDGE = [(k, x) for k in (2, 3) for x in ("fp", "ap", "gl", "pop", "lib")]   # exploratory: an independent signal's top-1 inserted at rank k
+    VARIANTS += [f"h{k}_{x}" for k, x in HEDGE]
     for s in a.sets:
         F = pd.read_parquet(os.path.join(HERE, a.run, f"b1_features_{s}.parquet")); F["molecule"] = F["molecule"].astype(str)
         M = pd.read_csv(os.path.join(HERE, a.run, f"b1_molecules_{s}.csv")).set_index("molecule"); M.index = M.index.astype(str)
@@ -193,10 +196,19 @@ if __name__ == "__main__":
                     out.update(best_gen_fz=pr[0][2], truth_gen_rank_fz=(1 + [p_[0] for p_ in pr].index(hit[0][0])) if hit else np.nan)
                 der = np.array([rawkey(sm_) in inwin for sm_ in g.smiles.astype(str)], float)
                 out.update(n_derivable=int(der.sum()), truth_derivable=bool((der * tr).sum() > 0))
+                choice.append(dict(set=s, view=v, molecule=mid, gen_key=(pr[0][0] if pr else None), gen_smiles=(pr[0][1] if pr else None), gen_fz=(pr[0][2] if pr else None), derivable=";".join(sorted(set(g.official_key.astype(str)[der > 0])))))
                 for w in DV:
                     o2 = list(np.argsort(-(score + w * der), kind="stable")); out[f"dv{w:g}"] = rr_of([("db", int(i)) for i in o2])
+                alt = dict(fp=fp, ap=feats["ap"], gl=glv, pop=pop, lib=lib)
+                for k, x in HEDGE:
+                    xv = np.nan_to_num(np.asarray(alt[x], float), nan=-1e18)
+                    if not np.isfinite(alt[x]).any(): out[f"h{k}_{x}"] = out["main"]; continue
+                    b_ = int(np.argmax(xv))
+                    o3 = [int(i) for i in order]
+                    if b_ not in o3[:k]: o3 = [i for i in o3[:k - 1] if i != b_] + [b_] + [i for i in o3[k - 1:] if i != b_]
+                    out[f"h{k}_{x}"] = rr_of([("db", i) for i in o3])
                 for vn in VARIANTS:
-                    if vn.startswith("dv"): continue
+                    if vn.startswith("dv") or vn.startswith("h"): continue
                     if not pr: out[vn] = out["main"]; continue
                     if vn.startswith("gk"): k = int(vn[2:])
                     else:
@@ -204,6 +216,7 @@ if __name__ == "__main__":
                     out[vn] = rr_of(lst[:k - 1] + [("gen", pr[0][0])] + lst[k - 1:]) if k <= 25 else out["main"]
                 rows.append(out)
         log(f"{s}: evaluated")
+    if a.dump_choice: pd.DataFrame(choice).to_parquet(os.path.join(HERE, a.dump_choice), index=False)
     R = pd.DataFrame(rows); os.makedirs(os.path.dirname(os.path.join(HERE, a.out)), exist_ok=True); R.to_csv(os.path.join(HERE, a.out + ".csv"), index=False)
     L = [f"# 042 generation merge ({time.strftime('%Y-%m-%d %H:%M')}; f.z parity max {max(parity) if parity else float('nan'):.4f})", "",
          "| set | view | n | main | truth generated | truth derivable | derivable cands (mean) | " + " | ".join(VARIANTS) + " |", "|---|---|---:|---:|---:|---:|---:|" + "---:|" * len(VARIANTS)]
