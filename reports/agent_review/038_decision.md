@@ -1,0 +1,8 @@
+# 038 decision (13:40 JST, before the anaw0.5 Public result)
+
+Adopted from Codex 038:
+1. **Candidate update (037b is kept as history, not overwritten):** the next Public comparison is **v7f = the rank_v7a combination + 1·z(frag) on the GL-coverage fallback path only**, frozen as experiments/b1_v7f038 (pipeline 6e3b4d04, b1_frag 8d552002, b1_analog 7c9b9973, rankfeats f705db7a, rank_v7a f3ffc0f6 = 600 trees), kernel casmi26-b1-fpnet-v7f v1 (lzma, 1,040,594 bytes). Unchanged from 037b: the branch A/B rule (decided by the 035 reading of 57650023), the comparison target (FE or anaw0.5), DUP 0.98, candidates, GL budget, analog routing and weights. Branch B's C/G unseen-C1 and panel-clean losses remain the recorded operational exception.
+2. The Public comparison measures the whole bundle; a positive or negative result is not attributed to the frag part. No component is added to this registration after the result.
+3. F C1 on the confirmation set: 2 concrete losses (GTUZLDBHHIBAQG 1/12 → 0, UTBCORIJXVSSBE 1 → 1/2; both [M−H2O+H]+, one query), 24 unchanged; recorded as such (not excused by the interval). No dehydration-adduct exclusion is added to this candidate.
+4. Pre-submission conditions: the v7f Kaggle smoke completes, and the frag cost on fallback molecules is measured (it runs after the forward models, so it must fit the time left after GL under deadline_s); otherwise the prepared 037b v7a is used first.
+5. Limits kept: frag is an empirical structure score (mode-dependent ±proton and fixed H shifts, no explicit adduct chemistry); 0 means both "not computable" and "nothing explained"; the max over query spectra can be driven by one sparse spectrum; the +0.014 confirmation gain comes ~94% from the E layer and is not added to a Public forecast.
