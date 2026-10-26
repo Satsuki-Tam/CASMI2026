@@ -23,3 +23,8 @@
 
 ## band26 (12:17 JST): **0.005**
 - P_26 = 0.005 → the share of molecules with the truth at ranks 26-50 satisfies 0.005 ≤ q ≤ 0.125; main + band oracle = 0.359. Reading 027 §2 (≤ 0.01): the band's lift score is small; ranks 51+ and unreached truths cannot be told apart from this probe.
+
+## Corrections after Codex 036
+- Wording: M_T is the **train-truth** contribution, M_B the non-train COCONUT-truth contribution (candidate-derived groups, not the official classes; a non-train COCONUT structure can still be class 1 if another public library references it). Firm: **non-train truths together (M_B + M_P = 0.194-0.248) contribute more than train truths (0.106-0.160)**. Not firm: COCONUT-only being the single largest (M_T and M_B intervals overlap), the class shares (P_T = share × in-group MRR), and where E0's lead lies (≥ 0.056 of it is not explained by group selection).
+- The "full_eval dev2 + panel COCONUT +0.017" line above mixed the identity-seen full_eval panel C2 (excluded condition). Valid full_eval dev2 only: reached COCONUT-only truths (119) anaw0.5 − main = **+0.083**.
+- v7a combination − anaw0.5 on the confirmation C2 by group: reached COCONUT-only +0.011 [−0.012, +0.034], reached PubChem-only +0.046 [+0.029, +0.065], truth absent 0 (truth_group is shortlist-based; absent molecules can also be COCONUT truths).

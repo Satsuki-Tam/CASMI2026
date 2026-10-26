@@ -7,7 +7,7 @@ L = [f"observed: T {PT:.3f} | COCONUT-only (B) {PB:.3f} | band26 {P26:.3f} | DUP
 L.append(f"P_T + P_B - P_K = {PT + PB - PK:+.3f}  (extra recovery from choosing T vs B membership inside the pool; >= 0.03 / <= 0.01 guides)")
 L.append(f"P_T + P_B + P_P = {PT + PB + PP:.3f}  (membership oracle with the three groups' internal orders fixed; vs M {M:.3f}: {PT + PB + PP - M:+.3f})")
 lo_T, hi_T = max(0.0, M - PB - PP), min(PT, PK, M); lo_B, hi_B = max(0.0, M - PT - PP), min(PB, PK, M)
-L.append(f"M_T (class-1 contribution of the M2x main) in [{lo_T:.3f}, {hi_T:.3f}]; M_B (COCONUT-only truths) in [{lo_B:.3f}, {hi_B:.3f}]; M_P (PubChem-only) in [0.018, 0.046] (10/25)")
+L.append(f"M_T (train-truth contribution of the M2x main) in [{lo_T:.3f}, {hi_T:.3f}]; M_B (COCONUT-only truths) in [{lo_B:.3f}, {hi_B:.3f}]; M_P (PubChem-only) in [0.018, 0.046] (10/25)")
 L.append(f"band: P_26 = {P26:.3f} -> share q of molecules with the truth at ranks 26-50 satisfies {P26:.3f} <= q <= {min(25 * P26, 1):.3f}; main + band oracle = {M + P26:.3f}")
 L.append("")
 L.append("pre-registered calibration predictions (033_prereg): model A P_T 0.209 [0.096, 0.296], P_B 0.149 [0.048, 0.272]; model B P_T 0.275 [0.26, 0.29], P_B 0.078 [0.04, 0.11]; band w*s_band 0.0016 [0.0006, 0.0026]")
