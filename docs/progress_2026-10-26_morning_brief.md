@@ -127,3 +127,4 @@
 - 探索: GLACIER で 1 位に置く規則は「ライブラリ一致 ≥ 0.6 なら動かさない」拒否権を付けると保護がほぼ満たされる(C3 +0.022、−0.01 未満は 1 層)。利得は小さく、登録はしていない。
 - **新しい評価集合**: fold-1(dev/locked 各 500)・fold-2(dev/locked 各 500)を作成。FPNet(public fold-safe の各 fold モデル)と ranker のどちらにも未見で、確認集合の枯渇を解消。
 - Kaggle CLI の認証は 18:31 に自然回復。kernel 出力のダウンロードは出力ファイル数が多いため rate limit に当たる → 提出物の検証は Spark の同一パイプライン出力で行う方針。
+- **次の大きな候補(10/27 以降)**: ranker の学習データの大幅拡張。現 ranker(rank_v4b)の学習分子は数百〜千程度。identity fold 3・4 から層別の学習 pool(計 ~4,000 分子)を fold-safe FPNet(各 fold 未見)で作り、隠しのクラス 2 と同じ「FPNet 未見」の条件の行で ranker を学習 → fold-1/2 の dev(FPNet・ranker とも未見)で評価。E0 の engine の ranker が大規模なシミュレーションで学習されている点に対応する。fold-1/2 は評価用に取っておき、学習には使わない。
