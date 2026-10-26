@@ -29,3 +29,8 @@
 ## 判定(2026-10-27 06:20 JST、一回だけ読んだ)
 - **登録の判定 = 合格**: 主指標 NP C2(C/D/E/F 等重み、3b・4b の block 等重み)**+0.0067 [+0.0023, +0.0112]**(block +0.0039 / +0.0094)。C C2 が +0.017 / +0.031、D C2 −0.001 / +0.007、E/F は ranker を使わない経路なので 0。C C1 +0.001 / +0.013。G は C1 +0.103 / +0.119、C2 −0.034 / −0.003(stress)。
 - 範囲(Codex 062): これは**公開 FPNet の表での再現性**の確認であり、本番(full_eval)への移行の確認ではない。Public 比較の前に、同じ dev2 での FPNet × ranker の交差比較(064、実行中)と full_eval での保護診断、0.379 から model だけを替えた pipeline の全出力 parity(`spark/jobs/spark_v8w_parity.sh`、開始)を行う。
+
+## parity(2026-10-27 07:31)
+- 0.379 の pipeline(b1_ana035、ef8f8f96)で ranker の model だけを rank_v8w(b8706359)に替え、パネル 250 の両 view で b1_parity: **PARITY PASS**(c2・c1 とも molecules 250、候補集合の一致 1.000、出力の一致 250/250)。
+- kernel `hayatetaf/casmi26-b1-fpnet-v8w` v1(0.379 と同じ sources・引数、埋め込み model だけ v8w)は smoke 完了。
+- Codex 062 の 3 条件(3b/4b 確認・交差比較・parity)を満たした → **0.379 → v8w だけの一変更として Public 比較の候補(10/28 の枠)**。読み(結果前に固定): ≥ +0.008 で暫定採用の資格、−0.015〜+0.008 は未確定(維持)、≤ −0.015 は不採用・点検(既定の境界)。
