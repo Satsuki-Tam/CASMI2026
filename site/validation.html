@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-25 18:42 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-26 09:02 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1">1. 本番条件(分かっていること)</a></li>
@@ -63,6 +63,19 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#1800-fpnet-1-80-fpnet-identity-query">新しい読み(18:00): 開発・評価はすべて「FPNet 未見」の領域、隠しクラス 1 の約 80% は現行 FPNet の「identity 既見・query 未見」の領域</a></li>
 <li><a href="#probecodex-023-1805">クラス分解の probe(Codex 023 で提案、18:05)</a></li>
 <li><a href="#pool-pc-codex-023bdiagprobe_strata_p2devpaneldevabmd1845-top-25">pool / Pc フィルタの条件付き効果(Codex 023b、diag/probe_strata_{p2dev,panel,devAB}.md、18:45;保存 top-25 を絞る版 = 全順位列を絞る提出版の下限)</a></li>
+<li><a href="#pubchem-tier-pcd_eval_panelp2dev1920-blend21-w1pcw-z-inf-pc-pool-probe-slot-e0">PubChem tier のみの候補を下げる案(開発、提出候補ではない;pcd_eval_{panel,p2dev}、19:20;登録主出力 blend21 − w·1[Pc]、w は z 単位、inf = 全順位列から Pc を除く = pool probe の手元版;slot = E0 型の固定枠)</a></li>
+<li><a href="#gd_eval_panelp2dev2000train-train-n-pubchem-tier-p-w">ライブラリ一致で条件付けた降格(gd_eval_{panel,p2dev}、20:00;train 候補の最大ライブラリ類似 ≥ θ のときだけ、非 train 候補(N)または PubChem tier のみ(P)を w 下げる;格子は結果前に固定)</a></li>
+<li><a href="#scenario_deltapy2010-public-probe-c1-c1-g-c1c2-c2-coconut-dev2-c2-cf-np-pubchem-p1-02-035-05p2-02-035c1c2-3-54-3-0">混合比シナリオでの期待 Δ(scenario_delta.py、20:10;セルと格子は Public probe の結果前に固定:C1 代表 = パネル C1 / G C1、C2 代表 = パネル C2(真が COCONUT)/ dev2 C2 の C〜F プール(NP、真の多くが PubChem のみ);p1 ∈ {0.2, 0.35, 0.5}、p2 ∈ {0.2, 0.35}、C1・C2 の代表の混ぜ方 3 段ずつ = 54 シナリオ;クラス 3 は全変種で 0)</a></li>
+<li><a href="#fpnet-codex-024-q1-diagseen_decoys_p2devdevabpanelmd2025-m2x-top-25fold-0-fpnet-fold-0">FPNet が学習した構造のデコイは真より上に来やすいか(Codex 024 Q1 の診断、diag/seen_decoys_{p2dev,devAB,panel}.md、20:25;登録主出力 M2x の保存 top-25、fold-0 FPNet の除外台帳 = fold 0 + パネル群)</a></li>
+<li><a href="#w05-fpnet-codex-024-q3pcdfe_eval_panelp2dev2027full_eval-identity-query-dev2-full_eval">w=0.5 の降格を FPNet 既見の領域で測る(Codex 024 Q3、pcdfe_eval_{panel,p2dev}、20:27;full_eval の表 = パネルは identity 既見・query 未見、dev2 は full_eval でも保留 = 未見)</a></li>
+<li><a href="#full_rk-ranker-023-4-rk_eval_panelp2devdevab2220diagrk_decisionmd">full_rk の ranker 一対比較(023 §4 の事前登録、rk_eval_{panel,p2dev,devAB}、22:20〜;diag/rk_decision.md)</a></li>
+<li><a href="#c1-full_rk-rank_v4bdiagfail_rk_old_c1md2250-top-25-250250">パネル C1 の失敗分析(full_rk の表 + rank_v4b、diag/fail_rk_old_c1.md、22:50;評価器の式で再計算し top-25 は 250/250 一致)</a></li>
+<li><a href="#public-calib_publicpygroup_filter_evalpy2340probe-full_eval-public">Public 較正の混合分析(calib_public.py、group_filter_eval.py、23:40;probe と full_eval の Public 値が出る前に記録)</a></li>
+<li><a href="#dev2-cc2-codex-026diagc2_decompose_ccsv2345-fpnet">dev2 C/C2 の悪化の切り分け(Codex 026、diag/c2_decompose_C.csv、23:45)と FPNet の負例露出</a></li>
+<li><a href="#public-probe-0037-0048023b-2-025-2">Public の probe 結果(00:37 / 00:48;023b §2 の読みの表、025 §2 の代数)</a></li>
+<li><a href="#full_eval-public0100-0370-0354-0016">full_eval の Public(01:00): 0.370(基準 0.354 から +0.016)</a></li>
+<li><a href="#e0-public-e0-notebook-growth-pattern0155">公開系譜(E0)の Public の増分表(E0 notebook の "Growth Pattern"、01:55 再読)と、私たちの読みの規則への含意</a></li>
+<li><a href="#tail-hedge-2650-fold-0-m2x-group_filter_evalpy-0200">末尾の分散(tail hedge)と順位帯 26〜50 の局所値(fold-0 の M2x 表、group_filter_eval.py に追加、02:00)</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-24-1330">検証設計と残る懸念(2026-10-24 13:30 版)</h1>
@@ -1799,4 +1812,557 @@ Class 比率は LB から逆算しない(純検索型なら p3 ≤ 1 − S の�
 <td style="text-align: right;"></td>
 </tr>
 </tbody>
-</table></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</table>
+<h2 id="pubchem-tier-pcd_eval_panelp2dev1920-blend21-w1pcw-z-inf-pc-pool-probe-slot-e0">PubChem tier のみの候補を下げる案(開発、提出候補ではない;<code>pcd_eval_{panel,p2dev}</code>、19:20;登録主出力 blend21 − w·1[Pc]、w は z 単位、inf = 全順位列から Pc を除く = pool probe の手元版;slot<k> = E0 型の固定枠)</h2>
+<table>
+<thead>
+<tr>
+<th>集合 / view</th>
+<th style="text-align: right;">n</th>
+<th>w=0.5</th>
+<th>w=1</th>
+<th>w=2</th>
+<th>w=4</th>
+<th>inf</th>
+<th>slot4(4,8,…,20)</th>
+<th>slot2(2,4,…,10)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル C1 / C2</td>
+<td style="text-align: right;">250</td>
+<td>+0.006 / +0.002</td>
+<td>+0.008 / +0.002</td>
+<td>+0.009 / +0.006</td>
+<td>+0.014 / +0.011</td>
+<td>+0.016 / +0.009</td>
+<td>+0.015 / +0.008</td>
+<td>−0.003 / −0.007</td>
+</tr>
+<tr>
+<td>C C1 / C2</td>
+<td style="text-align: right;">95 / 100</td>
+<td>+0.008 / −0.004</td>
+<td>+0.018 / +0.003</td>
+<td>+0.020 / −0.023</td>
+<td>+0.038 / −0.049</td>
+<td>+0.039 / −0.333</td>
+<td>+0.038 / −0.232</td>
+<td>+0.026 / −0.164</td>
+</tr>
+<tr>
+<td>D C2</td>
+<td style="text-align: right;">100</td>
+<td>−0.018 [−0.037, −0.003]</td>
+<td>−0.023</td>
+<td>−0.024</td>
+<td>−0.035</td>
+<td>−0.191</td>
+<td>−0.130</td>
+<td>−0.089</td>
+</tr>
+<tr>
+<td>E C1 / C2</td>
+<td style="text-align: right;">59 / 100</td>
+<td>+0.020 / −0.017</td>
+<td>+0.039 / −0.018</td>
+<td>+0.061 / −0.019</td>
+<td>+0.076 / −0.027</td>
+<td>+0.078 / −0.083</td>
+<td>+0.068 / −0.010</td>
+<td>+0.043 / +0.008</td>
+</tr>
+<tr>
+<td>F C1 / C2</td>
+<td style="text-align: right;">38 / 100</td>
+<td>+0.011 / +0.003</td>
+<td>+0.017 / +0.002</td>
+<td>+0.020 / −0.000</td>
+<td>+0.021 / −0.009</td>
+<td>+0.023 / −0.026</td>
+<td>+0.019 / −0.012</td>
+<td>−0.014 / −0.021</td>
+</tr>
+<tr>
+<td><strong>G C1</strong> / C2</td>
+<td style="text-align: right;">100 / 100</td>
+<td>+0.030 / −0.012</td>
+<td>+0.074 / −0.025</td>
+<td><strong>+0.165 / −0.044</strong></td>
+<td>+0.225 / −0.099</td>
+<td>+0.257 / −0.637</td>
+<td>+0.256 / −0.473</td>
+<td>+0.230 / −0.316</td>
+</tr>
+<tr>
+<td>- 読み: Pc を下げるほどクラス 1(特に timsTOF の G C1)が上がり、PubChem のみの真を持つクラス 2 代理が下がる。どの w も dev2 の C2 保護(点 ≥ −0.02 かつ下限 ≥ −0.02)を同時には満たさない(w=0.5 でも D/E/G C2 の下限が −0.02 未満)。E0 型の固定枠は C2 の損失が大きい(真の Pc を 4 位以下に固定)。利得と損失の比はクラス混合比で決まる → Public の pool / Pc probe の結果を見てから、混合比の感度分析で w を選ぶ(先に w を固定しない)。</td>
+<td style="text-align: right;"></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="gd_eval_panelp2dev2000train-train-n-pubchem-tier-p-w">ライブラリ一致で条件付けた降格(<code>gd_eval_{panel,p2dev}</code>、20:00;train 候補の最大ライブラリ類似 ≥ θ のときだけ、非 train 候補(N)または PubChem tier のみ(P)を w 下げる;格子は結果前に固定)</h2>
+<table>
+<thead>
+<tr>
+<th>集合 / view</th>
+<th>gdN0.7w1</th>
+<th>gdN0.7w2</th>
+<th>gdN0.8w2</th>
+<th>gdP0.7w2</th>
+<th>gdN0.6w2</th>
+<th>gdN0.7w4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル C1 / C2</td>
+<td>+0.013 / −0.015</td>
+<td>+0.014 / −0.059</td>
+<td>+0.008 / −0.029</td>
+<td>+0.004 / +0.001</td>
+<td>+0.018 / −0.076</td>
+<td>+0.024 / −0.110</td>
+</tr>
+<tr>
+<td>C C1 / C2</td>
+<td>+0.018 / −0.015</td>
+<td>+0.024 / −0.028</td>
+<td>+0.024 / −0.012</td>
+<td>+0.014 / −0.015</td>
+<td>+0.028 / −0.040</td>
+<td>+0.029 / −0.046</td>
+</tr>
+<tr>
+<td>D C2</td>
+<td>−0.017</td>
+<td>−0.019</td>
+<td>−0.017</td>
+<td>−0.018</td>
+<td>−0.019</td>
+<td>−0.020</td>
+</tr>
+<tr>
+<td>E C1 / C2</td>
+<td>+0.028 / −0.014</td>
+<td>+0.049 / −0.018</td>
+<td>+0.037 / −0.007</td>
+<td>+0.032 / −0.006</td>
+<td>+0.052 / −0.025</td>
+<td>+0.071 / −0.018</td>
+</tr>
+<tr>
+<td>F C1 / C2</td>
+<td>+0.049 / −0.003</td>
+<td>+0.056 / −0.009</td>
+<td>+0.038 / −0.000</td>
+<td>+0.017 / +0.000</td>
+<td>+0.060 / −0.013</td>
+<td>+0.064 / −0.014</td>
+</tr>
+<tr>
+<td>G C1 / C2</td>
+<td>+0.072 / −0.025</td>
+<td>+0.144 / −0.044</td>
+<td>+0.107 / −0.037</td>
+<td>+0.142 / −0.044</td>
+<td>+0.156 / −0.044</td>
+<td>+0.204 / −0.091</td>
+</tr>
+<tr>
+<td>- 読み: 条件付けで C2 の損失は無条件版より小さくなるが消えない。G C2 では train のデコイ(合成 timsTOF の類縁体)が θ=0.7 以上の一致を 31% の分子で持つので、ゲートが誤って開く;D C2 は C1 view が無い層で、ゲートの種類によらず −0.017〜−0.020。パネルの C2(真が COCONUT)では N を下げると COCONUT の真も下がる(gdN は −0.015〜−0.110、Pc だけを下げる gdP は +0.001)。どの設定も dev2 の保護(点・下限 ≥ −0.02)を全層では満たさない → 比は改善したがトレードオフは残る。採否は Public probe(pool/Pc)の結果と混合比の感度分析で決める。</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- W7(<code>pcd_eval_devAB</code>、無条件降格): A C2 −0.004〜−0.090(w 0.5〜4)、B C2 −0.006〜−0.037、B C1 +0.001〜+0.029、A C1(7 分子)+0.08〜+0.30。</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="scenario_deltapy2010-public-probe-c1-c1-g-c1c2-c2-coconut-dev2-c2-cf-np-pubchem-p1-02-035-05p2-02-035c1c2-3-54-3-0">混合比シナリオでの期待 Δ(<code>scenario_delta.py</code>、20:10;セルと格子は Public probe の結果前に固定:C1 代表 = パネル C1 / G C1、C2 代表 = パネル C2(真が COCONUT)/ dev2 C2 の C〜F プール(NP、真の多くが PubChem のみ);p1 ∈ {0.2, 0.35, 0.5}、p2 ∈ {0.2, 0.35}、C1・C2 の代表の混ぜ方 3 段ずつ = 54 シナリオ;クラス 3 は全変種で 0)</h2>
+<table>
+<thead>
+<tr>
+<th>変種</th>
+<th>セル平均 Δ:パネル C1 / G C1 / パネル C2 / dev2 C2</th>
+<th style="text-align: right;">期待 Δ &gt; 0 のシナリオ数</th>
+<th style="text-align: right;">最悪</th>
+<th style="text-align: right;">最良</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pcd1</td>
+<td>+0.008 / +0.074 / +0.002 / −0.009</td>
+<td style="text-align: right;">51/54</td>
+<td style="text-align: right;">−0.002</td>
+<td style="text-align: right;">+0.038</td>
+</tr>
+<tr>
+<td>pcd2</td>
+<td>+0.009 / +0.165 / +0.006 / −0.017</td>
+<td style="text-align: right;">49/54</td>
+<td style="text-align: right;">−0.004</td>
+<td style="text-align: right;">+0.085</td>
+</tr>
+<tr>
+<td>pcd4</td>
+<td>+0.014 / +0.225 / +0.011 / −0.030</td>
+<td style="text-align: right;">48/54</td>
+<td style="text-align: right;">−0.008</td>
+<td style="text-align: right;">+0.116</td>
+</tr>
+<tr>
+<td>pcdinf(pool probe の手元版)</td>
+<td>+0.016 / +0.257 / +0.009 / −0.158</td>
+<td style="text-align: right;">38/54</td>
+<td style="text-align: right;">−0.052</td>
+<td style="text-align: right;">+0.132</td>
+</tr>
+<tr>
+<td>gdP0.7w4</td>
+<td>+0.008 / +0.202 / +0.001 / −0.013</td>
+<td style="text-align: right;">49/54</td>
+<td style="text-align: right;">−0.003</td>
+<td style="text-align: right;">+0.101</td>
+</tr>
+<tr>
+<td>gdN0.7w1</td>
+<td>+0.013 / +0.072 / −0.015 / −0.012</td>
+<td style="text-align: right;">47/54</td>
+<td style="text-align: right;">−0.003</td>
+<td style="text-align: right;">+0.034</td>
+</tr>
+<tr>
+<td>slot4(E0 型)</td>
+<td>+0.015 / +0.256 / +0.008 / −0.096</td>
+<td style="text-align: right;">41/54</td>
+<td style="text-align: right;">−0.031</td>
+<td style="text-align: right;">+0.131</td>
+</tr>
+<tr>
+<td>- 読み: 期待値の大小は「隠しクラス 1 が G 型(timsTOF query × 他装置の参照、FP 未見)か、パネル型か」でほぼ決まる。パネル型だけなら利得は +0.01 未満、G 型なら +0.07〜+0.2。下振れは dev2 C2 の損失で抑えられ、gdP0.7w4 と pcd1〜2 は最悪シナリオでも −0.004 以内。ただし多数の変種を同じ開発集合で比べた選択の楽観と、G C2(合成、真が全部 PubChem のみ)を C2 代表から外した判断(隠しテストは NP)を含む。G C2 を入れると gdP0.7w4 は −0.091 のセルが加わる。</td>
+<td></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+<h2 id="fpnet-codex-024-q1-diagseen_decoys_p2devdevabpanelmd2025-m2x-top-25fold-0-fpnet-fold-0">FPNet が学習した構造のデコイは真より上に来やすいか(Codex 024 Q1 の診断、<code>diag/seen_decoys_{p2dev,devAB,panel}.md</code>、20:25;登録主出力 M2x の保存 top-25、fold-0 FPNet の除外台帳 = fold 0 + パネル群)</h2>
+<table>
+<thead>
+<tr>
+<th>集合 / view</th>
+<th>shortlist 内の割合:既見 train / 未見 train / 非 train</th>
+<th style="text-align: right;">真より上のデコイ数</th>
+<th>その内訳:既見 / 未見 train / 非 train</th>
+<th>FP z(分子内):既見 vs 未見 train デコイ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C C1 / C2</td>
+<td>0.03 / 0.01 / 0.96</td>
+<td style="text-align: right;">41 / 552</td>
+<td>0.22 / 0.02 / 0.76 ・ 0.10 / 0.01 / 0.89</td>
+<td>−0.66 vs −0.88</td>
+</tr>
+<tr>
+<td>E C1 / C2</td>
+<td>0.02 / 0.01 / 0.97</td>
+<td style="text-align: right;">464 / 1262</td>
+<td>0.13 / 0.02 / 0.85 ・ 0.13 / 0.03 / 0.83</td>
+<td>+0.04 vs −0.42</td>
+</tr>
+<tr>
+<td>F C1 / C2</td>
+<td>0.02 / 0.00 / 0.98</td>
+<td style="text-align: right;">250 / 1639</td>
+<td>0.25 / 0.05 / 0.70 ・ 0.10 / 0.02 / 0.88</td>
+<td>−0.19 vs −0.63</td>
+</tr>
+<tr>
+<td>G C1 / C2</td>
+<td>0.05 / 0.01 / 0.94</td>
+<td style="text-align: right;">344 / 556</td>
+<td>0.10 / 0.01 / 0.89 ・ 0.08 / 0.01 / 0.91</td>
+<td>−0.71 vs −0.77</td>
+</tr>
+<tr>
+<td>W7 B C1 / C2</td>
+<td>0.02 / 0.01 / 0.97</td>
+<td style="text-align: right;">88 / 3446</td>
+<td>0.17 / 0.01 / 0.82 ・ 0.06 / 0.01 / 0.93</td>
+<td>−0.52 vs −0.67</td>
+</tr>
+<tr>
+<td>パネル C1 / C2</td>
+<td>0.03 / 0.01 / 0.96</td>
+<td style="text-align: right;">167 / 166</td>
+<td>0.32 / 0.12 / 0.56 ・ 0.25 / 0.07 / 0.69</td>
+<td>−0.39 vs −0.53</td>
+</tr>
+<tr>
+<td>- 読み: FPNet が学習した train 構造は shortlist の 2〜5% しかないのに、真より上のデコイの 5〜32% を占める(2〜10 倍)。同じ train 構造でも未見(fold 0)のものより FP z が 0.05〜0.46 高い — 学習した構造の FP が膨らむ(記憶)形跡。開発集合の真は未見なので、この効果は開発の C1/C2 両 view に入っている。隠しテストでは、クラス 1 の真自身も多くが既見で FP が膨らむ側に回る(開発の C1 との違い)、クラス 2 の真は常に未見で既見デコイに押される(開発の C2 と同じ)。</td>
+<td></td>
+<td style="text-align: right;"></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- 次の候補(Codex 024 の 1 番、明日):候補ごとの「FPNet 既見」フラグ(使う FPNet の除外台帳から決まる、query の真値を使わない特徴)を ranker に与え、既見 FP の割り引きをライブラリ一致などとの交互作用で学ばせる。学習には既見の真と未見の真の両方を含む表(full_rk の表)が必要。</td>
+<td></td>
+<td style="text-align: right;"></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="w05-fpnet-codex-024-q3pcdfe_eval_panelp2dev2027full_eval-identity-query-dev2-full_eval">w=0.5 の降格を FPNet 既見の領域で測る(Codex 024 Q3、<code>pcdfe_eval_{panel,p2dev}</code>、20:27;full_eval の表 = パネルは identity 既見・query 未見、dev2 は full_eval でも保留 = 未見)</h2>
+<table>
+<thead>
+<tr>
+<th>集合 / view</th>
+<th>fold-0 の表(未見)Δ</th>
+<th>full_eval の表 Δ [95% CI]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>パネル C1</strong></td>
+<td>+0.006 [+0.001, +0.012]</td>
+<td><strong>+0.001 [+0.000, +0.001]</strong></td>
+</tr>
+<tr>
+<td>パネル C2</td>
+<td>+0.002</td>
+<td>+0.005 [+0.000, +0.011]</td>
+</tr>
+<tr>
+<td>C C1 / C2</td>
+<td>+0.008 / −0.004</td>
+<td>+0.020 / −0.002</td>
+</tr>
+<tr>
+<td>D C2</td>
+<td>−0.018</td>
+<td>−0.013 [−0.029, −0.001]</td>
+</tr>
+<tr>
+<td>E C1 / C2</td>
+<td>+0.020 / −0.017</td>
+<td>+0.016 / −0.011 [−0.034, +0.012]</td>
+</tr>
+<tr>
+<td>F C1 / C2</td>
+<td>+0.011 / +0.003</td>
+<td>+0.006 / −0.001</td>
+</tr>
+<tr>
+<td>G C1 / C2</td>
+<td>+0.030 / −0.012</td>
+<td>+0.048 / −0.008</td>
+</tr>
+<tr>
+<td>- 読み: <strong>identity を FPNet が学習済みの C1(パネル、full_eval)では、降格の利得はほぼ 0(+0.001)</strong>。既見の FP が既に真を押し上げているので、クラス間の取り違えはほとんど残っていない。利得は未見の C1(G、C、E)に限られ、C2 の損失(D/E)は既見かどうかに関係なく残る。隠しクラス 1 に既見の分子が多ければ(割合は仮定)、w=0.5 の期待値は 0 前後かやや負 → pool probe が強い正(≥ 0.374)でない限り比較提出しない(024 の規則どおり)。</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="full_rk-ranker-023-4-rk_eval_panelp2devdevab2220diagrk_decisionmd">full_rk の ranker 一対比較(023 §4 の事前登録、<code>rk_eval_{panel,p2dev,devAB}</code>、22:20〜;<code>diag/rk_decision.md</code>)</h2>
+<p>同じ full_rk の表(FPNet = full_rk、GL は既存 run から seed)で、RK_old = rank_v4b、RK_new = 同 params で full_rk の表から再学習(既見 identity の C2 行を学習から除外)、RK_new0 = 除外なし、M2x = fold-0 の表 + rank_v4b(採用の対照)。主出力 blend21 + GL fallback、分子単位 paired bootstrap 10,000。
+| 比較 | 層 | n | Δ [95% CI] | 判定 |
+|---|---|---:|---|---|
+| <strong>主: RK_new − RK_old</strong> | パネル C1 全体 / clean / uncertain | 250 / 202 / 48 | <strong>+0.0080 [−0.005, +0.022]</strong> / +0.0074 [−0.008, +0.023] / +0.0104 [0.000, +0.031] | 点推定 &gt; 0(利得は未確定) |
+| | パネル C2(identity 既見なので保護外) | 250 | −0.0090 [−0.018, −0.002] | 参考 |
+| 保護(dev2 = 未見) | C C1 / C C2 / D C2 | 95 / 100 / 100 | −0.001 [−0.028, +0.024] / −0.019 [−0.052, +0.013] / −0.007 [−0.027, +0.012] | 点 ok、下限 &lt; −0.02(未確定) |
+| | E・F の C1 / C2 | | 0(GL 不足 → 両 ranker とも保険) | PASS |
+| | <strong>G C1</strong> / G C2 | 100 / 100 | <strong>+0.081 [+0.042, +0.123]</strong> / +0.007 [−0.014, +0.028] | PASS |
+| 対照: RK_new − RK_new0(既見 C2 行の除外効果) | G C1 / C C1 / C C2 | | +0.028 [+0.003, +0.057] / +0.020 / −0.014 | |
+| FPNet だけ: RK_old − M2x | G C1 / C C2 | | −0.032 [−0.072, +0.007] / −0.020 [−0.063, +0.024] | 未見の FP 分布で学習した旧 ranker は新 FPNet で G C1 を落とす |
+| 採用の対照: RK_new − M2x | G C1 / C C2 | | +0.049 [+0.003, +0.097] / −0.039 [−0.085, +0.006] | |
+- 023 §4 の表では、主比較の点推定が正、保護層の点推定はすべて ≥ −0.02、下限が −0.02 未満の層あり(C C1・C C2・D C2)→ 「非劣性未確定の一回の比較提出として可」(W7 の確認後に確定)。
+- 内部の注意: <code>b1_rank_train.py --c2_drop_exposure</code> は fit / tune / eval の分割前に適用されるため、rank_rk_fx の学習ログに出る tune / eval の C2 値(固定規則 0.306 など)は、除外した分子を 0 として数えた値で比較に使えない。モデル(fit 行)は意図どおり。params は rank_v4b から固定なので選択への影響はない。</p>
+<h2 id="c1-full_rk-rank_v4bdiagfail_rk_old_c1md2250-top-25-250250">パネル C1 の失敗分析(full_rk の表 + rank_v4b、<code>diag/fail_rk_old_c1.md</code>、22:50;評価器の式で再計算し top-25 は 250/250 一致)</h2>
+<ul>
+<li>1 位 216、2〜25 位 34、26 位以下・候補外 0。失った RR 21.8 のうち <strong>73% は真の上に別の train 構造</strong>(24 分子;うち 12 は真より参照類似度が高い、中央値 真 0.704 / デコイ 0.742 — 類縁体・異性体)、COCONUT のみ 8 分子(4.3)、PubChem のみ 2 分子(1.6)。</li>
+<li>真の参照類似度別の MRR: &lt; 0.5 → 0.73、0.5〜0.7 → 0.80、0.7〜0.8 → 0.90、0.8〜0.9 → 0.96、≥ 0.9 → 0.98。</li>
+<li>読み: FPNet 既見の領域では、パネル型のクラス 1 の残りの損失は主に「train 構造どうしの取り違え」(同じく既見で参照も持つ類縁体)で、クラス間の取り違えは 1/4 程度。E0 のパネル C1 0.948 は query まで学習済みの値なので、隠しクラス 1 で B1 + 全 train FPNet(≈ 0.91)が大きく劣るとは言えない。→ Public の差 0.11 の主因はパネル型の分子以外にある(パネルは真が人気の高い化合物で、B1 でも両 view 0.9 前後)。</li>
+<li><strong>実装一致(23:21、<code>spark/jobs/spark_parity_rk.sh</code>、022 と同じパネル 16 分子・両 view・共有 forward・閾値 1.0)</strong>: 提出パイプライン(<code>--fpnet_ckpt</code> = full_rk、sha256 1f47f1ba…、<code>--rank_model rank_rk_fx</code> sha ceeacfaf…)と評価器の表(run_rk_panel)で、候補集合・主出力と保険の順序付き top-25(公式 identity)が 16/16 一致 → <strong>PARITY PASS</strong>。Spark の pipeline は commit 2264284 版(73a129ec;kernel 埋め込みの 4dc9e7b3 との差は Kaggle 上だけで使うコンペ置き場所の探索 <code>comp_dir</code> のみ)。parity の後に Spark 側を 4dc9e7b3 に同期した。</li>
+</ul>
+<h2 id="public-calib_publicpygroup_filter_evalpy2340probe-full_eval-public">Public 較正の混合分析(<code>calib_public.py</code>、<code>group_filter_eval.py</code>、23:40;<strong>probe と full_eval の Public 値が出る前に記録</strong>)</h2>
+<ul>
+<li><code>group_filter_eval.py</code>: 凍結した表で、登録主出力(blend21 + GL fallback、評価器の式で再計算 — 全 9 run で評価器の top-25 と 0 不一致)と、その<strong>全順位列</strong>を候補群で絞った版(pool / Pc / train / COCONUT のみ = probe kernel と同じ定義)の分子別 RR と、真の所属群(train / COCONUT のみ / PubChem のみ / 不在)を出す(fold-0 の M2x 表、full_rk の表 × rank_v4b / rank_rk_fx)。</li>
+<li><code>calib_public.py</code>: 隠しテストを 10 個の局所型(クラス 1: パネル型・dev2 の難しい NP・W7 NP;クラス 2 の真が COCONUT: 3 型;真が PubChem のみ: 3 型;不在 / クラス 3)の混合とし、Dirichlet(1) の重みを 40 万〜200 万本引いて、提出済みの値(M2x 0.354、保険 0.336、以後 pool / Pc)を許容幅(水準 ±0.03、主出力との差 ±0.015)で再現する重みだけを残す(ABC)。クラス 1 は fold-0 で 80% 既見として full_rk の表の値と混ぜる(dev2 の難しい層は既見版が無いので未見の値のまま)。</li>
+<li><strong>2 観測だけでの事前予測(23:40)</strong>: 不在 / クラス 3 の重み 0.54 <a href="局所の型はどれも B1 が高得点なので、0.354 を説明するには多くの分子が 0 である必要がある">0.49, 0.59</a>。予測: pool 0.291 <a href="主出力 −0.065">0.211, 0.355</a>、Pc 0.083 [0.026, 0.156]、<strong>full_eval +0.006 [+0.002, +0.011]</strong>、RK_new(full_rk の表)+0.003。→ full_eval は ±0.02 の読みではほぼ確実に「未確定」と予測。pool が主出力を上回れば、局所の型の混合ではパネル型より「難しい C1」(pool の利得 +0.12)が多く PubChem のみの真が少ない方向へ動く。</li>
+<li>限界: 型は局所の代理で、隠しテストの分子が型の凸包の外にあれば(例: パネルより参照類似度の低い timsTOF の C1)水準は「不在」の重みに吸収される。Public の 130 分子の標本誤差は許容幅で近似しただけ。</li>
+</ul>
+<h2 id="dev2-cc2-codex-026diagc2_decompose_ccsv2345-fpnet">dev2 C/C2 の悪化の切り分け(Codex 026、<code>diag/c2_decompose_C.csv</code>、23:45)と FPNet の負例露出</h2>
+<ul>
+<li>C/C2 の 100 分子(真: PubChem のみ 47 / COCONUT のみ 37 / 不在 16): shortlist 到達は 93 → 93(変化なし)。<strong>FPNet の段(M2x → RK_old)−2.00 RR は COCONUT の真で −3.10、PubChem のみの真で +1.10</strong>、<strong>ranker の段(RK_old → RK_new)−1.86 RR も COCONUT の真で −2.62、PubChem のみで +0.76</strong>。悪化した分子の多くは COCONUT の真の窓内 FP 順位が下がった例(15 → 52、10 → 47、6 → 40 など)。</li>
+<li>同じ窓の真の FP 順位(dev2 C2 全層、真の所属別): COCONUT のみの真は FP-only MRR 0.239(fold0)→ 0.264(full_rk)/ 0.269(full_eval)、PubChem のみの真は 0.362 → 0.408 / 0.392(paired: full_rk − fold0 は COCONUT +0.025 [−0.015, +0.066]、PubChem のみ +0.046 [+0.008, +0.083])。層別では C だけ COCONUT が悪化(0.232 → 0.201)、D/E/F は改善。→ 「full 学習で COCONUT の真が系統的に下がる」は支持されない(C 層に固有)。</li>
+<li><strong>FPNet の学習レシピの性質(コードで確認)</strong>: <code>casmi.traindata.Data.negatives()</code> は ranking loss のデコイを v2 pool 全体(710,701 = train 由来 + COCONUT 由来 436,515 + 他)から質量窓で引き、<strong>保留 split で pool を絞らない</strong>(保留するのは正例だけ)。1 構造あたり学習中に約 1,900 回デコイとして使われる計算(82,855 更新 × 256 × 63 / 710k)。→ (i) dev2 の C2 の真は全員 pool 内(train 構造で正例からは保留、負例には入る)= <strong>すべて負例露出</strong>、(ii) 隠しクラス 2 の真のうち COCONUT にあるものは負例露出、PubChem のみのものは露出なし。私たちの C2 の代理は PubChem のみの真について隠しより厳しい条件で測っている可能性がある(大きさは未測定;測るには保留 identity と COCONUT を負例 pool から外した FPNet の再学習が要る)。公開系譜(E0)の FPNet も同じレシピなので、隠しテストでの影響は両者共通。</li>
+<li><strong>二段の較正(<code>calib_public2.py</code>、Codex 026 Q3 を反映、00:30、Public 値の前に記録)</strong>: 段 1 は fold-0 で提出した構成(M2x 0.354、保険 0.336、以後 pool / Pc)だけで重みを決め、段 2 で他の構成の Public 差 = Σ w_t · D_t(X) を、型ごとに<strong>有効な分子</strong>(クラス 2 は X の FPNet で identity 未見、クラス 1 は query 未見)の paired 差で予測する。測れないセル(full_eval の W7 = query 学習済み、パネル C2 = identity 学習済み)は名指しの類似型から補完して印を付ける。クラス 1 の「fold-0 でも既見(約 80%)」の部分は未測定なので 0 と置き、測れる部分(fold-0 未見 → 新 FPNet)に (1 − q_seen) を掛ける(dev2 の難しい C1 は新 FPNet でも未見なので、その差は代用値 — 印付き)。<strong>事前予測(主出力 0.354 との差)</strong>: full_eval(提出済み)−0.002 [−0.005, +0.001]、FE_new −0.004、full_rk + 旧 ranker −0.004、RK_new −0.006、pcd0.5 +0.001・pcd1 +0.003・pcd2 +0.005、pool −0.054 [−0.128, −0.009]、Pc 約 0.07。→ このモデルでは今夜の full_eval は 0.35 前後(±0.02 の読みでは未確定)。大きく外れれば、局所の型と露出の扱いに足りないものがある。</li>
+</ul>
+<h2 id="public-probe-0037-0048023b-2-025-2">Public の probe 結果(00:37 / 00:48;023b §2 の読みの表、025 §2 の代数)</h2>
+<table>
+<thead>
+<tr>
+<th>提出</th>
+<th style="text-align: right;">Public</th>
+<th>読み</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主出力 M2x(57610156、基準)</td>
+<td style="text-align: right;">0.354</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Pc probe(PubChem tier のみ、57630335)</strong></td>
+<td style="text-align: right;"><strong>0.046</strong></td>
+<td>&gt; 0.02 → 元出力の Pc 側の寄与は 0.02 超もあり得るが最大 0.046</td>
+</tr>
+<tr>
+<td><strong>pool probe(train か COCONUT、57630176)</strong></td>
+<td style="text-align: right;"><strong>0.336</strong></td>
+<td>0.334 &lt; 0.336 &lt; 0.374 → 中間(この固定フィルタは Public で −0.018、±0.02 の内側)</td>
+</tr>
+<tr>
+<td>- 代数(K = pool 群、P = Pc 群、別 run の近似): <code>P_pool − M = G_K − M_P = −0.018</code>、<code>G_K + G_P = P_pool + P_Pc − M = +0.028</code>(候補と群内順位を固定したまま真の所属群を完全に選べた場合の回収量)、<code>0.018 ≤ M_P ≤ 0.046</code> → <code>0.308 ≤ M_K ≤ 0.336</code>。</td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+<tr>
+<td>- <strong>読み</strong>: (1) B1 の 0.354 の大半(≥ 0.308)は真が train か COCONUT の分子から。PubChem のみの真の寄与は 0.018〜0.046。(2) 群の間の取り違え(Pc のデコイが pool の真を押し下げる等)を完全に解いても +0.028 まで — <strong>E0 との差 0.11 の主因ではない</strong>。(3) したがって E0 の優位があるとすれば、<strong>pool 群(train + COCONUT)の内側での順位付け</strong>(既見 FPNet・ライブラリ一致・prior・GL の使い方)か、B1 がどの構成でも 0 点の分子(候補に無い・25 位より下・クラス 3)。</td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+<tr>
+<td>- 較正(段 1 に 4 観測、51 / 400 万採択): 予測は pool 0.323 <a href="3 観測時">0.298, 0.349</a>に対して実測 0.336 で区間内。「全構成で 0 点の成分」0.54 [0.50, 0.59]、PubChem のみの真の代理 0.055 [0.034, 0.073]。段 2 の予測: pcd0.5 +0.003、pcd1 +0.006、pcd2 +0.010、pcd4 +0.012 [+0.004, +0.022]、<strong>full_eval −0.002 <a href="実測待ち = 予測の確認">−0.006, +0.000</a></strong>、FE_new −0.005、RK_new −0.006。→ 局所で作れる変更はどれも Public では ±0.01 程度と予測される。</td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="full_eval-public0100-0370-0354-0016">full_eval の Public(01:00): <strong>0.370</strong>(基準 0.354 から +0.016)</h2>
+<ul>
+<li>020/022 の読み: ±0.02 の内側 → 「未確定」(基準 0.354 を保持)。点推定は B1 の最高値で、022 の登録評価(パネル C1 clean +0.035、dev2 保護層の点はすべて ≥ −0.02)と同じ向き。</li>
+<li><strong>較正の予測は外れた</strong>: 結果前の予測 −0.002 <a href="q_seen 0.8">−0.006, +0.000</a>、q_seen 0.5 / 0.2 / 0.0 でも −0.001 / +0.000 / +0.001。→ 局所の型の混合では FPNet 変更の効果を説明できない。欠落の候補: 「全構成で 0 点の成分」は fold-0 系の構成で 0 という意味しかなく、FPNet を替えると shortlist が変わり、その成分の一部(fold-0 で未見のクラス 1 の真が shortlist に入らず 0 点だった分子など)が得点し得る。パネルでは fold-0 未見 → full_eval 既見で真の FP top-200 到達が 0.896 → 0.996。130 分子で +0.016 は約 2 分子分なので、数分子の救済で説明できる。→ 較正モデルは「同じ FPNet・同じ shortlist の内側での変更」(pcd、ranker の一部)にしか使えない、と限定して記録する。</li>
+</ul>
+<h2 id="e0-public-e0-notebook-growth-pattern0155">公開系譜(E0)の Public の増分表(E0 notebook の "Growth Pattern"、01:55 再読)と、私たちの読みの規則への含意</h2>
+<table>
+<thead>
+<tr>
+<th>版</th>
+<th>主な変更</th>
+<th style="text-align: right;">ΔLB</th>
+<th style="text-align: right;">Public</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v4i(Gluzdov "From Spectra to Structures")</td>
+<td>160 特徴・LightGBM 4 本・独立の PubChem チャネル・ICEBERG/GLACIER</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">0.373</td>
+</tr>
+<tr>
+<td>v4l</td>
+<td>ICE/GL の重み 1.0</td>
+<td style="text-align: right;">+0.007</td>
+<td style="text-align: right;">0.380</td>
+</tr>
+<tr>
+<td>v4n-e5c</td>
+<td>二エンジン融合 + BIO(ChEBI + LIPID MAPS)/ AFIX(式由来の質量)</td>
+<td style="text-align: right;">+0.006</td>
+<td style="text-align: right;">0.386</td>
+</tr>
+<tr>
+<td>v4n-engine-fusion</td>
+<td><strong>fpnet_full1(全 train FPNet)</strong>+ forward 融合</td>
+<td style="text-align: right;"><strong>+0.013</strong></td>
+<td style="text-align: right;">0.399</td>
+</tr>
+<tr>
+<td>V10 Apex</td>
+<td>popularity prior</td>
+<td style="text-align: right;">+0.002</td>
+<td style="text-align: right;">0.401</td>
+</tr>
+<tr>
+<td>V44 PairTail</td>
+<td><strong>LambdaRank + top-1 保護</strong></td>
+<td style="text-align: right;"><strong>+0.016</strong></td>
+<td style="text-align: right;">0.417</td>
+</tr>
+<tr>
+<td>V1</td>
+<td>PubChem の昇格 + GLACIER rerank</td>
+<td style="text-align: right;">+0.008</td>
+<td style="text-align: right;">0.425</td>
+</tr>
+<tr>
+<td>V1.1</td>
+<td>metric-safe tail</td>
+<td style="text-align: right;">+0.008</td>
+<td style="text-align: right;">0.433</td>
+</tr>
+<tr>
+<td>E004 / ICE fallback / E006 / FragGap</td>
+<td>identity 投票 / GLACIER 不在時の ICEBERG / window-40 / MetFrag-lite</td>
+<td style="text-align: right;">+0.003 / +0.002 / +0.002 / +0.001</td>
+<td style="text-align: right;">0.441</td>
+</tr>
+<tr>
+<td>Data Behind v20</td>
+<td><strong>5-fold FPNet ensemble</strong> + NP・LOTUS・同義語 prior + proxy rescoring + 候補挿入</td>
+<td style="text-align: right;"><strong>+0.023</strong></td>
+<td style="text-align: right;">0.464</td>
+</tr>
+<tr>
+<td>(表の注記どおり、連続した公開スコアの差で因果効果の分離ではない。)</td>
+<td></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>- <strong>B1 + full_eval(0.370)は系譜の v4i(0.373)とほぼ同じ位置</strong>。私たちの全 train FPNet の +0.016 は系譜の fpnet_full1 の +0.013 と整合。</td>
+<td></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>- 0.373 → 0.464 は +0.001〜+0.023 の多数の小さな段の積み重ね。<strong>一段ごとの効果の多くは私たちの ±0.02 の読みの内側</strong>で、一変更ずつ Public で「確定」させる今の運用では、本物の改善もほとんど確定しない。→ 次の段階の運用の論点(Codex と相談): (a) 局所の登録評価で保護条件を満たした変更を束ねて一回の比較にする、(b) Public の向きを局所の証拠と組み合わせて採否に使う規則(±0.02 以外の判断材料)、(c) 系譜の部品の移植の優先順位(FPNet ensemble = ENS2 を検証中、LambdaRank の top-1 保護、NP / LOTUS / 同義語 prior は B1 も特徴として一部保持、proxy rescoring は B1 の <code>--adduct_proxy</code> がパネルで利得なし、BIO / AFIX の候補源は未実装)。</td>
+<td></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+<h2 id="tail-hedge-2650-fold-0-m2x-group_filter_evalpy-0200">末尾の分散(tail hedge)と順位帯 26〜50 の局所値(fold-0 の M2x 表、<code>group_filter_eval.py</code> に追加、02:00)</h2>
+<ul>
+<li>tail hedge = 主順位の上位 25−k に、別の順位(FP のみ / prior のみ / GL のみ / 参照のみ / pool 窓の FP)の上位 k(k = 3, 5)を足す(系譜の rank-24 挿入・engine-2 挿入と同じ考え方)。<strong>全層で ΔMRR ≤ +0.0005</strong>、E/C1(負イオンのみ)で参照・pool FP の hedge が +0.010〜+0.011 だけ。</li>
+<li>主順位で真が 26〜50 位にある割合は 0〜10%(E/F の forward 不在層で 6〜10%)、band26 の oracle 追加分は 0〜0.014。→ 局所では「B1 が 0 点の分子」の多くは 50 位より下か shortlist 外(dev2 C2 で真が候補外 16〜46%)。今夜の band26 probe(Public)が隠しでも同じかを測る。</li>
+</ul></article><p class='small muted'>原文: <code>docs/validation_design.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

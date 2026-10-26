@@ -1,4 +1,4 @@
-# 033 pre-registration: readings fixed before the 10/26 Public results (written 09:15 JST, results expected ~12:15-12:30)
+# 033 pre-registration: readings fixed before the 10/26 Public results (written 09:10 JST, results expected ~12:15-12:30)
 
 Submissions (09:02 JST): T probe 57645888, COCONUT-only probe 57645901, band26 probe 57645908, DUP diagnostic 57645926.
 The readings of 027_decision §2, 030_decision §1 and 032_decision §2 stay as fixed. This file only adds two predictions and one external comparison.
@@ -20,7 +20,7 @@ The readings of 027_decision §2, 030_decision §1 and 032_decision §2 stay as 
   - **P_T ≥ 0.29**: B1 already recovers the twin cases. The gap lies in non-train truths (COCONUT ordering, PubChem) or in the zero component.
   - In between: undecided. Use the DUP diagnostic and the local twin tables before acting.
 
-## 3. Addendum 09:35 JST: second calibration model with the community twin probe as an observation (before any result)
+## 3. Addendum 09:18 JST: second calibration model with the community twin probe as an observation (before any result)
 - Local twin tables (`group_filter_eval.py` + twin columns -> `diag/gf2_{m2x,fe}_{panel,p2dev,devAB}.csv`; main/train identical to the gf tables): twin = best library match among B1's candidates of the view.
   - fold-0 M2x: panel C1 main 0.882 / twin alone 0.852 / twin-first (any similarity) 0.910; **G timsTOF C1 main 0.612 / twin alone 0.816 / twin-first 0.867**; W7 B C1 0.913 / 0.887 / 0.925.
   - The C2 views lose heavily under twin-first: panel C2 0.904 -> 0.494 (t0) / 0.799 (t0.7) / 0.896 (t0.9); G C2 0.716 -> 0.389 / 0.619 / 0.673.
