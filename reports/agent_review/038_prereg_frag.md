@@ -7,3 +7,8 @@ Variants (z(frag) within the molecule's shortlist; analog/learned routing as reg
 - on the working baseline: frg_{0.25,0.5,1} = FE score + w·z(frag);
 - on the registered v7a combination (rank_v7a blend21 when GL covered, insurance + 1·z(ap) otherwise): v7f_{0.25,0.5,1} = + w·z(frag) on both paths; v7ffb_{0.25,0.5,1} = + w·z(frag) on the fallback path only.
 Selection: the 036 11-layer class-2 objective; constraints: every class-2 layer ≥ −0.02, panel C1 clean ≥ −0.01 and C / G C1 not more than 0.01 below the v7a combination; a v7f/v7ffb variant replaces the registered v7a candidate only if its objective is ≥ +0.005 above v7a's. Then confirmation against the v7a combination on conf3 + fit pool + fit pool 2 (reused sets, fold-0) with paired intervals; Codex review before any Public use.
+
+## Result (13:11 JST)
+- Development (11 class-2 layers, vs the v7a combination): v7ffb_1 (+1·z(frag) on the GL-fallback path only) **+0.0073** (min −0.0004; panel C1 clean / C C1 / G C1 unchanged) → passes; v7ffb_0.5 +0.0044, v7f_0.25 +0.0048 (below the bar), v7f_0.5/1 lower with G C1 −0.006/−0.016. On FE alone frg_{0.25,0.5,1} = +0.009/+0.011/+0.012 (vs the analog's +0.041).
+- Confirmation (conf3 + fit pool + fit pool 2, fold-0, reused sets), v7ffb_1 − v7a combination: **all C2 (686) +0.014 [+0.006, +0.023]** (E C2 +0.031 [+0.014, +0.049], F C2 +0.007, G +0.002, C/D 0), all C1 (290) +0.003 [−0.003, +0.009] (F C1 −0.022 [−0.064, 0.000]).
+- Reading: a small, confirmed increment on the GL-blind molecules (negative-only above all), consistent with E0's use of MetFrag-lite only where no forward model scores. Candidate update (pending the pipeline implementation, parity and Codex): the registered v7a combination + 1·z(frag) on the fallback path.

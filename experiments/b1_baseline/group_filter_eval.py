@@ -16,6 +16,7 @@ import lightgbm as lgb
 ap = argparse.ArgumentParser(); ap.add_argument("--run", required=True); ap.add_argument("--sets", nargs="+", required=True); ap.add_argument("--model", required=True)
 ap.add_argument("--eval_csv", required=True); ap.add_argument("--out", required=True); ap.add_argument("--w_ice", type=float, default=0.0)
 ap.add_argument("--analog", default="", help="analog_probe.py parquet: adds the analog-channel variants ana_only / anaw<w> / anamt<w> (2026-10-26)")
+ap.add_argument("--frag", default="", help="frag_probe.py parquet: adds frg_<w> / v7f_<w> / v7ffb_<w> (038)")
 ap.add_argument("--analog_view_c2", default="c2", help="analog parquet view used for the c2 view (c2x = the same-library sensitivity)")
 ap.add_argument("--tau", type=float, default=0.9); ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
 a = ap.parse_args()
@@ -29,6 +30,11 @@ if a.analog:
     ANA = pd.read_parquet(a.analog); ANA["molecule"] = ANA["molecule"].astype(str)
     ANA = {k: g.set_index("smiles") for k, g in ANA.groupby(["set", "view", "molecule"])}
 ANA_W = (0.25, 0.5, 1.0, 2.0)
+FRG = None
+if a.frag:
+    FRG = pd.read_parquet(a.frag); FRG["molecule"] = FRG["molecule"].astype(str)
+    FRG = {k: dict(zip(g.smiles.astype(str), g.frag.astype(float))) for k, g in FRG.groupby(["set", "view", "molecule"])}
+FRG_W = (0.25, 0.5, 1.0)
 for s in a.sets:
     F = pd.read_parquet(f"{a.run}/b1_features_{s}.parquet"); F["molecule"] = F["molecule"].astype(str)
     M = pd.read_csv(f"{a.run}/b1_molecules_{s}.csv").set_index("molecule"); M.index = M.index.astype(str)
@@ -93,6 +99,16 @@ for s in a.sets:
                 sc_ = np.asarray(score, float) - w * pen
                 if base_w and anaf: x_ = anaf["ap"]; sc_ = sc_ + base_w * (x_ - x_.mean()) / (x_.std() + 1e-9)
                 return np.argsort(-sc_, kind="stable")
+            fragf = None
+            if FRG is not None:
+                hf = FRG.get((s, v, mid), {}); fragf = np.array([float(hf.get(sm, 0.0)) for sm in g.smiles.astype(str)])
+            def combo(wa_c, wa_u, wf_c, wf_u):   # 038: analog (covered / fallback) and frag (covered / fallback) weights on the registered score
+                sc_ = np.asarray(score, float).copy()
+                if anaf:
+                    x_ = anaf["ap"]; sc_ = sc_ + (wa_c if gl_ok else wa_u) * (x_ - x_.mean()) / (x_.std() + 1e-9)
+                if fragf is not None:
+                    sc_ = sc_ + (wf_c if gl_ok else wf_u) * (fragf - fragf.mean()) / (fragf.std() + 1e-9)
+                return np.argsort(-sc_, kind="stable")
             def libw(w):   # soft variant: the registered score + w * library similarity (z units per unit similarity)
                 return np.argsort(-(np.asarray(score, float) + w * lib_), kind="stable")
             def hedge(base_order, alt, k):   # tail hedge (2026-10-26): main top-(25-k), then the best k by an alternative score among the remaining candidates
@@ -108,6 +124,9 @@ for s in a.sets:
                              **{f"twin1m_t{t:g}_m{m:g}": rr(twin_gate(t, m=m)) for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)},
                              **{f"twin1k_t{t:g}_k{k}": rr(twin_gate(t, k=k)) for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)},
                              **{f"libw{w:g}": rr(libw(w)) for w in (1.0, 2.0, 4.0)},
+                             **({f"frg_{w:g}": rr(combo(0, 0, w, w)) for w in FRG_W} if fragf is not None else {}),
+                             **({f"v7f_{w:g}": rr(combo(0, 1, w, w)) for w in FRG_W} if fragf is not None else {}),
+                             **({f"v7ffb_{w:g}": rr(combo(0, 1, 0, w)) for w in FRG_W} if fragf is not None else {}),
                              **{f"tdem{t:g}_{w:g}": rr(tdem(t, w)) for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)},
                              **({f"anatdem{t:g}_{w:g}": rr(tdem(t, w, 0.5)) for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)} if anaf else {}),
                              **({"ana_only": rr(np.lexsort((np.argsort(order), -anaf["ap"])))} if anaf else {}),
@@ -118,7 +137,7 @@ for s in a.sets:
                              **({f"anamtx{w:g}": rr(anav("mean_tan_x", w)) for w in ANA_W} if anaf and "mean_tan_x" in next(iter(ANA.values())).columns else {}), twin_rank=(pos_[tw] + 1 if tw >= 0 else 0), lib_2nd=lib_2nd,
                              truth_rank=(int(np.flatnonzero(tr[order])[0]) + 1 if tr.any() else 0)))
 R = pd.DataFrame(rows); os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True); R.to_csv(a.out + ".csv", index=False)
-cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)] + [f"twin1m_t{t:g}_m{m:g}" for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)] + [f"twin1k_t{t:g}_k{k}" for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)] + [f"libw{w:g}" for w in (1.0, 2.0, 4.0)] + [f"tdem{t:g}_{w:g}" for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)] + ([f"anatdem{t:g}_{w:g}" for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)] if a.analog else []) + (["ana_only"] + [f"anaw{w:g}" for w in ANA_W] + [f"anag{wc:g}_{wu:g}" for wc, wu in ((0.5, 1.0), (0.5, 2.0), (0.25, 1.0), (0.25, 2.0), (0.0, 0.5), (0.0, 1.0))] + [f"anamt{w:g}" for w in ANA_W] + [f"anaxw{w:g}" for w in ANA_W] + [f"anamtx{w:g}" for w in ANA_W] if a.analog else []) + ["pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
+cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)] + [f"twin1m_t{t:g}_m{m:g}" for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)] + [f"twin1k_t{t:g}_k{k}" for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)] + [f"libw{w:g}" for w in (1.0, 2.0, 4.0)] + [f"tdem{t:g}_{w:g}" for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)] + ([f"{p_}_{w:g}" for p_ in ("frg", "v7f", "v7ffb") for w in (0.25, 0.5, 1.0)] if a.frag else []) + ([f"anatdem{t:g}_{w:g}" for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)] if a.analog else []) + (["ana_only"] + [f"anaw{w:g}" for w in ANA_W] + [f"anag{wc:g}_{wu:g}" for wc, wu in ((0.5, 1.0), (0.5, 2.0), (0.25, 1.0), (0.25, 2.0), (0.0, 0.5), (0.0, 1.0))] + [f"anamt{w:g}" for w in ANA_W] + [f"anaxw{w:g}" for w in ANA_W] + [f"anamtx{w:g}" for w in ANA_W] if a.analog else []) + ["pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
 summ = R.fillna({k: 0.0 for k in cols}).groupby(["set", "view", "truth_group"])[cols].agg(["mean"]).round(4); summ.columns = cols
 summ["n"] = R.groupby(["set", "view", "truth_group"]).size()
 print(f"parity mismatches vs evaluator top-25: {mism} of {int((R.n_cand > 0).sum())}"); print(summ.to_string())
