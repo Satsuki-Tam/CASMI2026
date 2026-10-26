@@ -218,6 +218,7 @@ def main():
     ap.add_argument("--adduct_proxy", action="store_true", help="forward-model proxies for molecules without a covered positive spectrum: [M+NH4]+ / [M-H2O+H]+ scored as [M+H]+ (public N1A arm A)")
     ap.add_argument("--twin_tau", type=float, default=None, help="twin-first (Codex 033): the candidate with the best library match goes to rank 1 of the main list when its similarity >= twin_tau and exceeds every other candidate's best match by >= --twin_margin (default off)")
     ap.add_argument("--twin_margin", type=float, default=0.0)
+    ap.add_argument("--analog_w", type=float, default=0.0, help="library-analog channel (b1_analog, Codex 034/035): main score + analog_w * z(ap) within the molecule (ap = max Tanimoto to the top-80 analog structures x spectral similarity^3); default 0 = off")
     ap.add_argument("--neg_proxy", action="store_true", help="EXPERIMENTAL: also map negative-mode spectra of such molecules onto the positive axis (b1_common.forward_proxies)")
     args = ap.parse_args(); P = paths(args); os.makedirs(P["work"], exist_ok=True); T0 = time.time(); log = lambda *x: print(f"[b1 {time.time()-T0:7.0f}s]", *x, flush=True)
     test_path = args.test or (os.path.join(comp_dir(), "test.parquet") if KAGGLE else os.path.join(os.path.dirname(P["train"]), "test.parquet"))
@@ -291,6 +292,21 @@ def main():
                 if k: key_rows.setdefault(k, []).append(rows)
             key_rows = {k: np.concatenate(v) for k, v in key_rows.items()}
         log(f"library index: {len(key_rows):,} official identities with reference spectra")
+        ANA_STORE = None
+        if args.analog_w:   # analog channel: representative store over every train spectrum with an official key
+            import b1_analog as BA
+            from rdkit import Chem as _Chem
+            from rdkit.Chem import rdFingerprintGenerator as _rfg
+            _gen = _rfg.GetMorganGenerator(radius=2, fpSize=2048); _afp = {}
+            def ana_fp(smi):
+                if smi not in _afp:
+                    m_ = _Chem.MolFromSmiles(smi) if smi else None; _afp[smi] = _gen.GetFingerprint(m_) if m_ is not None else None
+                return _afp[smi]
+            key_of_row = np.full(len(lib_of_row), None, dtype=object)
+            for k_, rr_ in key_rows.items(): key_of_row[np.asarray(rr_, np.int64)] = k_
+            _tr = pool.filter(pl.col("src").is_in([1, 3])); ANA_KEY_SMI = dict(zip(_tr["key"].to_list(), _tr["smiles"].to_list()))
+            ce_of_row_ = meta["ce_mean"].to_numpy().astype(np.float64)
+            ANA_STORE = BA.Store(np.arange(len(lib_of_row)), lib_of_row, add_of_row, mode_of_row, ce_of_row_, key_of_row, prec_of_row, lambda x: spectrum(int(x)), log=log)
         EXCL_ROWS = set(json.load(open(args.exclude_rows))) if args.exclude_rows else set()
         EXCL_IDS = set(json.load(open(args.exclude_identities))) if args.exclude_identities else set()
         MASK = json.load(open(args.mask_json)) if args.mask_json else {}
@@ -425,6 +441,16 @@ def main():
                                  lib_same=float(max(lib_same[j] for j in idxs)), lib_nref=int(max(nref[j] for j in idxs)), in_train=bool(any(in_train[j] for j in idxs)),
                                  in_tier=bool(any(trow[j] >= 0 for j in idxs)), in_coconut=bool(any(in_coco[j] for j in idxs)), ppm_err=float(np.nanmin([ppm_err[j] for j in idxs])),
                                  fp_rank_window=int(len(fp_sorted) - np.searchsorted(fp_sorted, np.nan_to_num(fpu[i], nan=-1e18), side="left")), **{n: float(comp[n][i]) for n in comp}))
+            if ANA_STORE is not None and rows:   # analog channel: same masks as the library similarity (evaluation mode)
+                an_ = ANA_STORE.analogs([dict(mz=s_["mz"], it=s_["it"], prec=s_["prec"], adduct=s_["adduct"], mode=s_["mode"]) for s_ in q], query_rows=excl_rows, drop_keys=excl_ids,
+                                        relib=(same_lib.get("identity"), same_lib.get("lib")) if same_lib else None, key_rows=key_rows)
+                afp_, asim_, akey_ = [], [], []
+                for k_, v_ in an_:
+                    f_ = ana_fp(ANA_KEY_SMI.get(k_))
+                    if f_ is not None: afp_.append(f_); asim_.append(v_); akey_.append(k_)
+                fa_ = BA.features([ana_fp(r_["smiles"]) for r_ in rows], afp_, asim_, cand_keys=[r_["key"] for r_ in rows], analog_keys=akey_)
+                for j_, r_ in enumerate(rows):
+                    for f_name in ("ap", "mean_tan", "ap_x", "mean_tan_x"): r_["ana_" + f_name] = float(fa_[f_name][j_])
             feats[mid] = rows
             molinfo[mid] = dict(n_query=len(q), ce_known=float(np.mean([s["ce"] is not None for s in q])), n_unique=float(n_u))
             rspec = [dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
@@ -525,6 +551,9 @@ def main():
                 order = np.argsort(-sc, kind="stable"); fused_stats["learned"] += 1; main_sc = sc
             except Exception as e:
                 fused_stats["learned_failed"] += 1; log("learned fusion failed for", mid, repr(e))
+        if args.analog_w and rows and "ana_ap" in rows[0]:   # analog channel (Codex 034): registered main score + w * z(ap) within the molecule
+            ap_ = np.array([r["ana_ap"] for r in rows], float); zap_ = (ap_ - ap_.mean()) / (ap_.std() + 1e-9)
+            main_sc = np.asarray(main_sc, float) + args.analog_w * zap_; order = np.argsort(-main_sc, kind="stable"); fused_stats["analog"] += 1
         if args.pcl_boost:   # PubChemLite prior on the main list (2026-10-25): main score (learned/blend, or the insurance fallback) + w * membership
             in_pcl = np.array([r["key"] in PCL_KEYS for r in rows], float); fused_stats["pcl_boost_mols"] += int(in_pcl.any())
             order = np.argsort(-(np.asarray(main_sc, float) + args.pcl_boost * in_pcl), kind="stable")
@@ -539,7 +568,7 @@ def main():
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     for name_, v_ in sub_probe.items(): pd.DataFrame(v_, columns=["molecule_id", "smiles"]).to_csv(f"{P['work']}/submission_probe_{name_}.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
