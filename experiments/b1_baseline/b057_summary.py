@@ -17,6 +17,8 @@ for K in (1, 2):
     if os.path.exists(p): R = pd.read_csv(p); R["molecule"] = R.molecule.astype(str); D[f"np{K}"] = R
 D["panel"] = pd.read_csv(os.path.join(HERE, "diag/b057_panel.csv"))
 VAR = [c for c in D["f1dev"].columns if c[:2] in ("v1", "v2", "v3") and c != "v2:2:0.5"]
+for k_ in D:   # molecules with an empty list carry no variant columns (all outputs are 0 there)
+    for c_ in VAR: D[k_][c_] = D[k_][c_].fillna(D[k_]["main"])
 def block_stat(frames, var, weights=None):
     """frames: list of (df, stratum column or None); each block = mean over its strata (equal) of (var - main); returns point and bootstrap CI over molecules."""
     pts, boots = [], []
