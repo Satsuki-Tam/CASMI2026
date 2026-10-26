@@ -22,3 +22,6 @@
 ## Family 3 result (13:01 JST)
 - 11-layer objective (with the registered combination routing): rank_v7a_fx +0.0768 (min −0.0048; panel C1 clean +0.0051), rank_rka +0.0678 (min −0.0122; panel C1 clean +0.0086), registered v7a +0.0745 (min −0.0077; panel C1 clean +0.0102), anaw0.5 +0.0408.
 - Neither passes the replacement rule (v7a_fx: +0.0023 < +0.005 and lower panel C1 clean; rka: lower objective). **The registered v7a candidate (037b) stays unchanged.** Side reading: the fixed-300-round model reproduces v7a's gain, so the gain is not an artefact of the 600-round selection; training on the seen-regime (full_rk) tables does not add to it.
+
+## Proxy on top of the v7a combination (13:05 JST, dev2 full_eval, path switching included)
+- With NH4 / water-loss / negative proxies, 190 C2 and 101 C1 molecules move from the fallback (+ analog) path to the learned rank_v7a path. v7a+proxy − v7a: all C2 +0.006 [−0.009, +0.020], **all C1 −0.032 [−0.051, −0.014]** (E C1 −0.074, F C1 −0.082). → not a candidate; the analog-weighted fallback list is better than the learned path for these GL-proxy molecules.
