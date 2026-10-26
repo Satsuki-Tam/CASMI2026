@@ -12,3 +12,7 @@
 - 量 = 「B 群に絞った方策の MRR」(元の全体スコアへの B の寄与ではない;群内で順位が詰まる)。E0_T/B の差を 0.085 へ配分しない、class 比率と読まない。
 - **Δ = E0_B − B1_B(0.379)**。Δ ≥ +0.04: COCONUT 非 train 候補の経路(候補到達・順位・forward 被覆)の調査を最優先(E0 の pool 窓・ranker の分解をオフラインで)。−0.02 < Δ < +0.04: B 経路は主因でない可能性 → T と群間の融合を別日に一対で。Δ ≤ −0.02: B 内では B1 が上 → E0 の優位は他(T・Pc・群間)。
 - 有意差や帰属の境界には使わない。Public で閾値・重みを調整しない。
+
+## 追記(2026-10-27 05:07): commit run(可視ダミーの smoke)の確認
+- B1 probe(casmi26-b1-probe-b379 v1): `OK (400, 2)` の後に `E0_PROBE B rows 400 non-empty lists 1 candidates kept 1 of 688`(smoke の 12 分子のリストのうち B 群を持つのは 1;ダミーは合成化学なので少ない)。
+- E0 probe(casmi26-e0-probe-b v1): `E0_PROBE B rows 400 non-empty lists 10 candidates kept 61 of 688`。両 kernel とも status COMPLETE、追加セルは例外なく実行。
