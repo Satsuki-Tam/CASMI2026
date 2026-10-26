@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-27 02:46 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-27 05:30 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -12141,4 +12141,471 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <h2 id="052">自分の追加の観察(052)</h2>
 <ul>
 <li>開発集合の「NP 層」は正解の 2/3 が非 NP の化学で、パネル(隠しに最も近い)は 99.6% が COCONUT の NP。NP の正解では GLACIER が弱く prior が強い → NP 正解の開発集合(053、fold-1/2 の dev 各 320 + 閉じた conf 各 320)と、パネルを fold-safe FPNet で未見にした class-2 ベンチ(054)を作成中。次の Codex 依頼(053)で評価の主対象をこれに移す提案をする。</li>
-</ul></details></article><article><h1>050: </h1></article><article><h1>051: </h1></article><article><h1>052: </h1></article><article><h1>053: </h1></article><article><h1>055: </h1></article><article><h1>056: </h1></article><article><h1>057: </h1></article><article><h1>058: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul></details></article><article><h1>050: </h1></article><article><h1>051: </h1></article><article><h1>052: </h1></article><article><h1>053: 053 依頼: 評価の主対象を「NP の正解」に移す提案と、夜間の実験群</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-052">1. 観察(052、探索)</a></li>
+<li><a href="#2">2. 作った評価集合(結果の前に固定)</a></li>
+<li><a href="#3">3. 提案(登録の型の変更)</a></li>
+<li><a href="#_1">質問</a></li>
+<li><a href="#_2">追記(送信時)</a></li>
+</ul>
+</div>
+</div><h1 id="053-np">053 依頼: 評価の主対象を「NP の正解」に移す提案と、夜間の実験群</h1>
+<p>作成: 2026-10-27 03:00 JST(Claude Code)。前提: <code>049b_decision.md</code>、 <code>049_codex.md</code>、<code>049_decision.md</code>、<code>052_np_chemistry_findings.md</code>(探索)、055〜058 の事前登録。</p>
+<h2 id="1-052">1. 観察(052、探索)</h2>
+<ul>
+<li>パネル(Enveda NP、隠しに最も近い)の正解は 99.6% が COCONUT、92.4% が PubChemLite、prior の中央値 18.2(デコイ 2.1)。fold-1/2 dev の「NP 層」は正解の COCONUT 率が C 0.38 / D 0.17 / E 0.42 / F 0.65(G 0)で、2/3 は非 NP(D の PubChem/COCONUT 外の 58〜62% は GNPS の組合せ合成様の構造)。</li>
+<li>NP(COCONUT)の正解では GLACIER がほぼ識別できず(C 層で GL 順位の中央値 20 vs 非 NP 2)、prior が強い。NP の正解が 1 位を逃すとき、勝者の 80〜91% は<strong>より有名な別の NP 異性体</strong>(PubChem だけのデコイではない)→ pool だけの窓にしても、この負け方は減らない。</li>
+<li>同じ NP(パネル)を fold-safe FPNet で未見にして timsTOF の query と GNPS / RIKEN の query を比べると、FP の窓内 MRR は 0.25 / 0.24 / 0.20 で装置差は小さい(052 の dg 診断、3 fold 分の途中集計)。窓全体で FP + 0.15 prior の top-1 は 0.68(パネルの NP は有名)。</li>
+</ul>
+<h2 id="2">2. 作った評価集合(結果の前に固定)</h2>
+<ul>
+<li><strong>053 NP 正解集合</strong>: fold-1/2 の未使用 identity、MSG 外、正解 = COCONUT 構造、query は timsTOF 以外の全ライブラリ、層 = NP_H(H/Na の query)200 / NP_X(正イオン非対応)60 / NP_N(負イオンのみ)60 を dev と conf(閉じたまま)に各 fold で。</li>
+<li><strong>054 パネル未見ベンチ(PU)</strong>: パネルを各分子の identity fold の公開 FPNet で未見にした C2(timsTOF query、有名な NP)。GL はパネルで MSG 汚染なので楽観側。</li>
+<li><strong>058</strong>: 公開 kit はパネルの identity 群を全 5 fold で学習から除外 → パネルで公開 5 本の ensemble と単体を比較(診断)。</li>
+</ul>
+<h2 id="3">3. 提案(登録の型の変更)</h2>
+<ul>
+<li>主指標 = <strong>NP 正解の C2</strong>(053 dev の層等重み + 既存 dev の COCONUT 正解分子)。補助 = PU(有名な NP の上限側)。</li>
+<li>保護 = NP C1、非 NP 正解の C2、パネル C1(既見)で「有意な害なし」(049b の議論を反映)。G は stress。</li>
+<li>確認 = 053 の conf(f1/f2 各 320)を候補ごとに一回。</li>
+</ul>
+<h2 id="_1">質問</h2>
+<ol>
+<li>主対象を NP 正解に移すことに異論は。隠しの class 2 の「有名さ」が不明な点(パネル型なら prior が支配、そうでなければ証拠の改善が要る)をどう扱うか(今日の prior-only probe と PU を上下の目安に使う案)。</li>
+<li>053 conf は複数の候補(050 proxy、057 blend、056 ranker、059 生成)で共有されるので、一回だけの確認をどう割り当てるか(集合の分割、または候補ごとの優先順位)。</li>
+</ol>
+<h2 id="_2">追記(送信時)</h2>
+<ul>
+<li>052 §4・§5 を追加: NP の正解が 1 位を逃すとき勝者の 80〜91% は「より有名な別の NP 異性体」。prior だけの top-1 は パネル未見 0.707 / dev の COCONUT 正解 0.219 / dev の非 NP 正解 0.054(FP 単独は群で大差なし)。</li>
+<li>052 の dg 診断は 5 fold 完了(集計は 053 の結果と一緒に記録予定)。</li>
+<li>049b の判断(screening と確認の分離、ε = 0.01 の三状態)に沿って 056/057 の登録を結果の前に追記済み。050 は既に一部を読んだので登録のまま。
+3. 053 conf を使う確認の型(049b のひな型)で、主保護の候補として「パネル C1(既見)」と「非 NP 正解の C2 集約」を置いたが、隠しの class 1 が NP であることを考えると、NP C1 の既見 regime の集合(例: 外部 672 identity の監査済み群、または 053 の NP 分子を full_eval の表で C1 にしたもの)を主保護に加えるべきか。</li>
+</ul></details><details><summary>回答(Codex)</summary><p>053 レビュー（2026-10-27）</p>
+<p><strong>COCONUT収載の正解を持つC2へ焦点を当てる実験は支持します。ただし、その集合をNP全体や隠し全体の代理と確定しないでください。053 confを候補ごとに繰り返し開く運用は避けます。特に、050へNP_X、057へNP_Hを割り当てる案は、057の現実装で <code>wp=1</code> を選ぶ場合には不十分です。NP C1の主保護は拡充する価値がありますが、053 queryをfull_evalでそのまま評価する案はquery未見を保証しません。</strong></p>
+<p><strong>Q1：主対象をNP正解へ移すこと、priorの強さが不明なこと</strong></p>
+<p>従来の「NPライブラリ由来query」と、構造の性質・catalogue所属が異なることを確認した点は重要です。053の作成コードとdev側manifestでは、fold-1/2、MSG除外、既存集合とのidentity group交差0、各foldのH200/X60/N60、dev/conf交差0を確認しました。この固定集合で化学領域を揃える意義はあります。</p>
+<p>ただし、名称はまず <strong>「COCONUT収載正解のC2」</strong> としてください。COCONUTは公開NPデータを集約・整備する資源で、非収載は非NPの証明ではありません。PubChem/COCONUTのスナップショットにないことも、合成物だという証明にはなりません。N-アシルアミドや胆汁酸抱合体という型だけで非NPと判定するのも不適切です。例えばglycochenodeoxycholic acidはChEBIでhuman metaboliteとされています。<a href="https://academic.oup.com/nar/article/53/D1/D634/7908792">COCONUT 2.0原著</a>、<a href="https://www.ebi.ac.uk/chebi/CHEBI%3A36274">ChEBIの例</a></p>
+<p>「正解の2/3が非NP」ではなく、「指定のCOCONUT集合への所属率が低い」と記録するのが現時点の証拠に合います。合成ライブラリ由来という判断は、元のdataset・取得・構造注釈で別途裏付けます。公式の隠し対象にも、推定天然物・天然物アナログ・自然に存在し得る合成分子が含まれます。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/data">公式Data</a>（10/27保存版参照）</p>
+<p><strong>052の探索は有用ですが、次の読みを修正してください。</strong></p>
+<ol>
+<li><strong>順位の分析は正解が候補に入った条件付きです。</strong> <code>np_top1_source.py</code> と格子探索は <code>g.is_truth.any()</code> を満たさないqueryを落とします。勝者分析はfold-1/2のC/D/E/F計800 C2 queryのうち547件です。GL格子ではさらにGL被覆を条件としています。候補到達できなかった分子を含む端から端の性能とは区別してください。COCONUT所属もshortlistに正解があるときだけ付けるのではなく、固定catalogueから全queryへ付けます。</li>
+<li><strong>「勝者の80〜91%が、より有名なNP異性体」は三つの条件を混ぜています。</strong> 同じスクリプトを再計算し、winnerがCOCONUT、priorが正解より高い、分子式が一致する、を別々に調べました。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>COCONUT正解が1位を逃した群</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">winnerがCOCONUT</th>
+<th style="text-align: right;">COCOかつpriorが高い</th>
+<th style="text-align: right;">COCO・高prior・同式の三条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GLあり</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">32（80.0%）</td>
+<td style="text-align: right;">22（55.0%）</td>
+<td style="text-align: right;"><strong>21（52.5%）</strong></td>
+</tr>
+<tr>
+<td>GLなし</td>
+<td style="text-align: right;">123</td>
+<td style="text-align: right;">112（91.1%）</td>
+<td style="text-align: right;">109（88.6%）</td>
+<td style="text-align: right;"><strong>104（84.6%）</strong></td>
+</tr>
+</tbody>
+</table>
+<p>同じ質量窓にあるだけでは同式の異性体とは限りません。NP候補間の識別が課題である方向は支持されますが、GLありでは「より高いpriorの同式COCO候補」に負けたのは約半分です。さらにこの分析はanalogなし、GL不足時も簡略化したスコアで、登録出力全体の失敗分類ではありません。</p>
+<ol start="3">
+<li><strong>pool経路全体が無効という結論には届きません。</strong> 既存順位を保って非COCO候補だけを除いても、COCOのwinnerは残ります。一方、poolだけの窓で相対特徴やrankerを作り直す処理は、COCO候補同士の順位も変え得ます。この集計で否定できるのは単純なフィルタによる救済の一部です。</li>
+<li><strong>GLのmedian rank 20だけで「ほぼ識別できない」とは断定しません。</strong> 候補数、同式NP候補数、正解のGL欠測、ランダム順位、NP候補内の順位、query/adduct/質量等を揃えた比較が必要です。GLを下げる格子の利得は、まず選択に使った集合内の探索値です。057の全分母・登録出力で確認する方針は妥当です。</li>
+<li><strong>装置・取得条件の差は、5fold完了後のpaired結果で読み直します。</strong> 保存済みの窓内FP順位を、同じmoleculeとfoldで結合した結果は次のとおりでした。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>対比較</th>
+<th style="text-align: right;">共通identity数</th>
+<th style="text-align: right;">timsTOF側MRR</th>
+<th style="text-align: right;">他library側MRR</th>
+<th style="text-align: right;">他library − timsTOF（paired 95%区間）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GNPS / timsTOF</td>
+<td style="text-align: right;">233</td>
+<td style="text-align: right;">0.2390</td>
+<td style="text-align: right;">0.2109</td>
+<td style="text-align: right;">−0.0281 [−0.0672, +0.0110]</td>
+</tr>
+<tr>
+<td>RIKEN / timsTOF</td>
+<td style="text-align: right;">246</td>
+<td style="text-align: right;">0.2398</td>
+<td style="text-align: right;">0.1620</td>
+<td style="text-align: right;"><strong>−0.0779 [−0.1154, −0.0407]</strong></td>
+</tr>
+</tbody>
+</table>
+<p>10,000回のidentity bootstrapによる探索的な区間です。RIKEN側の差は小さいとは言えません。これは装置だけでなく取得・前処理・adduct/CE・query選択を合わせた差であり、機器単独の因果効果ではありません。053は全てnon-timsTOF queryなので、化学を近づけた後にもこの違いが残ります。</p>
+<p>また、窓内統計と提出スコアの定義も揃えます。<code>b1_features</code> のtruth順位と <code>np_ledger</code> は同点時の順位の扱いが異なり、前者のprior順位にはFPの微小なtie-break項が入っています。探索値を登録MRRへ移す前に、公式identityの一意化と提出系のtie-breakで照合してください。</p>
+<p><strong>prior-only probeとPUは、上下の境界ではなく条件の違う診断です。</strong> Publicのprior-onlyは、概ね「正解がそのshortlistに入る確率」と「そこでprior＋tie-breakが付ける順位」の積を全queryで平均した量です。shortlist自体はFP等で選ばれ、class混合も含まれます。この値から、隠しの『有名なNPの割合』は直接求まりません。PUも、意図的にcommonなパネル、モデル露出、GLACIERのMSG重複という条件を持ち、数学的な上限ではありません。GLなしの経路も下限とは限りません。</p>
+<p>従って「Publicが0.379だから、パネルほど有名でないかclass 3が多いかの二択」とは絞れません。候補到達、取得条件、融合、モデル露出等も関わります。052の含意は条件付きの仮説へ書き換えてください。</p>
+<p>未知のprior分布には、<strong>開発データで境界を固定したpriorの低・中・高群と欠測群</strong>を使うのがよいです。COCO収載正解の中でも、各群の改善・損失、候補到達、同式候補数を出します。新しい指標を選ぶためにPublic probeの値へ重みを合わせず、いくつかの固定混合で結論が変わるかを感度表にします。priorの数値は注釈・登録数等を含む合成スコアなので、人間的な「有名さ」そのものとも区別します。</p>
+<p>主指標をCOCO収載C2にすること自体は、目的を絞った実験として賛成です。H/X/N各1/3、fold各1/2等は運用上の重みであり、隠しのadduct構成やclass構成の推定ではありません。真のCOCO所属で事後集計することはできますが、推論時にその真値を使ってGL/priorの重みを切り替えることはできません。</p>
+<p><strong>Q2：053 confの割り当て</strong></p>
+<p><strong>4候補へ等分する案は勧めません。</strong> 各foldのH200/X60/N60を4分割すると、X/Nは各fold15件となり、C1 usableはさらに減ります。049bで整理した小標本・多数判定の問題を戻してしまいます。また、同じ640件を候補ごとに見て調整し、それぞれ「一回確認」と呼ぶ運用にもできません。</p>
+<p>050の03:15追記で示された <strong>NP_X→050 arm a、NP_H→057</strong> という観測条件ごとの割り当ては、変更範囲が一致するなら実行可能です。ただし、現057には一致しない候補があります。</p>
+<p><strong><code>gen_eval2v.py:250–252</code> は、GL不足時も <code>Sv = z(FP)+wg*z(GL)+wp*pop</code> をfallbackへ使います。<code>wp=1</code> の3候補はNP_X/NP_Nの順位も変えます。</strong> 例えばGLなし・library発火なしで、2候補のz(FP)が(1,−1)、priorが(0,3)なら、wp=0.5では(1,0.5)、wp=1では(1,2)となって順位が逆転します。「blendだけなのでNP_Hだけ確認すればよい」とはなりません。</p>
+<p>開封前に、次のどちらかを固定してください。</p>
+<ul>
+<li>057を <strong>GL経路だけの変更</strong> に限定するなら、fallbackを基準のままにする版を作り、hashを変えて開発から再評価する。NP_X/NP_Nが全queryで不変であることを確認して、NP_Hで確認する。</li>
+<li>fallbackのprior変更も候補の仕様として残すなら、<strong>NP_X/NP_Nも057の確認対象</strong>にする。050と同じXを共有する場合は、後述の同時確認として全候補・対照・判断を先に固定する。Xを050で見た後に057の重みを調整し、そのXを057の新しい確認に使わない。</li>
+</ul>
+<p>wp=0.5の候補を選んだ場合も、partial GLやproxyの有無による変更範囲を機械的に確認します。対象外の差が0と確認できれば、変更する条件の確認へ集中できます。NP_Hだけの差を報告する場合は、その対象を明記し、H/X/Nの全体差へ換算する重みとτも固定します。057の開発4block指標と、確認側の新053 blockの指標も、同じ名前で曖昧に扱わないでください。</p>
+<p>割り当ての推奨は以下です。</p>
+<table>
+<thead>
+<tr>
+<th>候補</th>
+<th>確認の扱い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>056 ranker重み対照</td>
+<td>予約済み3b/4bを維持。開発で一つ選んでから開封する。053は追加の開発・領域診断に使える。</td>
+</tr>
+<tr>
+<td>050 arm a</td>
+<td>追記どおりNP_Xの120件を使うなら、COCO収載・non-timsTOFという確認対象への変更を明記。C1 usable件数と変更対象数を先に監査する。</td>
+</tr>
+<tr>
+<td>050 arm n</td>
+<td>登録のpxconf Eを使い、正イオンproxyと別に判断する。</td>
+</tr>
+<tr>
+<td>057 blend</td>
+<td>GL経路限定で不変範囲を保証できればNP_Hの400件。全経路のprior変更ならH/X/N全てが必要。</td>
+</tr>
+<tr>
+<td>059生成</td>
+<td>053の残りを自動的に割り当てない。C3到達が目的ならC2の合格では代替できず、COCO既知構造を隠したC3 proxyの限界も記録する。</td>
+</tr>
+</tbody>
+</table>
+<p>複数候補を同じconfで測る必要があれば、<strong>一度の同時確認</strong>として行う方法はあります。候補の全hash、基準、主指標、主保護、候補間の選択・多重性の扱いを一括で固定し、全てを計算してから一回開きます。それは複数回の独立確認ではありません。開封後に新しい係数や組合せを追加しません。</p>
+<p><strong>proxyとblendを後から足す際の相互作用にも注意が必要です。</strong> proxyでNP_XへGLを付けると、そのXがblendの変更対象へ移ります。個別にHとXで合格しても、組合せのXの挙動は未確認です。組み合わせて採用する計画なら、開封前にbundleを固定し、両方の割り当て部分でbundleを基準と比較する方法がよいです。個別効果を測る必要があれば、固定したablationsを副比較として登録します。</p>
+<p><strong>Q3：NP C1の既見regimeを主保護に加えるか</strong></p>
+<p><strong>加える価値があります。ただし、既にNP C1であるパネルと重複した主保護を増やすより、NP C1の集約を広げる形を勧めます。</strong> パネルのcommon・参照豊富な分子だけでは、低priorや参照の薄いNP C1を十分に測れません。外部672 identityのうち、NP注釈、実際のcheckpoint露出、query取得の独立性、既存の調整集合との重複を監査した群は、この追加blockの候補になります。672全件が使えるわけではありません。</p>
+<p><strong>053分子をfull_evalの表でC1にするだけの案は、そのままでは使えません。</strong> full_evalの記録で除外しているのは、旧dev2/locked2のidentity群と、パネルquery取得・その重複です。新しい053のfold-1/2分子について、非timsTOFのquery取得を学習から除く設計にはなっていません。参照検索からqueryを除いても、FPNetが学習時に見た取得は消えません。これは「identity既見・query未見」の保護ではなく、query学習済みを含み得る診断です。</p>
+<p>その条件を新しく作るなら、query取得群とその別処理版・コピーを初期重みも含めて学習から除き、同identityの独立取得だけを残すモデルが必要です。先に外部queryを監査する方が、現在のfull_evalをそのまま評価できる可能性があり、追加学習も省けます。出典が違うだけ、類似度が0.95未満というだけで独立取得とは断定しません。外部queryの装置が違う点も別blockとして残します。</p>
+<p><strong>主保護の構成例は二つの集約です。</strong></p>
+<ol>
+<li>採用時の露出に対応したNP C1：パネルcleanと監査済み外部queryを、結果前に固定したblock重みで統合し、各blockも併記する。ensembleではcheckpointごとの露出vectorを合わせる。</li>
+<li>主対象以外のC2：COCONUT非収載正解の集約。「非NP」とは呼ばず、catalogue到達・到達不能も分けて記録する。</li>
+</ol>
+<p>ε=0.01の三状態は049b_decisionどおりです。開発で有意な害が検出されないことと、確認で非劣性を支持することを分けます。053本文の「有意な害なし」は、056/057の03:00追記の定義で置き換えて読んでください。</p>
+<p><strong>053 confは全てCOCO収載正解なので、2の非収載C2保護を新たに測れません。</strong> また、1の既見・query独立C1も053のfold-safe C1表からは得られません。厳密に主保護を確認したいなら、別の未使用blockを確認manifestへ加えます。既存devや繰り返し使ったパネルだけで保護する場合は、「主対象のheld-out確認＋既知集合の保護診断」と範囲を明記し、全主保護を独立に確認したとは呼びません。</p>
+<p><strong>実装・台帳の補足</strong></p>
+<ul>
+<li>正解COCO所属は、固定catalogue版と公式identityの定義で全queryへ付ける。予測に真が現れたかで母集団を変えない。053の全320/640件を端から端のMRRの分母に残し、到達した群の順位解析は別表にする。</li>
+<li>053 selectorはpoolのscorer keyとCOCONUT raw keyのいずれかで収載判定しています。使ったCOCONUTスナップショットもhashを残してください。現manifestはpoolをhash化しますが、<code>coco_meta.pkl</code> のhashは含んでいません。</li>
+<li>H/X/Nは実際に選んだqueryに対する層です。NP_N→NP_X→NP_Hの優先順位と、non-timsTOF library選択の影響を残します。proxy対象はmetadataの <code>proxy_capable</code> だけでなく、実際の変換・ピークcut後に数えます。</li>
+<li>056の現登録の主指標は従来C/D/E/Fのマクロ、057は新旧COCO収載群の4blockです。053の新しい主対象へ移す場合も、結果を見た後に元の選択規則を置き換えず、登録の版と目的を分けます。</li>
+</ul>
+<p>確認範囲：指定資料、049b判断、050の03:15追記、056/057の追記、058、selectorとmanifest、052探索コード、全5foldの保存済みdomain-gap表、full_eval学習監査を確認しました。勝者の再集計とpaired診断はSparkのCPU1 threadで実施しました。053 confの分子行・予測・成績、予約済み3b/4b、従来locked2の結果は開いていません。手元の重い計算、GPU、学習、提出は行っていません。確認対象の <code>gen_eval2v.py</code> はsha <code>69fd717694a4</code>、<code>p3_select_np.py</code> は <code>459d866bb763</code>、<code>np_top1_source.py</code> は <code>5987e2730663</code> です。</p>
+<p>REVIEW_COMPLETE: 053</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="053-2026-10-27-0335-jst-codex-053">053 判断(2026-10-27 03:35 JST)— Codex 053 を受けて</h1>
+<h2 id="_1">採用</h2>
+<ol>
+<li><strong>呼び方の訂正</strong>: 「NP / 非 NP」ではなく「<strong>COCONUT 収載の正解 / 非収載の正解</strong>」と記録する(非収載は非 NP の証明ではない;N-アシルアミド等も型だけで非 NP としない)。052 の「正解の 2/3 が非 NP」は「指定の COCONUT 集合への所属率が低い」に読み替える。</li>
+<li><strong>052 の分析は条件付き</strong>: 勝者の分析・GL 格子は「正解が候補に入った(かつ GL 被覆あり)」分子だけ。Codex の再集計で、COCONUT 正解が 1 位を逃した時に「COCONUT かつ prior が高く同じ分子式」の勝者は <strong>GL あり 52.5%、GL なし 84.6%</strong>(「80〜91% が有名な NP 異性体」は三条件を混ぜていた)。端から端の MRR(全分母)と到達群の順位解析を分けて書く。</li>
+<li><strong>装置差の訂正</strong>: 5 fold の paired で、RIKEN の query は timsTOF より窓内 FP の MRR が −0.078 <a href="GNPS は −0.028、非有意">−0.115, −0.041</a>。「装置差は主因ではない」は撤回し、「取得条件を含めて差があり得る(RIKEN で大)」とする。053 は全て非 timsTOF の query なので、この差は残る。</li>
+<li><strong>prior-only probe と PU は境界ではなく条件の違う診断</strong>。「Public 0.379 → 有名でない or クラス 3 が多い」の二択には絞らない(候補到達・取得条件・融合・露出も関わる)。prior の低・中・高・欠測の群(開発データで境界を固定)ごとの感度表で扱う。</li>
+<li><strong>053 conf の割り当て</strong>: 等分しない。050 arm a → NP_X(COCONUT 収載・非 timsTOF が確認対象であることを明記、C1 usable 数と変更対象数を先に監査)、050 arm n → pxconf の E、056 → 予約済みの 3b/4b、057 → <strong>GL 経路だけの変更に限定できる場合のみ NP_H</strong>(wp を変える候補は fallback も変えるので X/N も必要 — 開発の結果から wp = 1 の候補は既に大きく劣後しており選ばない見込み)、059 → 053 の残りを自動で割り当てない。複数候補が同じ conf を使う場合は<strong>同時確認</strong>(全 hash・基準・指標・選択規則を先に固定し、一回だけ開く)。</li>
+<li><strong>proxy と blend の相互作用</strong>: 組み合わせて採用する場合は bundle を開封前に固定する。</li>
+<li><strong>NP C1 の主保護の拡充</strong>: 053 の query を full_eval の表で C1 にする案は query 学習済みを含み得るので使わない。外部 672 identity(train 内)の監査済み群を C1 の追加 block の候補にする(後日)。053 conf だけでは非収載 C2 と既見 C1 の主保護は測れない → 確認の報告では「主対象の held-out 確認 + 既知集合での保護診断」と範囲を明記する。</li>
+<li>台帳: COCONUT のスナップショット hash を selector の manifest に追加する(次の選択から)、053 の全 320/640 件を端から端の分母に残す。</li>
+</ol>
+<h2 id="_2">今後の扱い</h2>
+<ul>
+<li>050 arm a の確認は登録どおり進める(NP_X、job 実行中)。結果の報告では対象を「COCONUT 収載正解・非 timsTOF query の X 層」と明記。</li>
+<li>057 は開発の結果(f1/f2 dev では wg 0.5 の効果が NP 収載 C2 で +0.003〜+0.009 と小さく、wp 1 は大きく悪化)を見た上で、053 dev の結果が出てから確認に進むかを決める。進む場合は GL 経路限定の版(fallback 不変を機械確認)を新しい hash で作る。</li>
+</ul></details></article><article><h1>055: </h1></article><article><h1>056: </h1></article><article><h1>057: </h1></article><article><h1>058: </h1></article><article><h1>059: </h1></article><article><h1>060: </h1></article><article><h1>062: 062 依頼: 夜間の結果のまとめと、今日・明日の判断</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 結果(登録の読み)</a></li>
+<li><a href="#2">2. 気になっている系統的な問題(相談したい)</a></li>
+<li><a href="#3-0900">3. 今日の提出(09:00〜)</a></li>
+<li><a href="#_1">質問</a></li>
+</ul>
+</div>
+</div><h1 id="062">062 依頼: 夜間の結果のまとめと、今日・明日の判断</h1>
+<p>作成: 2026-10-27 05:06 JST(Claude Code)。前提: 049〜060 の各登録・結果ファイル(<code>050_conf_results.md</code>、<code>056_dev_result.md</code>、<code>057_dev_result.md</code>、<code>058_result.md</code>、<code>059_gen_np_result.md</code>、<code>060_dev_result.md</code>)。</p>
+<h2 id="1">1. 結果(登録の読み)</h2>
+<table>
+<thead>
+<tr>
+<th>番号</th>
+<th>候補</th>
+<th>開発</th>
+<th>確認 / 補助</th>
+<th>現時点の扱い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>050 a</td>
+<td>GL の無い分子に NH4 / 水脱離の proxy</td>
+<td>F C2 +0.022 / +0.067</td>
+<td><strong>確認(053 conf NP_X)は登録の規則で不合格</strong>: 主指標 +0.045 [−0.009, +0.100] は正だが、fold-1 の C1 usable が 3 分子で 1 分子の降下(−0.167)。補助: dev2(full_eval の表)F C2 −0.006、パネル C1 −0.0045</td>
+<td>提出しない。full_eval の表での効果を主対象に再登録するかは保留</td>
+</tr>
+<tr>
+<td>050 n</td>
+<td>+ 負イオン proxy</td>
+<td>E C2 +0.033 / +0.073</td>
+<td>f2 E C1 −0.054 で開発不合格</td>
+<td>—</td>
+</tr>
+<tr>
+<td>056</td>
+<td>rank_v8w(pool の C1 比率を旧レシピ 0.46 に)</td>
+<td>NP C2 マクロ <strong>+0.0130 [+0.0064, +0.0201]</strong>、パネル C1 非劣性</td>
+<td>3b/4b の確認を準備中(gen dump の再計算、表の同一性を検査)。<strong>dev2(full_eval の表)では C C2 −0.0105 / D C2 +0.0022 / C C1 −0.0091</strong>(n 100 ずつ)</td>
+<td>確認待ち</td>
+</tr>
+<tr>
+<td>057</td>
+<td>blend の重み</td>
+<td>最良 +0.0034 &lt; τ</td>
+<td>—</td>
+<td>不採用。探索: PubChemLite 加点 w=1 は 053 の収載 C2 で +0.025(正解所属なら +0.040、非所属 −0.012、損益分岐 23%);PU では prior 上げ + GL 下げで +0.02</td>
+</tr>
+<tr>
+<td>058</td>
+<td>公開 5 本の ensemble(パネル = 全 5 本に未見)</td>
+<td>窓内 FP MRR <strong>+0.033 [+0.005, +0.060]</strong>、主出力 C2 +0.011(非有意)</td>
+<td>—</td>
+<td>本番構成の設計へ</td>
+</tr>
+<tr>
+<td>059</td>
+<td>生成(COCONUT 収載正解)</td>
+<td>生成率 NP_X 55〜58%、ggt3t の C3 マクロ +0.028 / +0.038</td>
+<td>—</td>
+<td>ggt3t は parity PASS・kernel push 済み(gt3 の Public の後)</td>
+</tr>
+<tr>
+<td>060</td>
+<td>一致による 1 位保護</td>
+<td>パネル C1 +0.0127(θ 0.8)、C2 −0.002〜−0.004</td>
+<td>既見 C1 の独立 block が無い</td>
+<td>保留</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2">2. 気になっている系統的な問題(相談したい)</h2>
+<ul>
+<li><strong>評価の FPNet と本番の FPNet が違う</strong>: fold-1/2 の dev/conf は公開 fold モデル(学習データ 8 割、公開レシピ)の表、本番は自前 full_eval(全 train − hold/lock)。050 と 056 は fold-safe の集合で正、dev2(full_eval で未見 = 本番に最も近い regime)では 0〜負。ranker(rank_v4b / v8w)の学習表も公開 fold モデルの特徴で、本番では full_eval の特徴に当てている(train / inference の特徴分布のずれ)。dev2 は n が小さく(層 100)何度も使った集合でもある。</li>
+<li>これを解くには、(a) dev2/locked2 型の「full_eval に未見」の新しい集合を作る(full_eval の hold/lock 以外に未見の identity は無いので不可能)、(b) full_eval と同じレシピで fold-k を除いた自前モデルを学習する(データ 8 割で公開 fold モデルと同程度の強さになり、full_eval の強さは再現しない)、のどちらも難しい。どう扱うべきか。</li>
+</ul>
+<h2 id="3-0900">3. 今日の提出(09:00〜)</h2>
+<ul>
+<li>予定どおり 5 本(枠 1 v7f、枠 2 prior-only probe、枠 3 gt3、枠 4 E0_B probe、枠 5 B1 0.379_B probe)。050 arm a は確認不合格なので入れ替えない。異論があれば。</li>
+</ul>
+<h2 id="_1">質問</h2>
+<ol>
+<li>050 の確認の扱い(登録どおり不合格のまま、で良いか。C1 usable の監査結果を見て規則を変えなかった点の扱い)。</li>
+<li>§2 の FPNet のずれ: 056(v8w)の確認を 3b/4b(公開 fold3/4 の表)で行う意味と、本番への外挿の扱い。v8w を Public で試す前に必要な追加の確認は何か。</li>
+<li>058 を受けた本番の FPNet ensemble(自前 full + 公開 5 本、または公開 5 本だけ)の設計と評価の最小構成。</li>
+<li>prior-only probe の結果が出た後に PubChemLite 加点 / prior の重みをどう判断するか、結果の前に読みを固定したい(例: probe ≥ 0.25 なら PCL w=1 を一変更で Public 比較、≤ 0.15 なら見送り)。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>062への回答（2026-10-27）</p>
+<p><strong>050は登録上の不合格を維持し、今日09:00 JST以降の5本は予定どおりでよいです。056の3b/4b確認には意味がありますが、full_evalへの移行を確認したことにはなりません。次の優先順位は、同じdev2分子でのFPNetとrankerの交差比較、その結果を踏まえたv8wの比較、ensembleの順です。prior-onlyの得点からPCL加点の採否へ直結する分岐には賛成しません。</strong></p>
+<p>依頼と050・056・057・058・059・060の結果、039のprobe判断、055/060の登録、集計・評価コード、FPNetの分割監査を確認しました。追加集計はSpark上の保存済みの小さな開発結果CSVで行いました。3b/4bの確認結果、従来のlocked2、053 confの未開封部分は参照していません。</p>
+<p><strong>Q1：050は不合格を維持する。ただし「母集団でC1が大幅に悪化した」とは結論しない。</strong></p>
+<p>登録した各foldのC1条件を満たさなかったので、今回の採否はFAILです。結果を見てからfoldを合算したり、小標本のfoldだけ保護対象から外したりして合格に変更することは避けます。主指標の+0.0447 [−0.0091, +0.1003]は、今回の区間・ε=0.01では非劣性ですが、正の利得が確立した結果ではありません。</p>
+<p>C1 usable=3は、1分子の1位→2位だけで平均が−0.167になる設計です。登録上のFAILと、C1の効果について十分な精度がないことは併記できます。確認前に標本数不足を記録した点は適切です。ただし今後も「事前登録したから、測定不能と分かっても規則を維持する」必要はありません。効果を開く前のメタデータ監査で不足が判明した段階なら、理由と変更履歴を残し、確認集合の追加・再抽出、または確認保留を決める方がよいです。今回は既に開いたので、新しい設計は別の登録として扱います。</p>
+<p>補助結果には分母の訂正が必要です。<code>diag/px050_panel_{base,a}.csv</code>では、C1の−0.004533は<strong>パネル全250分子</strong>の平均でした。H/Na queryのない34分子に限定すると−0.03333で、悪化はNH4 queryの3分子、改善は0です。C2も全250で−0.001333、同じ34分子では−0.009804です。「非対応34分子で−0.0045」という記載では損失が小さく見えます。全体への影響と、変更対象内の影響を両方残してください。</p>
+<p>この結果は今日の見送りを支持します。一方、proxyがGLを追加することで、保険・参照優先からlearned blendへ出力経路が切り替わる点にも注意が必要です。FPNetの強さだけで符号が変わった、とする前に、GL追加と出力経路変更を分けた診断が必要です。</p>
+<p><strong>Q2：3b/4bは公開FPNet条件での再現性を確認する。full_eval条件は同一分子の交差比較で補う。</strong></p>
+<p>3b/4bで、凍結したv8wが未使用のidentity群でもv4bを上回るかを測ることには価値があります。056に登録した「主指標の点推定&gt;0かつ下限&gt;−0.01」で判断し、これは正の利得の有意性を要求した条件とは区別してください。開発で選択・保護に使ったパネルC1は、引き続き既知集合の診断です。</p>
+<p>現在の「f1/f2では正、full_evalのdev2では負」は、checkpointと評価分子・化学領域・参照条件が同時に変わった比較です。特徴分布のずれは有力な仮説ですが、これだけでは原因を特定できません。また、学習データが同じ8割でも、自前モデルと公開モデルが同じ強さになるとは限りません。</p>
+<p>追加集計したdev2の区間は以下です。<code>r047_rank_v4b_p2dev.csv</code>と<code>r056_rank_v8w_p2dev.csv</code>を分子単位で対応させ、seed=20261027、4,000回のpaired bootstrapで計算しました。確認試験ではなく補助診断です。</p>
+<table>
+<thead>
+<tr>
+<th>full_eval・dev2</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">v8w − v4b</th>
+<th style="text-align: right;">95%区間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C / C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">−0.0105</td>
+<td style="text-align: right;">[−0.0470, +0.0269]</td>
+</tr>
+<tr>
+<td>D / C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">+0.0022</td>
+<td style="text-align: right;">[−0.0166, +0.0235]</td>
+</tr>
+<tr>
+<td>C / C1</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">−0.0091</td>
+<td style="text-align: right;">[−0.0302, +0.0102]</td>
+</tr>
+</tbody>
+</table>
+<p>依頼の「n=100ずつ」はC/C1では95でした。3行ともε=0.01では未確定です。C/C2の点推定が−0.01を割ったことだけで有害と確定することも、区間が0を含むことから安全と判断することもできません。</p>
+<p>最小の追加実験は、<strong>同じdev2のqueryに対する次の4セル</strong>です。公開fold0とfull_evalは、いずれもこのdev2のidentityを学習していない条件で比較できます。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>公開fold0 FPNet</th>
+<th>自前full_eval FPNet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rank_v4b</td>
+<td>基準出力</td>
+<td>基準出力</td>
+</tr>
+<tr>
+<td>rank_v8w</td>
+<td>ranker変更後</td>
+<td>ranker変更後</td>
+</tr>
+</tbody>
+</table>
+<p>各列で分子ごとのΔを作り、<code>I = Δ(full_eval) − Δ(公開fold0)</code>を集計します。query・参照mask・候補資格・集約重みを揃え、同じidentityを対応させて区間を出します。<code>run_p2dev_v3</code>と<code>run_p2dev_fe</code>は存在しますが、manifestだけでは現行maskや生成dumpとの一致を証明できないため、その互換性を確認してから再利用してください。</p>
+<p>最初は各FPNetから実際のshortlistを作る端から端の比較を主とします。共通候補上だけの順位比較は、候補到達とrankerの寄与を分ける補助に使えます。交互作用があっても、それだけで「FPが強いから」と特定できるわけではありません。050を再検討する場合も、同じ分子でproxy有無を交差させ、元の保険・参照優先を維持する診断を追加すると、経路切り替えの影響を調べられます。何度も使ったdev2なので、これを新しい独立確認とは呼びません。</p>
+<p>新しい未見集合については、依頼の(a)(b)以外に選択肢があります。</p>
+<ul>
+<li><strong>少数のidentityだけを新たに除外した、ほぼ全量の自前FPNet</strong>を作る方法があります。確認用identityを先に固定し、従来のhold/lock等に加えて除外すれば、fold全体の20%を捨てる必要はありません。rankerの学習との重複も除外します。既にそのidentityを学習したfull_evalからのfine-tuningでは未見に戻らないため、学習初期値も清潔なものが必要です。これは旧full_evalそのものの確認ではなく、同じレシピの新checkpointの確認になります。旧・新rankerを同じ新checkpointで比べてください。</li>
+<li>固定したfull_evalをそのまま評価するなら、外部782構造のうち「train外」と記録された110が候補です。公式identityとの対応、取得重複、参照・候補資格を監査して初めて未見集合として使えます。672の既存train側を混ぜて782件の未見C2とは扱えません。小標本・sourceの偏りは残ります。</li>
+</ul>
+<p>v8wのPublic比較前には、①登録した3b/4b確認、②上の交差比較とfull_evalでの保護診断、③0.379からmodelだけを変更した本番pipelineの全出力parity、を優先します。③にはfeature順序、checkpoint・モデルhash、fallback、候補集合、生成off、analog係数の一致を含めます。full_evalの保護は事前に決めた少数の集約で読み、未確定が残る場合はそのリスクを明記した一度のPublic比較として判断できます。「本番で改善を確認済み」とは呼びません。今日の5枠を入れ替える根拠にはまだなりません。</p>
+<p><strong>Q3：最初はrankerを固定し、共通の未見集合を確保する。6本平均を通常のOOF評価と扱わない。</strong></p>
+<p>058は、公開fold0に対して公開5本のlogit平均がパネルの窓内FP順位を改善した証拠です。full_evalより良いこと、または最良の単体より良いことはまだ示していません。保存済みlogitで可能なら各単体も比較してください。+0.033が主出力で+0.011に縮むのも、rankerの尺度ずれだけでは説明できません。基準MRRが0.888と高いこと、prior/GLが既に正解していること、shortlistや出力経路の違いでも縮みます。</p>
+<p>最小の候補は、F=full_eval、P=公開5本のlogit平均として、<strong>F、P、0.5F+0.5P</strong>です。係数は効果を見る前に固定します。「6checkpointの等重み平均」は<code>F/6 + 5P/6</code>なので別の案です。公開側へ5倍の重みを付ける理由がなければ、最初はF/Pの2群を等重みにする案を推します。</p>
+<p>評価対象ごとの学習露出は次のとおりです。数はidentity既見のモデル数です。</p>
+<table>
+<thead>
+<tr>
+<th>対象</th>
+<th style="text-align: right;">full_eval</th>
+<th style="text-align: right;">公開5本</th>
+<th>読める範囲</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>通常のtrain内C1（各holdoutを除く）</td>
+<td style="text-align: right;">1/1</td>
+<td style="text-align: right;">4/5</td>
+<td>本番C1に近い露出。ただしquery取得の未見性は別途必要</td>
+</tr>
+<tr>
+<td>パネル</td>
+<td style="text-align: right;">1/1</td>
+<td style="text-align: right;">0/5</td>
+<td>特殊な露出のstress。6本すべて未見のC2にはならない</td>
+</tr>
+<tr>
+<td>従来のdev2</td>
+<td style="text-align: right;">0/1</td>
+<td style="text-align: right;">4/5</td>
+<td>Fと公開fold0の比較に使える。公開5本平均の未見C2確認には使えない</td>
+</tr>
+<tr>
+<td>全学習元から外れた外部identity</td>
+<td style="text-align: right;">0/1</td>
+<td style="text-align: right;">0/5</td>
+<td>監査を通れば本番C2の露出に近い</td>
+</tr>
+</tbody>
+</table>
+<p>最初の小規模評価では、外部110の監査済み部分で未見C2を測り、外部のtrain既見側では独立取得のC1を測る構成が候補です。取得を除外していない既見queryはC1の独立確認に使えません。パネルも併記しますが、058の主出力C2はGLのMSG露出があるため、窓内FP順位と同じ清潔さの証拠にはなりません。</p>
+<p>新規学習を1本に抑えるなら、ある公開fold内に小さな共通holdoutを置き、それを除いたほぼ全量の自前モデルと、その公開foldモデルの2本を比べる方法があります。ただし確認できるのはその2本構成です。他の公開4本を後から加えるとholdoutが既見になるため、6本構成の確認へは引き継げません。</p>
+<p>最初はrank_v4bを固定して、窓内順位、shortlist到達、GL被覆・fallback率、最終MRR、C1の保護、実行時間を比較します。FPの利得が採用先の出力でも見えるかを先に確認し、その後にranker再学習を別変更として検討してください。公開5本の平均は通常のtrain分子を4本が学習済みなので、それで学習表を作って「fold-safe特徴」と呼ぶことはできません。未見C2を学習する行では、平均に入る全モデルからそのidentityを除いた特徴が必要です。</p>
+<p><strong>Q4：prior-onlyは調査の優先順位に使う。PCL加点やprior係数の自動採否には使わない。</strong></p>
+<p>039で固定した読みは、≥0.25、≤0.10、中間、でした。≤0.15は今回の新しい案であり、039から引き継いだ閾値ではありません。今回は既存の読みを保ち、以下を結果前の方針とすることを推します。</p>
+<table>
+<thead>
+<tr>
+<th>prior-onlyのPublic</th>
+<th>固定する読みと次の行動</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>≥0.25</td>
+<td>このshortlistをprior優先で並べる方策が一定の得点を得た。PCL w=1の一変更を局所で検証する優先度を上げる。提出は別の採否判断とする。</td>
+</tr>
+<tr>
+<td>≤0.10</td>
+<td>この単独方策の得点は低い。候補到達・候補内順位・同点・source条件を点検する。これだけでPCLの補完効果を否定しない。</td>
+</tr>
+<tr>
+<td>その間</td>
+<td>診断値として記録し、係数・提出候補を自動変更しない。</td>
+</tr>
+</tbody>
+</table>
+<p>prior-onlyは、FP等を使って選んだshortlist上の順位方策です。そのMRRから、隠しC2のPCL所属率、クラス比率、現在の融合にpriorを追加する限界効果は特定できません。連続的なpopularity priorとPCL所属の二値加点も別の変更です。prior-onlyが高い場合でも既存融合と情報が重複し得ますし、低い場合でも曖昧な候補の一部を補える可能性があります。</p>
+<p>057bの「所属率23%」は、条件付き効果が隠しへ移るという仮定を置いた感度分析です。</p>
+<p><code>Δ_test = q_test × gain_test − (1 − q_test) × loss_test</code></p>
+<p>局所のgain≈0.040、loss≈0.012をそのまま置くと約23%になりますが、隠しでは候補のPCL密度、score差、元のRR、adduct、FPNet、fallback率が変わり、gain/loss自体も変わります。「所属率が23%を超えれば必ず正」とは書かないでください。C1の分岐も別に必要で、パネルの所属率92%を隠しC1全体へ移すことはできません。</p>
+<p>さらに057bには<strong>集約重みの違い</strong>があります。Sparkの<code>diag/np057b_f{1,2}.csv</code>を確認した結果は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>C2・PCL w=1</th>
+<th style="text-align: right;">H/X/N等重み</th>
+<th style="text-align: right;">分子を等重み</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fold1</td>
+<td style="text-align: right;">+0.02455</td>
+<td style="text-align: right;">+0.01514</td>
+</tr>
+<tr>
+<td>fold2</td>
+<td style="text-align: right;">+0.02588</td>
+<td style="text-align: right;">+0.01955</td>
+</tr>
+<tr>
+<td>2foldの集約</td>
+<td style="text-align: right;">+0.02521</td>
+<td style="text-align: right;">+0.01735（640分子）</td>
+</tr>
+</tbody>
+</table>
+<p>359/640の所属率と所属・非所属の分子平均による+0.040/−0.012は、右列の約+0.017と対応します。左列の約+0.025はNP_Xなどを相対的に厚くした指標です。数値の矛盾ではありませんが、同じ期待値として混ぜず、損益分岐は重みを揃えて示してください。</p>
+<p>PCL w=1を進めるなら、0.379のfull_eval・rank_v4b・analog・fallbackをそのままにした一変更として再登録し、COCO所属/非所属、PCL所属/非所属、C1、GL有無の差を読むことを推します。最も利得の大きいNP_Xは050でconfを開封済みです。未開封のNP_Hだけを使って、Xのfallbackで効く案の確認を済ませたことにはできません。独立確認が不足する場合は、その不足を明記した探索的なPublic比較かどうかを判断します。probeが高かったという理由だけで、この不足を解消した扱いにはしません。</p>
+<p>priorの係数を上げた057の案は開発で−0.014〜−0.016、非収載C2でも損失がありました。PUでの正の結果とprior-onlyの高得点が出ても、この不合格は残します。PUは条件の違うシナリオであり、隠しの上限でも実際の混合比の推定でもありません。</p>
+<p><strong>今日と明日の進め方。</strong> 今日09:00 JST以降は、v7f、prior-only、gt3、E0_B、現行0.379_Bの予定を支持します。055どおり、B probeはB群に絞って順位を詰めた方策の比較として読み、元の得点差やクラス比へ配分しません。ggt3tはgt3を見てから別の一変更として扱います。059のCOCO正解を生成する代理評価から、隠しC3の量や利得を直接推定しないでください。060の保留も妥当で、「C1約2割、C2約4〜5割」による正味±0.002は仮定付きの試算として残します。明日はまず同一dev2でのFPNet×ranker比較を済ませ、ensembleやPCLの追加変更を重ねる前に、現在の本番条件への移行で何が変わるかを切り分けるのがよいです。</p>
+<p>REVIEW_COMPLETE: 062</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="062-2026-10-27-0528-jst-codex-062">062 判断(2026-10-27 05:28 JST)— Codex 062 を受けて</h1>
+<h2 id="_1">採用</h2>
+<ol>
+<li><strong>050 は不合格を維持</strong>。ただし「母集団で C1 が大幅に悪化」とは書かない(C1 usable 3 で 1 分子の降下、精度不足)。<strong>パネルの補助値の分母を訂正</strong>: −0.0045 はパネル全 250 の平均で、変更対象の非対応 34 分子に限ると <strong>C1 −0.033(3 分子が下降、改善 0)、C2 −0.0098</strong>。両方を記録する。proxy は GL を足すことで保険・参照優先 → learned blend へ出力経路も切り替える点に注意(経路変更と GL 追加を分けた診断が要る)。今後は、効果を開く前の監査で測定不能が分かった段階なら、理由と履歴を残して確認集合の追加・再抽出・保留を決めてよい。</li>
+<li><strong>今日 09:00 以降の 5 本は予定どおり</strong>(v7f、prior-only、gt3、E0_B、B1 0.379_B)。</li>
+<li><strong>056(v8w)</strong>: 3b/4b の確認は公開 FPNet 条件での再現性の確認として意味がある(full_eval への移行の確認ではない)。Public 比較の前に、①3b/4b の確認、②<strong>同じ dev2 の 4 セル交差比較</strong>(公開 fold0 FPNet / full_eval × rank_v4b / rank_v8w、I = Δ(full_eval) − Δ(fold0))と full_eval での保護診断、③0.379 から model だけを替えた本番 pipeline の全出力 parity。dev2 での v8w − v4b(C C2 −0.0105 [−0.047, +0.027] 等)は全て ε=0.01 で未確定。</li>
+<li><strong>ensemble</strong>: まず rank_v4b を固定し、F(full_eval)/ P(公開 5 本の平均)/ 0.5F+0.5P(係数は先に固定)を比較。各単体も保存 logit で比較。パネルは「既見 1・未見 5」の特殊な露出の stress。外部 110(train 外、監査後)を未見 C2 の小規模集合の候補に。</li>
+<li><strong>prior-only probe の読みは 039 の既定(≥0.25 / ≤0.10 / 中間)のまま</strong>、PCL の採否へ自動では繋げない。PCL w=1 を進めるなら一変更として再登録(NP_X conf は 050 で開封済みなので確認に使えない)。057b の +0.025 は H/X/N 等重み、分子等重みでは +0.017(損益分岐はこの重みで示す)。「所属率 23% を超えれば必ず正」とは書かない。</li>
+<li>明日の最初の作業: dev2 の FPNet × ranker 交差比較(063 の f·z 尺度の診断と合わせて、現在の本番条件で何が起きているかを切り分ける)。</li>
+</ol></details></article><article><h1>063: </h1></article><article><h1>064: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
