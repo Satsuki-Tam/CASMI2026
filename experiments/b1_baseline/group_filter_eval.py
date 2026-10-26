@@ -16,6 +16,7 @@ import lightgbm as lgb
 ap = argparse.ArgumentParser(); ap.add_argument("--run", required=True); ap.add_argument("--sets", nargs="+", required=True); ap.add_argument("--model", required=True)
 ap.add_argument("--eval_csv", required=True); ap.add_argument("--out", required=True); ap.add_argument("--w_ice", type=float, default=0.0)
 ap.add_argument("--analog", default="", help="analog_probe.py parquet: adds the analog-channel variants ana_only / anaw<w> / anamt<w> (2026-10-26)")
+ap.add_argument("--lam", type=float, default=0.5, help="prior weight in the fixed rule S (default 0.5 = registered; 2026-10-26 prior-bias check)")
 ap.add_argument("--frag", default="", help="frag_probe.py parquet: adds frg_<w> / v7f_<w> / v7ffb_<w> (038)")
 ap.add_argument("--analog_view_c2", default="c2", help="analog parquet view used for the c2 view (c2x = the same-library sensitivity)")
 ap.add_argument("--tau", type=float, default=0.9); ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
@@ -52,7 +53,7 @@ for s in a.sets:
             glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
             icv = np.array([np.nan if (ice.get(mid) or {}).get(sm) is None else float((ice.get(mid) or {}).get(sm)) for sm in g.smiles], float)
             zgl = term(glv, True); zice = term(icv, bool(ice) and a.w_ice > 0)
-            S = z(fp) + (2 * zgl if zgl is not None else 0) + (a.w_ice * zice if zice is not None else 0) + 0.5 * pop
+            S = z(fp) + (2 * zgl if zgl is not None else 0) + (a.w_ice * zice if zice is not None else 0) + a.lam * pop
             top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
             fire = bool(lib.max() >= a.tau and lib.max() - second >= a.margin); ins = np.where(lib >= a.tau, 100.0 + lib, S) if fire else S
             gl_ok = np.isfinite(glv).sum() >= max(2, a.min_gl_cover * len(g))
@@ -70,7 +71,7 @@ for s in a.sets:
                 score = 2 * z(np.asarray(bst.predict(X), float)) + z(np.asarray(S, float))
             else: score = ins
             order = np.argsort(-np.asarray(score, float), kind="stable")
-            if not ANA_MODEL:   # registered-evaluator parity of the main list (models with the analog block are checked by b1_parity instead)
+            if not ANA_MODEL and a.lam == 0.5:   # registered-evaluator parity of the main list (models with the analog block are checked by b1_parity instead)
                 ref, _ = E.scores_for(v, g, mid, gl, ice, True, bool(ice) and a.w_ice > 0, c, M, a.tau, a.margin, a.min_gl_cover)
                 if [str(g.smiles.values[i]) for i in order[:25]] != ref["blend21"]: mism += 1
             tr = g.is_truth.values.astype(bool); trn = g[f"in_train_{v}"].values.astype(bool); coco = g.in_coconut.values.astype(bool)
