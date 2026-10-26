@@ -22,6 +22,7 @@ ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet", help="identity groups: every key of the truth's group is removed in the C2 view")
 ap_.add_argument("--runs", nargs="+", required=True, help="RUN_DIR:EVAL_CSV:SET1,SET2 (paths relative to experiments/b1_baseline)")
 ap_.add_argument("--sens_droplib", action="store_true", help="also a C2 sensitivity view 'c2x': analogs from the query's own library removed (same-depositor siblings)")
+ap_.add_argument("--ls_model", default="", help="040: also learned-similarity analogs (ap_ls, mean_tan_ls) and the max of the two weights (ap_lsmax)")
 ap_.add_argument("--out", required=True); ap_.add_argument("--max_spectra", type=int, default=8); ap_.add_argument("--threads", type=int, default=8); ap_.add_argument("--limit", type=int, default=0)
 a = ap_.parse_args()
 set_num_threads(a.threads)
@@ -38,6 +39,10 @@ ik_rows = {k: np.asarray(r, np.int64) for k, r in meta.group_by("inchikey14").ag
 key_rows = {k: np.asarray(r, np.int64) for k, r in meta.filter(pl.col("scorer_ik14").is_not_null()).group_by("scorer_ik14").agg(pl.col("row")).iter_rows()}
 def spectrum(x): return np.asarray(S_MZ[S_OFF[x]:S_OFF[x + 1]], np.float64), np.asarray(S_IT[S_OFF[x]:S_OFF[x + 1]], np.float64)
 store = BA.Store(np.arange(meta.height), lib_of_row, add_of_row, mode_of_row, ce_of_row, key_of_row, prec_of_row, spectrum, log=log)
+LS = None
+if a.ls_model:
+    import b1_analog_ls as BL
+    LS = BL.LSAnalogs(store, BL.LSEmbedder(a.ls_model), spectrum, log=log)
 
 from rdkit import Chem, RDLogger  # noqa: E402
 from rdkit.Chem import rdFingerprintGenerator  # noqa: E402
@@ -73,6 +78,9 @@ for spec in a.runs:
             views = {"c1": store.analogs(qspec, query_rows=q, relib=(truth_key, lib), key_rows=key_rows),
                      "c2": store.analogs(qspec, query_rows=q, drop_keys=drop_c2)}
             if a.sens_droplib: views["c2x"] = store.analogs(qspec, query_rows=q, drop_keys=drop_c2, drop_libs={lib})
+            ls_views = {}
+            if LS is not None:
+                ls_views = {"c1": LS.analogs(qspec, query_rows=q, relib=(truth_key, lib), key_rows=key_rows), "c2": LS.analogs(qspec, query_rows=q, drop_keys=drop_c2)}
             for v, an in views.items():
                 g = E.view_frame(F, M, mid, "c2" if v == "c2x" else v) if mid in M.index else pd.DataFrame()
                 if len(g) == 0: continue
@@ -80,7 +88,18 @@ for spec in a.runs:
                 for k_, s_ in an:
                     f_ = fp_of(KEY_SMI.get(k_, ""))
                     if f_ is not None: afp.append(f_); asim.append(s_); akey.append(k_)
-                smis = g.smiles.astype(str).tolist(); feat = BA.features([fp_of(x) for x in smis], afp, asim, cand_keys=g.official_key.astype(str).tolist(), analog_keys=akey)
+                smis = g.smiles.astype(str).tolist(); cfp = [fp_of(x) for x in smis]; feat = BA.features(cfp, afp, asim, cand_keys=g.official_key.astype(str).tolist(), analog_keys=akey)
+                if LS is not None:
+                    def _fe(lst):
+                        fp_, w_ = [], []
+                        for k_, s_ in lst:
+                            f_ = fp_of(KEY_SMI.get(k_, ""))
+                            if f_ is not None: fp_.append(f_); w_.append(s_)
+                        return BA.features(cfp, fp_, w_)
+                    fl = _fe(ls_views[v]); mx = {}
+                    for k_, s_ in list(an) + list(ls_views[v]): mx[k_] = max(mx.get(k_, 0.0), s_)
+                    fm = _fe(sorted(mx.items(), key=lambda kv: (-kv[1], kv[0]))[:80])
+                    feat.update(ap_ls=fl["ap"], mean_tan_ls=fl["mean_tan"], ap_lsmax=fm["ap"], mean_tan_lsmax=fm["mean_tan"])
                 for i, smi in enumerate(smis):
                     rows_out.append(dict(set=s, view=v, molecule=mid, smiles=smi, **{k: float(feat[k][i]) for k in feat}, n_analog=len(afp), top_sim=float(asim[0]) if asim else 0.0))
             if n_i % 25 == 0: log(f"{run} {s} {n_i + 1}/{len(mols)} | rows {len(rows_out):,}")

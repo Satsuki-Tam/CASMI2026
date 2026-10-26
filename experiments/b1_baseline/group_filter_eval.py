@@ -59,7 +59,7 @@ for s in a.sets:
             anaf = {}
             if ANA is not None:
                 h = ANA.get((s, a.analog_view_c2 if v == "c2" else v, mid))
-                for c_ in ("ap", "mean_tan", "ap_x", "mean_tan_x"):
+                for c_ in ("ap", "mean_tan", "ap_x", "mean_tan_x", "ap_ls", "ap_lsmax"):
                     x_ = np.array([float(h[c_].get(sm, 0.0)) if (h is not None and c_ in h.columns) else 0.0 for sm in g.smiles.astype(str)]); anaf[c_] = x_
             if gl_ok:
                 X = feature_matrix(fp, glv, icv, pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values, lib,
@@ -135,10 +135,13 @@ for s in a.sets:
                              **({f"anag{wc:g}_{wu:g}": rr(anag(wc, wu)) for wc, wu in ((0.5, 1.0), (0.5, 2.0), (0.25, 1.0), (0.25, 2.0), (0.0, 0.5), (0.0, 1.0))} if anaf else {}),
                              **({f"anamt{w:g}": rr(anav("mean_tan", w)) for w in ANA_W} if anaf else {}),
                              **({f"anaxw{w:g}": rr(anav("ap_x", w)) for w in ANA_W} if anaf and "ap_x" in next(iter(ANA.values())).columns else {}),
-                             **({f"anamtx{w:g}": rr(anav("mean_tan_x", w)) for w in ANA_W} if anaf and "mean_tan_x" in next(iter(ANA.values())).columns else {}), twin_rank=(pos_[tw] + 1 if tw >= 0 else 0), lib_2nd=lib_2nd,
+                             **({f"anamtx{w:g}": rr(anav("mean_tan_x", w)) for w in ANA_W} if anaf and "mean_tan_x" in next(iter(ANA.values())).columns else {}),
+                             **({f"lsw{w:g}": rr(anav("ap_ls", w)) for w in (0.5, 1.0)} if anaf and "ap_ls" in next(iter(ANA.values())).columns else {}),
+                             **({f"lsmw{w:g}": rr(anav("ap_lsmax", w)) for w in (0.5, 1.0)} if anaf and "ap_lsmax" in next(iter(ANA.values())).columns else {}), twin_rank=(pos_[tw] + 1 if tw >= 0 else 0), lib_2nd=lib_2nd,
                              truth_rank=(int(np.flatnonzero(tr[order])[0]) + 1 if tr.any() else 0)))
 R = pd.DataFrame(rows); os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True); R.to_csv(a.out + ".csv", index=False)
-cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)] + [f"twin1m_t{t:g}_m{m:g}" for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)] + [f"twin1k_t{t:g}_k{k}" for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)] + [f"libw{w:g}" for w in (1.0, 2.0, 4.0)] + [f"tdem{t:g}_{w:g}" for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)] + ([f"{p_}_{w:g}" for p_ in ("frg", "v7f", "v7ffb") for w in (0.25, 0.5, 1.0)] if a.frag else []) + ([f"anatdem{t:g}_{w:g}" for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)] if a.analog else []) + (["ana_only"] + [f"anaw{w:g}" for w in ANA_W] + [f"anag{wc:g}_{wu:g}" for wc, wu in ((0.5, 1.0), (0.5, 2.0), (0.25, 1.0), (0.25, 2.0), (0.0, 0.5), (0.0, 1.0))] + [f"anamt{w:g}" for w in ANA_W] + [f"anaxw{w:g}" for w in ANA_W] + [f"anamtx{w:g}" for w in ANA_W] if a.analog else []) + ["pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
+cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)] + [f"twin1m_t{t:g}_m{m:g}" for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)] + [f"twin1k_t{t:g}_k{k}" for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)] + [f"libw{w:g}" for w in (1.0, 2.0, 4.0)] + [f"tdem{t:g}_{w:g}" for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)] + ([f"{p_}_{w:g}" for p_ in ("frg", "v7f", "v7ffb") for w in (0.25, 0.5, 1.0)] if a.frag else []) + ([f"anatdem{t:g}_{w:g}" for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)] if a.analog else []) + (["ana_only"] + [f"anaw{w:g}" for w in ANA_W] + [f"anag{wc:g}_{wu:g}" for wc, wu in ((0.5, 1.0), (0.5, 2.0), (0.25, 1.0), (0.25, 2.0), (0.0, 0.5), (0.0, 1.0))] + [f"anamt{w:g}" for w in ANA_W] + [f"anaxw{w:g}" for w in ANA_W] + [f"anamtx{w:g}" for w in ANA_W] + ["lsw0.5", "lsw1", "lsmw0.5", "lsmw1"] if a.analog else []) + ["pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
+cols = [c_ for c_ in cols if c_ in R.columns]   # variants absent from this run's inputs are skipped
 summ = R.fillna({k: 0.0 for k in cols}).groupby(["set", "view", "truth_group"])[cols].agg(["mean"]).round(4); summ.columns = cols
 summ["n"] = R.groupby(["set", "view", "truth_group"]).size()
 print(f"parity mismatches vs evaluator top-25: {mism} of {int((R.n_cand > 0).sum())}"); print(summ.to_string())
