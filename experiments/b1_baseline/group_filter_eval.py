@@ -88,6 +88,11 @@ for s in a.sets:
             def anav(col, w):   # registered score + w * z(analog feature) within the molecule
                 x_ = anaf[col]; zx = (x_ - x_.mean()) / (x_.std() + 1e-9)
                 return np.argsort(-(np.asarray(score, float) + w * zx), kind="stable")
+            def tdem(theta, w, base_w=0.0):   # 037: demote train candidates without library support (+ optional analog term base_w)
+                pen = (trn & (lib_ <= theta)).astype(float)
+                sc_ = np.asarray(score, float) - w * pen
+                if base_w and anaf: x_ = anaf["ap"]; sc_ = sc_ + base_w * (x_ - x_.mean()) / (x_.std() + 1e-9)
+                return np.argsort(-sc_, kind="stable")
             def libw(w):   # soft variant: the registered score + w * library similarity (z units per unit similarity)
                 return np.argsort(-(np.asarray(score, float) + w * lib_), kind="stable")
             def hedge(base_order, alt, k):   # tail hedge (2026-10-26): main top-(25-k), then the best k by an alternative score among the remaining candidates
@@ -103,6 +108,8 @@ for s in a.sets:
                              **{f"twin1m_t{t:g}_m{m:g}": rr(twin_gate(t, m=m)) for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)},
                              **{f"twin1k_t{t:g}_k{k}": rr(twin_gate(t, k=k)) for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)},
                              **{f"libw{w:g}": rr(libw(w)) for w in (1.0, 2.0, 4.0)},
+                             **{f"tdem{t:g}_{w:g}": rr(tdem(t, w)) for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)},
+                             **({f"anatdem{t:g}_{w:g}": rr(tdem(t, w, 0.5)) for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)} if anaf else {}),
                              **({"ana_only": rr(np.lexsort((np.argsort(order), -anaf["ap"])))} if anaf else {}),
                              **({f"anaw{w:g}": rr(anav("ap", w)) for w in ANA_W} if anaf else {}),
                              **({f"anag{wc:g}_{wu:g}": rr(anag(wc, wu)) for wc, wu in ((0.5, 1.0), (0.5, 2.0), (0.25, 1.0), (0.25, 2.0), (0.0, 0.5), (0.0, 1.0))} if anaf else {}),
@@ -111,7 +118,7 @@ for s in a.sets:
                              **({f"anamtx{w:g}": rr(anav("mean_tan_x", w)) for w in ANA_W} if anaf and "mean_tan_x" in next(iter(ANA.values())).columns else {}), twin_rank=(pos_[tw] + 1 if tw >= 0 else 0), lib_2nd=lib_2nd,
                              truth_rank=(int(np.flatnonzero(tr[order])[0]) + 1 if tr.any() else 0)))
 R = pd.DataFrame(rows); os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True); R.to_csv(a.out + ".csv", index=False)
-cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)] + [f"twin1m_t{t:g}_m{m:g}" for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)] + [f"twin1k_t{t:g}_k{k}" for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)] + [f"libw{w:g}" for w in (1.0, 2.0, 4.0)] + (["ana_only"] + [f"anaw{w:g}" for w in ANA_W] + [f"anag{wc:g}_{wu:g}" for wc, wu in ((0.5, 1.0), (0.5, 2.0), (0.25, 1.0), (0.25, 2.0), (0.0, 0.5), (0.0, 1.0))] + [f"anamt{w:g}" for w in ANA_W] + [f"anaxw{w:g}" for w in ANA_W] + [f"anamtx{w:g}" for w in ANA_W] if a.analog else []) + ["pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
+cols = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.6, 0.7, 0.8, 0.9)] + [f"twin1m_t{t:g}_m{m:g}" for t in (0.5, 0.6, 0.7, 0.8) for m in (0.05, 0.1)] + [f"twin1k_t{t:g}_k{k}" for t in (0.5, 0.6, 0.7, 0.8) for k in (3, 10)] + [f"libw{w:g}" for w in (1.0, 2.0, 4.0)] + [f"tdem{t:g}_{w:g}" for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)] + ([f"anatdem{t:g}_{w:g}" for t in (0.3, 0.5) for w in (0.5, 1.0, 2.0)] if a.analog else []) + (["ana_only"] + [f"anaw{w:g}" for w in ANA_W] + [f"anag{wc:g}_{wu:g}" for wc, wu in ((0.5, 1.0), (0.5, 2.0), (0.25, 1.0), (0.25, 2.0), (0.0, 0.5), (0.0, 1.0))] + [f"anamt{w:g}" for w in ANA_W] + [f"anaxw{w:g}" for w in ANA_W] + [f"anamtx{w:g}" for w in ANA_W] if a.analog else []) + ["pcd0.5", "pcd1", "pcd2", "pcd4"] + [f"tail{k}_{n}" for k in (3, 5) for n in ("fp", "pop", "gl", "lib", "poolfp")]
 summ = R.fillna({k: 0.0 for k in cols}).groupby(["set", "view", "truth_group"])[cols].agg(["mean"]).round(4); summ.columns = cols
 summ["n"] = R.groupby(["set", "view", "truth_group"]).size()
 print(f"parity mismatches vs evaluator top-25: {mism} of {int((R.n_cand > 0).sum())}"); print(summ.to_string())

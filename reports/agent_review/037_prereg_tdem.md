@@ -1,4 +1,4 @@
-# 037 pre-registration: demote train-structure candidates without library support (written 12:20 JST, before computing)
+# 037 pre-registration: demote train-structure candidates without library support (written 12:15 JST, before computing)
 
 Evidence (computed from existing tables, before this note): Public probes put the largest part of B1's score on COCONUT-only truths (M_B 0.148-0.202). Locally, for C2 COCONUT-truth molecules the main list loses most to TRAIN decoys (dev2 full_eval: main 0.529 → pool-only 0.587 → COCONUT-only candidates 0.721; fresh: 0.556 → 0.593 → 0.763). Of the train decoys whose FP beats the truth's (C2, COCONUT truths), 55% have lib_sim ≤ 0.5 (39% ≤ 0.3), i.e. no reference spectrum of that structure resembles the query: their FP is inflated by FPNet memorisation (every train structure is seen by full_eval) and is not evidence of identity. Class-1 truths rarely lack support (lib_sim_c1 ≤ 0.5: panel clean 6%, G 1%, but dev2 C/E/F 31%, mostly negative-only / uncovered queries).
 
