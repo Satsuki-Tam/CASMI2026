@@ -8,3 +8,8 @@ Use (variants fixed now): analog retrieval and weighting by the learned similari
 
 ## Sanity check (13:39 JST): PASS
 - ls_v1 (60,000 steps, 1,228,065 training spectra of 262,185 keys; 5,743 evaluation identity groups excluded): on 2,989 held-out-anchor validation pairs, Pearson with the structures' Tanimoto **0.673 (learned) vs 0.548 (entropy + shift)**, Spearman 0.659 vs 0.557 (best validation Pearson 0.689 on 20,000 pairs). → proceed to the analog-feature comparison.
+
+## Result (14:05 JST): NOT adopted
+- On FE (11 class-2 layers): anaw0.5 (entropy) +0.0408; learned lsw0.5 +0.0164 (min −0.034), lsw1 +0.0076 (min −0.067), max-of-both lsmw0.5 +0.0199, lsmw1 +0.0114. Confirmation sets vs anaw0.5: lsw0.5 C2 −0.020 [−0.031, −0.009], C1 −0.024; lsw1 C2 −0.020, C1 +0.023 [−0.000, +0.046].
+- Pattern: the learned similarity finds the same compound across instruments better (dev2 G C1 +0.21 for lsw1 vs +0.18) but hurts class 2 (C −0.03/−0.05, G −0.02/−0.03, panel C2 −0.067): in the C2 view it gives high weights to library decoys whose spectra resemble the query (their self-match then lifts them), while the entropy similarity reserves high weights for genuinely matching spectra.
+- Reading: a better pair-level Tanimoto estimate (Pearson 0.673 vs 0.548) did not translate into a better ranking channel; the analog channel's value comes from high-precision matches. Recorded and dropped for the analog channel (model kept at experiments/b1_baseline/ls_v1 for possible class-1 uses only after a separate registration).
