@@ -224,7 +224,7 @@ def main():
     ap.add_argument("--gen_parents", type=int, default=10, help="042: analog parents per molecule for b1_gen")
     ap.add_argument("--gen_gl", action="store_true", help="044 (ggt3): GLACIER on the top --gen_gl_k novel generated structures in a SEPARATE run after the base GL (own budget; the base GL, its coverage and the base order are untouched); the --gen_rank insertion then uses the DB-side FP + 2 GL scale where it is valid, the --gen_rule gate otherwise")
     ap.add_argument("--gen_gl_k", type=int, default=5); ap.add_argument("--gen_gl_budget", type=int, default=1800)
-    ap.add_argument("--gen_rule", default="always", choices=["always", "fzgate", "all"], help="042 v2: always = best novel structure at --gen_rank; fzgate = only if its f.z >= the f.z of the main list's candidate at that rank; all = best of novel + window-but-not-shortlisted structures")
+    ap.add_argument("--gen_rule", default="always", choices=["always", "fzgate", "fzgate2", "all"], help="042 v2: always = best novel structure at --gen_rank; fzgate = only if its f.z >= the f.z of the main list's candidate at that rank; all = best of novel + window-but-not-shortlisted structures")
     ap.add_argument("--gen_dv", type=float, default=0.0, help="042: main score + w * 1[candidate is a 1-2 edit derivative of a top analog] (derivability); 0 = off")
     ap.add_argument("--frag_w_fallback", type=float, default=0.0, help="MetFrag-lite (b1_frag, 038): + w * z(fragmentation score) for molecules on the GL-coverage fallback path; default 0 = off")
     ap.add_argument("--analog_feat", default="ap", choices=["ap", "mean_tan", "ap_x", "mean_tan_x"], help="analog feature used by --analog_w (_x = the candidate's own key excluded from its analogs)")
@@ -677,6 +677,12 @@ def main():
                 ok_, smi_, fz_ = pool_[0][0], pool_[0][1], pool_[0][2]
                 fzk_ = rows[order_base[args.gen_rank - 1]]["fp"] if len(order_base) >= args.gen_rank else None
                 gate_ = args.gen_rule != "fzgate" or fzk_ is None or not np.isfinite(fzk_) or fz_ >= fzk_
+                if args.gen_rule == "fzgate2":   # 048: tightened gate = f.z >= max(finite f.z of the main list's rank 2 and rank 3); fewer than 3 candidates = free slot
+                    if len(order_base) >= 3:
+                        f23_ = [rows[order_base[j_]]["fp"] for j_ in (1, 2)]
+                        f23_ = [float(x) for x in f23_ if x is not None and np.isfinite(float(x))]
+                        gate_ = (not f23_) or fz_ >= max(f23_)
+                    else: gate_ = True
                 if args.gen_gl:   # 044 ggt3: DB-side FP + 2 GL scale (gen_eval3), the --gen_rule gate where the scale or the generated GL is missing
                     fpv_ = np.array([r["fp"] if r["fp"] is not None else np.nan for r in rows], float)
                     glv_ = np.array([np.nan if (GL.get(str(mid)) or {}).get(r["smiles"]) is None else float((GL.get(str(mid)) or {}).get(r["smiles"])) for r in rows], float)

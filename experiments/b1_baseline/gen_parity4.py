@@ -11,7 +11,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import b1_gen as BG
 ap = argparse.ArgumentParser(); ap.add_argument("--pipe_work", required=True); ap.add_argument("--choice", required=True); ap.add_argument("--view", required=True)
-ap.add_argument("--rule", required=True, choices=["gt3", "ggt3"]); ap.add_argument("--gen_rank", type=int, default=3); ap.add_argument("--out", required=True); a = ap.parse_args()
+ap.add_argument("--rule", required=True, choices=["gt3", "ggt3", "ggt3t"]); ap.add_argument("--gen_rank", type=int, default=3); ap.add_argument("--out", required=True); a = ap.parse_args()
 base = pd.read_csv(f"{a.pipe_work}/submission_base.csv"); fin = pd.read_csv(f"{a.pipe_work}/submission.csv")
 C = pd.read_parquet(a.choice); C = C[C.view == a.view].copy(); C["molecule"] = C.molecule.astype(str)
 fails, n_ins, n_gl = [], 0, 0
@@ -32,10 +32,10 @@ for r in C.itertuples(index=False):
     if m not in FIN or m not in B: continue
     bl = [x for x in B[m].split(";") if x]
     ins = None
-    if a.rule == "ggt3" and bool(getattr(r, "ggt3_gl", False)):
+    if a.rule in ("ggt3", "ggt3t") and bool(getattr(r, "ggt3_gl", False)):
         n_gl += 1
         if bool(r.ggt3_insert): ins = r.ggt3_smiles
-    elif bool(r.gt3_insert) and isinstance(r.gen_smiles, str):
+    elif bool(r.gt3t_insert if a.rule == "ggt3t" else r.gt3_insert) and isinstance(r.gen_smiles, str):   # 048: ggt3t falls back to the tightened gate
         ins = r.gen_smiles
     exp = (bl[:a.gen_rank - 1] + [ins] + bl[a.gen_rank - 1:])[:25] if ins else bl[:25]
     n_ins += ins is not None

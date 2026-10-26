@@ -312,7 +312,7 @@ if __name__ == "__main__":
                 out.update(n_derivable=int(der.sum()), truth_derivable=bool((der * tr).sum() > 0))
                 out["dv1"] = rr_of([("db", int(i)) for i in np.argsort(-(score + 1.0 * der), kind="stable")])
                 if a.dump_choice and v in ("c1", "c2"):
-                    choice.append(dict(set=s, view=v, molecule=mid, gen_okey=(nov[0][0] if nov else None), gen_smiles=(nov[0][1] if nov else None), gt3_insert=bool(nov and nov[0][2] >= fz3), ggt3_okey=(cand[0][1] if (a.gl_gen and gl_ok_view) else None), ggt3_smiles=(next((p_[1] for p_ in nov if p_[0] == cand[0][1]), None) if (a.gl_gen and gl_ok_view) else None), ggt3_gl=bool(a.gl_gen and gl_ok_view), ggt3_insert=(bool(gl_ok_view and cand[0][0] >= sdb_at(3)) if a.gl_gen else None), derivable=";".join(sorted(der_keys & set(okeys)))))
+                    choice.append(dict(set=s, view=v, molecule=mid, gen_okey=(nov[0][0] if nov else None), gen_smiles=(nov[0][1] if nov else None), gt3_insert=bool(nov and nov[0][2] >= fz3), gt3t_insert=bool(nov and nov[0][2] >= thr_t), ggt3_okey=(cand[0][1] if (a.gl_gen and gl_ok_view) else None), ggt3_smiles=(next((p_[1] for p_ in nov if p_[0] == cand[0][1]), None) if (a.gl_gen and gl_ok_view) else None), ggt3_gl=bool(a.gl_gen and gl_ok_view), ggt3_insert=(bool(gl_ok_view and cand[0][0] >= sdb_at(3)) if a.gl_gen else None), derivable=";".join(sorted(der_keys & set(okeys)))))
                 rows.append(out)
         log(f"{s}: evaluated")
     if a.emit_gl: log("GL inputs written"); sys.exit(0)
