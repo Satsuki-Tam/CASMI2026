@@ -4,3 +4,7 @@
 - Comparison target: anaw0.5 on rank_v4b (the submitted candidate) and FE main.
 - The W7 sets (eval_set) are inside the training RUNS of both rankers → excluded from the selection objective (11 class-2 layers: fe dev2 C/D/E/F/G, f0 dev2 C/D/E/F/G, f0 panel C2 clean; constraints: every layer ≥ −0.02, panel C1 clean (fe) ≥ −0.01).
 - v7a becomes the next candidate only if its objective ≥ anaw0.5's + 0.005 and the constraints pass; then it is confirmed against anaw0.5 on ALL fresh sets (conf3 D80, fit pool C/E/F/G, fit pool E 101-300 + overflow D150) with paired intervals, before Codex and any Public use. A trainer regression (rank_v4b re-trained by the patched trainer with the old feature list) must reproduce the feature list and the number of trees.
+
+## Result 1 (11:48 JST) and the next family (fixed before computing)
+- v7a alone (11 layers): objective +0.0212 vs anaw0.5 +0.0408 → **not** a replacement. Pattern: v7a > anaw0.5 on the GL-covered layers (fe C/D/G C2 +0.025/+0.032/+0.007 over anaw0.5; f0 C/D/G +0.037/+0.037/+0.025) but 0 on E/F (those molecules fall back to the insurance list, where the learned model is not used), and panel C1 clean −0.0001 (anaw0.5 +0.022).
+- Next family (computed only after this note): rank_v7a with an analog term on the fallback path and/or everywhere: v7a_g0_{0.5,1} (w 0 on the learned path, 0.5 / 1 on the fallback), v7a_w{0.25,0.5} (w on both paths). Same 11-layer rule, the +0.005 replacement bar against anaw0.5, then confirmation against anaw0.5 on all fresh sets.
