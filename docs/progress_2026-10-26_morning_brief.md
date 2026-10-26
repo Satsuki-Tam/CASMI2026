@@ -54,3 +54,10 @@
 - モデル B での作業用基準(full_eval)上の twin 系の予測: **margin 付き twin-first(類似 ≥ 0.7、他候補の最良一致との差 ≥ 0.1)+0.023 [+0.004, +0.040]**(モデル A では +0.009)。
 - 実装: `b1_pipeline.py --twin_tau / --twin_margin`(既定 off、parity16 で既定出力が完全一致、発火時は twin を 1 位へ動かし残りの順序を保持)。kernel `casmi26-b1-fpnet-twin` を smoke 中(**未提出**)。DUP 診断が正なら組み合わせる `b1-fpnet-twindup` も準備(未 push)。Codex 033 に判断規則を相談中。
 - 副次: パネルの真の 91% が参照上限 24 本に達している(参照の選び方は adduct 一致 → train の行順)。上限 100 で特徴表を作り直し、twin の精度が上がるかを Spark で測定中。
+
+## 7. 09:45〜10:10: Codex 033 の結論と次の手(twin は閉じる、analog 経路を試す)
+- **Codex 033**: コミュニティの twin probe は「B1 の twin の観測」ではなく手掛かり(定義の違い)。私の較正は条件の置換を含んでいた(full_eval では dev2 の identity も未見 → dev2 C1 の大きな利得は「未見」の効果。隠しクラス 1 = 「identity 既見・query 未見」を測れるのはパネル clean 202 だけ)。twin 規則は作業用基準の保護条件も割る(dev2 G C2 −0.065)→ **提出しない**。事前登録の band26 の読みも一部撤回(033_prereg §4)。
+- **同じ分子での集計(Codex の依頼)**: パネル clean(既見)では B1 の主順位と twin はほぼ同じ精度で補完的(B1 だけ正解 18、twin だけ正解 16)、margin 付き twin 規則は +0.010 のみ。twin が大きく効くのは FPNet が未見の領域(dev2 G で B1 の誤り 40 を twin が正解)。→ **twin-first は作業用基準の改善策ではない(閉じた)**。
+- 含意: 隠しクラス 1 がパネルに近ければ作業用基準はすでに ~0.9 で順位付けしている。E0 との差 0.09 の大半はクラス 2 か「0 点の分子」にある可能性が高い。
+- **新しい経路(クラス 2)**: B1 には「アナログ」経路が無い(参照スペクトルを候補自身の参照としてしか使っていない)。公開系譜の出発点(analog propagation、単独で Public 0.254)は、query に似た**別構造**のスペクトル(質量差を許す)を近傍として使い、候補の構造類似で点を付ける。自前実装 `analog_probe.py` を Spark で評価中(C2 view では真の key と identity group を除去)。最初の 4 分子では C2 view で真の analog 順位 1, 156, 1, 6。読みは結果前に `034_prereg_analog.md` に固定。
+- 並行して Spark: 参照上限 24 → 100 の再計算、forward 被覆(N1A 型 proxy / 負イオン proxy)の dev2 評価。
