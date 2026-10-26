@@ -13,6 +13,6 @@ Selection: 11 class-2 layers (fe dev2 C2 ×5, fold-0 dev2 C2 ×5, fold-0 panel C
 - Exploratory (not pre-registered, full_eval tables): even REMOVING unsupported train candidates (lib ≤ 0.5) gives only C/D/E/F/G C2 +0.014/+0.011/+0.035/+0.028/+0.005 and panel C2 +0.008, while C1 costs grow (E −0.062, F −0.118, C −0.054, panel −0.032).
 - Reading: most train decoys that outrank COCONUT truths HAVE library support (> 0.5: structurally related compounds with similar spectra) — the inherent class-1 / class-2 ambiguity, not memorisation alone. A small lever (+0.01 on class-2 proxies); not a candidate now.
 
-## Side check (12:35 JST, exploratory): is GLACIER inflated for its own training compounds (MassSpecGym members)?
+## Side check (12:31 JST, exploratory): is GLACIER inflated for its own training compounds (MassSpecGym members)?
 - dev2 C2 (full_eval tables; dev2 truths are outside MassSpecGym by construction, 0 of 205 truths in MSG): at matched FP-z quintiles, MSG-member decoys have the same GL z as non-members (−0.67 vs −0.59, −0.09 vs −0.08, +0.05 vs +0.02, +0.14 vs +0.14, +0.56 vs +0.44 (n 49)). MSG-member train decoys are weak overall (zfp −1.07, zgl −0.39). Truths: zgl +3.30, zfp +1.36.
 - Reading: no material GLACIER memorisation bias against class-2 truths; closed. The train decoys that beat COCONUT truths are library-supported analogs credited through the ranker's library features.
