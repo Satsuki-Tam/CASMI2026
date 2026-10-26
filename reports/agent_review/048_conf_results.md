@@ -17,3 +17,4 @@
 - pipeline: `--gen_rule fzgate2`(GL の無い分子で「生成 f·z ≥ max(主出力 2・3 位の f·z)」)、凍結 `experiments/b1_gen048`(pipeline b48feb7f)。
 - パネル 250 の両 view で全 parity **PASS**: 基準リスト(b1_parity)、全リスト(gen_parity4 --rule ggt3t: c2 は 250 query・GL 経路 132・挿入 73・失敗 0)、GL 規則(gen_parity3: c2 は 132 分子・挿入 59・不一致 0)、c1 も PASS(`logs/spark_ggt3t_panel.log` の GGT3T_P250_DONE PASS)。
 - kernel `hayatetaf/casmi26-b1-fpnet-ggt3t` v1 を push(commit run の smoke 待ち)。提出は gt3 の Public の結果の後(045/046 の条件)。
+- ggt3t kernel v1 の smoke(可視ダミー 12 分子): 生成物の GL pass(11 分子・48 構造、22 秒)、`submission written: (400, 2)`、`gen_inserted 6`、`OK (400, 2)`。Kaggle 上で動作確認済み。
