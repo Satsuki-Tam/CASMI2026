@@ -35,7 +35,7 @@ ap_.add_argument("--store", default="data/processed/spectra_store")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet")
 ap_.add_argument("--v3", default="data/external/v3_models/code"); ap_.add_argument("--fold_safe", default="data/external/fpnet_fulleval_as_fold0")
-ap_.add_argument("--variants", nargs="*", default=[], help="a:wg:wp[:pcl] (pcl = + w * 1[candidate in PubChemLite], z units)")
+ap_.add_argument("--variants", nargs="*", default=[], help="a:wg:wp[:pcl[:aw]] (pcl = + w * 1[candidate in PubChemLite], z units; aw = analog weight, default --analog_w)")
 ap_.add_argument("--pcl_keys", default="data/external_kaggle/casmi26-pubchem-popularity-prior/pubchemlite_annotations.parquet")
 ap_.add_argument("--tau", type=float, default=0.9); ap_.add_argument("--margin", type=float, default=0.2); ap_.add_argument("--min_gl_cover", type=float, default=0.5)
 a = ap_.parse_args()
@@ -250,11 +250,11 @@ if __name__ == "__main__":
                     return 0.0
                 out = dict(base, n_cand=len(g), main=rr_of(lst_db)); okeys_v = g.official_key.astype(str).values
                 for vv_ in a.variants:
-                    t4_ = [float(t_) for t_ in vv_.split(":")] + [0.0]; a_, wg_, wp_, pw_ = t4_[:4]
+                    t4_ = [float(t_) for t_ in vv_.split(":")]; t4_ += [0.0, a.analog_w][len(t4_) - 3:] if len(t4_) < 5 else []; a_, wg_, wp_, pw_, aw_ = t4_[:5]
                     Sv = z(fp) + (wg_ * zgl if zgl is not None else 0) + wp_ * pop
                     if gl_ok: sc_ = a_ * z(np.asarray(bst.predict(X), float)) + z(np.asarray(Sv, float))
                     else: sc_ = np.where(lib >= a.tau, 100.0 + lib, Sv) if fire else Sv
-                    sc_ = np.asarray(sc_, float) + a.analog_w * (x_ - x_.mean()) / (x_.std() + 1e-9)
+                    sc_ = np.asarray(sc_, float) + aw_ * (x_ - x_.mean()) / (x_.std() + 1e-9)
                     if pw_: sc_ = sc_ + pw_ * np.array([k_ in PCL for k_ in okeys_v], float)
                     out[f"v{vv_}"] = rr_of([("db", int(i)) for i in np.argsort(-sc_, kind="stable")])
                 nov = sorted([p_ for p_ in lst if p_[7] == "novel"], key=lambda p_: (-p_[2], -p_[3], p_[0]))
