@@ -1,6 +1,6 @@
 # 042 判断: 生成経路は続けるが、生成器 v1 の欠陥を直して v2 で評価し直す。v1 の確認集合の結果は読まない
 
-作成: 2026-10-26 16:50 JST(Claude Code)。依頼 `042_request.md`、回答 `042_codex.md`、事前登録 `042_prereg_gen.md`(v1)。
+作成: 2026-10-26 16:38 JST(Claude Code)。依頼 `042_request.md`、回答 `042_codex.md`、事前登録 `042_prereg_gen.md`(v1)。
 
 ## 受け入れた指摘と対応
 | 指摘 | 対応 |
