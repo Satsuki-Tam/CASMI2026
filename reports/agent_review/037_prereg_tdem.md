@@ -7,3 +7,8 @@ Variants (label-free: in_train of the view = the candidate is a training structu
 - anatdem{θ}_{w}: the same on top of anaw0.5 (analog channel), for the case the analog submission is adopted.
 
 Selection: 11 class-2 layers (fe dev2 C2 ×5, fold-0 dev2 C2 ×5, fold-0 panel C2 clean), objective = equal-weight mean; constraints: every class-2 layer ≥ −0.02, panel C1 clean (fe, seen regime) ≥ −0.01; side table: G C1, C/E/F C1, W7 (inside the ranker's training runs). Then confirmation on the fresh sets (conf3, fit pool, fit pool 2) against the respective base with paired intervals; C1 losses on the fresh C1 views reported. Codex review before any Public use.
+
+## Result (12:20 JST)
+- Pre-registered family (development, 11 class-2 layers): best tdem0.5_2 +0.0115 (every layer ≥ 0, panel C1 clean +0.0004, G C1 +0.002, C/E/F C1 −0.026); on top of anaw0.5 the best anatdem0.5_2 adds +0.0097.
+- Exploratory (not pre-registered, full_eval tables): even REMOVING unsupported train candidates (lib ≤ 0.5) gives only C/D/E/F/G C2 +0.014/+0.011/+0.035/+0.028/+0.005 and panel C2 +0.008, while C1 costs grow (E −0.062, F −0.118, C −0.054, panel −0.032).
+- Reading: most train decoys that outrank COCONUT truths HAVE library support (> 0.5: structurally related compounds with similar spectra) — the inherent class-1 / class-2 ambiguity, not memorisation alone. A small lever (+0.01 on class-2 proxies); not a candidate now.
