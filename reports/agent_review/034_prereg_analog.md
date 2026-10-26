@@ -29,7 +29,7 @@ Reading (fixed now):
 - Variants: anag{wc}_{wu} = registered score + w·z(ap) with w = wc when the molecule's GL coverage passes (learned/blend path) and wu when it falls back: (0.5, 1), (0.5, 2), (0.25, 1), (0.25, 2); plus the submitted anaw0.5 as the reference.
 - Same 13-layer selection rule and constraints as above, on the development tables only. A variant replaces anaw0.5 as the next candidate only if it beats anaw0.5's objective by ≥ +0.005 and passes the constraints. Confirmation on unused molecules: fit pool E rows 101-300 (200) + fit_pool_overflow D (first 150) (fold-0), reported for the chosen variant AND anaw0.5 on the same molecules.
 
-## Result 2 (11:28 JST): gated family
+## Result 2 (11:27 JST): gated family
 - Development tables (13-layer rule): anag0.25_1 (w 0.25 on the learned path, 1.0 on the GL fallback) objective +0.0464 vs anaw0.5 +0.0365 → passes the +0.005 replacement bar (worst layer −0.0195, f0 dev2 C C2).
 - Second confirmation set (unused: fit pool E rows 101-300, overflow D 150; fold-0): anag0.25_1 − main: D C2 +0.014 [+0.003, +0.027], E C2 +0.106 [+0.072, +0.142], pooled C2 +0.066 [+0.045, +0.088]. **anag0.25_1 − anaw0.5: D C2 −0.014 [−0.026, −0.004], E C2 +0.013 [−0.004, +0.028], E C1 +0.056 [+0.028, +0.086]** → on unused molecules the gate trades D for E (C2 net ≈ +0.001).
 - Decision: anag0.25_1 does **not** replace anaw0.5 (no clear gain on unused data, a significant D loss). It stays an alternative. Side result: the same second set also gives anaw0.5's own effect on unused E/D molecules, recorded with the 035 reading.

@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-26 09:02 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-26 11:05 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -9869,4 +9869,439 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <td></td>
 </tr>
 </tbody>
-</table></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</table></details></article><article><h1>033: 033 依頼: 参照の最良一致(twin)を 1 位に置く規則と、コミュニティの Public probe を較正の観測に加える案(10/26 の probe 結果の前)</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#notebook">新しい外部の観測(議論・公開 notebook、本日読み直し)</a></li>
+<li><a href="#twin-group_filter_evalpy-twin-diaggf2_m2xfe_csvspark">手元の twin 表(group_filter_eval.py に twin 列を追加、diag/gf2_{m2x,fe}_*.csv、Spark)</a></li>
+<li><a href="#calib_public2py-tables-gf2-obs-twin_only0275-033_prereg">較正への追加(calib_public2.py --tables gf2 --obs ... twin_only=0.275、結果前に 033_prereg に登録済み)</a></li>
+<li><a href="#_1">提案(結果を見る前に固定したい)</a></li>
+<li><a href="#_2">質問</a></li>
+</ul>
+</div>
+</div><h1 id="033-twin-1-public-probe-1026-probe">033 依頼: 参照の最良一致(twin)を 1 位に置く規則と、コミュニティの Public probe を較正の観測に加える案(10/26 の probe 結果の前)</h1>
+<h2 id="notebook">新しい外部の観測(議論・公開 notebook、本日読み直し)</h2>
+<ol>
+<li>topic 742088(2026-09-19、analog-propagation 系の fork、pool = train + COCONUT + ChEBI/LIPID MAPS、±8.5 ppm): <strong>「最も似た train スペクトルの構造だけを 1 位に置く」提出 = Public 0.275</strong>(twin が正解の分子 ≈ 27.5%)。同じ pipeline の全リスト 0.324。順位 3〜25 だけを繰り上げた提出 0.059。10/07 の metric 変更は過去の提出にも再適用済み(公開 chain notebook の記述)なので、現在の得点と同じ基準。</li>
+<li>公開 chain の版ごとの表(dariushafshar「The Public Chain, Version by Version」、481 版、<code>docs/official_1026/notebooks/public_chain/chain_data.json</code> に抽出): 繰り返し効いた段は (a) forward モデルの被覆の拡大(N1A proxy +0.008、N1 challenger +0.008 を 2 系統で、GLACIER が盲目な分子への ICEBERG +0.005)と (b) PubChem 昇格の閾値(rel 250→150 が 4 系統で +0.003〜+0.006)。</li>
+<li>topic 752356(10/24): 金圏 ≈ 0.471 の見立て、0.464 からの変更 3 件は ±0.008 以内。</li>
+</ol>
+<h2 id="twin-group_filter_evalpy-twin-diaggf2_m2xfe_csvspark">手元の twin 表(<code>group_filter_eval.py</code> に twin 列を追加、<code>diag/gf2_{m2x,fe}_*.csv</code>、Spark)</h2>
+<p>twin = その view で B1 の候補のうち参照類似(lib_sim)が最大の候補。twin_only = twin だけを 1 位に置いた RR、twin1_tτ = 類似 ≥ τ のとき twin を 1 位へ(残りは主順位)。
+| 層 / view(fold-0 M2x) | main | twin_only | twin1_t0 | t0.5 | t0.7 | t0.8 | t0.9 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| パネル C1 | 0.882 | 0.852 | 0.910 | 0.911 | 0.905 | 0.898 | 0.881 |
+| <strong>G timsTOF C1(train の真 98)</strong> | <strong>0.612</strong> | <strong>0.816</strong> | <strong>0.867</strong> | 0.867 | 0.842 | 0.755 | 0.599 |
+| W7 B C1 | 0.913 | 0.887 | 0.925 | 0.933 | 0.940 | 0.949 | 0.937 |
+| パネル C2 | 0.904 | 0 | 0.494 | 0.704 | 0.799 | 0.857 | 0.896 |
+| G C2(PubChem のみの真 89) | 0.716 | 0 | 0.389 | 0.521 | 0.619 | 0.648 | 0.673 |
+→ G 型のクラス 1 では「最良一致を 1 位」だけで main を 0.2 以上上回る(10/25 の lib-only 0.876 vs learned 0.652 と同じ現象)。C2 では大きく失う。採否は隠しの class 比で決まる。</p>
+<h2 id="calib_public2py-tables-gf2-obs-twin_only0275-033_prereg">較正への追加(<code>calib_public2.py --tables gf2 --obs ... twin_only=0.275</code>、結果前に 033_prereg に登録済み)</h2>
+<ul>
+<li>モデル B(twin 観測あり、4 seed × 800 万、採択 50): クラス 1 代理 0.31 [0.28, 0.34]、COCONUT 0.09、PubChem のみ 0.06、全構成で 0 の成分 0.54。<strong>予測 P_T = 0.275 [0.26, 0.29]、P_COCONUT = 0.078 [0.04, 0.11]</strong>。</li>
+<li>モデル A(twin 観測なし): P_T 0.209 [0.096, 0.296]、P_COCONUT 0.149 [0.048, 0.272]。</li>
+<li>今日の T / COCONUT probe が A と B を判別する(読みは 033_prereg §3 に固定)。</li>
+<li>作業用基準(full_eval)の上での twin 系の予測(<code>calib_within.py</code>: クラス 1 の型は full_eval 表 = identity 既見・query 未見、クラス 2 の型は fold-0 表 = identity 未見から差を取り、較正の重みで加重):
+| 変種 | モデル B の予測 [5%, 95%] | モデル A の予測 |
+|---|---|---|
+| twin1_t0.7 | +0.023 [+0.001, +0.044] | +0.005 [−0.021, +0.035] |
+| twin1m_t0.7_m0.1(+ 他候補の最良一致との差 ≥ 0.1) | +0.023 [+0.004, +0.040] | +0.009 [−0.009, +0.033] |
+| twin1_t0.8 | +0.018 [+0.003, +0.031] | +0.006 [−0.008, +0.025] |
+| libw2(登録スコア + 2·lib_sim) | +0.013 [+0.005, +0.020] | +0.004 [−0.007, +0.017] |
+型別の差(twin1m_t0.7_m0.1): C1 hard NP dev2 +0.17、パネル C1 +0.009、C2 COCONUT パネル −0.08、C2 PubChem のみ W7 timsTOF −0.08、dev2 C2 −0.004〜−0.055。</li>
+</ul>
+<h2 id="_1">提案(結果を見る前に固定したい)</h2>
+<ol>
+<li>T / COCONUT probe がモデル B の区間に入ったら(P_T 0.26〜0.29、P_COCONUT ≤ 0.11)、<strong>full_eval + twin1m_t0.7_m0.1</strong> を一回の Public 比較に出す(今日の残り 1 枠か明日)。読み: Δ ≥ +0.015 → 作業用基準へ(局所のクラス 1 の大きな利得 + 較正 B + Public の向き)、−0.01 &lt; Δ &lt; +0.015 → 昇格せず束ね用に保持、Δ ≤ −0.01 → B のクラス 1 の内訳(G 型の比率)が誤りとして閉じる。</li>
+<li>A の領域なら twin 系は較正では昇格させない。</li>
+</ol>
+<h2 id="_2">質問</h2>
+<ol>
+<li>コミュニティの probe を較正の観測に加えることの妥当性。twin の定義(類似の関数・窓・全 train スペクトル vs B1 の shortlist 内の候補ごとの最大類似、DUP 規則、MAX_REF 24)が違う。どの程度の不一致なら観測として使えなくなるか。</li>
+<li>25 変種から較正で選ぶ選択の偏り。最も単純な twin1_t0.7 に事前に固定すべきか。</li>
+<li>twin 系は C2 の保護層(パネル C2 −0.08、W7 timsTOF C2 −0.08)を明確に割る。Codex 028 の規則の下で、Public で較正した class 比を根拠に「C2 層を知りつつクラス 1 と交換する変更」を一回の比較に出してよいか。条件は何か。</li>
+<li>隠しのクラス 1 が「パネル型」(既に B1 が当てる)か「G 型」(B1 が落とす)かを判別する証拠。モデル B では重みが C1 hard NP dev2 に多く乗るが、これは他の観測からの推定で脆い。T probe の値はこの二つをほとんど区別しない(train に絞った RR はどちらも ≈ 0.9)。</li>
+<li>見落とし: DUP 診断(57645926)との相互作用(隠しのクラス 1 に同装置・同 CE の twin があり 0.98 以上で落とされているなら、DUP を外すだけで twin の類似が上がる)。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>033 レビュー（2026-10-26、Codex。10/26 の四提出の得点は取得せず、結果前の設計として確認）</p>
+<p><strong>現案の「T/B がモデルBの区間内なら twin を提出し、Public +0.015 で作業用基準へ」という採否には反対です。</strong> twin の仮説と一度の診断比較には意味がありますが、外部観測の同一性、較正に使う露出条件、実際の C2 保護が未解決です。モデルBは感度分析として残し、今日の残り枠はまず DUP の結果と以下の監査に使う判断を勧めます。提出する場合も、基準昇格を約束しない診断として別記してください。</p>
+<p>確認資料：依頼・<code>033_prereg_probes1026.md</code>、028/031/032 の判断、topic 742088 の保存本文、公開 chain の保存Notebook、<code>group_filter_eval.py</code>、<code>calib_public2.py</code>、<code>calib_within.py</code>、Spark の <code>diag/gf2_{m2x,fe}_*.csv</code>、<code>within_twinB_hybrid.md</code>、保存済みの較正重み。追加計算は Spark の小さな CSV/重みを使う集計と10変数の線形計画のみです。</p>
+<p><strong>Q1：コミュニティの twin 得点は研究の手掛かりになるが、今の B1 twin の観測値としては扱えません。</strong></p>
+<p>最初に得点の来歴を確認する必要があります。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742088">topic 742088</a>の09/19の保存本文は 0.275 を110/400行と解釈し、visible test と Public の説明も混在しています。chain Notebook が述べるのは、10/07のmetric・再実行データ変更を反映した<strong>各versionの表示得点</strong>を使うということです。過去の掲示板本文の数値まで更新されたことを保証しません。当該probeの提出/Notebook versionと現在の得点が照合できなければ、0.275は現在の同じ採点対象での確定観測にはしません。今回Webから本文を取得できなかったため、この確認は保存資料の範囲です。</p>
+<p>得点が同じ基準だと確認できても、外部の単一予測と B1 の単一予測は別の関数です。質量窓、query/参照の前処理、類似関数、adduct/CE集約、候補資格、公式identity、DUP、参照cap、tie-breakを揃える必要があります。「最良参照」という名前の一致では足りません。共通の query・参照条件で外部実装と B1 の top-1 key の一致を測り、定義差の影響を先に確認してください。</p>
+<p>同じ分子集合で二つの単一予測が異なる割合を ε とすれば、両者の正解率の差は最大 ε です。ただし局所の ε が隠しでも成立する保証は別です。一律に「何%まで同じ観測でよい」という境界はなく、比較したい +0.015 程度の利得や較正許容幅に対して、定義差が判断を変え得るなら同一観測にはできません。未解決なら <code>external_twin = B1_twin + 転用誤差</code> の感度分析にし、誤差0で重みを狭くするモデルBを主判断にしないことを勧めます。別系列の再実行変動を、この単一probeの誤差「±0.016」としてそのまま使う根拠もありません。</p>
+<p>現行得点と train 内の正解構造への一致が確認できた場合、0.275はその外部規則が正解した比率であり、Class 1比率の下限として参考になります。しかし、B1が解く分子との重なりは不明です。事前登録§2は次のように修正してください。</p>
+<ul>
+<li><code>P_T &lt; 0.275</code>：同じ採点集合なら、B1のtrain内順位の平均RRが外部の単一予測の正解率を下回る。外部twin正解分子をB1が候補外に落としたとは限らず、全て候補内でも2位以下なら起こる。</li>
+<li><code>P_T ≥ 0.29</code>：B1の総RRが高いだけで、外部twinが正解した分子を回収済みとは言えない。別の分子で稼いでいる場合がある。「残りの差は非trainかzero」とは結論しない。</li>
+</ul>
+<p>公開chainで同じ変更が複数枝に効いたことは優先順位の参考になりますが、共有モデル・系譜・Public集合を使うため、独立した再現実験の本数とは数えません。</p>
+<p><strong>較正の修正が先です。現在の +0.023 は採用先 full_eval の予測として未確定です。</strong></p>
+<p><code>calib_within.py</code> は、C1を一律に <code>fe</code>、C2を一律に <code>m2x</code> から取ります。これは026で指摘した条件の置換を再び含みます。</p>
+<table>
+<thead>
+<tr>
+<th>型</th>
+<th>現在の問題</th>
+<th>扱い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル C1</td>
+<td>full_eval の全250を使用し、clean202/uncertainを分けていない</td>
+<td>主比較は既定のclean群、uncertainは副表</td>
+</tr>
+<tr>
+<td>dev2 C1</td>
+<td>full_evalでもidentity未見。大きいtwin利得を「identity既見・query未見」の測定とは呼べない</td>
+<td>未見のストレス評価。隠しの既見C1への代用は仮定として明記</td>
+</tr>
+<tr>
+<td>W7 C1</td>
+<td><code>gf2_fe_devAB.md</code> は <code>run_v3b_eval_fe</code>。既存の露出監査でfull_evalのW7はquery学習済み</td>
+<td>query未見のC1証拠には使わない</td>
+</tr>
+<tr>
+<td>dev2 C2</td>
+<td>full_eval自身でidentity未見の評価表が既にあるのに、fold0の差を借用</td>
+<td>採用先full_evalのpaired差を使用</td>
+</tr>
+<tr>
+<td>パネル/W7 C2</td>
+<td>fold0の未見表の差をfull_evalの隠しC2へ転用</td>
+<td>直接測定と区別。未測定セルを無印で置換しない</td>
+</tr>
+</tbody>
+</table>
+<p>「同じFPNet・shortlistの中での変更」という条件は各CSV内では成立しますが、異なるcheckpointの差を混ぜてfull_eval全体を予測してよい根拠にはなりません。同じidentity未見でもFP/融合順位は異なり、twinを先頭へ移す損益も異なります。また <code>truth_group == train/coconut_only/pc</code> は候補に真がある条件付きの表です。依頼の G C1 n=98 / G C2 n=89 は全分子の保護評価ではありません。</p>
+<p>モデルAとBの区間内判定にも注意が必要です。BはAに外部観測を足した版で、Aの予測範囲はBと大きく重なります。<code>P_T=0.27, P_B=0.08</code> なら両方と整合します。B区間に入るだけでAを棄却できず、周辺区間を別々に満たすことは二つの得点の同時予測を検証することとも異なります。比較するなら、固定した二次元の予測分布/許容領域と観測ベクトルの整合を報告してください。その結果でBを選び、同じPublicを使う次の候補の較正を独立な検証と数えないことも必要です。</p>
+<p>この不識別性は保存表で確認できます。コードと同じ制約（main水準±0.03、他観測のmainとの差±0.015、重み非負・合計1）で、Bに0.275をそのまま入れた<strong>仮定上の許容領域</strong>を線形計画で調べると、次の範囲でした。</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th style="text-align: right;">Bの制約を満たす最小〜最大</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1 hard NP dev2 の重み</td>
+<td style="text-align: right;">0.0000〜0.3625</td>
+</tr>
+<tr>
+<td><code>twin1m_t0.7_m0.1</code> の既存hybrid表による予測差</td>
+<td style="text-align: right;">−0.0038〜+0.0550</td>
+</tr>
+<tr>
+<td>train probe の型混合による得点</td>
+<td style="text-align: right;">0.2247〜0.3291</td>
+</tr>
+<tr>
+<td>COCONUT-only probe の型混合による得点</td>
+<td style="text-align: right;">0.0141〜0.1348</td>
+</tr>
+</tbody>
+</table>
+<p>これは信頼区間でも隠し性能の上限でもなく、入力の型平均を固定した制約の範囲です。50個の採択drawで5–95%点が正でも、観測制約が正の利得やhard C1の存在を識別したことにはなりません。上記の露出・転用誤差はこの範囲にまだ含まれていません。</p>
+<p><strong>事前登録のband26にも計算上の訂正が必要です。</strong> <code>calib_public2.py</code> の出力は差 <code>w·(s_band−s_main)</code> です。それに観測値0.354を足すと <code>w·s_band + (0.354−w·s_main)</code> になり、mainの当てはめ誤差が混ざります。負のMRR予測区間はこの結果です。絶対得点の型混合予測なら <code>w·s_band</code> を使ってください。保存済みBの50drawでは、直接のband予測は平均0.00155、5–95%点[0.00063, 0.00263]でした。</p>
+<p>さらに <code>P_26−0.007 ≈ zero成分のnear-miss mass</code> は撤回すべきです。残差は重み・型平均・転用・当てはめの誤差も含み、band得点は分子数の割合でもありません。zeroを「固定shortlistに真が不在」と定義するなら、その成分はbandにもtwinにも反応できません。「これまでの出力で0点」という意味なら、真が26位以下にいるケースは並べ替えで救えます。同じshortlistであることだけから後者の応答0は導けません。027の <code>P_26 ≤ q_26–50 ≤ min(25P_26,1)</code> という読みを維持してください。</p>
+<p><strong>Q2：25変種を見た後に単純版へ戻しても、選択の偏りは消えません。</strong></p>
+<p><code>.7 + margin .1</code> は結果を見て選んだ開発候補と明記し、以後固定すればよいです。単純な <code>twin1_t0.7</code> へ戻すことだけを求めません。marginには曖昧な最良一致を避ける機構上の理由がありますが、局所と較正を見て値を選んだ事実は残ります。現行の較正分位点は、25候補の選択・局所標本誤差・外部規則との差を含む選択後の性能区間ではありません。</p>
+<p>以後、閾値・margin・適用先checkpointを一つに固定し、新しい根拠で評価してください。必要なら分子単位で型平均を再標本化し、25候補から選ぶ手順ごと評価する感度分析ができますが、これも未見データの代わりにはなりません。この変更を救う目的でlocked2を開ける必要はありません。</p>
+<p><strong>Q3：028の通常の昇格条件には不合格。診断提出と、保護を緩めた採用判断を混同しないでください。</strong></p>
+<p>同じ固定順位から誤twinを先頭へ動かすだけなら、真の参照を除いたC2では得点は維持または悪化です。C1と交換する変更という理解は正しいですが、交換比率を今の較正で十分に決められていません。引用されたパネル/W7 C2の条件付きの損失とは別に、<strong>採用先full_evalのdev2全分母</strong>で候補を再集計すると以下でした。</p>
+<table>
+<thead>
+<tr>
+<th>C2層（各100分子）</th>
+<th style="text-align: right;">FE+twin − FE</th>
+<th style="text-align: right;">FE+twin − M2x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C</td>
+<td style="text-align: right;">−0.0100</td>
+<td style="text-align: right;">−0.0208</td>
+</tr>
+<tr>
+<td>D</td>
+<td style="text-align: right;">−0.0067</td>
+<td style="text-align: right;">−0.0225</td>
+</tr>
+<tr>
+<td>E</td>
+<td style="text-align: right;">+0.0000</td>
+<td style="text-align: right;">+0.0053</td>
+</tr>
+<tr>
+<td>F</td>
+<td style="text-align: right;">−0.0100</td>
+<td style="text-align: right;">−0.0055</td>
+</tr>
+<tr>
+<td>G</td>
+<td style="text-align: right;"><strong>−0.0650</strong></td>
+<td style="text-align: right;"><strong>−0.0526</strong></td>
+</tr>
+</tbody>
+</table>
+<p>使用列は <code>gf2_fe_p2dev.csv</code> の <code>twin1m_t0.7_m0.1</code>、比較先は同じ分子のFE/M2xの <code>main</code>。Gは作業用基準・累積の両方で、C/Dは累積で既定の点条件を割ります。従って、Public +0.015だけで作業用基準へ昇格するルールは028と整合しません。</p>
+<p>一度のPublic比較を<strong>効果を測る診断</strong>として出すことまで禁止する理由はありません。その場合は、既定の保護未達、結果にかかわらず自動昇格しないこと、旧基準を残すことを先に記録します。現在の未解決点の多さから、私は今日の残り枠をこの条件付き自動提出には使わず、DUPの結果と較正の監査を優先します。</p>
+<p>保護方針そのものを将来変更することは可能です。ただし、この候補を通すためにPublicから得た点推定のclass比へ置き換えるのではなく、独立した根拠を含む重みの範囲W、最低限守る層と許容損失、変更全体の利益/損失を事前に決める必要があります。<code>min_{w∈W} Σw_tΔ_t</code> 等も判断材料になりますが、現在のBだけでも上表の予測差は負を許すうえ、型の露出条件が未整備です。今回の自動昇格を支える根拠にはなりません。</p>
+<p><strong>Q4：T probeはパネル型とG型をほとんど分けず、負のtwin結果もG比率だけを否定しません。</strong></p>
+<p>必要なのは「同じ分子で B1が誤り、twinが正しい」頻度と、その逆の頻度・RR損失です。Tの総得点や外部twinの総得点だけではこの同時分布は得られません。さらに今回のhard C1型はC/E/F/Gを固定した局所比率で混ぜており、隠しでその内訳が同じ保証もありません。モデルBのhard型への重みを、隠しのG型比率と呼ばないでください。</p>
+<p>局所では、identity既見・query取得未見を確認できるC1について、twinがB1の何位にいるか、B1との不一致、sim/margin、同装置・adduct・CEの参照被覆別に、救済/損失を同じ分子で測るのが有用です。dev2 GのFP未見の大きな利得と、パネルcleanの既見の利得を別に置き、031の対称maskは副表にします。取得情報のないGを、隠しの既見・独立取得C1の直接測定へ読み替えないでください。</p>
+<p>一度のtwin比較が負だった場合に言えるのは、固定した変種のPublicでの総損益が負だったことです。C2損失の過小評価、露出、mask、外部twinとの差、融合の順位などでも説明できるため、「G型比率が誤りとして閉じる」は狭すぎます。追加の条件別Public probeを連発せず、仮説のどの積が外れたかを局所の同時誤差表で調べるのがよいです。</p>
+<p><strong>Q5：DUPとの相互作用は大きくなり得るので、比較の土台を固定する。</strong></p>
+<table>
+<thead>
+<tr>
+<th>構成</th>
+<th>entropy除外</th>
+<th>twin先頭化</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A：作業用基準0.370</td>
+<td>0.98</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>B：提出済み57645926</td>
+<td>無効（1.01）</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>C：今回のtwin単独候補</td>
+<td>0.98</td>
+<td>固定した一規則</td>
+</tr>
+<tr>
+<td>D：将来の組合せ候補</td>
+<td>無効（1.01）</td>
+<td>同じ一規則</td>
+</tr>
+</tbody>
+</table>
+<p>局所で比較できる条件では、相互作用は <code>(D−B)−(C−A)</code> で見ます。DUP解除はtwinそのもの、sim/margin、候補、GL被覆を変え得るので、BとCの利得を足してDを予測しないでください。DUPが正でも、真のtwinが復活したとは限らず、誤候補が強くなった場合も含みます。逆に、元から正しかった分子でtwinが強まるだけなら先頭化の追加利益は小さくなります。</p>
+<p>今回の一変更を測るなら C−A です。DUPの結果を見て黙って D−A に変えると二変更になり、033の登録した比較ではなくなります。Dを次の作業用基準候補にする場合は、組合せとして改めて登録・保護確認してください。</p>
+<p>REVIEW_COMPLETE: 033</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="033-decision-0935-jst">033 decision (09:35 JST)</h1>
+<p>Adopted from Codex 033 (all points):
+1. The community twin probe (0.275) is a lead, not an observation of B1's twin. Model B stays as a sensitivity analysis only. The twin-promotion rule of 033_request is withdrawn (033_prereg §4).
+2. The hybrid calibration (C1 from full_eval tables, C2 from fold-0 tables) substitutes conditions. Under full_eval, dev2 identities are held out (hold = dev2, lock = locked2), so dev2 C1 there is identity-unseen; W7 under full_eval is query-trained; only panel C1 (clean 202 as the main table) is "identity seen, query unseen" = hidden class 1 for the working baseline. Class-2 costs for full_eval come from its own dev2 C2 tables.
+   - Consequence I draw: on the panel (the seen regime) twin-first adds only ~+0.001-0.01 because the full-train FPNet already ranks the truth well; the large G gain (+0.17-0.25) is an unseen-identity effect. For the working baseline the class-1 benefit is therefore likely small while the dev2 C2 cost is real (G −0.065, C/D/F −0.007-0.010 on full denominators).
+3. twin1m_t0.7_m0.1 is recorded as a post-hoc selected development candidate; fixed from now on. Not promoted; no Public submission today for it. The kernel <code>casmi26-b1-fpnet-twin</code> v1 stays staged (smoke only).
+4. DUP comparison base fixed (A = 0.370 baseline, B = 57645926 dup off, C = twin alone, D = combination); a combination is a new registered candidate, never a silent switch.
+5. band26: absolute prediction w·s_band = 0.0016 [0.0006, 0.0026]; the near-miss-mass reading is withdrawn; 027's reading stays.</p>
+<p>Next (local, Spark): the joint table Codex asked for (same molecules: B1 wrong &amp; twin right vs B1 right &amp; twin wrong, by sim / margin / twin rank / reference coverage), split by regime (panel clean 202 seen; panel uncertain; dev2 G unseen), to decide whether any twin form can help the working baseline. Today's last slot: decided after the DUP result.</p>
+<h2 id="joint-audit-result-0940-experimentsb1_baselinetwin_joint_auditpy-diagtwin_joint_auditmd-rule-twin1m_t07_m01-fixed">Joint audit result (09:40, <code>experiments/b1_baseline/twin_joint_audit.py</code> -&gt; <code>diag/twin_joint_audit.md</code>, rule twin1m_t0.7_m0.1 fixed)</h2>
+<table>
+<thead>
+<tr>
+<th>regime</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">main</th>
+<th style="text-align: right;">rule</th>
+<th style="text-align: right;">main@1 &amp; twin right</th>
+<th style="text-align: right;">main wrong &amp; twin right</th>
+<th style="text-align: right;">main@1 &amp; twin wrong</th>
+<th style="text-align: right;">both wrong</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>panel C1 clean, full_eval (identity seen, query unseen = hidden class 1 of the working baseline)</td>
+<td style="text-align: right;">202</td>
+<td style="text-align: right;">0.897</td>
+<td style="text-align: right;">0.907</td>
+<td style="text-align: right;">153</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">15</td>
+</tr>
+<tr>
+<td>same, fold-0 (identity unseen)</td>
+<td style="text-align: right;">202</td>
+<td style="text-align: right;">0.862</td>
+<td style="text-align: right;">0.891</td>
+<td style="text-align: right;">145</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr>
+<td>dev2 G C1, full_eval (identity unseen)</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.604</td>
+<td style="text-align: right;">0.787</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr>
+<td>dev2 C2 layers, full_eval (full denominators)</td>
+<td style="text-align: right;">100 each</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">G −0.065, C −0.010, D −0.007, F −0.010, E 0</td>
+</tr>
+<tr>
+<td>- In the seen regime the main list and the twin are about equally good and complementary (16 vs 18 disagreements); the fixed rule adds +0.010 there. The large twin gains exist only where the FPNet has not seen the identity.</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>- Per twin-similarity bin (full_eval): panel C1 clean [0.8, 0.9) holds 51% of molecules, rule +0.022 per molecule; all C2 views [0.8, 0.9) hold 6% of molecules, rule −0.144 per molecule. With any class weights near the calibrations (class 1 ~0.3, class 2 ~0.15) the expected Public change is about +0.002-0.003.</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>- <strong>Conclusion: the twin-first rule is not a lever for the working baseline (closed).</strong> Still open, small: a selector between the main top-1 and the twin in the seen regime. The oracle choice on panel clean gives 187/202 at rank 1 vs 171. Expected value is small, so it is not pursued now.</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>- Implication for the gap to E0: if hidden class 1 resembles the panel (Enveda timsTOF NP queries, references in public NP libraries), the working baseline already ranks it at ~0.9. The remaining 0.09 then sits mostly in class 2 or in molecules we score 0 on, which today's T / COCONUT / band26 probes help to locate.</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table></details></article><article><h1>034: </h1></article><article><h1>035: 035 依頼: アナログ経路(analog channel)を作業用基準に足す一変更の提出可否と、Public の読みの事前固定</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#034_prereg_analogmd">経緯(すべて事前登録 034_prereg_analog.md の順)</a></li>
+<li><a href="#_1">提案</a></li>
+<li><a href="#_2">質問</a></li>
+</ul>
+</div>
+</div><h1 id="035-analog-channelpublic">035 依頼: アナログ経路(analog channel)を作業用基準に足す一変更の提出可否と、Public の読みの事前固定</h1>
+<h2 id="034_prereg_analogmd">経緯(すべて事前登録 <code>034_prereg_analog.md</code> の順)</h2>
+<ol>
+<li>仮説: B1 は参照スペクトルを「候補自身の参照」(lib_sim)としてしか使っていない。公開系譜の出発点(analog propagation、単独で Public 0.254)は、query に似た<strong>別構造</strong>のスペクトル(前駆体差の shift も許す、modified cosine の考え)を近傍として使い、候補をアナログ構造との Morgan Tanimoto で採点する。自前実装 <code>b1_analog.py</code>(評価用 <code>analog_probe.py</code> と提出 pipeline で同じコード): 代表スペクトル ≤3 / (公式 key, 極性)、±200 Da、上位 80 アナログ、ap = max tan·sim³。マスクは評価器と同じ(C2: 真の key・raw key・identity group を除去、C1: 真の自 library のスペクトルを除き他 library から代表を選び直す、query 行は常に除外)。</li>
+<li>1 回目(full_eval 表で選択 → anaw1 = score + 1·z(ap))は <strong>fold-0 表の regime 確認で不合格</strong>(パネル C2 clean −0.048、W7 A C2 −0.024)。機構の仮説: 候補自身がアナログ = 自己一致(lib_sim と二重計上)。</li>
+<li>事前固定した二家族の選択規則(class-2 13 層の等重み平均を最大化、各層 ≥ −0.02、パネル C1 clean(full_eval)≥ −0.01、候補 10 変種)→ <strong>anaw0.5 を選択</strong>(<code>diag/analog_select.md</code>)。自己除外版(_x)は C1 で大きく負(C1 では自己一致そのものが有効な信号)で全て不合格。</li>
+<li><strong>確認(選択に一度も使っていない新しい集合、fold-0 表)</strong>: conf3(seed 7、D 80;他層は枯渇)+ fit pool(rank_v4b の後に作られ、却下した rk/G72 ranker の学習にだけ使用: E 100、F 63、C 21、G 72)。
+| 層 | n | main | anaw0.5 − main [95% paired bootstrap] |
+|---|---:|---:|---|
+| C C2 / C1 | 21 / 21 | 0.601 / 0.913 | +0.090 [−0.032, +0.209] / +0.087 [+0.000, +0.191] |
+| D C2 | 80 | 0.201 | +0.014 [−0.010, +0.040] |
+| E C2 / C1 | 100 / 53 | 0.392 / 0.665 | <strong>+0.103 [+0.049, +0.158]</strong> / +0.239 [+0.147, +0.339] |
+| F C2 / C1 | 63 / 26 | 0.219 / 0.618 | +0.047 [−0.024, +0.120] / +0.140 [+0.000, +0.294] |
+| G C2 / C1 | 72 / 72 | 0.708 / 0.615 | +0.038 [−0.007, +0.090] / +0.191 [+0.124, +0.264] |
+| <strong>C2 全体</strong> | 336 | 0.395 | <strong>+0.057 [+0.032, +0.082]</strong> |</li>
+<li>保護(<code>diag/analog_protect.md</code>): 作業用基準 FE に対し全層の点 ≥ −0.007(dev2 D C2 −0.007)、パネル C1 clean +0.022 [+0.004, +0.043]。<strong>M2x からの累積で dev2 D C2 −0.023 [−0.060, +0.012]</strong>(うち −0.016 は既に Public で採った full_eval の段)。確認集合の D は +0.014。</li>
+<li>選択に使った開発表(参考): full_eval dev2 C2 C/D/E/F/G = +0.024 / −0.007 / +0.140 / +0.039 / +0.047、fold-0 dev2 C2 = −0.014 / −0.011 / +0.150 / +0.060 / +0.039、fold-0 パネル C2 clean −0.017、W7 A / B C2 +0.017 / +0.009。近接 alias の確認: 改善の 86% は真とアナログの最大 Tanimoto &lt; 0.9 の分子から。</li>
+<li>実装: 提出 pipeline <code>--analog_w 0.5 --analog_feat ap</code>(既定 0 = off、off で既定出力と分子ごとに完全一致)。parity16 で <strong>両 view PASS</strong>(pipeline と評価器の top-25 が 16/16 一致、アナログ特徴の最大差 0、GL 学習 12 + fallback 4 分子)。kernel の凍結ソース(<code>experiments/b1_ana035</code>、pipeline ef8f8f96)で parity を再実行中。kernel <code>casmi26-b1-fpnet-analog</code> v1 を smoke 中(<strong>未提出</strong>)。実行時間の追加は約 +30 分(numba 1 スレッド)。</li>
+</ol>
+<h2 id="_1">提案</h2>
+<ul>
+<li>今日の残り 1 枠で <strong>FE + anaw0.5 を一変更の Public 比較</strong>として出す(作業用基準 0.370 との差を読む)。</li>
+<li>読み(結果前に固定したい): Δ ≥ +0.008(約 1 分子) → 作業用基準へ昇格;−0.015 &lt; Δ &lt; +0.008 → 局所の証拠が強いので昇格を保留して次の束ね候補の土台にする(Codex の判断を仰ぐ);Δ ≤ −0.015 → 昇格せず、隠しテストでアナログが効かない機構を調べる。</li>
+</ul>
+<h2 id="_2">質問</h2>
+<ol>
+<li>評価の漏れ・偏り: C2 view のマスク(真の key・raw key・identity group)で十分か。<strong>ライブラリ化合物は同じ研究・同じ寄託者の兄弟化合物を持ちやすい</strong>(開発の C2 代理も確認集合も library 化合物)ので、どの library にも無い隠しのクラス 2 では近いアナログが少なく、利得が過大評価されている可能性がある。これを測る方法(例: 同じ寄託 library のアナログを除いた感度表、ingest_lib 別の利得)と、提出前に必要か。</li>
+<li>累積の dev2 D C2 −0.023(確認集合の D は +0.014)を提出の妨げとみるか。</li>
+<li>上の読みの規則の妥当性(期待値は class 2 の重み × +0.05 + class 1 の重み × +0.02 ≈ +0.01〜+0.02 で、Public の差の SE ≈ 0.016)。</li>
+<li>DUP 診断(57645926)・T/COCONUT/band26 の結果(12:15 頃)との順序: 結果を見てから提出すべきか、独立なので先に出してよいか。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>035 レビュー（2026-10-26、Codex。四提出のPublic得点は取得せずに確認）</p>
+<p><strong>FE + anaw0.5 を今日の一枠で比較提出する案を支持します。</strong> twin先頭化とは異なり、採用先の未見C2、既見C1 clean、別集合での確認が同じ方向を示しています。ただし、既定の累積D/C2保護は未達です。「Public +0.008なら自動昇格」は変更し、比較提出の可否と、Dのリスクを受容して暫定基準へ進める判断を分けてください。</p>
+<p>確認資料は依頼、<code>034_prereg_analog.md</code>、<code>diag/analog_select.md</code> / <code>analog_protect.md</code>、選択・特徴生成コード、凍結版 <code>experiments/b1_ana035/</code>、Spark の確認集合CSVとparity出力です。Sparkで小集計と保存済み出力のCPU照合を行いました。新しいGPU推論は行っていません。</p>
+<p><strong>確認結果と、証拠の強さ。</strong></p>
+<ul>
+<li>確認C2の336分子は336個のidentity groupで、選択用dev2・パネル・W7およびp1 run1とのgroup重複は0でした。<code>rank_v4b</code>の既存学習集合と同じ分子を採点する問題は、確認した範囲ではありません。</li>
+<li>保存CSVから <code>anaw0.5 − main</code> を再集計すると、C2全体は <strong>+0.05655</strong>、分子単位のpaired bootstrap 95%区間は <strong>[+0.03176, +0.08185]</strong>。Eを除いても236分子で <strong>+0.03689 [+0.01012, +0.06608]</strong> でした（追加診断、seed 350、4,000回）。改善がEだけに依存しているわけではありません。</li>
+<li>ただし、完全に新しい集合はconf3のD80で、残り256は過去に別rankerの学習に使ったfit poolです。「今回のanalog選択には未使用の確認集合」と「研究全体で未使用の集合」を区別してください。また確認はfold-0モデルでの結果であり、full_evalの同じ分子での未見C2測定に読み替えません。</li>
+<li>二段目の13層の選択規則は記録されていますが、一段目の失敗を受けた適応的な開発です。二つのcheckpointで同じdev2を評価することも、独立した分子集合が二つ増えたという意味ではありません。それでも、一候補を固定して別groupで確認した今回の証拠は、033の較正による選択より強いと判断します。</li>
+</ul>
+<p><strong>Q1：C2のidentity maskは適切な基本線。寄託・化学系列の偏りは別に測る。</strong></p>
+<p><code>analog_probe.py</code> は真の公式key、queryのraw identityから得られるkey、identity group内のkeyを合わせて除き、<code>Store.analogs</code> はそれらをtop-80選択より前に除外します。候補の構造fingerprintと残った参照構造を比較すること自体は、既知構造を探すC2の設定に合っています。実装から直ちに「正解の参照をそのまま見ている」と判断する箇所は見つかりませんでした。</p>
+<p>ただし、このmaskが保証するのは指定したidentityの除外です。同じ研究の兄弟化合物、公式identityの対応不備、同一取得が別ラベルで再登録された参照まで一律に除けるわけではありません。提出前の最低限の監査は、C2で返したanalog keyと除外集合の交差が0、query行が0、keyに対応するSMILESの公式identityが整合することです。raw keyだけの比較やMorgan Tanimotoだけの重複判定で代用しないでください。候補側のC2資格、FPNetの正例未見も既存どおり維持します。</p>
+<p>「真とanalogの最大Tanimoto &lt; 0.9 が改善の86%」は、近接aliasだけで説明されにくいという補助証拠です。しかし同一シリーズや同じ寄託プロジェクトの類似化合物が &lt;0.9 に入ることはあり、それだけで隠しC2への転用を保証しません。割合の分母も、正の救済量なのか、損失を差し引いたnet RRなのかを記録してください。</p>
+<p>感度分析は、重み0.5・候補集合・FP・forwardを固定して次の順で十分です。</p>
+<ol>
+<li><strong>queryの <code>ingest_lib</code> 別、analogの出所別に損益を見る。</strong> 今回の確認C2はgnps由来が187/336です。library別平均は今回確認した6libraryでいずれも正でしたが、小さい群もあり、独立した6実験という意味ではありません。<code>ap</code> を決めたanalogの出所、真とのTanimoto、スペクトル類似、質量差・極性、候補の到達と順位改善を併記すると、どこから利得が来るかを追えます。</li>
+<li><strong>queryと同じ寄託libraryをanalogから除く副表を作る。</strong> 除外後に各keyの代表≤3を選び直し、top-80も取り直してください。確認時点の開発版 <code>b1_baseline/b1_analog.py</code> の <code>drop_libs</code> は、全libraryから先に選んだ代表を検索時に捨てる実装で、他libraryに残る代表を補充しません。これをそのまま使うと、「sourceを除いた効果」に代表選択による追加の欠落が混ざります。凍結提出版にはこの追加flagはなく、提出版を変える必要はありません。</li>
+<li><strong>出自情報があれば研究・寄託プロジェクト単位でも確認する。</strong> ingest_libは集約サイトなので、同じ研究が複数libraryに載ることも、同じlibraryに独立研究が混在することもあります。source全体の除外は装置・条件・参照量も変える厳しい感度分析であり、その低下をそのまま隠し性能の低下と見積もらないでください。</li>
+</ol>
+<p>この完全なsource除外表が終わるまで、今日の一比較を必ず待つ必要はないと判断します。identity/実装の監査とsmokeを先に満たし、source感度は固定した候補の追加評価として進めてよいです。結果を見て同じ枠の重みや参照条件を変更するための探索にはしません。</p>
+<p>もう一つ、凍結版 <code>b1_analog.py</code> は既存lib_simのexact/entropyによるDUP除外を呼びません。C1はquery行と真の自libraryを除きますが、他libraryの同一取得・再処理版への制御は別です。clean202/uncertainの既存区分と取得の監査は維持してください。<code>ap</code> は候補自身もanalogとして許すため、追加経路の効果には「別構造からの類推」だけでなく、異なる前処理・参照選択での自己一致も含まれます。これは一変更の実験を無効にする理由ではありませんが、利得を全て別構造analogの効果と呼ぶのは避けます。</p>
+<p><strong>Q2：Dの累積未達は、比較提出を止めるほどの理由とは見ません。保護合格への読み替えは不可です。</strong></p>
+<p>現行の点条件に照らすと、D/C2の <strong>FE+ana − M2x = −0.0227</strong> は −0.02 を下回り、不合格です。FEの段で約−0.016を受容済みであることは、累積の損失予算をリセットする根拠にはなりません。区間が0を含むことも、非劣性の確認ではありません。</p>
+<p>一方、今回の追加分は−0.0069で、他の主要層は改善し、真に新しいD80でもfold-0上では +0.014（区間は負も含む）です。これらを合わせると、Dで確実に大きく悪化する変更として比較を止める状況ではありません。ただし、新Dは別checkpoint・別分子なので、−0.0227に加算して累積条件を満たしたことにはできません。</p>
+<p>提出前の判断記録には「<strong>今回の一比較はDの累積未達を既知のリスクとして許容する。既定保護に合格したとは扱わない</strong>」と書くことを勧めます。昇格までこの例外を認める場合は、その運用判断もPublicを見る前に明記してください。後から都合のよい閾値へ変更したり、Publicが正なのでDの未達を消したりはしません。厳密に028の全点条件を維持する運用なら、この候補は比較後も未昇格のままです。</p>
+<p><strong>Q3：Publicの差は整合性の確認に使い、+0.008を自動採用や有意差の境界にしない。</strong></p>
+<p><code>class 2の重み×0.05 + class 1の重み×0.02</code> は、型・近傍の分布・到達率が転用できると仮定したシナリオです。今回の局所結果から隠しの重みは定まらず、期待値 +0.01〜0.02 を精密な予測とは呼べません。またPublic差のSE≈0.016は、この候補のpaired RR分布を測った値ではありません。他系列の再実行変動や別比較の誤差を代用せず、未知としてください。約1分子という説明も、Publicが約130分子なら0点→1位の一件が約0.008という程度で、一般の順位改善一件の寄与は異なります。</p>
+<p>修正した読みは次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>Public差（対0.370）</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>+0.008以上など、局所と整合する正</td>
+<td>暫定採用の候補。凍結版・入力・実行完了を確認し、D例外を事前に認めた場合に限って、局所の証拠と合わせて運用判断する。自動的な保護合格・有意差確定とはしない。</td>
+</tr>
+<tr>
+<td>−0.015より大きく+0.008未満</td>
+<td>FEを正式な対照として保持し、anaw0.5を固定した保留候補として残す。小さい正を無効、小さい負を仮説の反証とは扱わず、Publicに合わせて重みを刻まない。</td>
+</tr>
+<tr>
+<td>−0.015以下</td>
+<td>昇格しない。出所・近傍の分布差、参照自己一致、モデルの露出、GL被覆/時間予算を確認する。「隠しではanalogがない/効かない」と原因を一つに確定しない。</td>
+</tr>
+</tbody>
+</table>
+<p>0.008/−0.015は、採用するなら結果を見ずに固定した運用上の目安です。今回の強い局所の根拠に、小さい正のPublicが整合することには価値があります。その場合でも、Dの扱いを曖昧にしたまま自動昇格する設計は避けてください。保留候補を次の正式な基準に置き換えることもせず、束ねるときはFEおよびM2xからの変更全体を改めて比較します。</p>
+<p><strong>Q4：条件を固定した比較なら、他の四本の得点を待つ必要はありません。</strong></p>
+<p>提出する版を <strong>full_eval・既存のDUP設定0.98・analog_w=0.5・analog_feat=ap</strong> に固定し、T/COCONUT/band/DUPの結果で重み・対象・checkpointを変えないなら、結果を見る前に出してよいです。同じPublicで採点するため統計的に独立な検証ではありませんが、処置と対照は明確です。</p>
+<p>DUPと機構上まったく独立でもありません。上記のとおり、analogの自己一致経路はDUPで落ちた候補の証拠を別経路で戻す場合があります。DUPが良かったとして、この版を黙って <code>dup_sim=1.01</code> と組み合わせないでください。その組合せは新しい比較であり、二つの差を加えて期待値を作れません。</p>
+<p><strong>実装確認の更新：凍結版の保存済み出力は両viewでPASSしました。</strong></p>
+<p>依頼時点の再実行を確認すると、<code>spark_ana035_parity.sh</code> の照合コマンドは <code>b1_parity.py</code> が受け付けない <code>--analog_feat ap</code> により、両viewとも停止していました。推論そのものは完了済みだったため、Codex側でその保存済み出力を使い、照合コマンドから未対応の引数だけを除いてSpark上でCPU照合を実行しました。ソースや推論出力は変更していません。</p>
+<ul>
+<li>凍結pipelineのSHA256先頭：<code>ef8f8f9641a2</code>。凍結analog：<code>4f471bd1d7d1</code>。</li>
+<li>C1/C2とも <strong>PARITY PASS</strong>。各16分子、main/insuranceのtop-25が全件一致。</li>
+<li>両viewともanalog特徴3,782候補、最大絶対差0、差&gt;1e-6の割合0。</li>
+<li>再照合の結果はSparkの <code>/tmp/codex035_parity_1520r3ct/parity_c{1,2}.md</code>。正式なジョブの引数も修正して、この結果を判断記録に残してください。現在の照合器はapを照合する実装なので、今回のapにこの未対応flagは不要です。</li>
+</ul>
+<p>残る提出前の確認はKaggle smokeの完了と、追加CPU時間・メモリを含む実行余裕です。analogは特徴生成段階で計算するため、候補やGLの順序を変えなくても、<code>deadline_s</code> が効くとGLの残り予算が減り得ます。約+30分の見積もりを、GL被覆/fallbackを維持できる余裕と合わせて確認してください。16分子・保存済みforwardでのparityは、その時間予算まで保証するものではありません。</p>
+<p>REVIEW_COMPLETE: 035</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="035-decision-written-before-the-submission-and-before-any-1026-public-result">035 decision (written before the submission and before any 10/26 Public result)</h1>
+<p>Adopted from Codex 035:
+1. One Public comparison today: <strong>FE + anaw0.5</strong>, fixed = full_eval checkpoint (sha 5b8d1c31), DUP setting 0.98, analog_w 0.5, analog_feat ap, frozen sources experiments/b1_ana035 (pipeline ef8f8f96, b1_analog 4f471bd1), kernel casmi26-b1-fpnet-analog. It is not changed after the T/COCONUT/band/DUP results and is never silently combined with dup_sim 1.01 (a combination is a new registered comparison).
+2. <strong>Protection record</strong>: the cumulative dev2 D C2 (FE+ana − M2x = −0.0227) fails the default point condition. <strong>This comparison accepts that shortfall as a known risk; it is not treated as a protection pass.</strong> Decided now, before Public: promotion with this exception is allowed only under row 1 of the table below and only if the pre-submission audits below pass. The exception is not extended to later candidates automatically.
+3. Reading (fixed now; 0.008 / −0.015 are operating guides, not significance bounds):
+| Public − 0.370 | decision |
+|---|---|
+| ≥ +0.008 (consistent with the local evidence) | provisional working baseline candidate; confirm the frozen version, inputs and a complete run, then promote with the D exception recorded |
+| −0.015 &lt; Δ &lt; +0.008 | FE stays the official control; anaw0.5 stays a fixed pending candidate; no weight re-tuning on Public |
+| ≤ −0.015 | not promoted; check source / neighbourhood distribution differences, reference self-match, model exposure, GL coverage and time budget (no single-cause conclusion) |
+4. Evidence wording: the confirmation C2 set is "unused for the analog selection" (conf3 D80 is entirely new; the fit-pool part was used earlier by other rankers), measured with the fold-0 model. The 86% &lt; 0.9-Tanimoto figure is the share of the net summed RR change. The analog effect also includes self-matches under a different preprocessing/reference choice and is not described as pure "other-structure analogy".
+5. The same-library sensitivity in 035_addendum used the development drop_libs, which discards representatives without re-selecting them, so it is approximate. A corrected source-sensitivity table (re-selected representatives, per query library and per analog source) follows as an additional evaluation of the FIXED candidate, not as a search.</p>
+<p>Pre-submission checks (Codex 035): (a) identity audit of the returned C2 analogs: intersection with the exclusion set = 0, query rows = 0, official identity of each analog key's SMILES consistent with the key (sample); (b) Kaggle smoke complete, with the added CPU time / memory and its effect on the GL budget under deadline_s estimated from the smoke log.</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
