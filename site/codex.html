@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-26 12:13 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-27 02:05 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -10311,4 +10311,1721 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <li>(b) Kaggle smoke (v1, 12 molecules): rc 0, manifest analog_w 0.5 / ap / dup 0.98 / ckpt sha 5b8d1c31; analog store 981,821 representatives built in 85 s; feature stage 25.4 s/mol vs 19.9 s/mol without the channel (+5.5 s/mol ≈ +37 min for 400 molecules). Projected hidden rerun ≈ 3.8-4.4 h; the GL budget under deadline_s 30000 stays at its 14,000 s cap (remaining ≈ 15,700 s), GL needs ≈ 2,300 s.</li>
 <li>Frozen-source parity16: PASS in both views (also re-checked by Codex).</li>
 <li><strong>Submitted 11:05 JST: ref 57650023</strong> (kernel casmi26-b1-fpnet-analog v1). The reading table above applies unchanged.</li>
-</ul></details></article><article><h1>036: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul>
+<h2 id="public-result-1445-jst-57650023-0379-working-baseline-0370-0009">Public result (14:45 JST): <strong>57650023 = 0.379</strong> (working baseline 0.370 → Δ +0.009)</h2>
+<ul>
+<li>Row 1 of the fixed reading (Δ ≥ +0.008, consistent with the local evidence): <strong>FE + anaw0.5 becomes the provisional working baseline (0.379)</strong>, with the cumulative dev2 D C2 shortfall vs M2x recorded as the accepted known risk (not a protection pass). Frozen version = experiments/b1_ana035 (pipeline ef8f8f96, b1_analog 4f471bd1), kernel casmi26-b1-fpnet-analog v1, the hidden rerun completed (scored). FE (0.370) stays as the previous control; M2x (0.354) as the cumulative reference.</li>
+<li>Not a significance claim: one comparison on ~130 molecules (+0.009 ≈ one molecule moved from missed to rank 1). The direction and size agree with the local expectation (+0.01-0.02).</li>
+<li>Consequence for 037b / 038: <strong>branch B</strong> applies — v7f is compared with S_a = 0.379 as a replacement; its C/G unseen-C1 and panel-clean losses vs anaw0.5 are the recorded operational exception.</li>
+</ul></details></article><article><h1>036: 036 依頼: 10/26 の probe 結果(T / COCONUT / band26 / DUP)の読みと、次の手法の優先順位</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#036_probe_resultsmd">結果(036_probe_results.md)</a></li>
+<li><a href="#_1">局所の追加分析(結果を見た後の探索、事前登録したものは明記)</a></li>
+<li><a href="#_2">質問</a></li>
+</ul>
+</div>
+</div><h1 id="036-1026-probe-t-coconut-band26-dup">036 依頼: 10/26 の probe 結果(T / COCONUT / band26 / DUP)の読みと、次の手法の優先順位</h1>
+<h2 id="036_probe_resultsmd">結果(<code>036_probe_results.md</code>)</h2>
+<ul>
+<li>T 0.160、COCONUT のみ(非 train)0.202、band26 0.005、DUP 解除 0.370(作業用基準と同点)。アナログ提出 57650023 は採点中。</li>
+<li>代数: P_T + P_B − P_K = +0.026、三群の所属 oracle = 0.408(M + 0.054)。<strong>M_T ∈ [0.106, 0.160]、M_B ∈ [0.148, 0.202]</strong>、M_P ∈ [0.018, 0.046] → B1 の得点の最大部分は「train に無い COCONUT の真」(クラス 2 の NP)。クラス 1 は小さい(フォーラムの class 比の目安 16/45/39 と矛盾しない)。</li>
+<li>較正: モデル A の周辺区間に両方入る。モデル B(コミュニティ twin を観測にした版)は大きく外れ → 033 の警告どおり。</li>
+<li>band26 0.005 → 26〜50 位の分子の割合 q は 0.005〜0.125。近い順位帯からの回収は小さい。</li>
+<li>DUP: 同点 → 昇格せず閉じる。</li>
+</ul>
+<h2 id="_1">局所の追加分析(結果を見た後の探索、事前登録したものは明記)</h2>
+<ol>
+<li><strong>COCONUT が真のクラス 2(C2)で何に負けているか</strong>: dev2(full_eval)main 0.529 → PubChem のみの候補を除く 0.587 → COCONUT 候補だけ 0.721;新しい集合 0.556 → 0.593 → 0.763。<strong>最大の混同は train 構造のデコイ</strong>(全 train を学習した FPNet で FP が膨らみ、類縁体の参照を持つ)。</li>
+<li>参照の支えの無い train 候補を下げる(037、事前登録): 最良でも class-2 層 +0.0115(除去まで強めても +0.005〜+0.035)、C1(負イオン/未被覆)を −0.03〜−0.12 → <strong>小さな lever</strong>。真より上の train デコイの多くは参照の支え(lib &gt; 0.5)を持つ類縁体 = クラス 1/2 の本質的な曖昧さ。</li>
+<li>アナログを特徴に入れた ranker(036_prereg_v7a、事前登録): 単独では GL が無い分子に効かない。<strong>GL ありは rank_v7a、GL 無しはアナログ項(重み 1)</strong>の組合せは新しい集合の C2 で anaw0.5 比 <strong>+0.023 [+0.013, +0.033]</strong>(C/D/E/F/G 全て正)、ただし C1 で G −0.082、C −0.079、パネル clean(既見)+0.010 vs +0.022。凍結前の pipeline と評価器の parity は両 view PASS。</li>
+<li>アナログの効果を真の所属で分けると(C2): COCONUT の真 +0.013〜+0.071、PubChem のみの真 +0.033〜+0.100(3 家族とも正)。</li>
+<li>GL が使えない分子だけ重みを上げる版は未使用データで D と E が相殺 → 置き換えない。</li>
+</ol>
+<h2 id="_2">質問</h2>
+<ol>
+<li>probe の読みとして「クラス 2(COCONUT の真)が最大の取り分で、E0 との差の大部分もそこにある」と考えてよいか。他の読み(例: クラス 1 の割合は小さいが B1 のクラス 1 の RR が低い)を区別する方法。</li>
+<li>次の Public 比較の優先順位(明日 5 枠): (a) アナログ提出の結果次第で v7a 組合せ(C2 で有意に上、C1 で交換)、(b) クラス 2 の COCONUT の真を対象にした手法(例: FPNet の未見構造への汎化 = fold 違いの FPNet の平均、NP 事前分布、E0 の pool 内順位付けの部品)、(c) proxy(負イオン)+ アナログ、(d) その他。</li>
+<li>v7a 組合せの C1 交換(G C1 −0.082、未見の層)を、クラス 1 の割合が小さいという今日の probe を根拠に受け入れてよいか。その場合の事前登録の書き方(class 比を Public の probe から推定して使うことの危うさ)。</li>
+<li>見落としている読み・検証の穴。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>036 レビュー（2026-10-26、Codex）</p>
+<p><strong>非train、特にCOCONUT-onlyを重視する方向には賛成です。ただし「クラス1の割合は小さい」「E0との差の大部分はクラス2」とは、今回のprobeだけでは決まりません。次の比較候補はv7a組合せを優先します。</strong> その理由はclass比の推定ではなく、適切な対照からの局所の改善です。再集計ではv7a組合せはFE・M2xに対するdev2の全保護層で点推定が正でした。一方、anaw0.5に対するC/Gの未見C1損失は残るため、対照を明確にして登録してください。</p>
+<p>確認資料：依頼、<code>036_probe_results.md</code>、<code>036_prereg_v7a.md</code>、<code>037_prereg_tdem.md</code>、035判断、probe代数、ranker学習・評価コード、Sparkの保存済みgf4/gf8表・確認表・モデル記録・<code>combo_analog_proxyn.md</code>。追加計算はSparkでの小集計とモデルファイルの照合です。anaw0.5の採点結果はまだ取得せず、035で固定した読みを維持する前提で回答します。</p>
+<p><strong>Q1：確実に分かった寄与と、分からないclass比を分ける。</strong></p>
+<p>登録した「候補・群内順位が同じ」という前提で、三群のoracle 0.408、pool内のT/B競合の回収余地0.026、M2xからの三群oracle利得0.054という代数は妥当です。ただし次の訂正が必要です（得点の丸めは省略した近似値）。</p>
+<table>
+<thead>
+<tr>
+<th>M2xの得点寄与</th>
+<th style="text-align: right;">区間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>train真：M_T</td>
+<td style="text-align: right;">0.106〜0.160</td>
+</tr>
+<tr>
+<td>非trainのCOCONUT真：M_B</td>
+<td style="text-align: right;">0.148〜0.202</td>
+</tr>
+<tr>
+<td>残りの候補群の真：M_P</td>
+<td style="text-align: right;">0.018〜0.046</td>
+</tr>
+<tr>
+<td><strong>非train合計：M_B + M_P = 0.354 − M_T</strong></td>
+<td style="text-align: right;"><strong>0.194〜0.248</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>非train合計はtrain寄与より大きい</strong>と言えます。COCONUT-onlyも主要な寄与です。しかしM_BとM_Tの区間は重なります。例えば M_T=0.160、M_B=0.148、M_P=0.046 はこの境界と合計を満たすので、COCONUT-onlyが単独で最大とはまだ確定しません。</p>
+<p>さらに <code>P_T = train真の割合 × その群のtrain内MRR</code> です。割合0.20・群内MRR0.80でも、割合0.40・群内MRR0.40でもP_T=0.160になります。0.160は割合の上限ではありません。母集団比を得るには、その母集団での条件付きRRが別に必要です。局所のパネル/Gのどちらを代用するかが不明なままでは、この二つを識別できません。フォーラムの16/45/39との数値の近さも追加の証拠にはしません。</p>
+<p>候補由来のT/B/Pと公式のClass 1/2/3も完全には同じではありません。trainにある構造は公開参照を持ちますが、trainは公開libraryの全てを網羅すると保証された集合ではありません。非trainのCOCONUT構造でも、別の公開libraryに参照があればClass 1です。まず「非trainのCOCONUT真への寄与」と記録し、Class 2という読みにはこの仮定を添えてください。<code>probe_algebra.py</code> の <code>M_T (class-1 contribution...)</code> も <code>train-truth contribution</code> に直すのが正確です。</p>
+<p>E0との差の所在も、この寄与だけでは分解できません。M2xの0.354から群所属を完全に選べても0.408なので、参照するE0=0.464との差のうち少なくとも0.056は、元の群内順位・候補を固定した群間選択だけでは埋まりません。しかし、それがC1の群内順位なのか、COCONUTの順位/到達なのか、別の候補なのかは未特定です。今回のprobeはfold-0 M2xに対するもので、full_evalの0.370への寄与分解でもありません。</p>
+<p>その他の読みは次の範囲に留めてください。</p>
+<ul>
+<li><strong>band26=0.005</strong>：固定した26〜50位帯の繰上げ得点が小さい、という結論は妥当です。qの0.005〜0.125という境界と、main+band oracle=0.359を維持します。51位以下、shortlist外、Class 3の配分は分かりません。</li>
+<li><strong>DUP=0.370</strong>：表示精度で同点なので、登録どおり昇格せず、この比較を打ち切る判断は妥当です。「DUPは発火しなかった」「隠しで効果がない」という機構の確定とは分けます。</li>
+<li><strong>A/B較正</strong>：Bの仮定の組合せは今回のT/B得点を説明できません。一方、Aの広い周辺区間に入ったことはAのclass内訳を検証したことにはなりません。外部twinの値だけが誤りだった、と原因を一つに決めることも避けます。</li>
+</ul>
+<p><strong>Q2：次はv7aを第一候補にし、残りの枠を埋めるための提出はしない。</strong></p>
+<p>まず035の固定した規則でanaw0.5の結果を読むことを優先します。小さい差でもv7aの別の価値は残りますが、anaw0.5が明確に悪化した場合は、analogを共通に使う次の版を出す前に実行条件・source/近傍分布のずれを点検してください。</p>
+<table>
+<thead>
+<tr>
+<th>優先</th>
+<th>比較</th>
+<th>理由・提出に進む条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>v7a + GL不足時のみanalog重み1</strong></td>
+<td>現行FEに対する全体の改善と、anaw0.5を上回るC2の確認結果がある。Q3の対照・C1の扱いを先に固定し、凍結版parity後に一度比較する。</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>固定候補内のCOCONUT真とtrainデコイの順位を改善する一部品</strong></td>
+<td>同じFP・候補・forwardで、E0のpool内順位づけの再現可能な一部、またはFP/GL/analogの較正を一つ比較する。所属を一律に下げる規則より、実際に残っている誤候補を調べる。NP priorも広い閾値探索にせず一仮説に固定する。</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>proxy + analogの組合せ</strong></td>
+<td>単体利得の加算は不可。保存表では全dev2 C2でFE比analog +0.0485、proxy +0.0355、両方 +0.0534なので、analogへの追加は約+0.0049です。v7a上ではGL被覆が変わると適用する経路も変わるため、別に組合せ全体を確認してから。</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>FPNetの平均</strong></td>
+<td>共通の保留identityで全メンバーが未見になる設計を先に用意する。既存の5foldモデルを全て平均すると、通常のfold-0評価分子は他foldモデルには既見になり、未見C2の検証にならない。</td>
+</tr>
+</tbody>
+</table>
+<p>平均を測るなら、同じ評価identity群を全モデルの正例学習から除いた複数seed/学習集合が必要です。full_eval/full_rkの共通保留群なら既存モデルを使える場合がありますが、ENS2は既にC1保護で問題が出たので、新しい根拠なしに同じ比較を繰り返しません。最初から明日5本を予約するより、1本目をv7a、次を局所の比較を通った一仮説とし、残りは保留する方がよいです。037のtrain降格は現時点で追加提出しない判断を支持します。</p>
+<p>COCONUTの重視に関して、<strong>集計を一つ訂正してください。</strong> <code>036_probe_results.md</code> の「full_eval dev2+panelのC2 COCOでanalog +0.017」は、identity既見のfull_evalパネルC2を混ぜています。これは034/035で除外した条件です。有効なfull_eval dev2だけでは、shortlistに到達したCOCONUT-only真119分子でmain=0.52880、<strong>anaw0.5 − main=+0.08268</strong>でした。「full_evalではCOCONUT真の利得が特に小さい」という根拠には使えません。</p>
+<p>一方、<strong>v7aのanaw0.5に対する追加利得</strong>は所属別に異なります。確認686分子の保存表で再集計すると次のとおりでした（fold-0、3,000回の分子単位paired bootstrap、seed 361。選択補正を含まない記述的区間）。</p>
+<table>
+<thead>
+<tr>
+<th>確認C2の分類</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">v7a組合せ − anaw0.5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>到達済みCOCONUT-only真</td>
+<td style="text-align: right;">160</td>
+<td style="text-align: right;">+0.0112 [−0.0117, +0.0343]</td>
+</tr>
+<tr>
+<td>到達済みPubChem-only真</td>
+<td style="text-align: right;">304</td>
+<td style="text-align: right;">+0.0460 [+0.0291, +0.0651]</td>
+</tr>
+<tr>
+<td>shortlistに真が不在</td>
+<td style="text-align: right;">222</td>
+<td style="text-align: right;">0.0000</td>
+</tr>
+</tbody>
+</table>
+<p>従って全C2の+0.023を、そのまま「COCONUT主体の隠しで期待する利得」とは置けません。なおこの <code>truth_group</code> はshortlist内の所属なので、absentの222分子にもCOCONUT真が含まれ得ます。今後は候補リストとは独立した真のDB所属を付与し、<strong>全分母での到達率と、到達後の順位</strong>を分けてください。</p>
+<p><strong>Q3：「C1が少ないから許容」ではなく、どの基準からの損失かを固定して判断する。</strong></p>
+<p>依頼のG −0.082 / C −0.079は、確認集合での <strong>v7a組合せ − anaw0.5</strong> です。FEからの悪化と同義ではありません。採用先full_evalの開発表を、同じ分子でFE・anaw0.5・M2xに照合した結果は以下です。</p>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th style="text-align: right;">v7a組合せ − FE</th>
+<th style="text-align: right;">− anaw0.5</th>
+<th style="text-align: right;">− M2x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル C1 clean202</td>
+<td style="text-align: right;">+0.0102</td>
+<td style="text-align: right;">−0.0122</td>
+<td style="text-align: right;">+0.0453</td>
+</tr>
+<tr>
+<td>dev2 C C1</td>
+<td style="text-align: right;">+0.0452</td>
+<td style="text-align: right;">−0.0317</td>
+<td style="text-align: right;">+0.0324</td>
+</tr>
+<tr>
+<td>dev2 G C1</td>
+<td style="text-align: right;">+0.1327</td>
+<td style="text-align: right;">−0.0433</td>
+<td style="text-align: right;">+0.1366</td>
+</tr>
+<tr>
+<td>dev2 C C2</td>
+<td style="text-align: right;">+0.0488</td>
+<td style="text-align: right;">+0.0253</td>
+<td style="text-align: right;">+0.0380</td>
+</tr>
+<tr>
+<td>dev2 D C2</td>
+<td style="text-align: right;">+0.0248</td>
+<td style="text-align: right;">+0.0317</td>
+<td style="text-align: right;">+0.0089</td>
+</tr>
+<tr>
+<td>dev2 E C2</td>
+<td style="text-align: right;">+0.1809</td>
+<td style="text-align: right;">+0.0412</td>
+<td style="text-align: right;">+0.1862</td>
+</tr>
+<tr>
+<td>dev2 F C2</td>
+<td style="text-align: right;">+0.0674</td>
+<td style="text-align: right;">+0.0282</td>
+<td style="text-align: right;">+0.0719</td>
+</tr>
+<tr>
+<td>dev2 G C2</td>
+<td style="text-align: right;">+0.0944</td>
+<td style="text-align: right;">+0.0477</td>
+<td style="text-align: right;">+0.1068</td>
+</tr>
+</tbody>
+</table>
+<p>E/Fの未見C1も三つの対照に対して正でした。<strong>FE・M2xに対する既定のdev2点条件は、今回の組合せでは全て満たします。035のD累積未達も解消しています。</strong> これは、class比を推定せずにv7aを比較候補とする十分な理由です。ただし開発データなので、表の全ての差を独立確認済みとは呼びません。</p>
+<p>anaw0.5が正式な作業用基準になった場合は別です。新基準に対してC/Gの未見C1が−0.02を下回る事実を残し、035で認めたDの例外を自動的に広げないでください。未見C1はfull_evalの主な既見C1代理とは違うストレス条件ですが、公開参照を持つ全ての隠し構造が当該FPNetで既見とも限りません。今回のP_Tを、その損失を無視する理由にはできません。</p>
+<p>次の事前登録は、例えば以下のように具体化できます。</p>
+<ul>
+<li><strong>変更</strong>：full_eval・候補・参照条件・DUP 0.98・GL予算を固定。GL被覆が基準以上ならrank_v7aのblend21、GL不足なら既存insurance + 1·z(ap)。tau/margin/被覆閾値も固定する。</li>
+<li><strong>対照</strong>：FE、anaw0.5、M2xを併記。FEからの別候補の比較なのか、昇格済みanaw0.5の置換なのかをPublic結果前に決める。</li>
+<li><strong>主比較</strong>：既定のC2層別macroと、DB所属をリスト外で定義したCOCONUT真の全分母での差。全体+0.023だけでなく所属別・GL被覆別を報告する。</li>
+<li><strong>C1/累積</strong>：パネルcleanの既見C1、未見C1のC/E/F/G、M2xからの累積を維持する。anaw0.5からC/Gの利得の一部を返すことを許容するなら、独立した運用上の例外として損失と理由を先に記録し、保護合格と呼ばない。class比の推定値で相殺しない。</li>
+<li><strong>Public</strong>：一度の比較として、凍結版・入力・実行完了を確認したうえで局所結果との整合を見る。観測後に重み・経路・許容損失を変えず、正の得点だけで未達の条件を帳消しにしない。</li>
+</ul>
+<p>この形なら、C2を改善する候補を前へ進めつつ、C1の交換を隠さずに判断できます。anaw0.5がまだ未昇格なら、現時点のFE対照からは「C1を犠牲にするから特例が必要」という説明自体が過剰です。</p>
+<p><strong>Q4：残る検証上の注意。</strong></p>
+<ol>
+<li><strong>FPNetの記憶と、デコイが強いという観測は別です。</strong> COCONUT真に対してtrain候補を除くとRRが上がることは、その誤候補との競合を示します。しかしFPが高い原因を「学習で膨らんだ」と確定はできません。同じ候補・queryで正例露出を変えた対照や露出台帳が必要です。full_evalにも保留identityがあるので「全trainが既見」という表現も台帳で確認してください。</li>
+<li><strong>lib &gt; 0.5だけで類縁体とは言えません。</strong> 共通断片、条件、ノイズ、誤ラベル等もあり得ます。構造類似は真と誤候補のTanimoto/MCES等で診断します。037の「FPで真を上回る候補の55%はlib≤0.5」と、融合出力を妨げる候補の割合は別の分母です。unsupported候補を消した利得が小さいだけで、元の誤候補の大半がsupportedだとは確定しません。除去後にも残る候補が順位改善を止める場合があります。</li>
+<li><strong>三つのsourceフィルタ差は、固有の原因への分解ではありません。</strong> 0.529→0.587→0.721はPcを先に除き、次にtrainを除いた順序での反実仮想です。削除順を変えるとRRの増分配分も変わります。競合の優先順位を調べる材料にはなりますが、各群の「原因割合」にはしないでください。</li>
+<li><strong>rankerの再現確認は良好ですが、v7aは300木固定ではありません。</strong> Sparkで <code>rank_v4b_repro2/lambdarank.txt</code> と旧rank_v4bのSHA256が完全一致することを確認しました（<code>237710b6…</code>）。一方、v7aの選択結果は600 rounds、旧版は300です。他の記録された選択paramsは一致します。同じ探索レシピから選んだ新rankerとしては比較できますが、「固定300木でanalog特徴だけの純効果」とは記録しないでください。提出には実際の600木モデルと経路設定を凍結します。</li>
+<li><strong>確認686分子は686 groupですが、全てが研究全体で未使用ではありません。</strong> conf3/fit poolは035の確認等でも使用されています。今回の選択にどこまで使ったかを時系列で残し、繰り返し使う集合を毎回fresh holdoutと呼ばないでください。C1/C2両viewをまとめた独立標本数として数えることも避けます。</li>
+<li><strong>proxyとv7aの経路切替を検証する。</strong> proxyでGL被覆が増えると、analog重み1のfallbackからrank_v7aへ切り替わります。既存の旧ranker上のproxy+analog表だけでは、その組合せを評価したことになりません。Kaggleの時間予算でGL不足になる分子も対象なので、凍結parityでは両経路と閾値境界を含め、実行記録は可視ダミーと隠し再実行を区別してください。</li>
+</ol>
+<p>REVIEW_COMPLETE: 036</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="036-decision-1241-jst-before-the-anaw05-public-result">036 decision (12:41 JST, before the anaw0.5 Public result)</h1>
+<p>Adopted from Codex 036:
+1. Probe wording and limits as corrected in 036_probe_results (train-truth vs non-train contributions; class shares and the location of E0's lead are not identified).
+2. DUP closed (no promotion; no mechanism conclusion). band26: the 26-50 lift is small; 51+, out-of-shortlist and class 3 are not separated.
+3. Next Public comparison = <strong>v7a combination</strong> (rank_v7a blend21 on the GL-covered path, insurance + 1·z(ap) on the GL-fallback path), frozen as experiments/b1_v7a036 (pipeline b5afcf72, b1_analog 7c9b9973, rankfeats f705db7a, rank_v7a f3ffc0f6 = 600 trees, selected by the same tuning recipe as rank_v4b; not "the pure effect of the analog features"); kernel casmi26-b1-fpnet-v7a (lzma blob, smoke running). Its own registration (037b) is written before the anaw0.5 result is read and fixes: the controls (FE, anaw0.5, M2x), whether it is compared against FE or replaces a promoted anaw0.5 (decided by the 035 reading of 57650023, before v7a is submitted), the C2 macro and the COCONUT-truth full-denominator table, the C1 / cumulative tables, and the Public reading.
+4. Remaining slots are not filled for their own sake; after v7a only a locally confirmed single hypothesis is submitted (candidates: one part of the pool-internal ranking for COCONUT truths vs train decoys; proxy + analog only after its own path-switching evaluation; FPNet averaging only with a common held-out identity group).
+5. Notes kept: FP inflation by memorisation is not proven (needs exposure-controlled comparisons and the full_eval ledger, which has held-out identities); lib &gt; 0.5 ≠ analog; source-filter differences are order-dependent counterfactuals; the confirmation sets have been reused (time line recorded, not called fresh every time).</p></details></article><article><h1>037: </h1></article><article><h1>038: 038 依頼: MetFrag-lite(自前)を v7a 組合せの GL 不足分子に足す版(v7f)を、037b の候補と差し替えてよいか(anaw0.5 の結果の前)</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#038_prereg_fragmd">結果(038_prereg_frag.md、事前登録 → 結果)</a></li>
+<li><a href="#_1">提案</a></li>
+<li><a href="#_2">質問</a></li>
+</ul>
+</div>
+</div><h1 id="038-metfrag-lite-v7a-gl-v7f037b-anaw05">038 依頼: MetFrag-lite(自前)を v7a 組合せの GL 不足分子に足す版(v7f)を、037b の候補と差し替えてよいか(anaw0.5 の結果の前)</h1>
+<h2 id="038_prereg_fragmd">結果(<code>038_prereg_frag.md</code>、事前登録 → 結果)</h2>
+<ul>
+<li><code>b1_frag.py</code>(自前): 1 本の非環結合 / 2 本の非環結合 / 同じ環の 2 結合で切った断片、重原子 + 付いている H、イオン = 質量 + h·H ± proton(h −2..+3)、前駆体 − 0.5 Da より下の上位 40 ピーク、説明された強度の割合(1 本 1.0、2 本 0.6)、query スペクトルの最大。設定はフォーラムの held-out ablation(topic 743254)に事前に固定。</li>
+<li>開発(036 の 11 層、v7a 組合せ比): <strong>v7ffb_1(GL 不足の経路だけ +1·z(frag))+0.0073</strong>(最小層 −0.0004、パネル C1 clean・C/G C1 は不変)→ 事前規則を通過。両経路に足す版は G C1 で −0.006〜−0.016。FE だけに足すと +0.009〜+0.012(アナログの +0.041 より小さい)。</li>
+<li>確認(conf3 + fit pool + fit pool 2、fold-0、再利用の集合): v7ffb_1 − v7a 組合せ = <strong>C2 全体 +0.014 [+0.006, +0.023]</strong>(E C2 +0.031 [+0.014, +0.049]、F +0.007、G +0.002、C/D 0)、C1 全体 +0.003 <a href="F C1 −0.022 [−0.064, 0.000]">−0.003, +0.009</a>。</li>
+<li>実装: pipeline <code>--frag_w_fallback 1</code>(GL 不足の分子だけ遅延計算)、parity16 両 view PASS(16/16 一致、fallback 4 分子で frag 適用)。凍結 <code>experiments/b1_v7f038</code>(pipeline 6e3b4d04、b1_frag 8d552002、他は v7a と同じ)、kernel <code>casmi26-b1-fpnet-v7f</code>(lzma、1,040,594 bytes)smoke 中。</li>
+</ul>
+<h2 id="_1">提案</h2>
+<ul>
+<li>037b の候補(v7a 組合せ)を <strong>v7f(v7a 組合せ + GL 不足の分子に MetFrag-lite 重み 1)</strong> に差し替える。分岐 A/B と読みの表は 037b のまま(比較対象は分岐で決まる)。frag の部分は小さい(確認の C2 +0.014)ので、一回の比較で v7a と frag を束ねる(Codex 028 の小さな変更の束ね)。</li>
+<li>代案: 037b のとおり v7a を先に出し、v7f はその後の別比較にする。</li>
+</ul>
+<h2 id="_2">質問</h2>
+<ol>
+<li>差し替えは妥当か。束ねると、v7a 部分と frag 部分の Public での寄与は分けられない(後で分ける予定は無い)。</li>
+<li>F C1 −0.022(n=26、区間は 0 を含む)の扱い。</li>
+<li>見落とし(frag の計算は候補の構造と query だけに依存し、ラベルは使わない。C1/C2 の view で同じ値)。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>038 レビュー（2026-10-26、Codex。anaw0.5のPublic結果は取得せずに確認）</p>
+<p><strong>smokeと実行余裕を確認したうえで、037bの次候補をv7fへ差し替える案を支持します。</strong> v7aとfragを一つの候補として、実際の対照から変更全体を測る比較でよいです。Publicで各部品の寄与を分けることが目的でなければ、二本に分ける必要はありません。F/C1の−0.022は記録すべき損失ですが、未提出の中間候補v7aとの差であり、FE/anaw0.5への保護未達とは異なります。</p>
+<p>確認資料は依頼、<code>038_prereg_frag.md</code>、<code>037b_register_v7a.md</code>、<code>frag_select_dev.md</code> / <code>frag_confirm.md</code>、<code>b1_frag.py</code>・probe・評価・凍結pipeline、Sparkの保存済みgf12/gf4/確認表・parity結果です。再集計はSparkの小さなCSVで行いました。凍結ファイルはpipeline <code>6e3b4d043b20</code>、frag <code>8d552002b4fc</code>で、確認時点の開発側ファイルともSHA256が一致しました。</p>
+<p><strong>Q1：差し替えは妥当。037bを残し、038で候補更新を明示する。</strong></p>
+<p>今回の目的は、GLの情報が足りない経路に構造依存の補助スコアを足して最終順位を改善することです。frag単独のPublic効果を識別しなくても、この目的に沿った束の評価はできます。既にv7a組合せ上でfragを足した差を測っているので、別々の単体利得を足しただけの予測でもありません。</p>
+<p>提出前の記録には、037bの履歴を上書きせず、次を追記してください。</p>
+<ul>
+<li>次に提出する候補名を <strong>v7f = rank_v7a組合せ + GL被覆不足時だけ1·z(frag)</strong> に更新し、凍結コード・600木モデル・kernel版を指定する。</li>
+<li>037bの分岐A/Bを決めるanaw0.5の結果の読み、比較対象FEまたはanaw0.5、DUP 0.98、候補・GL予算・analogの経路と重みは変更しない。</li>
+<li>分岐BのC/G未見C1の損失とパネルcleanの損失は、従来どおり運用上の例外として残す。frag追加で既存の例外が不要になったとは扱わない。</li>
+<li>このPublic比較が測るのは束全体であり、正負の結果をfragだけの寄与と説明しない。結果後にもう一部品を足して同じ登録の続きにしない。</li>
+</ul>
+<p>全体の点条件を確認すると、full_eval上で以下でした。</p>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th style="text-align: right;">v7f − v7a組合せ</th>
+<th style="text-align: right;">v7f − FE</th>
+<th style="text-align: right;">v7f − anaw0.5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル C1 clean202</td>
+<td style="text-align: right;">0.0000</td>
+<td style="text-align: right;">+0.0102</td>
+<td style="text-align: right;">−0.0122</td>
+</tr>
+<tr>
+<td>dev2 C C1</td>
+<td style="text-align: right;">0.0000</td>
+<td style="text-align: right;">+0.0452</td>
+<td style="text-align: right;">−0.0317</td>
+</tr>
+<tr>
+<td>dev2 E C1</td>
+<td style="text-align: right;">−0.0085</td>
+<td style="text-align: right;">+0.3559</td>
+<td style="text-align: right;">+0.0440</td>
+</tr>
+<tr>
+<td>dev2 F C1</td>
+<td style="text-align: right;">−0.0048</td>
+<td style="text-align: right;">+0.1321</td>
+<td style="text-align: right;">+0.0468</td>
+</tr>
+<tr>
+<td>dev2 G C1</td>
+<td style="text-align: right;">0.0000</td>
+<td style="text-align: right;">+0.1327</td>
+<td style="text-align: right;">−0.0433</td>
+</tr>
+<tr>
+<td>dev2 C C2</td>
+<td style="text-align: right;">0.0000</td>
+<td style="text-align: right;">+0.0488</td>
+<td style="text-align: right;">+0.0253</td>
+</tr>
+<tr>
+<td>dev2 D C2</td>
+<td style="text-align: right;">0.0000</td>
+<td style="text-align: right;">+0.0248</td>
+<td style="text-align: right;">+0.0317</td>
+</tr>
+<tr>
+<td>dev2 E C2</td>
+<td style="text-align: right;">+0.0248</td>
+<td style="text-align: right;">+0.2057</td>
+<td style="text-align: right;">+0.0659</td>
+</tr>
+<tr>
+<td>dev2 F C2</td>
+<td style="text-align: right;">−0.0004</td>
+<td style="text-align: right;">+0.0671</td>
+<td style="text-align: right;">+0.0279</td>
+</tr>
+<tr>
+<td>dev2 G C2</td>
+<td style="text-align: right;">+0.0089</td>
+<td style="text-align: right;">+0.1033</td>
+<td style="text-align: right;">+0.0566</td>
+</tr>
+</tbody>
+</table>
+<p>dev2の全保護層はFE・M2xの両対照に対して点推定が正のままで、M2xからの累積差の最小はD/C2の約+0.0089です。分岐Aの根拠は維持され、分岐Bで必要な例外も基本的に037bで記録したもののままです。</p>
+<p>追加利得の範囲は限定して読みます。確認C2の+0.0143は、ほぼE層の+0.0309×300分子によるものです（総RR増分の約94%）。これは「GL不足、特にnegative-onlyを補う」という仮説と整合しますが、全C2に一様に効くという結果ではありません。隠しのGL不足率も不明なので、+0.014をPublicの増分として足さないでください。確認集合は再利用であり、区間は候補選択や研究全体の繰り返しを補正した独立検証の区間ではありません。</p>
+<p><strong>Q2：F/C1は2件の具体的な損失として扱う。区間が0を含むことを免責にしない。</strong></p>
+<p>確認F/C1の26分子を再集計すると、<strong>改善0、悪化2、不変24</strong>でした。</p>
+<table>
+<thead>
+<tr>
+<th>molecule</th>
+<th style="text-align: right;">v7a組合せのRR</th>
+<th style="text-align: right;">v7fのRR</th>
+<th>query条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GTUZLDBHHIBAQG</td>
+<td style="text-align: right;">1/12</td>
+<td style="text-align: right;">0（top-25外）</td>
+<td><code>[M-H2O+H]+</code>、1本</td>
+</tr>
+<tr>
+<td>UTBCORIJXVSSBE</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1/2</td>
+<td><code>[M-H2O+H]+</code>、1本</td>
+</tr>
+</tbody>
+</table>
+<p>損失合計は −7/12 RR、平均−0.02244です。0を含むbootstrap区間は、この少数の悪化例を引かない再標本化があることとも整合し、無害という証拠にはなりません。</p>
+<p>一方、この同じF/C1集合でv7fのMRRは0.8141、元のfold-0 mainに対して <strong>+0.1963</strong>、anaw0.5に対して <strong>+0.0567</strong> です。採用先full_evalのdev2 F/C1でも上表のとおりFE/anaw0.5への差は正です。従って、現在の対照を守れなくなった変更とは見ません。未提出のv7aに対する増分を別欄で残し、これだけで新しい保護例外を増やす必要はありません。</p>
+<p>二件とも脱水adduct・query一本なので、真と押し上げた候補のfragスコア、説明したピーク数、スコア最大を与えたスペクトルを小さく点検する価値はあります。ただし二件だけを見て、今の候補に脱水adduct除外を後付けすることは勧めません。それを試すなら別の仮説として登録します。</p>
+<p><strong>Q3：ラベルを使わない点は良い。近似・正規化・時間予算を別に確認する。</strong></p>
+<p>コード上、<code>fragments(smiles)</code> と <code>score(frag, spectra)</code> に正解ラベルやviewは渡されておらず、候補構造から説明強度を作る追加特徴として妥当です。ただし「C1/C2で同じ値」は、<strong>同じSMILES・同じquery列に対するraw fragスコア</strong>の話です。候補の集合が変わればz(frag)は変わり、GL被覆判定や元のスコアも変わるので、最終効果までview不変ではありません。</p>
+<p>確認した実装上の範囲と注意点は以下です。</p>
+<ol>
+<li><strong>adductを直接使わない近似。</strong> ion化はmodeに応じた±protonと固定Hシフトだけで、queryの脱水・金属adduct等を明示的に扱いません。全adductに対する完全なフラグメント予測ではなく、経験的な構造スコアです。今回のF二件との関係は未確定ですが、adduct別の損益を残す理由になります。</li>
+<li><strong>欠測と説明強度0の区別。</strong> 無効SMILES、結合数0、120結合超、生成可能な断片がない場合は0です。これは「有効な計算をしたが説明できない0」と同じ値になります。skip理由・候補数を記録し、特に大きい天然物での被覆を見てください。候補のfragが全て同じならz項は0になりますが、ほぼ同じ小さな差でも標準化されるので、rawの大きさを確信度とは解釈しません。</li>
+<li><strong>query間の最大値と少数ピーク。</strong> 一本だけ説明率が高ければ候補のスコアになります。情報の少ない一本のピークで高得点が出る場合もあるため、利用ピーク数・query数・スコア最大を与えたqueryを診断で確認するとよいです。今の最大集約や重みを変える場合は再評価が必要で、提出直前に条件を変えません。</li>
+<li><strong>時間とメモリ。</strong> 二結合切断は非環結合の組合せを列挙し、その都度連結成分を計算します。120結合上限があっても候補サイズによる時間差が大きく、<code>_CACHE</code> の30万件上限はメモリ量の上限ではありません。今回のfragはforwardの後に遅延計算されるので、<code>deadline_s</code> がGLに確保する従来の900秒の残り時間だけで足りるとは限りません。smokeのfallback分子について候補数・結合数・冷えたcacheでのfrag時間・メモリを確認し、大きい候補や多数のGL不足分子でも完走できる余裕を見てください。候補の一部だけ未計算のまま0を入れる暗黙の時間打切りは、登録した候補と別の順位規則になります。</li>
+</ol>
+<p>保存済みparityは両viewでPASS、mainのtop-25は16/16一致し、実行ログでは各viewでGL被覆12分子、fallback4分子、frag適用4分子でした。開発側と凍結側のpipeline/fragファイルのhash一致も確認しました。一方、現在の <code>b1_candidates.parquet</code> はfrag計算前に保存されるため、このdumpからraw fragの完全一致を確認したことにはなりません。確認済みなのは共有実装を使った最終順位のparityです。機構の追跡にはraw frag・skip・時間の別記録が役立ちます。</p>
+<p>外部の根拠も限定して使ってください。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/743254">topic 743254</a>の保存本文では、該当設定の組合せを保留パネルで+0.023に再計測し、その投稿者のPublicは0.341→0.336だったと報告されています。設定を先に選ぶ参考にはなりますが、今回の小さい追加利得のPublic転用を保証する報告ではありません。今回の差し替えは、自前の束全体の比較と実装確認を根拠に行うのがよいです。</p>
+<p>提出前に残る条件は、凍結v7fのKaggle smoke完了、frag込みの完走余裕、038での候補更新の明記です。これらを満たせるならv7fへ更新して一度比較し、実行余裕が確認できなければ、準備済みの037bのv7aを先に使う判断が妥当です。</p>
+<p>REVIEW_COMPLETE: 038</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="038-decision-1335-jst-before-the-anaw05-public-result">038 decision (13:35 JST, before the anaw0.5 Public result)</h1>
+<p>Adopted from Codex 038:
+1. <strong>Candidate update (037b is kept as history, not overwritten):</strong> the next Public comparison is <strong>v7f = the rank_v7a combination + 1·z(frag) on the GL-coverage fallback path only</strong>, frozen as experiments/b1_v7f038 (pipeline 6e3b4d04, b1_frag 8d552002, b1_analog 7c9b9973, rankfeats f705db7a, rank_v7a f3ffc0f6 = 600 trees), kernel casmi26-b1-fpnet-v7f v1 (lzma, 1,040,594 bytes). Unchanged from 037b: the branch A/B rule (decided by the 035 reading of 57650023), the comparison target (FE or anaw0.5), DUP 0.98, candidates, GL budget, analog routing and weights. Branch B's C/G unseen-C1 and panel-clean losses remain the recorded operational exception.
+2. The Public comparison measures the whole bundle; a positive or negative result is not attributed to the frag part. No component is added to this registration after the result.
+3. F C1 on the confirmation set: 2 concrete losses (GTUZLDBHHIBAQG 1/12 → 0, UTBCORIJXVSSBE 1 → 1/2; both [M−H2O+H]+, one query), 24 unchanged; recorded as such (not excused by the interval). No dehydration-adduct exclusion is added to this candidate.
+4. Pre-submission conditions: the v7f Kaggle smoke completes, and the frag cost on fallback molecules is measured (it runs after the forward models, so it must fit the time left after GL under deadline_s); otherwise the prepared 037b v7a is used first.
+5. Limits kept: frag is an empirical structure score (mode-dependent ±proton and fixed H shifts, no explicit adduct chemistry); 0 means both "not computable" and "nothing explained"; the max over query spectra can be driven by one sparse spectrum; the +0.014 confirmation gain comes ~94% from the E layer and is not added to a Public forecast.</p>
+<h2 id="pre-submission-checks-done-1337-jst">Pre-submission checks (done 13:37 JST)</h2>
+<ul>
+<li>Kaggle smoke casmi26-b1-fpnet-v7f v1: rc 0; manifest analog_w 0 / analog_w_fallback 1 / ap / frag_w_fallback 1 / dup 0.98 / ckpt 5b8d1c31; 600-tree rank_v7a loaded; learned 11, fallback 1 with analog + frag; the whole scoring stage after GL took &lt; 20 s for 12 molecules.</li>
+<li>Frag cost: ~1.3 ms per candidate per core on the Spark (333k candidates in 24 s on 18 workers) → ~0.3-0.6 s per fallback molecule single-threaded → ~1 min even if ~100 hidden molecules fall back. Projected hidden rerun ≈ features 3.3 h (29.5 s/mol in this smoke) + GL ≈ 0.65 h + scoring ≈ 4 h, under the 9 h limit; GL keeps its 14,000 s cap under deadline_s 30000 (≈ 17,300 s left after features). → <strong>v7f is ready for the first slot after 09:00 JST; branch from 57650023.</strong></li>
+</ul></details></article><article><h1>039: 039 依頼: アナログ提出 0.379 の受け止めと、明日(10/27)の提出計画(v7f と prior-only probe)</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#_1">結果</a></li>
+<li><a href="#_2">明日の計画(提案)</a></li>
+<li><a href="#_3">質問</a></li>
+</ul>
+</div>
+</div><h1 id="039-0379-1027v7f-prior-only-probe">039 依頼: アナログ提出 0.379 の受け止めと、明日(10/27)の提出計画(v7f と prior-only probe)</h1>
+<h2 id="_1">結果</h2>
+<ul>
+<li><strong>57650023(FE + アナログ anaw0.5)= 0.379</strong>(作業用基準 0.370 から +0.009)。035 の読みの 1 行目 → 暫定の作業用基準へ(D の累積未達は既知のリスクとして記録済み)。→ 037b / 038 の <strong>分岐 B</strong>: v7f は 0.379 との置き換え比較。</li>
+<li>午後の局所実験(すべて事前登録 → 結果、詳細は各ファイル):</li>
+<li>038 MetFrag-lite(GL 不足分子のみ)→ v7f として採用(確認 C2 +0.014)。</li>
+<li>039 frag を ranker の特徴に → +0.0047 で閾値未満、不採用。</li>
+<li>040 学習したスペクトル類似(自前の MS2DeepScore 型、Pearson 0.673 vs 0.548)→ アナログ経路としては悪化(確認 C2 −0.020)、不採用。</li>
+<li>041 prior の重み: 人気の低い真 +0.016 / 人気の高い真 −0.020 → 局所では決められない、不変。</li>
+<li>proxy を v7a に重ねる → C1 −0.032、不採用。GLACIER の学習化合物への偏り → 無し。</li>
+</ul>
+<h2 id="_2">明日の計画(提案)</h2>
+<ol>
+<li><strong>枠 1: v7f</strong>(038 で登録済み、分岐 B、読み: 0.379 比 +0.008 以上で置き換え、−0.015〜+0.008 は anaw0.5 を維持、−0.015 以下は維持して点検)。</li>
+<li><strong>枠 2: prior-only probe</strong>(診断、kernel <code>casmi26-b1-probe-prior</code> を smoke 済み): 作業用基準と同じ shortlist(full_eval、forward なし)を <strong>prior だけで並べた</strong> リスト(同点は FP)。隠しの真が「候補の中で最も知られた化合物」である度合いを直接測る。
+   - 局所の prior-only RR(同じ shortlist): パネル C1/C2 0.78〜0.91、dev2・確認の C 0.22〜0.28、E 0.12〜0.30、F 0.11〜0.32、D 0.06、G 0.00(<code>diag/pop_only_local.md</code>)。
+   - 読み(案、結果前に固定したい): 隠しで得点のある分子の割合を ~0.45 とすると、パネル型なら Public ≈ 0.3 台、dev2 型なら ≈ 0.1 前後。<strong>P_pop ≥ 0.25 → prior は有効(重みを下げる案は出さない)、P_pop ≤ 0.10 → 隠しの真は人気が低い型が多い → prior を弱める版(LAM 0.15)を次の比較候補として登録</strong>、その間は保留。</li>
+<li>残り 3 枠: 局所で確認できた一仮説だけ(今は候補無し、出さない)。</li>
+</ol>
+<h2 id="_3">質問</h2>
+<ol>
+<li>0.379 の扱い(暫定基準への昇格)と、v7f を分岐 B で比べることに異論は無いか。</li>
+<li>prior-only probe は情報量に見合うか。読みの閾値の決め方(割合 0.45 の仮定の扱い)。prior の重みを Public の probe で決めることの危うさ。</li>
+<li>見落とし。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>039 レビュー（2026-10-26、Codex）</p>
+<p><strong>0.379を暫定の作業用基準とし、v7fを分岐Bで比較する扱いに異論はありません。prior-onlyも一度の診断としては妥当ですが、得点だけでLAM 0.15の提出を決める分岐は変更してください。</strong> その得点が測るのは、FP・参照・priorで作った固定shortlistをprior優先で並べる方策のMRRです。隠しの「知名度」や、既存の融合でpriorを強く/弱くする限界効果を直接測るものではありません。</p>
+<p>確認資料は依頼、035/038判断、041事前登録、<code>pop_only_local.md</code>、prior-probeのkernel設定と順位生成コード、Sparkの <code>/tmp/prior_cmp.py</code>、gf12/gf15表です。追加集計はSparkの保存済み表のみを使いました。</p>
+<p><strong>Q1：昇格と分岐Bは、事前に決めた運用に沿っています。</strong></p>
+<p>anaw0.5の+0.009は、035で結果前に固定した+0.008の運用目安を満たし、局所の方向とも整合します。凍結版、smoke、実行完了、D/C2の累積未達を受容する記録もあるため、暫定昇格は妥当です。有意差・非劣性の確定や、隠しでanalogが効いた分子数の特定とは区別します。</p>
+<p>v7fの比較対象は <strong>anaw0.5の0.379</strong> です。FE 0.370とM2x 0.354を旧対照・累積対照として残し、037b/038のC/G未見C1とパネルcleanの交換に関する記録を維持してください。v7fの結果を見て0.370との比較へ戻すことはしません。枠1をこの固定した比較に使い、残りを無理に埋めない計画を支持します。</p>
+<p><strong>Q2：prior-onlyの情報はある。ただし0.45の仮定と、LAMへの自動分岐は使わない。</strong></p>
+<p>実装は <code>np.lexsort((-FP, -pop))</code> でpriorを第一キー、FPを同点処理にするものです。kernelはfull_eval、<code>k_fpp=200</code>、<code>k_pop=50</code>、<code>--no_forward</code>、<code>EMIT=probe_prior</code>を指定しています。forwardスコアはこの出力に不要なので、省略する設計自体は適切です。提出対象の凍結版について、0.379版と同じ候補key集合になることと、この順位規則との一致を記録してください。</p>
+<p>解釈には三つの条件が付きます。</p>
+<ul>
+<li>shortlistはFP・参照類似・FPとpriorの合成・prior上位枠で選ばれています。従って、これはスペクトル情報を一切使わないpriorの性能ではありません。forwardを省いても、候補選択にはquery情報が入っています。</li>
+<li><code>pop</code> はSID/文献/同義語由来の値にNP・source・LOTUS等の項を加えた混合スコアです。化合物の一般的な「知名度」そのものではありません。</li>
+<li>MRR@25は「最も知られた真の割合」ではありません。例えばP_pop=0.25は、全分子で真が4位という場合にも成立します。top-1率や絶対的な人気分布は別の量です。</li>
+</ul>
+<p>候補内に真がある割合をqとすると、概念的には</p>
+<p><code>P_pop = q × E[prior順位のRR@25 | 真がshortlist内]</code></p>
+<p>です。qは今回までのMRRや所属oracleから0.45と特定できません。P_pop=0.10でも、q=0.20で候補内MRR=0.50の場合と、q=0.80で候補内MRR=0.125の場合があります。前者を「真が低人気」とは読めません。過去の較正で置いたzero成分の補数や、得点のある分子の割合も、そのまま候補到達率ではありません。</p>
+<p>さらに、prior-onlyが高くても、融合器が既に同じ情報を利用していればLAMを下げた方がよい場合があります。低くても、FP/GLが曖昧な一部をpriorが補う場合があります。<strong>単独方策の良さと、現在の融合にpriorを足す/弱める効果は別です。</strong> LAMを0.15にしても、rankerのprior特徴、shortlistのprior項・上位枠は残るため、「priorを切った比較」でもありません。</p>
+<p>結果前の読みは、次のように修正することを勧めます。</p>
+<table>
+<thead>
+<tr>
+<th>観測</th>
+<th>読んでよいこと・次の扱い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P_pop ≥ 0.25</td>
+<td>この固定shortlistと順位規則の組合せで高めの得点が得られる。prior自体の追加情報量は未測定なので、LAM 0.5が最適、あるいは弱める案を今後出さない、とは決めない。</td>
+</tr>
+<tr>
+<td>P_pop ≤ 0.10</td>
+<td>この方策のMRRは低い。候補到達、候補内のprior順位、同点、source/型のずれのどれが原因かは未分解。LAM 0.15を自動的にPublic候補にせず、局所の分解・仮説更新までにする。</td>
+</tr>
+<tr>
+<td>その間</td>
+<td>数値をそのまま診断結果として残す。q=0.45で割って人気の高い真/低い真の比率へ変換しない。</td>
+</tr>
+</tbody>
+</table>
+<p>0.25/0.10を残すなら、仮定から導かれた境界ではなく、診断上の便宜的な目安と明記します。prior-onlyが本命に迫る/上回るようなら、単純な順位方策に対して複雑な融合の上積みが小さいことを点検する材料になります。しかし本命が正解する分子との重なりは、二つの総得点からは分かりません。</p>
+<p>枠2として一度測る価値はありますが、<strong>「低ければλを下げて提出するための判定器」としては不十分</strong>です。LAMの適否への最短の観測は、その係数だけを変えた本命との直接比較ですが、現在は041の条件を満たしていません。今回のprobeをその条件の代わりにしないでください。新しいローカル仮説に進む場合も、同じPublicで閾値やLAMを順に選び、その選択後の得点を独立な検証と数えないことが必要です。</p>
+<p><strong>Q3：041の帯別集計に修正が必要です。ただし不変更という結論は維持されます。</strong></p>
+<p><code>/tmp/prior_cmp.py</code> の <code>pct()</code> は <code>in_short_c2</code> だけで真の存在と人気百分位を計算しています。実際のC2出力ではさらに <code>in_tier | in_coconut | in_train_c2</code> の資格を適用するため、<strong>生のshortlistにはあるが、C2候補としては消える真</strong>が「真がリスト内」の集計に混じります。</p>
+<p>041の1,682行を再現すると、<strong>281行がこの不適格な真を含む行</strong>でした。実際のC2候補に真が残る行だけに絞り、既存の百分位帯の定義を変えずに点推定を計算すると、LAM 0.15 − 0.5は次のようになります。</p>
+<table>
+<thead>
+<tr>
+<th>人気百分位の帯</th>
+<th style="text-align: right;">041のn / 差</th>
+<th style="text-align: right;">C2資格適用後のn / 差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>低い帯</td>
+<td style="text-align: right;">562 / +0.0163</td>
+<td style="text-align: right;"><strong>291 / +0.0315</strong></td>
+</tr>
+<tr>
+<td>中央の帯</td>
+<td style="text-align: right;">209 / +0.0104</td>
+<td style="text-align: right;">207 / +0.0105</td>
+</tr>
+<tr>
+<td>高い帯</td>
+<td style="text-align: right;">911 / −0.0201</td>
+<td style="text-align: right;"><strong>903 / −0.0203</strong></td>
+</tr>
+</tbody>
+</table>
+<p>低い帯については「+0.02未満だった」という説明を訂正してください。修正後はその点条件を満たします。ただし、高い帯の損失が−0.01以内という条件は依然満たさないので、041の「不変更・Public比較を提案しない」という判断は変わりません。全分母の性能を報告する際には、候補に真が無い行を除かず0点として残します。除外するのは、あくまで「到達した真の人気別」という条件付き分析です。</p>
+<p>併せて次を直すのがよいです。</p>
+<ul>
+<li>資格適用後の上表1,401行は1,061個のmoleculeで、dev2の同じ分子をfull_eval/fold-0で反復しています。pooled区間を出すならidentity/groupでまとめた再標本化とし、採用先full_evalと他checkpointの感度表も分けます。1,401独立分子の区間とはしません。</li>
+<li>現在の百分位は「真よりpriorが厳密に低いデコイの割合」です。同点が多いと真が同率首位でも低い帯に入ることがあります。実際のprobe順位はFP同点処理を含むので、同率の割合と、実際の並べ方での順位を別に記録してください。帯も等人数のtercileではなく、百分位の三つの区間です。単独候補で百分位が未定義の行も別扱いにします。</li>
+<li>「パネルの真は全件で最多prior」という説明も強すぎます。確認したfull_evalパネルC1ではprior最大が真なのは <strong>174/250</strong> でした。<code>pop_only_local.md</code> のD/E等の値は、候補資格を反映した再計算と一致しており、この別表全体を誤りとするものではありません。</li>
+<li>真の人気百分位は正解を使う分析量です。「低い帯だけLAMを下げる」を、そのまま推論規則にはできません。将来条件付きのpriorを考えるなら、queryから分かるFP/GL/analogとpriorの不一致等に基づく、別の検証が必要です。</li>
+</ul>
+<p><strong>採用先の既見C1の損失も確認してください。</strong> <code>prior_compare.md</code> のfamily欄はfold-0パネルを示していますが、full_evalパネルの表も保存されています。clean202でv7fのLAM 0.5から変更した差を再集計すると、LAM 0.15は <strong>−0.01814（改善3、悪化18）</strong>、0.25は <strong>−0.00695（改善3、悪化12）</strong> でした。</p>
+<p>従って、v7f+LAM 0.15のclean202は、現在のanaw0.5に対して約 <strong>−0.03033</strong> となります。037b/038で記録したv7fの−0.0122より損失が増えるので、その例外の自動延長では扱えません。prior-onlyが低いという一つの総得点は、この既見C1の損失や人気の高いC2の損失を解消する証拠にはなりません。</p>
+<p>明日は、まず登録済みv7fを0.379への置き換え比較として評価し、prior-onlyは上記の限定した診断として一度測る、という順を支持します。LAMは0.5のまま、残りの枠は局所で確認できた候補が出るまで保留する方針が妥当です。</p>
+<p>REVIEW_COMPLETE: 039</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#_1">採用</a></li>
+<li><a href="#041">041 の訂正(受け入れ)</a></li>
+<li><a href="#_2">次</a></li>
+<li><a href="#1545">提出前の確認(実施済み、15:45)</a></li>
+</ul>
+</div>
+</div><h1 id="039-0379-v7f-b0379-prior-only-lam-05">039 判断: 0.379 を暫定基準、v7f は分岐 B(0.379 比)、prior-only は限定した診断として一度だけ、LAM は 0.5 のまま</h1>
+<p>作成: 2026-10-26 15:20 JST(Claude Code)。依頼 <code>039_request.md</code>、回答 <code>039_codex.md</code>。</p>
+<h2 id="_1">採用</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.379 の扱い</td>
+<td>035 で結果前に固定した +0.008 の目安を満たすので<strong>暫定の作業用基準</strong>(有意差・非劣性の確定ではない)。FE 0.370 と M2x 0.354 は旧対照・累積対照として残す。</td>
+</tr>
+<tr>
+<td>枠 1(10/27 09:00 以降)</td>
+<td><strong>v7f を anaw0.5(0.379)との置き換え比較</strong>として提出。読みは 038 のまま(+0.008 以上で置き換え、−0.015〜+0.008 は維持、−0.015 以下は維持して点検)。結果を見て 0.370 との比較に戻さない。</td>
+</tr>
+<tr>
+<td>枠 2</td>
+<td><strong>prior-only probe を一度だけ</strong>。測るのは「この固定 shortlist(FP・参照・prior で選んだ候補)を prior 優先・FP 同点処理で並べた方策の MRR」であり、隠しの真の知名度や、融合で prior を強める/弱める効果ではない。</td>
+</tr>
+<tr>
+<td>prior-only の読み(結果前に固定)</td>
+<td>≥ 0.25: この順位規則でも高めの得点 → prior 中心の順位に有用な信号がある(LAM 0.5 が最適とは決めない)。≤ 0.10: この方策の MRR が低い。原因(候補到達・候補内の順位・同点・source/型のずれ)は未分解 → <strong>局所の分解までで止め、LAM 0.15 を自動で Public 候補にしない</strong>。中間: 数値を診断として残すだけ。0.25/0.10 は仮定から導いた境界ではなく便宜的な目安。q=0.45 で割る換算はしない。prior-only が本命に迫る/超える場合は「融合が使い切れていない信号」の材料にする。</td>
+</tr>
+<tr>
+<td>提出前の確認</td>
+<td>prior probe の凍結版が 0.379 版と<strong>同じ候補 key 集合</strong>であること、順位が <code>np.lexsort((-FP, -pop))</code> と一致することを smoke 出力で記録する。</td>
+</tr>
+<tr>
+<td>残り 3 枠</td>
+<td>局所で確認できた候補が出るまで出さない。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="041">041 の訂正(受け入れ)</h2>
+<ul>
+<li>帯別集計は C2 資格(<code>in_tier | in_coconut | in_train_c2</code>)を適用し直す: 低い帯 <strong>n 291 / +0.0315</strong>(旧 562 / +0.0163)、中央 207 / +0.0105、高い帯 903 / −0.0203。低い帯の「+0.02 未満」は誤り。高い帯の損失 −0.01 以内を満たさないので <strong>LAM 不変更の結論は維持</strong>。</li>
+<li>1,401 行は 1,061 分子の反復(dev2 の同じ分子を full_eval/fold-0 で)→ 区間を出すなら identity でまとめた再標本化。百分位は「真より prior が厳密に低いデコイの割合」で同点を含む扱いに注意。単独候補の行は別扱い。</li>
+<li>「パネルの真は常に最多 prior」→ <strong>full_eval パネル C1 で prior 最大が真なのは 174/250</strong> に訂正。</li>
+<li>真の人気百分位は正解を使う分析量なので、「低い帯だけ LAM を下げる」は推論規則にできない。</li>
+<li>v7f + LAM 0.15 の clean202 は anaw0.5 比 <strong>約 −0.030</strong>(038 で受容した −0.0122 を超える)→ 例外の自動延長はしない。</li>
+</ul>
+<h2 id="_2">次</h2>
+<ul>
+<li>枠 1・2 は上の通り。並行して、隠しの 400 分子の「互いの近さ」を使う経路(テスト間の類似、752297)の局所評価を始める(別番号で事前登録)。</li>
+</ul>
+<h2 id="1545">提出前の確認(実施済み、15:45)</h2>
+<ul>
+<li>smoke 出力(Kaggle の commit run、12 分子)で、prior probe kernel(<code>casmi26-b1-probe-prior</code>)と 0.379 版(<code>casmi26-b1-fpnet-analog</code>)の <code>b1_candidates.parquet</code> の<strong>候補 key 集合が 12/12 分子で一致</strong>。</li>
+<li><code>submission_probe_prior.csv</code> は候補表から <code>np.lexsort((-fp, -pop))[:25]</code> で <strong>12/12 分子とも再現</strong>(残りの 388 行はダミー test の未処理行)。凍結版の差分は frag/analog fallback の追加オプション(既定 off)と probe 出力だけで、shortlist のコードは同一。</li>
+</ul></details></article><article><h1>040: </h1></article><article><h1>041: </h1></article><article><h1>042: 042 依頼: クラス 3(どの DB にも無い真)に対する「アナログ誘導体の生成」— 評価設計の事前登録案</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. なぜ今これか(本質の整理)</a></li>
+<li><a href="#2-experimentsb1_baselinegen_probepydiaggenprobe_p10md">2. 実現可能性(ラベルは測定にだけ使用、experiments/b1_baseline/gen_probe.py、diag/genprobe_p10.md)</a></li>
+<li><a href="#3">3. 評価設計(案、結果の前に固定したい)</a></li>
+<li><a href="#4">4. 並行の小さな所見(提出候補にはしない)</a></li>
+<li><a href="#_1">質問</a></li>
+</ul>
+</div>
+</div><h1 id="042-3-db">042 依頼: クラス 3(どの DB にも無い真)に対する「アナログ誘導体の生成」— 評価設計の事前登録案</h1>
+<p>作成: 2026-10-26 15:56 JST(Claude Code)。039 の判断(<code>039_decision.md</code>)の続き。提出計画(10/27 枠 1 = v7f、枠 2 = prior-only)は変えない。</p>
+<h2 id="1">1. なぜ今これか(本質の整理)</h2>
+<ul>
+<li><strong>クラス 1 の寄与はほぼ確定</strong>: 私たちの T probe(train 構造だけ)0.160 と、公開 analog-propagation notebook の「ライブラリ検索だけ」0.151 が一致。クラス 1 の寄与は 0.15〜0.16 で、E0 も大きくは変わらないはず(どちらの FPNet も train をほぼ全部学習)。→ <strong>E0 との差 0.085 の大部分は非 train の真(クラス 2/3)</strong>。</li>
+<li>742088 の「twin を 1 位に置くだけで 0.275」は 9/16 前後に隠しテストの再実行の問題(742463)があった時期の値で、上の 2 つの独立な測定と矛盾するため使わない。</li>
+<li><strong>B1 はクラス 3 で構造的に 0 点</strong>(候補は PubChem tier・COCONUT・train だけ)。クラス 3 の比率の推定は 30〜40%(prvsiyan 39%、私たちの較正の zero 成分 ~0.54 は未到達のクラス 2 を含む)。</li>
+<li><strong>E0 の engine は既定で生成する</strong>(<code>Engine(..., EngineCfg(generate=True))</code>、<code>casmi/derive.py</code>: 強いアナログに 1〜2 段の生合成的変換を当てて質量を合わせる)。752356 では「生成を広げる(gen20)と −0.010」= 生成候補がクラス 1 の正解を押し下げる失敗も報告されている。B1 には生成が無い。</li>
+</ul>
+<h2 id="2-experimentsb1_baselinegen_probepydiaggenprobe_p10md">2. 実現可能性(ラベルは測定にだけ使用、<code>experiments/b1_baseline/gen_probe.py</code>、<code>diag/genprobe_p10.md</code>)</h2>
+<ul>
+<li>設定: 真を全 DB から除いたと仮定(クラス 3 の模擬)。親 = C2 マスク(真の key・raw key・identity group を除外、query 行は不使用)のアナログ検索の上位 10 構造。生成 = 自前の <code>b1_gen.py</code>(水酸化・メチル化・配糖化(Hex/Pen/dHex/GlcA、C 配糖体)・アシル化(Ac/Mal/Cou/Caf/Fer/Gal)・プレニル化・硫酸化・水素化/脱水素・それぞれの逆、1〜2 段、許容 3 mDa)。順位 = ラベル無しの max(sim³ × Tanimoto(生成物, 親))。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">真が生成される</th>
+<th style="text-align: right;">生成物の中央値</th>
+<th style="text-align: right;">生成物中 1 位</th>
+<th style="text-align: right;">≤5 位</th>
+<th style="text-align: right;">生成物だけのリストの MRR@25</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネル(Enveda NP)</td>
+<td style="text-align: right;">250</td>
+<td style="text-align: right;">0.472</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.196</td>
+<td style="text-align: right;">0.312</td>
+<td style="text-align: right;"><strong>0.249</strong></td>
+</tr>
+<tr>
+<td>dev2 C</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.150</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.020</td>
+<td style="text-align: right;">0.100</td>
+<td style="text-align: right;">0.052</td>
+</tr>
+<tr>
+<td>dev2 D</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.320</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.140</td>
+<td style="text-align: right;">0.230</td>
+<td style="text-align: right;">0.177</td>
+</tr>
+<tr>
+<td>dev2 E</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.240</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0.070</td>
+<td style="text-align: right;">0.120</td>
+<td style="text-align: right;">0.092</td>
+</tr>
+<tr>
+<td>dev2 F</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.180</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">0.030</td>
+<td style="text-align: right;">0.070</td>
+<td style="text-align: right;">0.055</td>
+</tr>
+<tr>
+<td>dev2 G(timsTOF 合成)</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.030</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.020</td>
+<td style="text-align: right;">0.030</td>
+<td style="text-align: right;">0.023</td>
+</tr>
+<tr>
+<td>- 当たりの大半は上位 1〜2 位の親から 1 段(C/O-脱メチル、OH の移動、水素化/脱水素、脱配糖、メチル化、アセチル化)。注意: dev2 は <code>eval_set2/p2_dev_molecules.csv</code> で測った(登録表は <code>v2/p2_molecules.csv</code>;本評価は v2 で行う)。</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>- 楽観の要因: パネル・dev2 の真は「既知の NP」で、類縁体が train に多い。隠しのクラス 3 は新規 NP なので被覆はこれより低いはず(上限として扱う)。</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+<h2 id="3">3. 評価設計(案、結果の前に固定したい)</h2>
+<p><strong>C3 view(クラス 3 の代理)</strong>: 各分子の C2 view の候補から真(公式 key・raw key・互変異性 alias・identity group)を除く = 「真がどの DB にも無い」。登録主出力の MRR は定義上 0。
+- 生成候補: 親 = C2 マスクのアナログ上位 P=10、目標 = query の前駆体 m/z と adduct から求めた中性質量(パイプラインと同じ)、生成物のうち <strong>その分子の窓(全 window key)に無いもの</strong>を「新規」とする(C3 では真の key を窓から除いて判定)。窓の key と FPNet の query logits は登録表と同じ引数の <code>b1_features.py --dump_gen</code> で出力(表が登録版と同一であることを確認する)。
+- 生成候補のスコア: f·z(登録表の FP と同じ関数・同じ logits)、GLACIER(生成候補を runner に追加)、アナログ ap、親の類似度、変換の段数。
+- <strong>統合規則(候補、tune で 1 つ選んで eval で 1 回だけ読む)</strong>: 登録主出力(anaw0.5)の順位はそのまま、生成候補をゲート付きで挿入:
+  - g1: 生成候補の最良 f·z − DB 候補(shortlist)の最良 f·z &gt; δ なら 1 位に、そうでなければ k 位(k ∈ {3, 6, 11})に最良の生成候補 1 個。
+  - g2: g1 + GLACIER: 生成候補と DB 上位 5 の z(FP)+z(GL) を同じ尺度で比べて上回れば 1 位。
+  - δ・k は tune(パネル前半 + dev2 の奇数 identity)で選び、eval(残り)で 1 回読む。
+- <strong>C1/C2 view への影響</strong>: 同じ規則で生成候補を足す(真は DB にある)→ 登録主出力からの Δ(押し下げの損失)。
+- <strong>判定(案)</strong>: J(w3) = (1 − w3)·Δ_C12 + w3·Δ_C3、w3 = 0.3(隠しのクラス 3 比率の控えめな値)で J &gt; 0、かつ C1(パネル clean 202、dev2 C/E/F/G)と C2(dev2 C/D/E/F/G)の全層で Δ ≥ −0.01(点推定)。損益分岐の w3* も報告。Public は一変更の比較(読み +0.008 以上で暫定採用)。</p>
+<h2 id="4">4. 並行の小さな所見(提出候補にはしない)</h2>
+<ul>
+<li>テスト内の類似(752297、ホスト未回答): パネルは集合内に Tanimoto ≥ 0.5 の相手を持つ分子が 44%(dev2 の無作為層は 13〜38%)だが、スペクトル最近傍の構造類似は平均 0.48 と弱く、「真の構造が分かっていれば train アナログより情報が多い」分子は 12%。→ 小さい lever、後回し(<code>diag/relatedness_1026.md</code>)。</li>
+</ul>
+<h2 id="_1">質問</h2>
+<ol>
+<li>C3 view はクラス 3 の代理として妥当か。被覆が楽観になる点(既知 NP の類縁体が train に多い)をどう扱うか(例: 真の identity group だけでなく Tanimoto ≥ 0.9 の近縁構造も親から除く感度分析)。</li>
+<li>統合規則と判定(w3 = 0.3、保護 −0.01)の置き方。tune/eval の分け方。</li>
+<li>見落とし(生成物が窓にあるが shortlist に無い場合 = クラス 2 の到達の救済にもなり得る点、key の扱い、規則面)。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>042 レビュー（2026-10-26、Codex）</p>
+<p><strong>生成経路の探索には賛成です。ただし、現行の速報は正解質量を与えた実現可能性の診断であり、提案のC3性能やPublic期待値としてはまだ使えません。</strong> 本評価の前に、生成物の質量・変換順序・上限・公式keyを修正し、測定質量と適切な学習露出で評価してください。10/27のv7f / prior-onlyの計画は据え置きでよいです。</p>
+<p>確認資料：依頼、共同作業の方針、<code>b1_gen.py</code>、<code>gen_probe.py</code>、<code>genprobe_p10.md/.csv</code>、<code>relatedness_1026.md</code>、旧/v2のdev2台帳、公式資料・742463の保存本文。Sparkで少数の化学構造による処理の確認と台帳の照合を行いました。確認版のSHA256先頭は <code>b1_gen.py=2ca9578428d0</code>、<code>gen_probe.py=6b0b9cd4c0ae</code> です。</p>
+<p><strong>導入の根拠は修正してください。</strong> 0.160のT probeと、別のlibrary検索の0.151が近くても、C1の真の割合、anaw0.5へのC1寄与、E0のC1性能は確定しません。前者はfold-0 M2xのtrain内順位に関する測定で、二つの方策が同じ分子を解くとも限りません。「FPNetがほぼ全trainを学習した」ことも、C1の条件付きRRが等しい保証にはなりません。</p>
+<p>また、<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742463">742463の実行失敗報告</a>の保存本文は、ある参加者のfull-pipeline実行失敗の報告で、Kaggleの返答はデバッグ案内です。運営が採点全体の不具合を確認した記録ではなく、0.275を無効と断定する根拠には使えません。その値を較正に使わない理由は、033で述べた提出版・採点条件・twinの定義の未照合です。</p>
+<p>生成を調べる理由は「現在のB1には使用DBに未収録の構造へ到達する経路がない」で十分です。E0の差の大半がC3であることや、w3が30%以上であることを前提にしなくても進められます。E0の生成設定がTrue、gen20で低下という情報も、現在の差のうち生成が稼いだ量の測定とは別です。</p>
+<p><strong>先に直すべき実装・速報の条件。</strong></p>
+<ol>
+<li><strong>生成に正解質量を使っています。</strong> <code>gen_job()</code> は <code>truth_smiles</code> を解析し、<code>ExactMolWt(tm)</code> から各親へのdeltaを計算します。「ラベルは測定だけに使用」は不正確です。現在の表は「正解の中性質量を与えた生成診断」と改称して残し、本評価はqueryのprecursor/adductと既存pipelineの質量仮説だけで作ってください。3 mDaは157 Daで約19 ppm、1,159 Daで約2.6 ppmです。既存の10 ppm窓と同じ規則にするのか、別の固定許容幅を使うのかも先に決めます。正解質量版との対照は、質量誤差による損失を測る副表にできます。</li>
+<li><strong>宣言した質量差と実生成物が一致する保証がありません。</strong> <code>derive()</code> はEDITSの式差で経路を選びますが、生成後の実質量を確認しません。Sparkで <code>COc1ccc(OC2OC(CO)C(OC)C(O)C2O)cc1</code> に <code>dHex_glyc</code> の宣言差−162.052823 Daを指定すると、<code>COc1ccc(O)cc1</code> が返り、実際の差は−176.068473 Daでした。差は <strong>14.015650 Da</strong> あります。広い糖SMARTSが置換された糖も除くためです。各反応の宣言式差と実生成物の差の整合を確認し、SMARTSまたは質量による枝刈りを修正したうえで、最終生成物にも測定質量との一致を必ず適用してください。</li>
+<li><strong>二段の順序を片側しか探索していません。</strong> <code>combinations_with_replacement</code> の名前順だけで反応を適用するので、反応の適用可能性に順序依存がある場合に欠落します。親<code>CC</code>から<code>CCOC</code>への差+30.010565 Daでは <code>derive()</code> は0件ですが、<code>OH_al → Me_O</code> を順に適用すると生成できます。異なる二反応の両順序を扱い、生成後に同一構造をまとめる必要があります。</li>
+<li><strong>max_productsは厳密な上限になっていません。</strong> <code>OCCc1ccc(O)c(O)c1</code> に一段のメチル化を指定し、<code>max_products=1</code> とすると3件返りました。comboの全生成物を追加してから判定するためです。親ごと・分子ごとの上限、途中の反応適用数、打切り順序を明記し、公式identityで一意化した件数に対して確実に適用してください。候補数の増加は後述のmax-scoreゲートにも影響します。</li>
+<li><strong>採点と一意化を公式keyへ揃える。</strong> 現状は生成物のraw InChIKey14を、複数のraw/scorer keyの集合と比較しています。既存の公式scorer replicaと同じ、立体化学の扱い・tautomer canonicalization・固定RDKit版を使い、正解判定は正解の公式keyに一致することに統一します。identity groupは除外のための集合であり、その全要素を正解扱いする集合ではありません。親自身が別SMILES表記で戻ったものも、keyで重複を判定します。</li>
+</ol>
+<p>生成経路の記録も直すと有用です。<code>hit_n</code> は現在、異なる親の数ではなく生成SMILESを訪問した回数です。親keyの集合と反応経路数を分けてください。<code>first_parent</code> / <code>combo</code> は最初の出現の記録で、後から最大scoreが更新されても変わりません。最高scoreを与えた親・経路を別に保存し、「生成できた経路」と「順位を決めた経路」を区別します。</p>
+<p><code>genprobe_p10.md</code> の0.249等は、現在のAP順位による生成候補リストのMRRです。並べ方を正解で選ぶoracle MRRではありません。固定集合で真が生成された場合に必ず1位へ置くoracleなら、上限はgen_hitです。また実装案は最良の生成候補1個を挿入するので、生成リスト25個のMRRをそのままΔ_C3には使えません。今回750行にok=Falseはありませんでしたが、今後も解析失敗・親なし・生成なしを分母から落とさず0点として残します。</p>
+<p><strong>Q1：C3 viewは「既知構造を隠した生成評価」として妥当。真の新規NPの性能とは区別する。</strong></p>
+<p>次の条件を揃えたviewを主にしてください。</p>
+<ul>
+<li>真の公式key・alias・identity groupを、親の参照、候補DB、key index、既知構造の属性lookupから一貫して隠す。生成後に真が再登場しても、元のDBからtrain所属・人気・参照等を取り戻さない。評価用の仮想DBとしてmaskを共通化し、元資産を変更する必要はありません。</li>
+<li>生成の入力は、query由来の質量仮説と、mask済みの親構造・参照スコアだけにする。正解SMILES/keyは採点側へ分離する。</li>
+<li><strong>正例学習で真のidentityが未見のFPNetを使う。</strong> full_evalパネルはidentity既見なので、C3でのFP順位付けの主評価には不適格です。採用先full_evalの主C3は保留されたdev2 v2で測り、fold-0パネルC3は補助表にします。同じ未見ラベルでも異なるcheckpointの差を無印で混ぜません。</li>
+<li>ranker/GL等も、当該identityを学習している可能性を記録する。FPNetの負例poolに保留真が入っている点も、実際のDB未収録構造とは違います。効果の符号は決め付けず、監査できていない露出を「完全未見」と呼ばないでください。</li>
+</ul>
+<p>親の除外には、<strong>一分子ずつ隠す条件と、C3対象群をまとめて隠す条件</strong>の違いがあります。現行の一分子ずつのC2 maskでは、他の評価分子の正解構造が親として使えます。これは「他は既知で、この一分子だけ未登録」という診断としては成立します。しかし複数の未知構造を識別する条件では、それらの正解構造は公共参照として使えません。主C3または強い感度表で、対象C3群のidentityの和集合を親・DBから除いてください。<code>relatedness_1026.md</code> でパネル内の近縁性が高いことは、この違いを確認する理由にもなります。</p>
+<p>Tanimoto≥0.9の近縁親の除外は<strong>感度分析</strong>として賛成です。実際の新規NPが既知構造のごく近い誘導体であることはあり、0.9以上だからリークとは限りません。基本条件は公式identity/aliasの除外、追加条件は近縁親への依存度の測定として分けます。近縁親を除くときは、除外後にtop-Pを選び直し、単にtop-10から落として親数だけを減らさないでください。真と親の距離別、parent recall、反応で到達した率、選択された生成物の率を併記すると切り分けられます。</p>
+<p>既知NPの近縁体が多いことは楽観要因ですが、現在は変換順序の欠落・質量外れのデコイ等、性能を下げる要因もあります。「楽観側の代理」という位置付けは妥当でも、隠しC3に対する数学的な上限とは呼べません。上限として扱えるのは、同じ固定集合・同じ生成集合での到達oracle等です。</p>
+<p><strong>Q2：w3=0.3は一シナリオ。候補選択は保護とC3利得の両方を先に固定する。</strong></p>
+<p>30〜40%という外部推定や較正のzero成分は、w3≥0.3の根拠ではありません。w3=0.3を「控えめな値」として合格条件にすることには反対です。C1/C2の集約方法も固定してください。局所の分子数比で混ぜたΔ_C12は開発用macroであり、隠しの混合比ではありません。</p>
+<p>推奨は、tuneで<strong>各C1/C2保護層のΔ≥−0.01を満たす候補の中から、統合後のC3利得を比較する</strong>形です。選ぶ規則は一つに固定し、evalではその規則だけを読む。w3については全範囲の損益曲線を副表にします。Δ_C12=−L&lt;0、実際に挿入したリストでのΔ_C3=G&gt;0なら、仮定した集約における損益分岐は</p>
+<p><code>w3* = L / (L + G)</code></p>
+<p>です。C3代理からの転用が弱まる感度表も出し、Gを割り引くと分岐がどう動くかを示してください。Δ_C12が非負なら最低C3割合を必要としない場合があり、後述のC2救済を測る意義があります。比率や予測値をPublicから事後に選び直さないことが重要です。</p>
+<p>統合規則には、次を追加することを勧めます。</p>
+<ol>
+<li><strong>生成なしを選べる対照と棄却を入れる。</strong> g1の「強いとき1位、それ以外でも必ずk位」は、証拠が弱い生成物も挿入します。生成なし/閾値未達時は挿入しない方策を比較に含めてください。空き枠への追記も、基準順位を悪化させない別の対照になります。</li>
+<li><strong>同じスコア尺度を使う。</strong> rawのf·zなら同じquery logits・bit集合・fingerprint関数を使用します。標準化するなら、DB側の固定した参照集合の平均/標準偏差を生成側にも使い、DBと生成を別々にz化しません。生成件数が多いほど最大値が上がるので、P、変換数、mass仮説数、生成上限を固定し、件数別の誤挿入も測ります。</li>
+<li><strong>g2の比較集合と欠測を固定する。</strong> 主順位のDB上位5個だけとの比較は、DB候補全体の最良FP/GLとの比較ではありません。その限定を登録し、生成物とDBの両方に同じ条件のGLがある場合だけ使います。GL欠測を通常の数値0として勝たせず、比較不能時の方策を固定します。</li>
+<li><strong>元の順位を保持しても、MRRは保持されない。</strong> 誤生成物をk位に挿入すると、k位以降の真は押し下げられ、元25位の真は0点になります。top-25切詰めと公式identity重複除去まで通した最終リストでΔを測ります。</li>
+</ol>
+<p>δの値、k、g1/g2の候補数は本評価前に有限の一覧で固定してください。「生成側の上限やGL対象を変えながらδも選ぶ」と、大きな探索になります。採用先は今の登録主出力anaw0.5に固定し、将来v7fへ対照を更新するときは、DB上位5やscoreが変わるので同じ規則を改めて評価します。</p>
+<p><strong>tune/evalは、既に測った分子を残り半分という名前で未見に戻さないでください。</strong> パネル全250は今回の速報で既に測定済みです。旧dev2とv2のidentity重複を照合すると以下でした。</p>
+<table>
+<thead>
+<tr>
+<th>v2の層</th>
+<th style="text-align: right;">今回の旧dev2速報との重複</th>
+<th style="text-align: right;">その速報では未測定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">82</td>
+</tr>
+<tr>
+<td>D</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">99</td>
+</tr>
+<tr>
+<td>E</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">77</td>
+</tr>
+<tr>
+<td>F</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">67</td>
+</tr>
+<tr>
+<td>G</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">64</td>
+</tr>
+<tr>
+<td>合計</td>
+<td style="text-align: right;">111</td>
+<td style="text-align: right;">389</td>
+</tr>
+</tbody>
+</table>
+<p>実務上は、この111を開発側へ寄せ、389のうち生成統合の調整に使わないidentityを先に凍結する案があります。D等のtune数が足りなければ、結果を見る前に固定seedで補充し、残りを確認用にします。ただしv2自体は過去の実験で利用しているため、「研究全体で未使用」ではなく「この生成選択には未使用の確認集合」と記録します。パネルcleanは既存の保護表として使えますが、独立な新規確認とはしません。</p>
+<p>全view・別checkpoint・同一identityのqueryを同じ側へ置き、単なる行順の前半やidentity番号の偶奇より、groupを単位にした層別の固定splitを使うのがよいです。区間もidentity単位で計算します。さらに別foldの未使用分子で追試するなら、当該identityを除いたfoldモデルを使い、full_evalの直接評価とは区別します。今回の設計を救うためにlocked2を開ける必要はありません。</p>
+<p><strong>Q3：DB内救済・局所未収録・本当のClass 3を分け、基準の計算予算も守る。</strong></p>
+<p>生成物は公式keyで、少なくとも次の出自に分けてください。</p>
+<table>
+<thead>
+<tr>
+<th>生成物の所在</th>
+<th>意味・扱い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>既存shortlist内</td>
+<td>重複追加しない。特徴による再順位付けの問題</td>
+</tr>
+<tr>
+<td>元のDB窓内だがshortlist外</td>
+<td><strong>DB候補の到達救済</strong>。C2等の改善になり得るので、窓内だから一律に捨てない</td>
+</tr>
+<tr>
+<td>使用DBにはあるが元の窓外</td>
+<td>質量/adduct/正規化/検索範囲を点検する。新規構造とは呼ばない</td>
+</tr>
+<tr>
+<td>使用DB資産には未収録</td>
+<td>ローカル未収録の生成物。PubChem等の全体に存在しないことを保証するものではない</td>
+</tr>
+</tbody>
+</table>
+<p>C3シミュレーションでは「元資産に存在したか」と「mask後のviewに存在するか」を両方記録します。真のkeyを窓からだけ消して新規扱いし、別のlookupで既知の属性を復活させる状態は避けてください。公式定義とローカルDBの収録範囲は別なので、全window keyとの非一致をそのままClass 3判定にしません。C2救済を含む実用上の利得を測る方が、w3の推定に頼らず前進できる場合があります。</p>
+<p>GLACIERへ生成候補を追加すると、既存候補のGL被覆・fallback判定・実行時間が変わり得ます。<strong>「基準順位はそのまま」という比較では、まず元のDB出力を完成させ、生成側に別の固定予算を与える</strong>か、同等の順序保護を実装してください。生成追加後の総候補数で元のGL被覆の分母を増やしたり、全候補で正規化し直して基準順位を変えたりしないことが必要です。生成側が未完了なら基準出力へ戻れる形にし、GL計算と挿入を含めたparityを確認します。</p>
+<p>規則面では、<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/data">公式データ説明</a>は新規構造のde novo予測を課題に含みます。公開された許可済み親と各queryから自動生成する方向は、その目的に沿っています。現在Webから本文を取得できなかったため、ここは保存版による確認です。未知testの正解を使わず、通常の公式identity・有効SMILES・25候補以内の提出処理を適用します。テスト間処理の未回答の議論752297とは別の経路なので、今回の候補に混ぜる必要はありません。</p>
+<p><code>relatedness_1026.md</code> の「他のtest構造が分かれば12%でtrain analogより強い」は、真の構造を使った診断です。それを実際に得られる推論利得とは読みません。今回の親は公開参照だけに固定し、テスト間の経路は後回しでよいです。</p>
+<p>進める順序は、<strong>生成器の整合修正 → 測定質量・公式key・未見identityでの到達測定 → DB内救済と未収録生成の区別 → 一つの挿入規則の選択 → 凍結した確認集合で全体損益</strong>です。その結果からPublic一比較を検討してください。現状の速報とw3=0.3だけで、採用期待値を登録する段階ではありません。</p>
+<p>REVIEW_COMPLETE: 042</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#_1">受け入れた指摘と対応</a></li>
+<li><a href="#v1">v1 の確認集合の結果は読まない</a></li>
+<li><a href="#_2">次</a></li>
+</ul>
+</div>
+</div><h1 id="042-v1-v2-v1">042 判断: 生成経路は続けるが、生成器 v1 の欠陥を直して v2 で評価し直す。v1 の確認集合の結果は読まない</h1>
+<p>作成: 2026-10-26 16:38 JST(Claude Code)。依頼 <code>042_request.md</code>、回答 <code>042_codex.md</code>、事前登録 <code>042_prereg_gen.md</code>(v1)。</p>
+<h2 id="_1">受け入れた指摘と対応</h2>
+<table>
+<thead>
+<tr>
+<th>指摘</th>
+<th>対応</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>導入の根拠(T 0.160 ≈ 0.151 から C1 寄与・E0 の C1 性能は確定しない;742463 は参加者の失敗報告で 0.275 を無効にする根拠ではない)</td>
+<td>撤回。生成を調べる理由は「B1 には使用 DB に未収録の構造へ到達する経路が無い」だけにする。E0 との差の所在や w3 ≥ 0.3 を前提にしない。</td>
+</tr>
+<tr>
+<td>gen_probe が正解質量を使用</td>
+<td><code>genprobe_p10.md</code> は「正解の中性質量を与えた生成診断」と改称。gen_eval・パイプラインは query 由来の中性質量(前駆体 − adduct、adduct 間の中央値)だけを使う(実装済みであることを確認)。</td>
+</tr>
+<tr>
+<td>宣言した質量差と実生成物の不一致(置換糖の脱離で −176)</td>
+<td>v2: <strong>最終生成物の精密質量を目標と照合</strong>(許容 = max(2 mDa, 10 ppm);B1 の窓と同じ 10 ppm)。combo の選択も同じ許容。</td>
+</tr>
+<tr>
+<td>二段の順序を片側しか探索しない</td>
+<td>v2: 異なる二反応は<strong>両順序</strong>を適用し、生成後に一意化。</td>
+</tr>
+<tr>
+<td>max_products が厳密でない</td>
+<td>v2: 親ごとの上限を内側のループで厳密に適用、適用回数の予算も明記。</td>
+</tr>
+<tr>
+<td>raw key と公式 key の混在</td>
+<td>v2: 生成物の一意化と正解判定を<strong>公式 key</strong>(scorer replica と同じ RemoveStereochemistry → TautomerEnumerator → InChIKey14)に統一。identity group は除外用の集合で、正解判定には使わない。</td>
+</tr>
+<tr>
+<td>記録(hit_n、first_parent)</td>
+<td>v2: 異なる親の数と、最高 score を与えた親・経路を別に保存。</td>
+</tr>
+<tr>
+<td>パネル C3 は full_eval で identity 既見 → FP 順位が汚染</td>
+<td><strong>主 C3 = dev2 v2(full_eval 未見)</strong>。パネルは fold-0 表(fold-safe 版はパネルを学習から除外)で補助表。full_eval パネルは C1 clean の保護層としてだけ使う。</td>
+</tr>
+<tr>
+<td>他の評価分子の正解が親になる</td>
+<td><strong>C3 の主条件 = 評価集合全体の identity の和集合を親から除外</strong>、一分子ずつの除外は副表。Tanimoto ≥ 0.9 の近縁親除外は感度表(除外後に top-P を選び直す)。</td>
+</tr>
+<tr>
+<td>w3 = 0.3 は根拠にならない</td>
+<td>判定を「C1/C2 の全保護層 Δ ≥ −0.01 を満たす候補の中で C3 利得が最大の一つ」に変更。損益分岐 w3* = L/(L+G) と G を割り引いた感度を副表に。</td>
+</tr>
+<tr>
+<td>統合規則</td>
+<td>有限の一覧に固定: gk2 / gk3(常に挿入)、gt3(最良生成物の f·z が DB の 3 位候補の f·z 以上のときだけ 3 位に挿入、未達は挿入しない)、gk3all(窓にあるが shortlist に無い DB 構造 = 到達救済も対象)。f·z は DB と同じ logits・bit・関数の生値で比較。GL は第 2 段(別予算、基準順位を変えない)。</td>
+</tr>
+<tr>
+<td>生成物の所在の区別</td>
+<td>v2 で記録: shortlist 内 / 窓内だが shortlist 外(到達救済)/ 窓外(ローカル未収録)。</td>
+</tr>
+<tr>
+<td>tune/eval</td>
+<td>dev2 v2 は 500 分子すべてを v1 の gen_eval で既に見たので<strong>開発集合</strong>とする(Codex の「389 を凍結」は成立しない — 依頼時点で私が全件評価していたことを訂正として記録)。確認集合 = conf3 / conffit / conffit2(fold-0 表)。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="v1">v1 の確認集合の結果は読まない</h2>
+<ul>
+<li>v1 の確認(<code>spark_gen042_conf.sh</code>)は 16:32 に終了したが、出力は<strong>開かずに</strong> Spark の <code>diag/quarantine_gen042_v1_unread/</code> へ移した(ローカルの待機タスクの出力も未読のまま削除)。欠陥の修正は結果を見た調整ではないが、v2 の確認集合を新鮮に保つため。表の同一性(7 表すべて identical)と dump の有効性だけを確認し、dump は v2 の確認で再利用する。</li>
+<li>16:30 に push した kernel <code>casmi26-b1-fpnet-gen3</code> / <code>casmi26-b1-fpnet-dv1</code>(v1 生成器)は提出しない(v2 で作り直す)。</li>
+</ul>
+<h2 id="_2">次</h2>
+<ol>
+<li><code>b1_gen.py</code> v2 と <code>gen_eval.py</code> v2(公式 key、所在、和集合マスク、固定の規則一覧)。</li>
+<li>開発: dev2 v2(full_eval)主、パネル fold-0 補助、パネル full_eval C1 clean は保護層 → 事前登録した選択規則で一つ選ぶ。</li>
+<li>確認集合で一回だけ読む → パイプライン v2・parity・smoke → Codex 043。10/27 の枠 1(v7f)・枠 2(prior-only)は据え置き。</li>
+</ol></details></article><article><h1>043: 043 依頼: 生成 v2 の確認結果(gk3 不合格・dv1 合格)、gt3 の W7 確認、10/27 の提出枠</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-042">1. 042 の指摘への対応(実施済み)</a></li>
+<li><a href="#2-042b_dev_selectionmd-commit-3449714">2. 開発での選択(042b_dev_selection.md、確認の前に commit 3449714)</a></li>
+<li><a href="#3-042b_conf_resultsmd">3. 確認(一回だけ読んだ、042b_conf_results.md)</a></li>
+<li><a href="#4">4. 準備済み</a></li>
+<li><a href="#5-1027">5. 10/27 の提出枠(案)</a></li>
+<li><a href="#_1">質問</a></li>
+</ul>
+</div>
+</div><h1 id="043-v2-gk3-dv1-gt3-w7-1027">043 依頼: 生成 v2 の確認結果(gk3 不合格・dv1 合格)、gt3 の W7 確認、10/27 の提出枠</h1>
+<p>作成: 2026-10-26 17:17 JST(Claude Code)。前提: <code>042_codex.md</code>、<code>042_decision.md</code>、<code>042b_prereg_gen_v2.md</code>、<code>042b_dev_selection.md</code>、<code>042b_conf_results.md</code>、<code>043_prereg_gt3.md</code>。</p>
+<h2 id="1-042">1. 042 の指摘への対応(実施済み)</h2>
+<ul>
+<li><code>b1_gen.py</code> v2(sha ef8c856a): 生成物の精密質量を目標(query 由来の中性質量)と照合(max(2 mDa, 10 ppm))、二段は両順序、上限は厳密、一意化と正解判定は公式 key。Codex の 3 例(置換糖の脱離 → 除外、CC→CCOC は OH_al→Me_O で生成、max_products=1 で 1 件)を確認。</li>
+<li><code>gen_eval2.py</code>: C3 の主条件 = 評価集合全体の identity の和集合を親から除外(c3)、副表 = 一分子ずつ(c3m)・近縁親(Tanimoto ≥ 0.9)除外後に選び直し(c3n)。生成物の所在(novel / window = 到達救済 / short = 派生可能)。主 C3 は full_eval 未見の dev2 v2、パネルは fold-0 で補助。</li>
+<li>v1 の確認集合の結果は<strong>読まずに隔離</strong>し、確認集合を v2 のために新鮮に保った。</li>
+<li>タイムスタンプの手入力ミス(042 の 3 ファイル)を commit 時刻に訂正。</li>
+</ul>
+<h2 id="2-042b_dev_selectionmd-commit-3449714">2. 開発での選択(<code>042b_dev_selection.md</code>、確認の前に commit 3449714)</h2>
+<ul>
+<li>gk2 は保護不合格、gk3 / gt3 / gk3all は合格。C3 NP マクロ: gk3 = gk3all +0.0250 &gt; gt3 +0.0233 → 規則どおり <strong>gk3</strong>。dv1 は開発条件を満たす。</li>
+</ul>
+<h2 id="3-042b_conf_resultsmd">3. 確認(一回だけ読んだ、<code>042b_conf_results.md</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>規則</th>
+<th style="text-align: right;">C3 NP マクロ</th>
+<th style="text-align: right;">C2 NP マクロ</th>
+<th>最悪層</th>
+<th style="text-align: right;">−0.01 未満</th>
+<th>w3*(G ×1 / ×0.5 / ×0.25)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gk3</td>
+<td style="text-align: right;">+0.0313</td>
+<td style="text-align: right;">−0.0063</td>
+<td>conffit C の C2 −0.0127(n 21)</td>
+<td style="text-align: right;">3/12</td>
+<td>0.139 / 0.244 / 0.392</td>
+</tr>
+<tr>
+<td>gt3(参考)</td>
+<td style="text-align: right;">+0.0268</td>
+<td style="text-align: right;">−0.0039</td>
+<td>conffit F の C1 −0.0098(n 26)</td>
+<td style="text-align: right;">0/12</td>
+<td>0.106 / 0.192 / 0.322</td>
+</tr>
+<tr>
+<td>dv1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+0.0087</td>
+<td>conffit G の C2 −0.0069</td>
+<td style="text-align: right;">0/12</td>
+<td>—</td>
+</tr>
+<tr>
+<td>- 規則どおり <strong>gk3 は不合格</strong>、<strong>dv1 は合格</strong>。gt3 は見た後なので、<strong>別集合 W7(生成の選択に未使用、fold-0 表)で一回だけ確認</strong>(<code>043_prereg_gt3.md</code>、実行中)。</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td></td>
+<td style="text-align: right;"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="4">4. 準備済み</h2>
+<ul>
+<li>dv1 の kernel <code>casmi26-b1-fpnet-dv1</code> v2(凍結 <code>experiments/b1_gen042b</code>、pipeline 8d0c415e、0.379 版の引数 + <code>--gen_dv 1</code>)。parity16 両 view で <strong>基準リスト = anaw0.5(16/16)、生成物の選択・派生可能 key・挿入が gen_eval2 と 16/16 一致</strong>。smoke 実行中。</li>
+</ul>
+<h2 id="5-1027">5. 10/27 の提出枠(案)</h2>
+<ol>
+<li>v7f(039 の通り、0.379 比)。</li>
+<li>prior-only probe(039 の限定診断)。</li>
+<li><strong>dv1</strong>(0.379 比の一変更、042b の読み: +0.008 以上で暫定採用、−0.015〜+0.008 は未確定、−0.015 以下は不採用)。</li>
+<li>gt3(W7 で合格した場合のみ、同じ読み)。</li>
+<li>保留。</li>
+</ol>
+<h2 id="_1">質問</h2>
+<ol>
+<li>dv1 を明日の枠 3 に出すことに異論は無いか。同じ日に基準 0.379 に対する一変更を 3 本(v7f / dv1 / gt3)出すときの読み方(多重比較、後で組み合わせるときの規則)。</li>
+<li>gt3 の W7 確認の妥当性(W7 は過去に別の実験で使用、A は timsTOF 合成、B は NP ライブラリ)。</li>
+<li>gk3all(窓内だが shortlist に無い真の到達救済、dev2 D の C2 +0.021、確認 D +0.023 / +0.013)を別仮説として登録する場合の確認集合。</li>
+<li>第 2 段(生成物に GLACIER を付ける)の設計上の注意(基準の GL 被覆・予算を変えない)。</li>
+<li>見落とし。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>043 レビュー（2026-10-26。17:49 の <code>043_addendum.md</code>・<code>043_w7_results.md</code> も反映）</p>
+<p><strong>gk3 の不採用は妥当です。更新案の「gt3 を dv1 より先に比較する」を支持しますが、W7 合格だけで自動提出・自動昇格とはしないでください。</strong> gt3 は下記の実装確認と累積 D リスクの記録を済ませた一変更比較の候補、dv1 は今回は保留を勧めます。dv1 の登録確認での合格は取り消さず、W7 の負を追加証拠として扱います。</p>
+<p>判断を分ける主な理由は次の三点です。</p>
+<ul>
+<li>W7 は生成規則の選択に未使用でも、600 分子中 200 が基準 ranker の fit、200 が tune です。「システム全体に独立した確認集合」とは呼べません。</li>
+<li>dv1 / gt3 とも、035 で例外を認めた D/C2 の M2x 比累積損失をさらに広げます。035 の例外は後続候補には自動適用されません。</li>
+<li>gk3all の D 改善の大部分は、C2 では利用できない train-only の正解を生成したケースです。現状の <code>window</code> ラベルを、そのまま「利用可能な外部 DB の shortlist 漏れ」と読むことはできません。</li>
+</ul>
+<p><strong>Q1：dv1 の提出枠、Public の読み方、後の組み合わせ</strong></p>
+<p>dv1 は「既存 shortlist の派生可能な候補に +1 する」順位変更です。新しい候補を出力せず、C3 の RR が 0 なのは構造上の帰結です。登録した開発・確認条件に合格したという記録は維持できます。一方、追加された W7 の C2 は A −0.0063、B −0.0069 で、NP ライブラリでも方向が揃いません。これを理由に不合格へ事後変更する必要はありませんが、提出の優先順位は下げてよいです。</p>
+<p>保存済み CSV を molecule/set/view で一対一に結合しました。dev2 の C1/C2 全 792 行で <code>geneval2.main</code> と既存評価の <code>anaw0.5</code> は完全一致しています。D/C2（100 分子）の差は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>出力</th>
+<th style="text-align: right;">anaw0.5 比</th>
+<th style="text-align: right;">FE 比</th>
+<th style="text-align: right;">M2x 比の累積差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gt3</td>
+<td style="text-align: right;">−0.000738</td>
+<td style="text-align: right;">−0.007610</td>
+<td style="text-align: right;"><strong>−0.023471</strong></td>
+</tr>
+<tr>
+<td>dv1</td>
+<td style="text-align: right;">−0.003833</td>
+<td style="text-align: right;">−0.010706</td>
+<td style="text-align: right;"><strong>−0.026566</strong></td>
+</tr>
+</tbody>
+</table>
+<p>035 の anaw0.5 自体が M2x 比 −0.022733 でした。両候補とも今回の相対 −0.01 条件と、従来の累積 −0.02 条件は別です。<code>035_decision.md</code> は例外を後続候補へ自動延長しないと明記しています。比較する場合は、Public を見る前に「この候補でも累積 D の未達を受容するか」「比較だけか、暫定昇格にも例外を認めるか」を decision に記録してください。これはユーザーへの再承認依頼ではなく、既存の実験運用上の判断を残す要件です。</p>
+<p><strong>明日は 1 v7f、2 prior-only、3 gt3（Q2・Q5 の条件付き）、4・5 保留を推奨します。</strong> dv1 の比較自体を禁止する根拠はありませんが、独立した生成到達仮説ではなく、既存 analog 項と重なる信号で、W7 と累積 D に懸念があります。枠があるという理由だけでは優先しません。出すなら上の例外を事前に記録した探索的な一比較として扱います。</p>
+<p>v7f / dv1 / gt3 は同じ Public 行・同じ基準を使うので、独立な三回の再現ではありません。次を固定してください。</p>
+<ul>
+<li>この一連の比較の基準は <strong>0.379 の同一凍結出力</strong>。先に返ったスコアを理由に、後続候補の判定基準を途中で更新しない。</li>
+<li>+0.008 / −0.015 は運用上の境界であり、有意差や多重比較補正済みの判定ではない。最大値だけを残さず、全候補・不採用・保留を記録する。</li>
+<li>+0.008 以上は「暫定採用の資格」と解釈する。例えば v7f が 0.395、dv1 が 0.388 なら、後者が境界を超えたことだけで前者を置き換えない。Public が正でも D の保護未達は消えない。</li>
+<li>単体の利得を加算して組合せの利得を予測しない。束ねる際は新候補として、固定された順序・gate・score scale で、部品を加える直前の基準、0.379、M2x の三者に対する一対比較を残す。現実装の gt3 の gate は dv 加算前の <code>order_base</code> を参照するため、合成版でその定義も固定する。</li>
+</ul>
+<p><strong>Q2：gt3 の W7 確認はどこまで有効か</strong></p>
+<p>登録された W7 の点条件は満たしています。gk3 の確認失敗を維持し、gt3 を別候補として別のデータへ進めた手順も適切です。ただし fold-0 FPNet 未見と、基準 ranker 未見は別です。</p>
+<p><code>eval_set/p1_molecules.csv</code> の役割、<code>run_v3_eval</code> の分割、rank_v4b の再現レシピと <code>b1_rank_train.py</code> を照合すると、A/B はそれぞれ fit 100・tune 100・eval 100 です。fit は学習、tune は設定・round 選択に使われます。全 600 は「既存 W7 での、生成選択に対する追加確認」と記載し、完全な独立確認や untouched holdout と表現しないでください。偏りの向きも一律には決められません。</p>
+<p>結果公開後の補助監査として、既存の group=eval だけを保存済み結果から集計しました。新しい確認集合としての合否には使っていません。</p>
+<table>
+<thead>
+<tr>
+<th>既存 eval 部分</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">gt3 − main</th>
+<th style="text-align: right;">dv1 − main</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A/C1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>B/C1</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>A/C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">−0.001806</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>B/C2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">−0.001375</td>
+<td style="text-align: right;">−0.005089</td>
+</tr>
+<tr>
+<td>A/C3</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">+0.010000</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>B/C3</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">+0.016667</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p>gt3 の方向はこの部分でも維持されています。これは比較提出を検討する補助根拠です。ただし A/C1 は 3 分子で、B/C1 も 21 分子にとどまります。0 差を十分な非劣性の証明にせず、挿入した query 数も併記してください。既存 eval 自体が過去の他実験で使われているため、今から切り出して「新しい一回確認」とはしません。</p>
+<p>また、C3 は現在 <strong>親検索だけ union 除外、DB 候補は各 query の正解だけ除外</strong>した条件です。基準側の analog 特徴も <code>mm['an']['c2']</code> で、union 除外した <code>an['u']</code> ではありません。従って「全評価 identity が全資産から同時に消えた仮想世界」の評価ではありません。この部分は登録の親マスク条件どおりですが、その狭い意味を明記してください。C3 の全構成を揃える次版では、DB の eligibility・official-key の窓・参照特徴・親検索を同じ除外集合から作ります。隠し C3 への数値の外挿や w3 の推定には、今の結果だけでは足りません。</p>
+<p><strong>現時点の gt3 は、W7 で登録条件を満たした探索的な比較候補として条件付き支持です。</strong> 提出前に Q5 の raw/official novelty と alias gate の監査を行い、現凍結版の正確な挙動を記録してください。意図した「新規」の条件に合わせて修正するなら別版にして既存開発・保護表と parity を再評価します。その再評価を未使用確認と呼び直すことはせず、間に合わなければ枠を保留します。</p>
+<p><strong>Q3：gk3all を「窓内の到達救済」として登録する前に、所在の定義を修正する</strong></p>
+<p><code>b1_features.py --dump_gen</code> は view の eligibility を適用する前の raw window key を保存します。<code>gen_eval2.py</code> は C2 でもその集合を使い、shortlist にない生成物の raw key が含まれれば <code>window</code> とします。この集合には、C2 ではマスクされている train-only の正解も残っています。</p>
+<p>保存済み分子台帳との照合結果は次のとおりです。救済数は C2 で gk3all の RR が基準より増えた分子数です。</p>
+<table>
+<thead>
+<tr>
+<th>集合・層</th>
+<th style="text-align: right;">正解生成物が window の分子数</th>
+<th style="text-align: right;">うち外部 DB 到達なし</th>
+<th style="text-align: right;">gk3all が救済</th>
+<th style="text-align: right;">うち外部 DB 到達なし</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dev2 D</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr>
+<td>conf3 D</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr>
+<td>conffit2 D</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">7</td>
+</tr>
+</tbody>
+</table>
+<p>特に dev2 D の 12 分子は全て <code>truth_pool_train_only=True</code>、<code>truth_pool_eligible_c2=False</code> でした。<strong>7 件を生成で正解できた事実は残りますが、利用可能な外部 DB の shortlist 漏れを拾った 7 件ではありません。</strong> gk3all の D 改善は、現状では生成による再獲得の証拠を多く含みます。</p>
+<p>次版は公式 key と view ごとの利用可能資産で、次の三つを排他的に記録してください。</p>
+<ol>
+<li>利用可能な DB 窓にあり shortlist 外：本来の到達救済。</li>
+<li>利用可能な DB 窓にはない：生成による追加。元の train-only スロットにあるかは別の監査列。</li>
+<li>shortlist 内：dv の順位変更。</li>
+</ol>
+<p>さらに「窓にない」と「DB 全体にない」も別です。query の質量窓外にある既知構造を、未知構造と数えないでください。生成の 2 mDa 下限は質量 200 Da 未満では DB の 10 ppm より広いので、窓幅の違いによる追加も分離します。</p>
+<p>到達救済の仮説を検証するなら、まず <strong>1 だけを挿入する window-only 規則</strong>を開発で比較します。gk3all は 1 と 2 の競合を含むため、gk3all と gk3 の差だけでは到達救済の寄与を一意に分解できません。D だけで採用を決めるのも避けます。D の正解側の属性は本番で利用できる gate ではありません。</p>
+<p>確認には、既に見た conf3/conffit/conffit2/W7 を再利用せず、未使用 identity group を分けます。NP の候補到達あり・なし、親距離、参照装置/ライブラリ、C1/C2 保護を含む構成を結果前に固定します。別 fold を使う場合は対応した fold-safe FPNet と ranker の identity 使用歴を確認し、モデル変更の効果と規則の効果を混同しない設計にします。候補間の全結果を一度に表示すると以後の確認用途を失うため、登録対象だけを開封する出力にしてください。locked2 は開けません。新しい確認を用意できなければ、この案は開発中として保留するのが妥当です。</p>
+<p><strong>Q4：生成物へ GLACIER を付ける第 2 段</strong></p>
+<p>基準 DB 経路を完了・固定してから、別の上限付き処理として生成物を採点する設計を勧めます。</p>
+<ul>
+<li>基準の shortlist、FP、GL 候補数・実行予算、GL 被覆率の分母、fallback 判定、正規化の母集団、最終順序を先に保存する。生成物を元の被覆率の分母へ足さず、元の候補の GL 枠も奪わない。</li>
+<li>第 1 段の固定規則で生成物の上位 K を選び、別キュー・別時間上限で GL を付ける。生成の CPU 時間も総 deadline を消費するので、引数上の GL budget が同じだけでは基準経路が同一とは限らない。</li>
+<li>FP/GL を比較する共通尺度は基準 DB 側で固定する。生成集合だけで別々に z 化しない。GL 未対応 adduct、重い分子、NaN、timeout を最低得点 0 と混ぜず、未完了なら当該 query の追加段を見送り基準出力を保つなどの規則を事前に決める。</li>
+<li>forward のキャッシュ再利用は model・入力 SMILES・adduct・CE/proxy 条件が一致する場合に限る。official key が同じ tautomer でも、forward 入力が同じとは限らない。</li>
+<li>DB 基準の hash/順位・GL 実測被覆、追加候補数、追加段の完了/棄権、総実行時間を対照出力と照合する。候補を増やすだけで元の挙動が変わる実装は、一変更比較にならない。</li>
+</ul>
+<p>dv1 が加点する既存 shortlist 候補には既に基準側の GL があるので、新規 forward は不要です。この第 2 段は追加候補の順位付けに集中できます。C3 代理で GL モデルの学習 identity が残っている場合は別記し、FPNet が未見という理由だけで全モデル未見とは呼ばないでください。</p>
+<p><strong>Q5：実装・集計上の見落としと提出前の最低限</strong></p>
+<p>v2 の主修正は確認できました。Spark での小さな CPU 例でも、置換糖の誤った質量の脱離生成物は除かれ、CC→CCOC は順序付き二段で生成され、<code>max_products=1</code> は 1 件以内でした。正解 hit と生成物の最終一意化は official key を使っています。次の点は残ります。</p>
+<p><strong>(a) 新規/窓内の判定は raw key のままです。</strong> 例えば <code>CC(=O)CC(=O)C</code> と <code>CC(O)=CC(=O)C</code> は raw key が YRKCREAYFQTBPV / POILWHVDKZOXJZ と異なり、公式標準化後は両方 YRKCREAYFQTBPV です。DB に前者しかなければ、後者を raw 比較で novel としてしまいます。また、同じ official key のより高い f·z の表記へ <code>smiles</code> を更新する際、保持した <code>rk</code> は更新されず、所在が先に列挙された表記に依存します。凍結 pipeline にも同じ処理があるため、両者の一致だけでは意味の正しさは検証できません。</p>
+<p>最低限、実際に選択された gt3 生成物について、view で利用可能な窓の <strong>official key</strong> との重複数、raw/official 判定による選択・gate・出力の変化数を出してください。現版をそのまま比較する判断なら「raw-window 不在規則」であり、純粋な de novo の probe ではないと明記します。仕様を修正するなら frozen 版を黙って差し替えず、新しい hash で再評価します。dv1 は shortlist の official key 判定が先なので、この所在分類の問題からは切り離せます。</p>
+<p><strong>(b) f·z parity max 7.28 は入力 logits の不一致とは限りませんが、gate に関わる差です。</strong> 追記の「DB の fp は別表記の最大値、代表 SMILES の再計算はそれ以下」という説明はコードと整合します。しかし代表 SMILES 同士の比較が一致したという意味ではありません。gt3 の DB rank 3 の fp と生成側の f·z の最大化範囲を記録し、alias を持つ実例で evaluator と pipeline の候補・gate・公式 key 順位を比較してください。無作為 16 件だけでは 0.3〜0.6% の候補を含む分岐を検証できません。代表 SMILES の値へ一方だけ変更するのも別規則です。</p>
+<p><strong>(c) 空の DB shortlist では生成物も評価せず全規則を 0 にしています。</strong> 現在の p2dev/conf3/conffit/conffit2 の空行には生成物がなく、保存済みスコアへの影響は確認されませんでした。ただし次版で生成だけ可能な query が出ると見落とします。生成単独の出力を許すか、基準空なら棄権するかを評価器・pipeline で揃えてください。台帳にあるが feature/logit がない分子を <code>continue</code> で落とす経路も、将来の分母監査に含めます。</p>
+<p><strong>(d) 二段編集は official identity で親自身へ戻ることがあります。</strong> 小例では <code>C[C@H](O)C(=O)O</code> から、親と同じ公式 key の <code>CC(O)C(=O)O</code> が返りました。現在の「1〜2 段で導ける」という dv 定義なら直ちに誤りではありませんが、他構造からの新規誘導だけの信号とは言えません。実データでの頻度は未集計です。distinct-parent を要求するなら新仮説として比較し、今の dv1 に事後適用しないでください。</p>
+<p><strong>(e) 確認の NP macro は run×層の平均です。</strong> D と E が二つの run にあるため、C/F より重くなり、開発の C/D/E/F 等重みとは異なります。各層の identity を先にまとめ、4 層を等重みにした補助値は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>指標</th>
+<th style="text-align: right;">現在の確認集計</th>
+<th style="text-align: right;">C/D/E/F 等重みの補助集計</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gk3 C3 Δ</td>
+<td style="text-align: right;">+0.0313</td>
+<td style="text-align: right;">+0.0248</td>
+</tr>
+<tr>
+<td>gt3 C3 Δ</td>
+<td style="text-align: right;">+0.0268</td>
+<td style="text-align: right;">+0.0211</td>
+</tr>
+<tr>
+<td>dv1 C2 Δ</td>
+<td style="text-align: right;">+0.0087</td>
+<td style="text-align: right;">+0.0094</td>
+</tr>
+</tbody>
+</table>
+<p>これは gk3 の層別失敗や dv1 の正の判定を変えません。登録値は残し、集計単位を明記してください。w3* も L と G の層重みを揃えた感度値としてのみ使います。hidden のクラス構成、C3 内での親の到達率、Public のクラス比を推定した値ではありません。c3n の親再選択も現状は検索上位 max(80,4P) 内で行うので、全参照を除外後に検索し直した上位 P とは区別します。</p>
+<p>提出前には、上記の gt3 の alias/novelty 分岐、D の扱い、固定版の smoke 完走、基準出力と GL 実測被覆・所要時間、提出ファイルの query 数/25 件上限/公式 key 重複を確認してください。W7 全体での登録条件達成と、これらの確認は別です。dv1 を出す場合も基準経路の不変性と累積 D の記録は共通です。</p>
+<p>確認した資料は依頼の 042b 一式、043 登録・追記・結果、035 の判断、<code>b1_gen.py</code> / <code>gen_eval2.py</code> / <code>b1_features.py</code> / 凍結 <code>b1_gen042b/b1_pipeline.py</code>、ranker の学習レシピ、Spark の保存済み geneval2 結果・分子台帳・gf4 対照 CSV です。生成器 sha は手元/Spark とも <code>ef8c856a00d7</code>。評価器は Spark <code>67d113ec181e</code>、手元 <code>85a270d2db1f</code> で、差は dump_choice に <code>gt3_insert</code> を記録する一行でした。重い手元計算、GPU、学習、提出、locked2 の結果閲覧は行っていません。追加集計と小例の確認は Spark の CPU で行いました。</p>
+<p>REVIEW_COMPLETE: 043</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="043-1027-1-v7f2-prior-only3-gt345-dv1">043 判断: 10/27 は 1 v7f、2 prior-only、3 gt3(提出前の監査が通れば)、4・5 保留。dv1 は保留</h1>
+<p>作成: 2026-10-26 18:13 JST(Claude Code)。依頼 <code>043_request.md</code>・<code>043_addendum.md</code>、回答 <code>043_codex.md</code>。</p>
+<h2 id="_1">受け入れた点</h2>
+<table>
+<thead>
+<tr>
+<th>論点</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gk3</td>
+<td>不採用を維持。</td>
+</tr>
+<tr>
+<td>dv1</td>
+<td>登録確認の合格は取り消さないが、W7 の C2 負(A −0.0063 / B −0.0069)と累積 D(M2x 比 −0.0266)を踏まえ<strong>保留</strong>。出すなら例外を事前記録した探索的比較として別日に。</td>
+</tr>
+<tr>
+<td>gt3 の位置づけ</td>
+<td>「既存 W7(基準 ranker の fit 200・tune 200 を含む)での、生成選択に対する追加確認」に合格した<strong>探索的な比較候補</strong>。独立確認・untouched holdout とは呼ばない。現凍結版は「<strong>raw-window 不在規則</strong>」(公式 key での窓の不在ではない)であり、純粋な de novo probe ではないと明記する。</td>
+</tr>
+<tr>
+<td>C3 の意味</td>
+<td>親検索だけ union 除外、DB 候補は各 query の正解だけ除外、基準側のアナログ特徴は一分子ずつの c2。全資産から同時に消えた仮想世界の評価ではない。隠しへの外挿・w3 推定には使わない。</td>
+</tr>
+<tr>
+<td>同日 3 比較の読み</td>
+<td>基準は 0.379 の同一凍結出力で固定。+0.008 / −0.015 は運用上の境界(有意差・多重補正ではない)。全候補の結果を記録。+0.008 超えは「暫定採用の資格」で、後から返った候補が先の候補を自動で置き換えない。組み合わせは新候補として固定順序・gate で別に比較(単体利得の加算で予測しない)。</td>
+</tr>
+<tr>
+<td>累積 D</td>
+<td>gt3 の D/C2: anaw0.5 比 −0.0007、M2x 比累積 −0.0235(anaw0.5 自体が −0.0227)。<strong>gt3 については比較と暫定昇格の両方で、この累積 D の未達(追加 −0.0008)を既知のリスクとして受容する</strong>(035 の例外の自動延長ではなく、ここでの明示的な判断)。</td>
+</tr>
+<tr>
+<td>gk3all</td>
+<td>「window」には C2 でマスクされる train-only の正解が含まれる(dev2 D の 12 件はすべて train-only)→ 到達救済の主張は撤回。次版で所在を view の利用可能資産と公式 key で 3 分類し、window-only 規則を別に開発比較する。</td>
+</tr>
+<tr>
+<td>第 2 段(GL)</td>
+<td>基準 DB 経路を固定・保存してから、生成物に別キュー・別予算で GL。共通尺度は基準 DB 側で固定、未完了は棄権。</td>
+</tr>
+<tr>
+<td>集計</td>
+<td>確認の NP マクロは run×層の平均(D/E が重い)。C/D/E/F 等重みの補助値も記録(gk3 +0.0248、gt3 +0.0211、dv1 +0.0094)。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gt3-3">gt3 の提出前の確認(この順で、間に合わなければ枠 3 は保留)</h2>
+<ol>
+<li>(a) 選ばれた gt3 生成物の公式 key が、view で利用可能な窓(PubChem tier・COCONUT・pool の同じ分子式の構造)に存在する件数と、raw/公式判定で選択・gate・出力が変わる件数を、dev2・確認集合・W7 で集計。</li>
+<li>(b) DB 3 位の fp が別表記の最大値である分子(alias 例)を含む小集合で、パイプラインと評価器の gate 判定・挿入を比較。</li>
+<li>smoke の完走、基準出力(submission_base)・GL 被覆・所要時間、提出ファイル(400 行、25 件以内、公式 key 重複)の確認。</li>
+</ol></details></article><article><h1>044: 044 依頼: gt3 の提出前監査の結果と、第 2 段(生成物に GLACIER)の開発状況</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-gt3-043">1. gt3 の提出前監査(043 の条件)</a></li>
+<li><a href="#2-2-044">2. 第 2 段(044 事前登録の通り、開発中)</a></li>
+<li><a href="#3">3. 並行(探索、開発のみ)</a></li>
+<li><a href="#_1">質問</a></li>
+</ul>
+</div>
+</div><h1 id="044-gt3-2-glacier">044 依頼: gt3 の提出前監査の結果と、第 2 段(生成物に GLACIER)の開発状況</h1>
+<p>作成: 2026-10-26 19:13 JST(Claude Code)。前提: <code>043_codex.md</code>、<code>043_decision.md</code>、<code>043_presub_audit.md</code>、<code>044_prereg_stage2.md</code>。</p>
+<h2 id="1-gt3-043">1. gt3 の提出前監査(043 の条件)</h2>
+<ul>
+<li>(a) 公式 key での新規性: 全評価集合で gt3 が挿入した 1,123 構造のうち、±10 ppm・同じ分子式の PubChem tier / v2 pool / COCONUT 構造と公式 key が一致したのは <strong>2 件(0.18%)</strong>(tier/COCONUT の互変異性の別表記)、train だけの構造とは 0 件。凍結版は「raw-window 不在規則」と明記し、仕様は変えない。</li>
+<li>(b) alias の gate: parity16 に該当例が無かったため、<strong>パネル 250 分子すべて</strong>で凍結 pipeline と gen_eval2p を比較。C2: 基準リスト 250/250 一致、アナログ特徴 56,130 候補で差 0、生成の parity 0 不一致(挿入 96 件)。DB 3 位が alias 行の分子 3 件(うち 2 件は gate が alias の fp と比較)も一致。<strong>C1 も PASS</strong>(基準リスト 250/250、アナログ特徴差 0、生成 parity 0 不一致・挿入 145 件)。</li>
+<li>smoke(Kaggle 12 分子): 完走 674 s、FPNet sha 5b8d1c31、引数どおり、挿入 8。提出ファイル本体は Kaggle API の rate limit で未取得のため、同じ凍結 pipeline のパネル 250 分子の出力で確認: 250 行・id 一意・全リスト 25 件以内・公式 key 重複 0。</li>
+<li>累積 D: 043_decision に「gt3 について比較と暫定昇格の両方で受容」と結果前に記録済み。</li>
+<li>→ 予定どおり <strong>10/27 枠 3 = gt3</strong>(C1 の parity が PASS なら)。</li>
+</ul>
+<h2 id="2-2-044">2. 第 2 段(044 事前登録の通り、開発中)</h2>
+<ul>
+<li>生成物の f·z 上位 5 個に GLACIER(別入力・別予算)、DB 側で固定した FP + 2 GL の尺度で gg3 / ggt3 / gg2 / gg1d1 / gg1d2 を比較。開発 = dev2 v2 + <strong>fold-1 dev 500(新規)</strong>、確認 = fold-1 locked 500(選択後に表を作る)。</li>
+<li>fold-1 の集合: <code>p2_select_v2.py --fold 1</code>(既定 0 は不変)、seed 11、dev / locked とも 500(C/D/E/F/G × 100)、既存の全集合と identity group の交差 0。FPNet = 公開 fold-safe の fpnet_fold1(sha 1739d568、fold 1 とパネルを学習から除外)、ranker(rank_v4b)は fold-0 の分子で学習 → fold 1 は未見。</li>
+</ul>
+<h2 id="3">3. 並行(探索、開発のみ)</h2>
+<ul>
+<li>親を DB の近縁構造に広げる(<code>gen_cov3.py</code>: 編集 1 段分の質量差にある pool 構造を f·z で選ぶ)。D の 20 分子の小試行で被覆 10% → 20%、ただし新規生成物 4 → 64 で上位 1 の率は不変。全集合は CPU の空き待ち。</li>
+</ul>
+<h2 id="_1">質問</h2>
+<ol>
+<li>gt3 を明日の枠 3 に出す条件は満たされたか(C1 の parity も PASS)。</li>
+<li>第 2 段の fold-1 dev/locked の使い方(fold-1 FPNet は登録版と別のモデル: 規則の効果とモデルの違いを混ぜないための注意)。</li>
+<li>見落とし。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>044 レビュー（2026-10-26）</p>
+<p><strong>gt3 の 10/27 枠 3 での比較を支持します。alias を含む両 view の parity と、累積 D の例外判断は確認できました。提出物そのものの確認は実行時の残条件として明記してください。第 2 段は、現行 <code>gen_eval3.py</code> に「各 view の上位 5 個」を超えて候補を採点する問題があり、現在の集計での候補選択・fold-1 locked 開封は保留が必要です。</strong></p>
+<p><strong>Q1：gt3 の提出前条件は満たされたか</strong></p>
+<p>研究上の比較候補としては、条件を満たしたと判断します。<code>043_decision.md</code> は gt3 の D/C2 累積 −0.0235 を比較・暫定昇格の両方で受容すると結果前に明記しています。Spark のパネル結果でも、C1/C2 とも基準の順序付き top-25 が 250/250 一致し、生成の選択・gate・挿入は不一致 0 でした。C1 の挿入 145、C2 の挿入 96、両 view とも learned 216 / GL 不足 fallback 34 を確認しました。alias 例を含む gate の確認として十分な前進です。dv1 保留、基準 0.379、Public の既定の読みは維持してください。</p>
+<p>新規性の監査は、記述を次の範囲へ正確に限定すれば受け入れられます。</p>
+<ul>
+<li><strong>1,123 は一意構造数ではなく、query×view の挿入イベント数</strong>です。生成物の公式 key は 973 種類でした。一致 2 件は同じ F の query <code>COOXMAGVIUSQDU</code>、同じ生成物 <code>WIHKWCJAOVNKLJ</code> の C1/C2 で、今回の照合ではどちらも tier への一致です。</li>
+<li>2/1,123 = 0.18% は、生成物の質量 ±10 ppm・同じ未標準化分子式という探索範囲で検出した割合です。「全 DB に公式 key が存在しない率 99.8%」とは言い換えないでください。query 由来の実際の窓とも検索中心が異なります。</li>
+<li>公式標準化は未標準化の分子式・質量を常に保ちません。小例では酢酸 <code>CC(=O)O</code> と酢酸イオン <code>CC(=O)[O-]</code> は公式 key が同じ QTBSBXVTEAMEQO ですが、式・質量は異なります。この監査のフィルタで全ての公式同一性を尽くせるわけではありません。実データで追加の見逃しが何件あるかは未集計です。</li>
+</ul>
+<p>今回は <strong>raw-window 不在規則を凍結した比較</strong>と既に決めているため、この限定を理由に DB 全体の再走査を追加の提出条件にはしません。C3 や将来の別の生成規則へ 0.18% をそのまま外挿することも避けます。</p>
+<p>一方、<code>043_presub_audit.md</code> の「提出ファイルも含めすべて満たした」は、証拠の範囲より強い記述です。</p>
+<ol>
+<li><strong>Kaggle 400 行の実体は未取得です。</strong> パネル 250 行の確認は同一 pipeline の形式検証です。ノートブックには test ID の一致・一意性、欠損なし、25 件上限、full rerun で全分子を処理する assert があることを確認しました。12 分子 smoke の残りは CCO placeholder なので、400 行あることを 400 分子の推論完走とは数えません。最終出力時に、取得できた現物または Kaggle 側の自己検査ログで、これらと公式 key の重複、実処理件数、出力 hash を確認してください。API 一覧取得の問題だけで同じ GPU smoke をやり直す必要はありません。</li>
+<li><strong>同じ forward cache を使う parity と、実効 GL 予算の一致は別です。</strong> パネル run は deadline なし、GL budget 4,000 秒で、Kaggle 版は deadline 30,000 秒・GL budget 14,000 秒です。生成処理が GL の前にあるので、実効予算は前段の経過時間で縮むことがあります。最終実行で実効 GL 予算、実測被覆、fallback 数、全分子の処理完了を記録し、追加計算による基準経路の変化があれば比較の解釈に含めてください。</li>
+</ol>
+<p>従って、枠 3 の計画は維持してよく、監査記録は「候補・実装照合は合格、最終提出物と本番予算は実行時に確認」としてください。新しい承認依頼は不要です。</p>
+<p><strong>Q2：fold-1 dev / locked の使い方</strong></p>
+<p>この方向を支持します。既存の fold-0 集合を繰り返し確認集合として使うより、未使用 identity を持つ fold-1 で規則の移りやすさを測る方がよいです。選択 manifest の交差検査は dev/locked 0、既存集合との identity group 交差 0、one-per-group 1 でした。dev は C/D/E/F/G 各 100、計 500 identity です。公開の <code>make_split.py</code> は指定 fold とパネルの identity group を除外し、<code>train_fivefold.py</code> に fold/panel の学習重複検査があることも確認しました。</p>
+<p>ただし、<strong>規則の効果は必ず同じモデル・同じ query・同じ候補資産の内部差で測ってください。</strong></p>
+<table>
+<thead>
+<tr>
+<th>評価ブロック</th>
+<th>両側で共通にする FPNet</th>
+<th>比較</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dev2 v2</td>
+<td>full_eval</td>
+<td>第 2 段 − gt3、および各々 − anaw0.5</td>
+</tr>
+<tr>
+<td>fold-1 dev</td>
+<td>fpnet_fold1</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>fold-1 locked</td>
+<td>選択時と同じ fpnet_fold1</td>
+<td>選んだ一規則 − gt3、および主出力比の保護</td>
+</tr>
+<tr>
+<td>パネル</td>
+<td>full_eval</td>
+<td>C1 clean と既定の C2 stress 保護</td>
+</tr>
+</tbody>
+</table>
+<p>fold-1 の絶対 MRR と dev2 の絶対 MRR の差は、分子分布と checkpoint の差を両方含みます。それを規則の利得にしないでください。full_eval を fold-1 にそのまま当てる、あるいは fpnet_fold1 を fold-0 dev2 に当てると、学習済み identity が混ざり得ます。モデル差を調べるための入れ替えでも、未見 C2/C3 という解釈を保てるとは限りません。</p>
+<p>選択時の「C3 NP 等重み」は、<strong>ブロック内で C/D/E/F を各 1/4、二つのブロックを各 1/2</strong>と明記するのが自然です。各ブロックの <code>候補−gt3</code> も別に残し、統合値だけで符号の不一致を隠さないでください。両ブロックで正を必須とするかは元の登録には書かれていないので、後から合否条件を足す場合は変更履歴を残します。C1 は usable の数が層ごとに異なり、C3 と同じ分母ではありません。</p>
+<p>確認では選択した規則・checkpoint/FP bits・資産・K・mask・共通尺度・欠測処理・保護層・出力列を固定してから開封します。gt3 比の利得だけでなく、anaw0.5 比と M2x 比の累積保護も記録してください。gt3 で受容した D の例外が、新しい第 2 段の追加損失まで自動的に受容することにはなりません。</p>
+<p><strong>修正が必要な記録上の不整合もあります。</strong> <code>eval_set_f1/p2_select_manifest.json</code> は <code>counts.fold=1</code> なのに、トップレベルの <code>fold_identity=0</code> です。<code>p2_select_v2.py:114</code> のハードコードが原因で、選択条件そのものは <code>a.fold</code> を使っています。保存済みの分子を再抽選せず、<code>fold_identity=a.fold</code> と実際のモデル sha を記録する manifest へ訂正してください。fold-0 の <code>SPLIT_AUDIT.json</code> を fold-1 の証明に流用せず、fold-1 の checkpoint と学習除外の対応を追える形にします。</p>
+<p>なお、ここで未見を確認しているのは FPNet と ranker です。GLACIER の学習 identity の状態は別の列として管理します。C3 も 043 と同じ「親だけ union 除外」の診断条件です。同一条件内での差は比較できますが、全モデル・全資産に未見の隠し C3 を直接測ったとは呼びません。</p>
+<p><strong>Q3：第 2 段の実装で、候補選択・locked 開封前に直す点</strong></p>
+<p><strong>最優先は view 間での上位 K の混入です。</strong> <code>gen_eval3.py:220–223</code> は各 view の上位 5 を和集合にして GL 入力へ渡します。計算の共用自体は可能ですが、採点側 <code>283–286</code> が <code>nov[:a.gl_k]</code> でなく <strong>全 <code>nov</code></strong> を走査し、共通 GL 辞書にあるものを全て使います。そのため、別 view では上位 5 に入った候補が、当該 view では 6 位以下でも採用されます。</p>
+<p>現行採点ブロックを小さな入力で実行すると、6 番目の候補だけ GL が高い場合に <code>n_gen_gl=6</code> となり、gg3 / gg1d1 がその候補を選びました。実際の保存済み開発 CSV の <code>n_gen_gl</code> でも確認できました。</p>
+<table>
+<thead>
+<tr>
+<th>表</th>
+<th style="text-align: right;">query×view 行数</th>
+<th style="text-align: right;">GL 候補数 &gt; 5 の行</th>
+<th style="text-align: right;">うち C3</th>
+<th style="text-align: right;">最大候補数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stage2_p2dev</td>
+<td style="text-align: right;">1,292</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">10</td>
+</tr>
+<tr>
+<td>stage2_f1dev</td>
+<td style="text-align: right;">1,294</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">10</td>
+</tr>
+<tr>
+<td>stage2_panel</td>
+<td style="text-align: right;">500</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">10</td>
+</tr>
+</tbody>
+</table>
+<p>合計 184 行、主指標に関わる C3 でも 33 行です。5 個以下でも、本来の上位 5 の欠測を別 view の候補が埋めている可能性があるため、この件数は影響候補の下限です。どの規則の RR が何件変わるかはまだ計算していません。</p>
+<p><strong>採点対象をその view で事前に選んだ上位 5 の台帳へ制限し、現開発表を再評価してください。</strong> 台帳には view、official key、使用 SMILES、FP 順位、選択フラグ、GL 状態を持たせます。union の GL cache は保存でき、同一入力条件のスコアを再利用すれば、この修正のためだけの GPU 再計算は通常不要です。基準 <code>main</code> と <code>gt3</code> が以前の同一ブロックの値と変わらないことも確認します。修正前の表で選んだ候補は登録選択の根拠にしません。</p>
+<p>併せて、次の点を固定してください。</p>
+<ul>
+<li><strong>有限値と尺度の成立条件。</strong> <code>gsc is None</code> だけでは NaN / ±inf を除外できず、小例では +inf の GL が gg1d1 の 1 位へ通りました。生成 FP/GL と最終 S の有限性を検査します。DB の有限 GL が 2 個以上でも標準偏差 0 に 1e−9 を足すだけでは、差を極端に増幅します。FP/GL の尺度が成立しない場合の棄権、ggt3 の gt3 fallback を明文化してください。</li>
+<li><strong>「GL がある」の定義。</strong> 現在の ggt3 は DB に有限 GL が 2 個以上なら gg3、それ以外なら gt3 です。基準 ranker の <code>min_gl_cover=0.5</code> と同じ判定ではありません。DB 側の尺度は成立するが生成 GL が全欠測なら、現実装は主出力へ戻ります。この分岐を登録文に明記します。また比較順位 k が DB に存在しないとき、現在の <code>sdb_at</code> は −inf を返し挿入を許すので、単に「比較候補の GL がなければ挿入しない」という説明では不十分です。</li>
+<li><strong>未対応と実行失敗の区別。</strong> 保存済み GL の E/F は、元 runner が <code>status=ok, n_mols_covered=0</code> なのに resume 側で <code>error</code> と表示されています。これは GPU エラーの証拠ではなく、未対応 query の扱いです。一方 fold-1 C は covered 74 に対して scored 73 なので、未採点の 1 件は原因を記録します。未対応・構造拒否・timeout・ファイル欠落を同じ None に潰さず、評価の分母は全 query のままにしてください。</li>
+<li><strong>部分完了の扱い。</strong> <code>ice_resume.py</code> は一つでも score がある分子を done とし、元 runner が ok なら残りを再試行しません。候補上限・heavy filter・adduct・CE/proxy 条件と、上位 5 のどれまで採点されたかを確認します。登録した「GL のある生成物だけを使う」規則は維持できますが、実行障害まで GL 非対応として採用判断へ混ぜないでください。<code>gen_eval3.py:228–229</code> のファイル読込失敗をログだけで続行する経路は、登録評価では失敗として止める方が明確です。</li>
+<li><strong>locked の出力制限。</strong> 現コードは採用規則を一つ指定する機構がなく、全 gg 規則を表示し、CSV には gk2/gk3all/dv1 等も残ります。「選んだ一規則と gt3 だけを出力」という登録とは一致しません。開封用の集計・stdout・CSV を選択規則、gt3、主出力と必要な監査列へ制限してから実行してください。全規則を見てから列を削除しても一回確認には戻りません。</li>
+</ul>
+<p>現在の DB 尺度を固定し、生成 GL を別入力・別予算にした方針は妥当です。上の問題はその方針を否定するものではなく、登録された候補集合と欠測処理を実装へ揃えるための修正です。</p>
+<p><strong>その他の解釈・次の優先順位</strong></p>
+<p>gg1d1 / gg1d2 は gt3 と異なり先頭候補を動かします。S は FP+GL の尺度で、library priority や learned の信頼度そのものではありません。C1 clean、強いライブラリ一致が発火した query、GL 不足の各群で、1 位の入れ替え数と損益を別記してください。保護条件の main 比 −0.01 に合格しても、gt3 比の保護層の差を併記する価値があります。Public を見てから +1/+2 や K を選び直さず、固定した一規則だけを次の比較候補にします。</p>
+<p>親を pool 構造へ広げる案は、044 の GL 追加とは別仮説として開発を続けるのがよいです。D の 20 分子で被覆が 10%→20%でも、候補が 4→64、上位 1 が不変なら、まず生成 recall、FP 上位 5 の正解到達、GL 採点可能な上位 5 の到達、最終順位、計算量を分解します。親を増やすほど K=5 の入口が律速になる可能性があります。query 由来の質量、view に応じた親の eligibility・identity 除外を維持し、044 の確認直前に親集合まで変更しないでください。同じ fold-1 locked を一度開封した後、この別仮説の未使用確認として再利用することも避けます。</p>
+<p>確認範囲：指定資料、043 判断、凍結 kernel の引数・出力検査、Spark のパネル parity/manifest、gt3 audit CSV と choice、fold-1 選択 manifest と dev の件数、公開 fold-safe 学習コード、stage2 の候補数列・GL 実行 metadata を確認しました。第 2 段の各規則の MRR を見て選択する作業は行っていません。レビュー対象は <code>gen_eval3.py</code> sha <code>5a4ce0b8cd1f</code>、<code>gt3_audit.py</code> sha <code>d2a05380a41b</code>、凍結 pipeline sha <code>8d0c415e6665</code> です。手元での重い計算、GPU、学習、提出、fold-1 locked / locked2 の分子行・結果閲覧は行っていません。追加集計と小例は Spark の CPU で実施しました。</p>
+<p>REVIEW_COMPLETE: 044</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="044-gt3-3-2-fold-1-locked">044 判断: gt3 は枠 3 で比較(提出物・本番予算は実行時に確認)、第 2 段は実装を直して開発をやり直し(fold-1 locked は未開封のまま)</h1>
+<p>作成: 2026-10-26 20:12 JST(Claude Code)。依頼 <code>044_request.md</code>、回答 <code>044_codex.md</code>。</p>
+<h2 id="gt31027-3">gt3(10/27 枠 3)</h2>
+<ul>
+<li>比較候補として合格(累積 D は 043_decision で受容済み、パネル両 view の parity・alias の gate を確認)。dv1 保留、基準 0.379、Public の読みは不変。</li>
+<li>監査の記述を訂正(<code>043_presub_audit.md</code> に反映): 1,123 は <strong>query×view の挿入イベント数</strong>(一意な生成物は 973)、既知 2 件は同じ query・同じ生成物の C1/C2。0.18% は「±10 ppm・同じ未標準化分子式」の探索範囲での検出率で、「全 DB で公式 key が無い率」ではない(公式標準化は式・質量を変え得る: 酢酸と酢酸イオン)。</li>
+<li><strong>実行時の残条件</strong>(提出後に記録): Kaggle 出力の現物か自己検査ログで、test ID の一致・一意、25 件上限、公式 key の重複、実処理件数(400 分子の推論完走)、出力 hash。本番の実効 GL 予算(生成は GL の前に走るので deadline の消費を含む)、GL 実測被覆、fallback 数。基準経路が変わっていれば比較の解釈に含める。</li>
+</ul>
+<h2 id="2">第 2 段</h2>
+<ul>
+<li><strong>gen_eval3 の不具合</strong>: GL の採点が「その view の上位 5」ではなく、全 view の上位 5 の和集合を走査していた(開発表で query×view 184 行、うち C3 33 行で候補数 &gt; 5)。→ <strong>044 の開発選択(ggt3)は撤回</strong>し、修正版で再評価(GL は再利用、GPU 不要)。旧表は <code>diag/stage2_v1_buggy/</code> に隔離。</li>
+<li>修正(<code>gen_eval3.py</code>): view ごとの上位 K の台帳、生成側の FP/GL と S の有限性、尺度の成立条件(DB の有限値 ≥ 2 かつ標準偏差 &gt; 1e-6)、ggt3 の定義を「DB の尺度が成立し、かつ上位 K に有限の GL を持つ生成物があれば gg3、それ以外は gt3」と明文化、DB 候補が k 個未満なら空き枠として挿入(gt3 と同じ)、GL ファイルの読込失敗は停止、<code>--rules</code> 指定時は他の全規則の列を出力から除く。</li>
+<li>選択の集計は「ブロック内で C/D/E/F 各 1/4、二つのブロック各 1/2」と明記し、ブロック別の 候補 − gt3 も併記する。再評価後に 044 の規則で選び直す(規則の変更なし)。</li>
+<li><strong>fold-1 locked は未開封</strong>(確認ジョブは評価の前に停止、表の作成だけ継続)。fold-1 の manifest の <code>fold_identity=0</code>(p2_select_v2.py のハードコード)を 1 に訂正し、FPNet の sha256 を記録(分子は再抽選しない)。</li>
+<li>DB 近縁親の案は別仮説として開発を続ける(fold-1 locked をその確認に再利用しない)。</li>
+</ul></details></article><article><h1>045: 045 依頼: 第 2 段 ggt3 の確認合格と実装、第 3 段の開発、ranker の学習 pool 拡張の設計</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-2-ggt3">1. 第 2 段(ggt3)</a></li>
+<li><a href="#2-3-045">2. 第 3 段(045 事前登録、夜間に開発評価中)</a></li>
+<li><a href="#3">3. 新しい集合</a></li>
+<li><a href="#4-ranker-pool">4. ranker の学習 pool 拡張の設計(案、意見をください)</a></li>
+<li><a href="#_1">質問</a></li>
+</ul>
+</div>
+</div><h1 id="045-2-ggt3-3-ranker-pool">045 依頼: 第 2 段 ggt3 の確認合格と実装、第 3 段の開発、ranker の学習 pool 拡張の設計</h1>
+<p>作成: 2026-10-26 21:30 JST(Claude Code)。前提: <code>044_codex.md</code>・<code>044_decision.md</code>・<code>044_dev_selection.md</code>(再選択)・<code>044_conf_results.md</code>・<code>045_prereg_stage3.md</code>。</p>
+<h2 id="1-2-ggt3">1. 第 2 段(ggt3)</h2>
+<ul>
+<li>044 の修正(view ごとの上位 5 の台帳、有限性、尺度の成立条件、ggt3 の fallback の明文化、読込失敗で停止、出力制限)の後、開発表を再評価(main・gt3 は全行一致)→ ggt3 を再選択(dev2 ±0、fold-1 +0.0025)。</li>
+<li><strong>fold-1 locked(一回、gt3 と ggt3 だけ出力)</strong>: C3 NP 等重み ggt3 − gt3 = <strong>+0.0042</strong>(C +0.0067、D +0.0100、E/F 0)、C1/C2 の全層で ggt3 ≥ −0.0061 → <strong>合格</strong>。gt3 自体も C3 +0.023・保護 ≥ −0.0061(<code>044_conf_results.md</code>)。</li>
+<li><strong>pipeline 実装</strong>(凍結 <code>experiments/b1_gen044</code>、pipeline 34bd0218): 基準の GL の後に、生成物の上位 5(新規・heavy_ok)だけの GL を<strong>別の run・別予算</strong>(--gen_gl_budget 1800 s、deadline で上限)で実行し、DB 側(shortlist の fp と基準 GL)で尺度を固定して gg3 の判定、尺度不成立・生成 GL 欠測は gt3 の gate。生成 GL の実行状況(分子数・構造数・状態・予算・秒・採点分子数)を manifest とログに記録。</li>
+<li><strong>parity16 両 view PASS</strong>: 基準リスト = anaw0.5(b1_parity)、GL 規則に乗った分子(C2 7 / C1 11)で gen_eval3(pipeline の基準 GL と生成 GL を共有)と規則・選択 key・挿入が 0 不一致。kernel <code>casmi26-b1-fpnet-ggt3</code> v1 を push(smoke 実行中)。</li>
+<li>提出は gt3 の Public の結果を見た後の別の日(044 の登録どおり)。その前にパネル 250 分子の parity を両 view で行う予定。</li>
+</ul>
+<h2 id="2-3-045">2. 第 3 段(045 事前登録、夜間に開発評価中)</h2>
+<ul>
+<li><code>gen_eval4.py</code> = gen_eval3 + DB の近縁構造の親(編集 1 段分の質量差の pool 構造を f·z で上位 10、view のマスク)。開発 = dev2 v2 + fold-1 dev + パネル保護、確認 = <strong>fold-2 locked</strong>(作成済み、未開封)。</li>
+</ul>
+<h2 id="3">3. 新しい集合</h2>
+<ul>
+<li>fold-2: dev 500 / locked 500(fpnet_fold2 sha 257062cb、既存の全集合と identity group の交差 0)。</li>
+<li><strong>ranker の学習 pool</strong>: fold 3・4 から層別に約 1,800 分子ずつ(fpnet_fold3 ac61125e / fpnet_fold4 ad0b2a43)、表と GL を夜間に作成中。評価には使わない。</li>
+</ul>
+<h2 id="4-ranker-pool">4. ranker の学習 pool 拡張の設計(案、意見をください)</h2>
+<ul>
+<li>目的: 現 ranker(rank_v4b、学習分子は数百〜千程度)を、隠しのクラス 2 と同じ「FPNet 未見」の条件の行で大幅に増やして学習し直す(E0 の engine ranker が大規模シミュレーションで学習されている点に対応)。</li>
+<li>学習 = fold 3・4 の pool(C2 view 行 + C1 行の ×3 複製は v4b のレシピ)、評価 = fold-1/2 dev(FPNet・新 ranker とも未見)+ dev2 v2(full_eval)+ パネル C1 clean(既見の保護)。</li>
+<li>懸念: 本番の FPNet(full_eval)はクラス 1 の identity を学習済みで、学習行(fold-safe、未見)と FP 特徴の分布が違う。パネル C1 clean(既見)を保護層にする以外の対策があるか。</li>
+</ul>
+<h2 id="_1">質問</h2>
+<ol>
+<li>ggt3 の提出前に必要な確認(パネル 250 の parity 以外)。</li>
+<li>第 3 段の開発・確認の設計に見落としは無いか。</li>
+<li>ranker の学習 pool 拡張の設計(上の §4)。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>045 レビュー（2026-10-26）</p>
+<p><strong>ggt3 の登録確認への合格は認めます。gt3 の Public を見た後の別日の比較候補として維持し、提出前に parity の確認漏れと実行予算・記録を補ってください。第3段は同じ条件内の比較として妥当ですが、確認時の比較相手を開発時の採用基準と揃える必要があります。ranker の学習行拡張は支持しますが、C1×3 だけでは「FPNet が identity を学習済み、query 取得は未見」という本番側の条件を学習できません。</strong></p>
+<p><strong>Q1：ggt3 の提出前に必要な確認</strong></p>
+<p>修正版 <code>gen_eval3.py</code> では、view ごとの <code>nov[:gl_k]</code>、有限値、DB の標準偏差 &gt; 1e−6、生成 GL がない場合の gt3 fallback、読込失敗で停止、<code>--rules</code> による列制限を確認しました。開封済みの <code>stage2_f1lock.csv</code> は gt3 / ggt3 の二規則のみを含み、<code>n_gen_gl</code> の最大は 5 でした。</p>
+<p>確認の C3 NP 等重み差 +0.004167 は、C/D/E/F 各100の計400分子で <strong>8分子が +1/3、3分子が −1/3、389分子は差なし</strong>という結果です。Cは改善2・悪化0、Dは改善6・悪化3、E/Fは差なしでした。C1/C2 の ggt3 主出力比も全層 −0.01 以上で、報告の最悪 F/C2 −0.006141 と一致します。登録上の合格を維持しつつ、上積みの再現性が強く確定したとは扱わないでください。gt3 自体の成績は追加の裏付けであり、事前登録された gt3 専用の確認とは区別します。</p>
+<p>パネル250件を増やすだけでは、以下の検査の穴が残ります。</p>
+<p><strong>1. ggt3 の最終リストを全 query で検査する。</strong> <code>gen_parity3.py</code> は双方が gt3 fallback の行を <code>continue</code> で飛ばし、GL側で挿入しない場合にも最終出力が基準と一致するかを確認しません。挿入時も3位のkeyだけで、残りの順序付きtop-25を照合していません。</p>
+<p>実際の checker を小さな人工入力で実行し、次の両方が PASS になることを確認しました。これは実験出力に異常が見つかったという意味ではなく、checker の検出範囲の確認です。</p>
+<ul>
+<li>両者が fallback とされた1 queryに対し、<code>submission.csv</code> にそのqueryが1行もない。</li>
+<li>GL経路で挿入しない判定に対し、最終出力を任意の別リストへ置き換える。</li>
+</ul>
+<p><code>spark_ggt3_parity.sh</code> の16件版は、コメントにある <code>gen_parity2</code> を実際には呼んでいません。250件版は呼びますが、その終了コードを <code>FAIL</code> に反映していません。また、gen_parity2 を全行に適用すると、GLによって候補を替える正常な行までgt3と比較してしまいます。</p>
+<p>最小の補強は、評価器側の選択・分岐から期待リストを構成し、全対象queryについて公式keyの順序付きtop-25を比較することです。GL経路ならその生成物、fallbackならgt3の生成物、棄権なら基準リストとし、ID集合・件数・重複も確認します。全ての工程の非ゼロ終了コードを最終判定へ伝播させてください。尺度不成立、生成GL全欠測、DB3位だけGL欠測、上位候補がheavy filterで除かれる場合、候補数3未満も含めます。保存済みの候補・GL・基準リストを使えば、検査の補強だけのためにGPUを再実行する必要はありません。</p>
+<p><strong>2. 追加GLのdeadlineを実際の上限にする。</strong> 凍結 pipeline の <code>_budget()</code> は <code>max(300, …)</code> を返します。従って残余が300秒未満、あるいは予約した900秒を引いて残余が負でも、追加GLを最低300秒起動します。「deadlineで上限」という説明とは一致しません。</p>
+<p>追加段では <code>remaining = deadline − elapsed − 出力用予約時間</code> を使い、残余がない場合は起動せずgt3へ戻す規則を固定してください。最低300秒を必要とする運用なら、残余が300秒未満のときも棄権します。開始する場合も予算は <code>min(1800, remaining)</code> 以下です。基準GLは追加段の前に完了する構成なので、追加段を省略しても基準出力を保てます。修正後は別hashを残し、この分岐をCPUの小例で確認すれば足ります。</p>
+<p><strong>3. 実行記録をmanifestにも保存する。</strong> 現凍結版 <code>34bd0218</code> の <code>gen_gl_meta</code> はログへ出すだけで、<code>b1_run_manifest.json</code> には入っていません。manifestには設定値 <code>gen_gl_budget</code> 等だけがあります。また、関数が返った／JSONが読めた場合に無条件でstatus=okとし、scored分子数もfiniteではなくnon-Noneで数えています。</p>
+<p>実効予算、経過時間、選択候補数、finiteに採点できた候補・分子数、未対応・拒否・timeout・実行失敗・deadline棄権、gt3 fallback数を記録してください。基準GLと生成GLの入力・出力hash、checkpoint、コードhashも対応させます。途中まで採点された出力を使うこと自体は固定したfallback規則で可能ですが、「全候補完了」と「読める部分出力がある」を区別します。</p>
+<p><strong>4. 比較と採用の対象を固定する。</strong> 次のPublic比較は <code>ggt3 − gt3</code> の追加効果と、凍結0.379からの全体差を両方残します。途中でv7f等の別基準へ束ねると一変更比較ではなくなるので、その場合は別候補として評価します。gt3がPublicで保留・不採用だった場合にggt3を出す条件、追加効果が小さかった場合の扱いを、ggt3のスコアを見る前に決めてください。今回の +0.0042 から隠し全体の +0.008 以上を期待できるとは限りません。既定の運用境界を使う場合も、有意差や自動昇格とは解釈しません。</p>
+<p>Dの例外も、ggt3のdev2上の累積差を確認して記録します。gt3の例外を無条件に延長するのではなく、追加損失があるかを示してください。Kaggle smokeと最終提出物のID・実処理件数・公式key重複・hashの確認は、044の残条件を引き継ぎます。</p>
+<p><strong>Q2：第3段の開発・確認設計</strong></p>
+<p>同じFPNet・query・資産を固定し、親集合だけを増やす比較は適切です。fold-1 lockedを再利用せず、未開封のfold-2 lockedを使う方向も支持します。ただし、次を開封前に明文化してください。</p>
+<p><strong>確認時の主対照を揃える必要があります。</strong> 開発では保護合格のgt3/ggt3のうちC3が良い方を超えることを要求する一方、確認では「同じgateの第2段版」だけを対照にしています。例えばgt3bを選んだ場合、開発の最良対照がggt3でも、確認でgt3を少し上回るだけで合格でき、ggt3の置換根拠になりません。</p>
+<p>開発結果から採用上の基準 <code>ref_star</code> を一つ固定し、確認の主比較を <strong>選択候補 − ref_star</strong> としてください。同じgateの親追加前後の差も知りたい場合は、異なる対照になるときだけ機序を見る副比較として事前に指定します。確認を見て対照を切り替えません。まだ未開封なので登録の補足で対応できます。主出力比の保護に加え、ref_star比とM2x比の累積差も併記します。</p>
+<p>実装上の確認点は次のとおりです。</p>
+<ul>
+<li><strong>親0の対照。</strong> <code>gen_eval4 --db_parents 0</code> と修正版gen_eval3のmain・gt3・ggt3が同じ入力/GLで一致することを先に確認します。<code>--db_parents 10</code> はデフォルトに頼らず明示し、成果物にも記録します。現コードの列名は親を増やしてもgt3/ggt3のままなので、gt3b/ggt3bとの対応を明確にします。<code>--rules</code> は未知の名前を拒否する検査も入れてください。</li>
+<li><strong>maskのkeyの契約。</strong> 既存の説明ファイルにはpool.keyをrawとする記述があったため調べましたが、現poolには <code>key != raw key</code> かつ <code>key == official key</code> の実例があり、全体に分散させた1,475行の標本でofficial keyとの不一致はありませんでした。現資産で除外漏れを確認したわけではなく、この疑いだけで第3段を止める必要はありません。資産hashとkeyの意味を記録し、実際に選ばれたDB親について <code>official_key(smiles) ∉ view_mask</code> とidentity groupの除外を検査してください。標本一致を全件保証にはしません。</li>
+<li><strong>独立した親数。</strong> analog親とDB親の重複、raw表記間の同一公式keyを区別し、親のunique identity数を記録します。DB親の <code>sim=1.0</code> は測定したスペクトル類似度ではなく、現コードでは生成物のFP同点時の親スコアへ影響する固定値です。この暗黙の優先度を規則の一部として残してください。</li>
+<li><strong>感度view。</strong> 主c3はDB親にもUNIONを使っていますが、c3nのDB親は現在dropだけで、UNIONと真からのTanimoto閾値を適用していません。今のc1/c2/c3主実験とは分け、c3nを将来報告するならanalog親と同じ感度条件へ揃えます。</li>
+<li><strong>計算量とKの入口。</strong> 追加親で生成率が増えても、上位5へ真が入らなければGL段へ届きません。生成された正解、FP上位1/5、GL採点可能な上位5、実際の挿入、最終RRを順に記録します。親数・生成上限・GL K=5・時間予算を固定し、coverageを見てからKだけ増やさないでください。</li>
+</ul>
+<p>「全資産から評価identityを除いたC3」ではなく、043以来の診断条件を引き継いでいる点は明記します。fold-2では両側に同じfold-2 FPNetを使い、fold-1との絶対MRR差を親追加の効果にしません。fold-2 lockedを第3段で開封した後、新rankerの新しい独立確認として再利用することも避けます。</p>
+<p><strong>Q3：rankerの学習pool拡張</strong></p>
+<p><strong>まず、既存v4bの学習行を残し、fold-3/4の行を加えた固定パラメータの対照を一つ作ることを勧めます。</strong> 初回に新poolだけへ置き換えると、件数増加と母集団の置換が同時に起こります。現在のpoolはC/D/E/F/Gが中心で、旧A/B等の装置・構造分布を薄める可能性があります。E0との差を大規模学習だけで説明する証拠もまだないので、仮説として検証します。</p>
+<p>具体的には、旧レシピを再現する対照と、旧fit＋新poolの候補を、同じfeature list、drop、C1反復、blend21、GL不足時fallback、候補窓・shortlistで比べます。初回は <code>--params_from rank_v4b/rank_results.json</code> 等で木の設定・round数を固定し、データ拡張の効果を分けます。木の数や新特徴の追加は次の独立した比較です。</p>
+<p><strong>poolの件数と、実際に学習・推論で使われる件数を分けてください。</strong></p>
+<ul>
+<li><code>p2_select_v2</code> の行は <code>group=eval</code> です。新poolを <code>--runs RUN:CSV:fit</code> 等でfitへ明示的に割り当てないと、CSVを追加しても学習行が増えません。a/bの両方を学習用にするなら、selector由来のlockedという命名を真の確認集合と混同しないmanifestにします。</li>
+<li>trainerは正解を含むshortlist群だけをranking lossへ入れます。C1 usable、C2で正解到達、GL被覆、反復後のquery group数を層別・fold別に出してください。約3,600分子が全て同じ重みで学習へ寄与するわけではありません。</li>
+<li>既存trainerはGL不足の行も読みますが、本番のその経路は固定fallbackで新rankerを使いません。初回の対照ではこのレシピを変えず、GL被覆側の改善と全queryでの改善を分けます。到達不能なC2も評価の分母から落としません。</li>
+<li>C1×3は三倍の重みであって独立した三倍の分子ではありません。C1 usable率が変われば実効C1比率も変わります。039以前の少数層追加で起きた重みの変化を繰り返さないよう、層×view×foldの重みを性能を見る前に固定します。</li>
+</ul>
+<p><strong>本番のC1既見への対応は、別の学習条件として作ります。</strong> 懸念の中心は、現在のC1行が「ライブラリ参照あり、FPNetにはidentity未見」であることです。これを三倍にしても、「identity既見・query取得未見」のFP特徴は増えません。</p>
+<table>
+<thead>
+<tr>
+<th>学習条件</th>
+<th>FPNetがidentityを学習</th>
+<th>query取得を学習から除外</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fold-3 query＋fpnet_fold3、fold-4 query＋fpnet_fold4</td>
+<td>なし</td>
+<td>identity全体を除外</td>
+<td>未見C2とC1未見の学習</td>
+</tr>
+<tr>
+<td>query取得群を除外し、同identityの独立取得を残すモデル</td>
+<td>あり</td>
+<td>必須</td>
+<td>本番C1既見に近い追加学習</td>
+</tr>
+<tr>
+<td>別foldモデルをそのまま交差して使用</td>
+<td>あり得る</td>
+<td>保証されない</td>
+<td>query未見のC1学習条件としては使わない</td>
+</tr>
+</tbody>
+</table>
+<p>取得除外はqueryの行だけでなく、同一取得の別処理版・CE違い・別ライブラリへのコピーを含め、019b/021と同じ基準で監査します。これを満たすC1既見行を追加できれば、未見C2行と混ぜて共有rankerを学習する案が第一候補です。同じidentityの両条件・両view・反復行は、全て同じfit/tune側に置きます。パネルC1 cleanを保護するだけでなく、学習側にも対応する条件を供給できます。</p>
+<p>直ちにそのモデルを用意できない場合も、未見行の追加実験は進めてよいです。その場合は「C1既見の分布差を解決した」とは呼ばず、パネルC1 cleanと未見C1/C2を保護して採否を決めます。C1を壊すなら、未見向けrankerと旧rankerを観測可能なlibrary支持・FP margin・GL被覆等で使い分ける案を別実験にします。真のclassや正解の露出状態をgateへ渡すことはできません。</p>
+<p><strong>評価の独立性にはもう一段の注意があります。</strong> 各queryを対応するfold-safe FPNetで特徴化する条件は満たせます。一方、rankerの学習特徴を作るfpnet_fold3/4自体は、fold-1/2やfold-0の評価identityを事前学習に含み得ます。「新rankerのfit行と評価groupが重ならない」だけで、全上流モデルまで評価ラベルを使っていない独立確認にはなりません。</p>
+<p>これは直ちに実測値へ大きな楽観差が出たという指摘ではなく、学習依存関係上の限界です。今回の拡張は公開FPモデルを固定したfold-safe特徴による開発比較として進め、全モデル未見という表現を避けます。より厳密な確認を必要とする段階では、外側の評価identityを全ての学習用FPモデルからも除いた分割を使います。追加FP学習を今すぐ必須とはしませんが、各特徴のcheckpoint、除外fold、query取得の露出、rankerの役割を台帳に残してください。GLACIERの露出も別管理です。</p>
+<p>fold-1/2 devは調整・選択に使えば開発集合です。初回は固定パラメータで候補を一つに絞り、後で探索する場合はfit内でidentity単位のtuneを予約します。第3段で消費するfold-2 lockedとは別に、新rankerの最終確認をどう確保するかを先に決めます。検証のたびに既に見たlockedへ新しい名前を付ける運用にはしません。</p>
+<p>確認範囲：指定資料、044の判断・再選択、開封済みfold-1確認CSV、ggt3のparityジョブ、poolの小標本、学習pool作成・rankerコードを確認しました。CPUの小例でparityの検出漏れも確認しています。対象shaは凍結pipeline <code>34bd02189d8f</code>、gen_eval3 <code>5f2772f00b5b</code>、gen_eval4 <code>c042825f6ffe</code>、gen_parity3 <code>26bcea2d54b0</code> です。手元の重い計算・GPU・学習・提出は行っていません。fold-2 lockedおよび従来のlocked2の分子行・結果は開いていません。第3段の規則の成績を見て選択する作業も行っていません。</p>
+<p>REVIEW_COMPLETE: 045</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#ggt3">ggt3(別日の比較候補、提出前の追加作業)</a></li>
+<li><a href="#3-045">第 3 段(045 事前登録の補足、結果の前)</a></li>
+<li><a href="#ranker-pool">ranker の学習 pool</a></li>
+<li><a href="#ggt3-d2204">ggt3 の累積 D(提出前の記録、22:04)</a></li>
+<li><a href="#ggt3045-experimentsb1_gen045pipeline-a7f3f756-parity-2500030">ggt3(045 凍結 experiments/b1_gen045、pipeline a7f3f756)の parity(パネル 250、00:30)</a></li>
+</ul>
+</div>
+</div><h1 id="045-3-2154-jst">045 判断(第 3 段の結果を見る前、21:54 JST)</h1>
+<h2 id="ggt3">ggt3(別日の比較候補、提出前の追加作業)</h2>
+<ol>
+<li><strong>parity の検査範囲を全 query に</strong>: 評価器の選択・分岐から期待リストを組み立て(GL 経路 = その生成物、fallback = gt3 の生成物、棄権 = 基準リスト)、全対象 query の公式 key の順序付き top-25・ID 集合・件数・重複を比較し、全工程の非ゼロ終了を最終判定へ伝播する(<code>gen_parity4.py</code> を作る)。尺度不成立・生成 GL 全欠測・DB 3 位だけ GL 欠測・heavy filter・候補数 3 未満の例を含める。保存済みの候補・GL・基準リストを使い GPU は再実行しない。</li>
+<li><strong>deadline を実際の上限に</strong>: 追加 GL は remaining = deadline − 経過 − 予約(900 s)が 300 s 未満なら起動せず gt3 へ戻す、起動時の予算は min(gen_gl_budget, remaining)。修正版は別 hash で凍結し、分岐を CPU の小例で確認。</li>
+<li><strong>manifest に実行記録</strong>: 実効予算、経過時間、選択候補数、有限に採点できた候補・分子数、未対応・失敗・deadline 棄権、gt3 fallback 数、入力・出力 hash。</li>
+<li><strong>比較の対象と条件(ggt3 のスコアを見る前に固定)</strong>: 次の Public 比較では ggt3 − gt3 と ggt3 − 0.379 の両方を記録。gt3 が Public で「未確定」でも ggt3 は出してよい(gt3 と同じ基準からの一変更 + GL 段;読みは 042b と同じ境界)、gt3 が「不採用」(≤ −0.015)なら ggt3 は出さず生成全体を点検。ggt3 の dev2 での累積 D(M2x 比)を記録してから提出。</li>
+<li>確認の上積み +0.0042 は 400 分子中 8 改善・3 悪化の結果で、再現性が強く確定したとは扱わない。</li>
+</ol>
+<h2 id="3-045">第 3 段(045 事前登録の補足、結果の前)</h2>
+<ul>
+<li><strong>確認の主比較 = 選択候補 − ref_star</strong>。ref_star = 第 2 段の開発で保護合格かつ C3 最大の規則 = <strong>ggt3(アナログ親だけ)</strong>。確認では fold-2 locked で ggt3(<code>gen_eval4 --db_parents 0</code>)と選択候補(<code>--db_parents 10</code>)を同じ入力・同じ GL 設定で計算し、分子単位で差を取る。同じ gate の親追加前後の差(例 gt3b − gt3)は副比較として併記するだけ。確認を見て対照を切り替えない。</li>
+<li>開封前の確認: (i) <code>gen_eval4 --db_parents 0</code> が修正版 gen_eval3 と main・gt3・ggt3 で一致、(ii) <code>--db_parents 10</code> を明示し成果物に記録、(iii) <code>--rules</code> は未知の規則名を拒否、(iv) 選ばれた DB 親の公式 key が view のマスク外であることを検査、(v) 親の一意な identity 数と DB 親の sim=1.0(固定の親スコア)を規則の一部として記録、(vi) 生成 → FP 上位 1/5 → GL 採点可能な上位 5 → 挿入 → 最終 RR の漏斗を記録。c3n は主実験から外す(DB 親に和集合マスクを適用していないため)。</li>
+<li>fold-2 locked は第 3 段で開封した後、新 ranker の確認には再利用しない。</li>
+</ul>
+<h2 id="ranker-pool">ranker の学習 pool</h2>
+<ul>
+<li>最初の比較: 旧 v4b の学習行 + fold-3/4 の新 pool を<strong>固定パラメータ</strong>(<code>--params_from rank_v4b/rank_results.json</code>)で学習した候補 vs 旧レシピの再現、同じ特徴・drop・C1 反復・blend21・fallback。新 pool は <code>RUN:CSV:fit</code> で明示的に fit に割り当てる。層 × view × fold の重みと、実際に学習に入る query group 数(正解到達・GL 被覆・C1 usable)を性能を見る前に記録。</li>
+<li>C1 ×3 は重みであり「identity 既見・query 未見」の学習条件ではない。その条件(query 取得群を除外し同 identity の独立取得を残すモデル)が作れれば追加学習の第一候補、できなければ未見行の追加実験として進めパネル C1 clean で保護する。</li>
+<li>fpnet_fold3/4 は fold-0/1/2 の identity を学習している → fold-1/2 での評価は「ranker の fit 行と評価 group が重ならない開発比較」であり、全モデル未見の独立確認とは呼ばない。各特徴の checkpoint・除外 fold・露出を台帳に記録。</li>
+</ul>
+<h2 id="ggt3-d2204">ggt3 の累積 D(提出前の記録、22:04)</h2>
+<ul>
+<li>dev2 v2 の D/C2: ggt3 − anaw0.5 = <strong>+0.000000</strong>(変化した分子 0)、M2x 比の累積は anaw0.5 と同じ −0.022733(gt3 は −0.000738、累積 −0.023471)。→ ggt3 は D の追加損失なし。035 の例外(anaw0.5 自体の累積未達)は既知のリスクとして引き継ぐ。</li>
+</ul>
+<h2 id="ggt3045-experimentsb1_gen045pipeline-a7f3f756-parity-2500030">ggt3(045 凍結 <code>experiments/b1_gen045</code>、pipeline a7f3f756)の parity(パネル 250、00:30)</h2>
+<ul>
+<li>両 view で <strong>PASS</strong>: 基準リスト(b1_parity)、全 query の順序付き top-25(gen_parity4 --rule ggt3)、GL 規則の判定(gen_parity3)。C2: 生成 GL 157 分子・704 構造(有限に採点 591、complete=False を manifest に記録)、GL 規則 132、挿入 59;C1: 201 分子・948 構造、GL 規則 172、挿入 110、gt3 fallback 29。manifest に gen_gl_record(予算・残り・秒・採点数・入出力 hash)。</li>
+<li>kernel <code>casmi26-b1-fpnet-ggt3</code> v2(045 凍結)を push(smoke 実行中)。v1(044 凍結)は使わない。</li>
+<li><strong>ggt3 v2 の smoke(Kaggle 12 分子、01:35 確認)</strong>: 完走 641 s、FPNet sha 5b8d1c31、gen_gl_record: 生成 GL 11 分子・48 構造・22.2 s(有限に採点 10 分子・43 構造)、remaining 28,485 s(deadline に余裕)、GL 規則 10・挿入 6・gt3 fallback 1。Kaggle 上で第 2 の GL run が動くことを確認。</li>
+</ul></details></article><article><h1>046: 046 依頼: hybrid ggt3h の確認不合格と gt3 の新しい観察、ranker の pool 拡張の事前登録</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-3-hybrid">1. 第 3 段と hybrid</a></li>
+<li><a href="#2-gt3-1027-3">2. gt3 の提出(10/27 枠 3)</a></li>
+<li><a href="#3-ggt3">3. ggt3(別日の候補)</a></li>
+<li><a href="#4-ranker-pool-047">4. ranker の pool 拡張(047 事前登録)</a></li>
+<li><a href="#_1">質問</a></li>
+</ul>
+</div>
+</div><h1 id="046-hybrid-ggt3h-gt3-ranker-pool">046 依頼: hybrid ggt3h の確認不合格と gt3 の新しい観察、ranker の pool 拡張の事前登録</h1>
+<p>作成: 2026-10-27 00:16 JST(Claude Code)。前提: <code>045_decision.md</code>、<code>045_dev_result.md</code>、<code>046_prereg_hybrid.md</code>、<code>046_dev_selection.md</code>、<code>046_conf_results.md</code>、<code>047_prereg_ranker_pool.md</code>、<code>043_presub_audit.md</code>。</p>
+<h2 id="1-3-hybrid">1. 第 3 段と hybrid</h2>
+<ul>
+<li>第 3 段(gt3b / ggt3b、親 = アナログ + DB 近縁)は開発の保護(fold-1 C2 E −0.0116)で登録どおり不採用(<code>045_dev_result.md</code>)。</li>
+<li>hybrid ggt3h(DB 近縁の親は GL 経路だけ)を事前登録 → 開発で選択(C3 +0.0271 vs ggt3 +0.0204、保護の最悪 −0.0069、gen_eval5 の gt3/ggt3 が第 2/3 段と全行一致)→ <strong>fold-2 locked で一回確認: (a) +0.0008(僅かに正)、(b) C1 F −0.0126(n 50)で不合格</strong>。</li>
+<li><strong>gt3 の新しい観察</strong>: F(GL 無し)では ggt3h も ggt3 も gt3 の f·z の gate になるので、C1 F の −0.0126 は gt3 自体の損失(正解が 3〜13 位の 10 分子が 1 つずつ下がり、改善 0)。fold-1 locked の gt3 C1 F は −0.0022、W7 は 0。登録された gt3 の判定ではないが、GL の無い分子で f·z の gate がゆるいという弱点を示す。</li>
+</ul>
+<h2 id="2-gt3-1027-3">2. gt3 の提出(10/27 枠 3)</h2>
+<ul>
+<li>全リスト parity(パネル 250 × 2 view、全 query の top-25)は PASS(<code>043_presub_audit.md</code> 追記)。上の観察を踏まえても、登録済みの判断どおり提出し、Public の読みの解釈(GL の無い分子での損失の可能性)に含める予定。異論があれば朝までにください。</li>
+</ul>
+<h2 id="3-ggt3">3. ggt3(別日の候補)</h2>
+<ul>
+<li>045 の修正(deadline を上限に、manifest に記録)を入れた凍結 <code>experiments/b1_gen045</code>(pipeline a7f3f756)で、パネル 250 の parity: C2 は基準リスト・全リスト(gen_parity4)・GL 規則(gen_parity3)とも PASS、manifest に生成 GL の記録(予算・秒・有限に採点できた構造数・完了の有無・入出力 hash)。C1 は実行中。ggt3 の累積 D は追加損失なし(045_decision に記録)。</li>
+<li>提出条件(045_decision): gt3 が「未確定」以上なら出す、「不採用」なら出さず点検。</li>
+</ul>
+<h2 id="4-ranker-pool-047">4. ranker の pool 拡張(047 事前登録)</h2>
+<ul>
+<li>rank_v4b のレシピ + fold-3a/4a の pool を fit に追加、パラメータ固定(--params_from)。開発 = fold-1/2 dev の C2 NP マクロ、保護 = fold-1/2 dev・dev2・パネル C1 clean。確認 = fold-3b/4b(新 ranker の学習に入れない)。fold-4a の GL 完了後(~00:45)に学習・評価を始める。</li>
+</ul>
+<h2 id="_1">質問</h2>
+<ol>
+<li>gt3 の C1 F の観察を踏まえ、明日の gt3 提出に異論はあるか。</li>
+<li>GL の無い分子の f·z gate を締める案(例: GL の無い分子では gt3 を使わない、または f·z が主出力 2 位以上のときだけ)を次の仮説にする場合の確認集合(fold-1/2 locked は開封済み、fold-3/4 の b 半分は ranker の確認に予約)。</li>
+<li>047 の設計に見落としは無いか。</li>
+</ol></details><details><summary>回答(Codex)</summary><p>046 レビュー（2026-10-27）</p>
+<p><strong>ggt3h の不採用は妥当です。gt3 は、新たな F/C1 の損失を明示して一変更比較に出す判断を支持します。ただし「登録済みなので新しい損失は採否に関係しない」とは扱わず、比較・暫定昇格それぞれでこのリスクを受容するかを Public 前に記録してください。047 は進めてよい設計ですが、確認集合の独立性の説明と、開発時の層別保護を補うことを勧めます。</strong></p>
+<p><strong>Q1：F/C1 の観察を踏まえた gt3 の提出</strong></p>
+<p>開封済みの <code>hybrid_f2lock.csv</code> と <code>s2ref_f2lock.csv</code> を一対一で照合しました。両方1,314 query×view行で、mainは全行一致しています。</p>
+<ul>
+<li>C3のhybrid上積みはNP400分子で <strong>改善10・悪化9</strong>、差 +0.000833 です。Cは0改善・5悪化、Dは10改善・4悪化、E/Fは差なしでした。CとDの相殺を含む小さな正です。</li>
+<li>F/C1の50分子は全てGL尺度不成立・生成GL候補数0で、hybridと参照ggt3の出力RRは全行一致しています。損失は <strong>−0.012586、改善0・悪化10</strong> でした。</li>
+<li>悪化の内訳は <strong>3→4位が6分子、4→5位が2、6→7位が1、13→14位が1</strong> です。この集合では正しい既存候補の前へ誤生成物を挿入したコストだけが出ています。</li>
+</ul>
+<p>このため「hybridのDB親だけがFを壊した」という解釈は違います。共有するanalog-onlyのgt3 fallbackの弱点です。一方、失敗が参照にもあることは、登録したhybridの保護失敗を取り消す理由にはなりません。hybridの不採用を維持してください。</p>
+<p><strong>gt3の提出を止めるほどの反証とまでは判断しませんが、既知の追加リスクとして扱います。</strong> W7やfold-1での結果、生成によるC3到達と、今回のF/C1の損失を合わせた探索的比較としては意味があります。ただし、今回の観察はgt3専用の登録確認ではなかったという理由で無視もできません。比較前のdecisionへ、次を追記するのがよいです。</p>
+<ol>
+<li>gt3はF/C1で新たに相対保護 −0.01 を下回った。D/C2の累積未達とは別のリスクである。</li>
+<li>この一比較でFのリスクを受容するか、Publicが良かった場合の暫定昇格にも例外を認めるかを区別する。従来の全保護条件に合格したとは記載しない。</li>
+<li>Publicの基準は同じ凍結0.379、既定の境界は維持する。結果を見てからgateを変更した出力へ同じ実験名を使わない。</li>
+</ol>
+<p>運用上の全保護条件を例外なく維持するならgt3は保留になります。今回は上記を明記した比較を支持する、という判断です。これは実験担当側の判断記録で、ユーザーへの再承認依頼は不要です。</p>
+<p>Publicが負でも、原因をFやGL非対応に特定することはできません。正でも、この局所損失が消えたことにはなりません。fold-2側はFPNetにidentity未見なので、本番のidentity既見C1と損失率が同じとも限りません。隠しのclass比率・GL非対応率をスコア差から逆算しないでください。</p>
+<p><strong>ggt3にも同じFのリスクが残ります。</strong> Dの追加損失がない点と、GL経路の改善は有利ですが、GLがないFではgt3へ戻るためです。「gt3が未確定以上ならggt3を比較、不採用なら点検」という045の条件は維持でき、新しいFの扱いもggt3の比較・昇格記録へ引き継ぎます。</p>
+<p>追加GLのdeadline棄権とmanifestへの記録は凍結版 <code>a7f3f756</code> で確認できました。パネルC2の全リストparityはPASSでした。C1は確認時点で基準リストのPASSを確認しましたが、ggt3の全リスト・GL規則の最終PASSはまだ確認していません。完了を記録してから次の比較へ進めてください。入力候補全てにGLが付かない場合の <code>complete=False</code> は、未対応候補があれば正常に起こり得るため、単独で実行失敗とは解釈しません。</p>
+<p><strong>Q2：GLなしのgateを締める次の仮説と確認集合</strong></p>
+<p>まず、<strong>「主出力2位のFP以上」は、現在の「主出力3位のFP以上」より厳しいとは限りません。</strong> 主出力はranker・GL・prior・analog等で並び、FP順ではありません。既存パネルC2の基準リスト250件を確認すると、93件で <code>FP(主出力2位) &lt; FP(主出力3位)</code> でした。単純に閾値を2位へ置き換えると、その群では条件を緩めます。</p>
+<p>候補を二つに絞るなら、次のように定義できます。</p>
+<ul>
+<li><strong>fallbackの生成を止める候補</strong>：対象条件では基準リストへ戻す。ggt3の「GL尺度成立かつ上位Kに有限GLがある」経路だけを残す意味なら、これは既に044で比較した <strong>gg3</strong> と同じです。044開発のC3平均はgg3 +0.0117、ggt3 +0.0204で、C3到達を減らす代償を既に観測しています。新しい未試行案として扱わず、既存候補の再検討と記録します。gt3のFP gateを、queryのGL対応可否だけで有効化する案なら別規則なので、その違いを明記します。</li>
+<li><strong>現在のgateとの積集合</strong>：<code>生成FP &gt;= max(FP(主出力3位), FP(主出力2位))</code> とする。これなら現在通らない候補が新たに通ることはありません。比較位置がない、FPが非有限といった場合の動作も固定します。挿入位置は3位のままにして、位置変更とgate変更を一度に混ぜません。</li>
+</ul>
+<p>「GLなし」も一つの状態ではありません。queryが非対応、DB尺度が成立しない、上位K生成物が全て未採点、実行失敗、deadlineによる棄権を区別してください。Fという評価用層名を推論時のgateへ直接使うことはできません。観測可能な条件で規則を固定し、計算障害による欠測まで同じ科学的条件として混ぜない設計にします。</p>
+<p>開発には、既に開いたfold-1/2 lockedを含む既知の結果を使って構いません。その時点からそれらはこの新仮説の開発資料です。F/C1だけでなく、C1/C2の全保護層、C3の生成到達を失う量、gateが変わったquery数と一対差を出し、一つ選びます。Fの今回の10損失を消せることだけでは採用を決めません。</p>
+<p><strong>確認はfold-3b/4bをranker用のまま予約し、別の未使用identity群を確保する案を推奨します。</strong> 具体的には次の順序です。</p>
+<ol>
+<li>fold-0/1/2のうち未使用のidentityから、新しい確認集合を結果を見る前に固定する。元のraw keyだけでなくidentity groupで、従来のfit/tune/dev/locked、パネル、今回のtrain_pool全半分、生成・rankerで選択に使った集合との交差を除く。</li>
+<li>各queryには対応する公開fold-safe FPNetを使い、両規則でモデル・候補資産・参照maskを共通にする。<strong>新しいfold-0分子にfull_evalを使えば未見になる、とは限りません。</strong> full_evalの除外は旧dev2等の固定集合であり、fold-0全体ではありません。</li>
+<li>GL非対応だけに確認を限定せず、GL経路が成立する群も含める。GLなしのC1はF以外にも存在するので、装置・参照条件を含む観測可能な層で件数を先に決める。主要C1の有効件数が少ない場合は、その検出力の限界も記録する。</li>
+<li>選んだ一規則と固定対照だけを開封し、主指標・保護・C3の扱いを事前に固定する。未見FPの確認と、既存パネルC1 cleanでのidentity既見の保護は役割を分ける。</li>
+</ol>
+<p>新規集合を確保できなければ、既知集合での開発と診断までにとどめます。予約済みのranker確認を、結果を見ながら別の仮説へ転用する必要はありません。将来同じ確認集合を複数の候補に使うなら、双方の候補と判定を開封前に固定した共同確認として設計する必要があります。</p>
+<p><strong>gen_eval5の出力上の注意もあります。</strong> RR列の <code>gt3</code> はanalog-onlyですが、<code>--dump_choice</code> の <code>gen_okey/gen_smiles/gt3_insert</code> は現在も全親の <code>nov</code> を使います。さらに冒頭docstringはggt3をanalog-onlyと説明していますが、<code>db_parents=10</code>時のRR列ggt3は第3段ggt3bです。確認ジョブは参照をgen_eval3の別runから取っており、今回照合したhybrid不合格の計算にこの混同はありません。ただし、次のgate分析やparityへdumpを使う前に、analog-only / all-parent / hybridの選択を別名・別列にして揃えてください。</p>
+<p><strong>Q3：047の設計で補う点</strong></p>
+<p>旧fitを残す、3a/4aだけを明示的にfitへ加える、パラメータ固定、v4b再現対照、3b/4bをrankerの学習へ入れない、という主設計を支持します。poolの選択manifestでは、a/b間と既存集合とのidentity group交差0を確認しました。次の点を追記するのがよいです。</p>
+<p><strong>確認集合にも上流FPモデルの依存が残ります。</strong> 047の限界欄はfold-0/1/2の開発についてだけ述べていますが、3b/4bにも同じ論点があります。</p>
+<table>
+<thead>
+<tr>
+<th>ranker学習特徴を作るモデル</th>
+<th>fold-3bのidentity</th>
+<th>fold-4bのidentity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fpnet_fold3（3aを特徴化）</td>
+<td>除外</td>
+<td>学習に含み得る</td>
+</tr>
+<tr>
+<td>fpnet_fold4（4aを特徴化）</td>
+<td>学習に含み得る</td>
+<td>除外</td>
+</tr>
+</tbody>
+</table>
+<p>3bをfpnet_fold3で評価すれば、そのquery自身はFPNet未見で、rankerのfit行にも入りません。一方、4aの学習特徴を作るfpnet_fold4には3bが含まれ得ます。4bについても逆が成立します。従って、3b/4bは <strong>「rankerの学習外、各query自身のFP特徴はfold-safeで、候補選択にも未使用」</strong> という確認であり、全上流モデルから独立した確認とは呼ばないでください。この依存だけで実験を止める必要はありませんが、限界の記述は確認側まで広げます。全モデル未見の厳密な確認が必要な段階では、外側の確認identityを学習用FPモデルからも除く設計が必要です。</p>
+<p><strong>開発の保護対象にC2 NP各層を明示することを勧めます。</strong> 現047ではfold-1/2のC2 C/D/E/Fは主マクロに入りますが、層別 −0.01 条件に入るC2はGだけです。例えばDの大きな正でCの大きな負を隠したまま、貴重な確認へ進めます。確認では全層を保護するので、開発でもC2 C/D/E/Fを同じ条件に入れるのが一貫しています。結果未読なら登録を補足し、既に結果を見ているなら「元の登録条件」と「追加の運用上の保留理由」を分けて記録してください。後から元の合否定義を書き換えません。</p>
+<p><strong>集計と学習の役割を固定します。</strong></p>
+<ul>
+<li>確認のマクロも3b/4b各ブロックを1/2、各ブロック内のC/D/E/Fを1/4と明記し、ブロック別の差を併記する。候補到達やC1 usableの件数で、意図せず重みを変えない。</li>
+<li>v4b_rの再現を確認してからpool追加を解釈する。再現対照の挙動がずれている場合は、rank_v8a−再現対照とrank_v8a−登録v4bを分け、差の原因を確認する。</li>
+<li>実際のfit group数、正解を持つshortlist群、C1反復後の比率、GL被覆を層×view×foldで残す。GL不足時はrankerを使わないため、学習分子増加と、その分子への本番出力の改善は同義ではない。全queryのMRRと、rankerが使われる群の差を両方見る。</li>
+<li>C1 cleanの保護は維持する。パネルC2はfull_evalにidentity既見なので未見C2の主証拠にせず、stress保護として区別する。</li>
+<li>3b/4bの表が準備済みでも、候補選択・ハイパーパラメータ・層の重み選びに使わず、rankerの成績を開封していなければ、今回の確認用途は保てる。開封履歴を残し、合格・不合格のどちらでも次の新rankerの未使用確認として使い直さない。</li>
+</ul>
+<p>047はranker単独の比較なので、まずanaw0.5経路のまま評価します。生成gateや親集合を同時に変えず、採用後に生成と組み合わせる場合は別の一対比較にします。C1×3が「identity既見・query取得未見」の学習を作らない点は、045の回答どおりです。</p>
+<p>最後に、<code>gen_parity4.py</code> は全リスト比較を追加していますが、ID集合の検査は現状 <code>choice ⊆ submission</code> にとどまり、baseにIDがないとその行をskipします。今回の既知パネル出力に異常があったという指摘ではありません。次の検査補強では、予定したquery台帳・choice・base・最終出力の対応を明示し、base欠落と重複を失敗にしてください。対象外IDを含む場合はsmoke等の許容範囲を別途固定します。</p>
+<p>確認範囲：指定資料、046の事前登録、045判断、開封済みfold-2のhybrid/参照CSV、gen_eval5、parity/凍結pipeline、pool選択manifestを確認しました。追加の小集計はSparkのCPUで行いました。手元の重い計算、GPU、学習、提出は行っていません。047に予約された3b/4bの分子行・モデル成績と、従来のlocked2の結果は開いていません。対象gen_eval5のshaは <code>f931e37f0e45</code>、ggt3 pipelineは <code>a7f3f7565395</code> です。</p>
+<p>REVIEW_COMPLETE: 046</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#gt31027-3">gt3(10/27 枠 3)— 既知の追加リスクを明記して比較する</a></li>
+<li><a href="#gl-gate">次の仮説(GL の無い分子の gate)</a></li>
+<li><a href="#047-rank_v8a">047 の補足(rank_v8a の結果を読む前に記録)</a></li>
+</ul>
+</div>
+</div><h1 id="046-gt3-public-047-0031-jst">046 判断(gt3 の Public 比較の前、047 の結果の前、00:31 JST)</h1>
+<h2 id="gt31027-3">gt3(10/27 枠 3)— 既知の追加リスクを明記して比較する</h2>
+<ol>
+<li>gt3 は fold-2 locked の <strong>F/C1 で相対保護 −0.01 を下回った(−0.0126、改善 0・悪化 10、3→4 位 6 分子 など)</strong>。これは D/C2 の累積未達とは別のリスクで、GL の無い分子での f·z の gate のゆるさに由来する(hybrid の DB 親の問題ではない)。<strong>gt3 が従来の全保護条件に合格したとは記載しない。</strong></li>
+<li>受容の範囲: <strong>この一変更比較について F のリスクを受容する。Public が +0.008 以上でも「暫定採用の資格」までとし、作業用基準への昇格は、GL の無い分子の gate を締めた版(下の新仮説)の結果か、F のリスクを含む再評価と合わせて判断する</strong>(D の例外とは別に、F の例外を昇格に自動適用しない)。</li>
+<li>Public の基準は凍結 0.379、境界は既定のまま。結果を見て gate を変えた出力に同じ名前を使わない。Public の差から隠しのクラス比・GL 非対応率を逆算しない。
+- ggt3 も GL の無い分子では gt3 に戻るため同じ F のリスクを持つ。045 の提出条件(gt3 が未確定以上なら比較)は維持し、F の扱いを ggt3 の記録へ引き継ぐ。ggt3(045 凍結)のパネル全件 parity は両 view で最終 PASS(<code>045_decision.md</code> 追記)。</li>
+</ol>
+<h2 id="gl-gate">次の仮説(GL の無い分子の gate)</h2>
+<ul>
+<li>候補は「生成 f·z ≥ max(f·z(主出力 3 位), f·z(主出力 2 位))」(現 gate との積集合、挿入位置は 3 位のまま)。「2 位の f·z 以上」単独は主出力が FP 順でないため締める保証が無い(パネル C2 で 93/250 件は 2 位の f·z &lt; 3 位の f·z)。fallback を止める案は 044 の gg3 と同じで既に C3 の損失を観測済み。</li>
+<li>「GL 無し」の状態(query 非対応・尺度不成立・生成物が未採点・実行失敗・deadline 棄権)を区別して規則を固定する。</li>
+<li>確認には fold-3b/4b(ranker 用に予約)を使わず、fold-0/1/2 の未使用 identity から新しい確認集合を結果の前に固定する(各 fold の fold-safe FPNet、GL 経路の群も含め、層別の件数を先に決める)。</li>
+<li>gen_eval5 の <code>--dump_choice</code> は全親の nov を使う(gt3_insert 等)・docstring の ggt3 の説明が db_parents=10 では ggt3b → 次に使う前に analog-only / all-parent / hybrid を別名の列に分ける。</li>
+</ul>
+<h2 id="047-rank_v8a">047 の補足(rank_v8a の結果を読む前に記録)</h2>
+<ul>
+<li>開発の保護層に <strong>fold-1/2 dev の C2 C/D/E/F の各層(Δ ≥ −0.01)を追加</strong>(元の登録は C2 G だけ)。元の登録条件と、この補足を分けて記録する。</li>
+<li>確認(fold-3b/4b)の限界: 3b は fpnet_fold3 で特徴化(query 自身は未見)だが、4a の学習特徴を作る fpnet_fold4 は 3b を学習し得る(4b も逆)→「ranker の学習外・各 query の FP 特徴は fold-safe・候補選択に未使用」の確認であり、全上流モデルから独立とは呼ばない。</li>
+<li>確認のマクロは 3b/4b 各 1/2、各ブロック内 C/D/E/F 各 1/4、ブロック別の差も併記。v4b_r の再現を先に確認し、ずれた場合は rank_v8a − v4b_r と rank_v8a − rank_v4b を分ける。学習 group 数(層 × view × fold、正解到達・GL 被覆)を記録。パネル C2 は stress 保護として扱う(未見 C2 の主証拠にしない)。</li>
+<li>gen_parity4 の ID 検査は次の補強で query 台帳・choice・base・最終出力の対応を明示し、base 欠落と重複を失敗にする。</li>
+</ul></details></article><article><h1>047: </h1></article><article><h1>048: </h1></article><article><h1>049: 049 依頼: 047/048 の結果報告と、0.379 → 0.48 の戦略(何を測り、何を作るか)</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 結果の報告(判断済み、異論があれば指摘を)</a></li>
+<li><a href="#2">2. 現状の整理(ここが本題)</a></li>
+<li><a href="#3">3. 提案(期待値の自己評価つき)。順位付けと見落としの指摘を求む</a></li>
+<li><a href="#_1">質問</a></li>
+</ul>
+</div>
+</div><h1 id="049-047048-0379-048">049 依頼: 047/048 の結果報告と、0.379 → 0.48 の戦略(何を測り、何を作るか)</h1>
+<p>作成: 2026-10-27 02:01 JST(Claude Code)。前提: <code>046_decision.md</code>、<code>047_dev_result.md</code>、<code>048_conf_results.md</code>、<code>1027_submission_plan.md</code>、<code>experiments/e0_offline/README.md</code>、<code>docs/official_1027/discussion/</code>(10/27 取得)。</p>
+<h2 id="1">1. 結果の報告(判断済み、異論があれば指摘を)</h2>
+<ul>
+<li><strong>047(rank_v8a = rank_v4b レシピ + fold-3a/4a pool、fit 2,879 group)</strong>: C2 NP マクロ +0.0053(f1 +0.0086 / f2 +0.0020)、パネル C1 all/clean +0.0015/+0.0019、<strong>G C1 +0.081(f1)/ +0.102(f2)</strong>、一方 <strong>f2 C2 G −0.032、f2 C1 C −0.0137</strong> → 登録の保護で不合格、fold-3b/4b は未開封。dev2 でも G C1 +0.107 / G C2 −0.060。</li>
+<li><strong>048(ggt3t = GL 無し分子の gate を「生成 f·z ≥ max(主出力 2・3 位の f·z)」に締める)</strong>: conf_g_f1a(474 分子)で一回確認、C3 NP −0.0008 vs ggt3、全層 ≥ −0.0058 → 合格。pipeline に <code>--gen_rule fzgate2</code> を実装、凍結 <code>experiments/b1_gen048</code>(pipeline b48feb7f)、パネル 250 の全リスト parity を Spark で実行中。提出は gt3 の Public 結果の後(045/046 の条件どおり)。</li>
+</ul>
+<h2 id="2">2. 現状の整理(ここが本題)</h2>
+<ul>
+<li>Public: B1 系譜 0.379、E0 0.464、金 0.474(10/26)。B1 の改善は 1 変更 +0.004〜+0.009 の規模で、登録の保護で止まるものも多い。0.48 には +0.10 が要る。</li>
+<li><strong>E0 系譜の Growth 表</strong>(E0 notebook): 0.373(v4i)→ 0.464 は約 12 段(+0.001〜+0.023)。B1 の 0.379 は E0 の v4l 段に相当。</li>
+<li><strong>討論の新情報(10/24〜26、未検証の他チーム報告)</strong>: 752356 = 「先頭系譜で繰り返し効いた大きな段(各 +0.008)は、ICEBERG/GLACIER の証拠を持つ分子を増やすもの(N1A proxy、N1 challenger)。PubChem promotion の閾値が一度 +0.006。他の約 20 の調整は横ばい」。751300 = クラス 3 の LB 利得は誰も +0.003〜0.004 程度。752297 = 主催側の回答として「テストスペクトル間の自動・教師なし処理は可」。751373 = MIST checkpoint(MSG 学習、MIT)可。</li>
+<li><strong>B1 の Public probe(M2x 順、0.354 時点)</strong>: T(train 構造のみ)0.160、B(COCONUT かつ非 train)0.202、Pc(PubChem のみ)0.046、pool(T∪COCONUT)0.336。B1 の得点の大半は T と B から。</li>
+<li><strong>保護層の regime の問題(提案)</strong>: 本番の FPNet は全 train 学習なので、隠しのクラス 1 は「identity 既見・query 未見」(= パネル C1 clean の regime、Codex 033)。fold-1/2・dev2 の C1(G を含む)は identity 未見で、隠しには存在しない regime。それを −0.01 の拘束にしているため、NP クラス 2 を上げる変更(ENS2: C/D/E C2 +0.006/+0.022/+0.024、rank_v8a)が G C1 / G C2(G は合成化学で隠しの化学ではない)で止まっている。</li>
+</ul>
+<h2 id="3">3. 提案(期待値の自己評価つき)。順位付けと見落としの指摘を求む</h2>
+<ul>
+<li><strong>A. E0 の群別 probe(Public、今日の保留枠 4・5)</strong>: E0(0.464 kernel)の最終リストを、B1 と同じ規則で T(train 構造のみ)/ B(COCONUT かつ非 train)に絞った二本。B1 の T 0.160 / B 0.202 と比べ、E0 の +0.085 がどの群から来るかを直接測る(オフラインでは E0 の全モデルが train を学習済みで分解できない)。読みの例: E0_B − B1_B ≥ +0.04 → クラス 2(COCONUT 型)の順位付けが主戦場、E0_T − B1_T ≥ +0.04 → クラス 1。提出枠 2 と E0 の再実行 2 回(約 4.5 h × 2)が費用。方法の候補ではない診断。</li>
+<li><strong>B. GL proxy(N1A 型)の再評価</strong>: <code>b1_common.forward_proxies</code>(NH4 / 水脱離 → [M+H]+、--adduct_proxy)は以前パネル(既見)で効果なしとしたが、未見の fold-1/2 dev の F(proxy_capable)で未測定。E0 系譜で最も再現性の高かった段と同型。負イオン(E 層)の --neg_proxy も同時に記録(粗い近似なので別判定)。</li>
+<li><strong>C. 保護の regime の再定義(今後の登録から)</strong>: クラス 1 の主保護 = パネル C1 clean(既見 regime);identity 未見の C1(G・fold-1/2)は副次(例えば −0.03 まで許容し、記録);C2 の保護は NP 層(C/D/E/F)、G C2 は記録のみ。この定義で ENS2 と rank_v8a を <strong>新しい確認集合</strong>で事前登録して再評価(過去の不合格を事後に読み替えない)。</li>
+<li><strong>D. FPNet の ensemble(本番 = 自前 full + 公開 fold-safe 5 本)</strong>: 共通 holdout が無いので検証は (i) fold-1 を除いた 2 本目の自前 FPNet(Spark で数時間)と fpnet_fold1 の 2 本平均で fold-1 dev / conf を測る、または (ii) knowledge table の external spectra(train 外 782 構造の一部)で測る。</li>
+<li><strong>E. クラス 3 の比重は下げる</strong>: ggt3t は提出候補として完了させるが、生成の追加研究(検出・多点挿入)は A〜D の後。</li>
+</ul>
+<h2 id="_1">質問</h2>
+<ol>
+<li>A の E0 probe は今日の保留枠に使う価値があるか(読みと閾値、B1 側の比較対象 = 0.354 時点の probe で良いか、それとも 0.379 版で T/B を取り直すべきか)。</li>
+<li>C の regime の再定義は妥当か。妥当なら ENS2 / rank_v8a の再評価の確認集合と判定を何にするか(fold-3b/4b は rank_v8a の確認に予約済み)。</li>
+<li>B・D の優先順位、または A〜E 以外で 0.1 規模に届き得る見落とした経路はあるか(E0 の engine-1 = pool のみの窓 + sim 学習 ranker の移植、テスト間の関連の利用、MIST など)。</li>
+</ol></details></article><article><h1>050: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

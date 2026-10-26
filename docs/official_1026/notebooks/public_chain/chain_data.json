@@ -1,0 +1,7546 @@
+{
+"READ_UTC": "2026-10-23 19:31 UTC",
+"TEST_MOLECULES": 400,
+"PUBLIC_FRACTION": 0.33,
+"MIN_SCORE": 0.43,
+"NOTEBOOKS": [
+[
+"evgendvorkin/enveda-casmi-2026",
+"Дворкин Евгений Владимирович",
+"Enveda CASMI 2026",
+"Enveda CASMI 2026",
+null,
+"root",
+true,
+null
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+"Dmitrii Gluzdov",
+"CASMI 26: From Spectra to Structures",
+"Spectra to Structures",
+null,
+"root",
+true,
+null
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+"prvsiyan",
+"Analog Propagation - CASMI 2026 baseline",
+"Analog Propagation",
+null,
+"root",
+true,
+null
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+"haideptry",
+"0.350+ CASMI 2026 v32 Ensemble",
+"v32 Ensemble",
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+"code",
+true,
+null
+],
+[
+"megayak/casmi26-two-rankers-one-engine",
+"인공저능연구소( Artificial Idiocy Lab )",
+"CASMI26 Two Rankers One Engine",
+"Two Rankers One Engine",
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+"credit",
+true,
+null
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+"Igor Zharov",
+"CASMI26: Public Baseline Adaptation & Experiments",
+"Public Baseline Adapt.",
+"megayak/casmi26-two-rankers-one-engine",
+"credit",
+true,
+null
+],
+[
+"llccqq624/casmi26-next-direct-w088",
+"Jiachen Li",
+"CASMI26 Next Direct W088",
+"Next Direct W088",
+"megayak/casmi26-two-rankers-one-engine",
+"code",
+true,
+null
+],
+[
+"ahmedberatozer/casmi26-v2-baseline",
+"Ahmed Berat Özer",
+"casmi26 v2 : Baseline ",
+"v2 baseline",
+null,
+"root",
+true,
+"prvsiyan/analog-propagation-casmi-2026-baseline"
+],
+[
+"ahmedberatozer/casmi26-v3-inference",
+"Ahmed Berat Özer",
+"casmi26-v3-inference",
+"v3 inference",
+"ahmedberatozer/casmi26-v2-baseline",
+"code",
+true,
+null
+],
+[
+"ahmedberatozer/casmi26-v4f-inference",
+"Ahmed Berat Özer",
+"casmi26-v4f-inference",
+"v4f inference",
+"ahmedberatozer/casmi26-v3-inference",
+"code",
+true,
+null
+],
+[
+"ahmedberatozer/casmi26-v4g-inference",
+"Ahmed Berat Özer",
+"casmi26-v4g-inference_",
+"v4g inference",
+"ahmedberatozer/casmi26-v4f-inference",
+"code",
+true,
+null
+],
+[
+"ahmedberatozer/casmi26-v4h-inference",
+"Ahmed Berat Özer",
+"casmi26-v4h-inference",
+"v4h inference",
+"ahmedberatozer/casmi26-v4g-inference",
+"code",
+true,
+null
+],
+[
+"lszlst/casmi26-p1-offset",
+"Sutee",
+"casmi26-p1-offset",
+"p1-offset",
+"haideptry/0-350-casmi-2026-v32-ensemble",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v4l-inference",
+"Ahmed Berat Özer",
+"casmi26-v4l-inference",
+"v4l inference",
+"ahmedberatozer/casmi26-v4h-inference",
+"code",
+true,
+null
+],
+[
+"ahmedberatozer/casmi26-v4m-inference",
+"Ahmed Berat Özer",
+"casmi26-v4m-inference",
+"v4m inference",
+"ahmedberatozer/casmi26-v4h-inference",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v4n-inference",
+"Ahmed Berat Özer",
+"casmi26-v4n-inference",
+"v4n inference",
+"ahmedberatozer/casmi26-v4l-inference",
+"code",
+true,
+null
+],
+[
+"seyitkaangunes/casmi26-e5c-union-gl-a06",
+"Seyit kaan Gunes",
+"casmi26 e5c union gl a06",
+"e5c union gl a06",
+"ahmedberatozer/casmi26-v4g-inference",
+"credit",
+true,
+"llccqq624/casmi26-next-direct-w088"
+],
+[
+"seyitkaangunes/casmi26-v4n-engine-fusion-union-lb-0-399",
+"Seyit kaan Gunes",
+"CASMI26 | v4n + Engine Fusion + Union [LB 0.399]",
+"v4n + Fusion + Union",
+"seyitkaangunes/casmi26-e5c-union-gl-a06",
+"code",
+true,
+null
+],
+[
+"ahmedberatozer/casmi26-v4q-inference",
+"Ahmed Berat Özer",
+"casmi26-v4q-inference",
+"v4q inference",
+"seyitkaangunes/casmi26-v4n-engine-fusion-union-lb-0-399",
+"code",
+false,
+null
+],
+[
+"bobthebot369/enveda-casmi-2026-v10-apex-fusion-sota",
+"BobtheBot369",
+"Enveda CASMI 2026 V10 Apex Fusion SOTA",
+"V10 Apex Fusion",
+"seyitkaangunes/casmi26-v4n-engine-fusion-union-lb-0-399",
+"code",
+true,
+null
+],
+[
+"wangpenghua/casmi26-v29-fusion-pop-glmh",
+"wang penghua",
+"casmi26 v29 fusion pop glmh",
+"v29 fusion pop glmh",
+"seyitkaangunes/casmi26-v4n-engine-fusion-union-lb-0-399",
+"code",
+true,
+null
+],
+[
+"huseyinemreaksoy/casmi26-sub-v4b-0-409-on-the-public",
+"Huseyin Emre Aksoy",
+"casmi26-sub-v4b 0.409 on the public",
+"sub-v4b",
+"seyitkaangunes/casmi26-v4n-engine-fusion-union-lb-0-399",
+"credit",
+true,
+null
+],
+[
+"huseyinemreaksoy/casmi26-v4n-fusion-pubchem-on-public-0-421",
+"Huseyin Emre Aksoy",
+"CASMI26 | v4n Fusion + PubChem on public 0.421",
+"v4n Fusion + PubChem",
+"huseyinemreaksoy/casmi26-sub-v4b-0-409-on-the-public",
+"code",
+true,
+null
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+"Matterhorn3838",
+"Evenda CASMI 2026 NextGen",
+"Evenda CASMI 2026 NextGen",
+"wangpenghua/casmi26-v29-fusion-pop-glmh",
+"code",
+false,
+null
+],
+[
+"imranarif536/casmi26-v44-pairtail-locked-top1",
+"Imran Arif",
+"CASMI26 V44 PairTail Locked Top1",
+"V44 PairTail Locked",
+"evgendvorkin/enveda-casmi-2026",
+"code",
+true,
+null
+],
+[
+"lszlst/casmi26-b416",
+"Sutee",
+"casmi26-b416",
+"b416",
+"wangpenghua/casmi26-v29-fusion-pop-glmh",
+"code",
+true,
+null
+],
+[
+"lehau007/casmi26-sota-v26-golden-apex-0413",
+"lehau007",
+"CASMI26 SOTA V26 Golden Apex 0413",
+"V26 Golden Apex",
+"huseyinemreaksoy/casmi26-sub-v4b-0-409-on-the-public",
+"code",
+false,
+null
+],
+[
+"lehau007/casmi26-sota-v30-extlib-provenance-0418",
+"lehau007",
+"CASMI26 SOTA V30 ExtLib Provenance 0418",
+"V30 ExtLib Provenance",
+"lehau007/casmi26-sota-v26-golden-apex-0413",
+"code",
+false,
+null
+],
+[
+"lszlst/casmi26-b420",
+"Sutee",
+"casmi26-b420",
+"b420",
+"lszlst/casmi26-b416",
+"code",
+true,
+null
+],
+[
+"lehau007/casmi26-sota-v32-fiora-tri-forward-0420",
+"lehau007",
+"CASMI26 SOTA V32 FIORA Tri-Forward 0420",
+"V32 FIORA Tri-Forward",
+"lehau007/casmi26-sota-v30-extlib-provenance-0418",
+"credit",
+false,
+null
+],
+[
+"lszlst/casmi26-b421",
+"Sutee",
+"casmi26-b421",
+"b421",
+"lszlst/casmi26-b420",
+"code",
+true,
+null
+],
+[
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+"BobtheBot369",
+"Enveda CASMI 2026 V18 Sovereign Zenith",
+"V18 Sovereign Zenith",
+"lszlst/casmi26-b421",
+"code",
+true,
+null
+],
+[
+"arman1o1/enveda-casmi26-molecule-id-v11",
+"arman1o1",
+"enveda-casmi26-molecule-id-v11",
+"26-molecule-id-v11",
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v170-sovereign-emperor",
+"Raja Rajak",
+"CASMI26 Apex v170 Sovereign Emperor",
+"Apex v170",
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+"code",
+false,
+null
+],
+[
+"amanatar/casmi26-v18",
+"Aman Atar",
+"casmi26 v18 ",
+"v18",
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v175-sovereign-fusion",
+"Raja Rajak",
+"CASMI26 Apex v175 Sovereign Fusion",
+"Apex v175",
+"rajrajak99/casmi26-apex-v170-sovereign-emperor",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v180-sovereign-titan",
+"Raja Rajak",
+"CASMI26 Apex v180 Sovereign Titan",
+"Apex v180",
+"rajrajak99/casmi26-apex-v175-sovereign-fusion",
+"code",
+false,
+null
+],
+[
+"obstacledeveloper/casmi26-v1-1-metric-audit-and-safe-tail",
+"OBSTACLE DEVELOPER",
+"CASMI26 V1.1 Metric Audit and Safe Tail",
+"V1.1 Metric Audit",
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+"credit",
+true,
+null
+],
+[
+"samanyu1808/casmi-v11",
+"samanyu1808",
+"casmi-v11",
+"casmi-v11",
+"obstacledeveloper/casmi26-v1-1-metric-audit-and-safe-tail",
+"copy",
+false,
+null
+],
+[
+"spark328/casmi26-top-public",
+"spark328",
+"CASMI26 Top Public",
+"Top Public",
+"amanatar/casmi26-v18",
+"copy",
+false,
+null
+],
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+"OMN1V3R53",
+"Omniverse Enveda CASMI Molecule ID SOTA",
+"Omniverse Molecule ID",
+null,
+"root",
+false,
+null
+],
+[
+"samanyu1808/casmi26-iceberg-where-glacier-is-blind-lb-0-438",
+"samanyu1808",
+"CASMI26 | ICEBERG where GLACIER is blind[LB 0.438]",
+"ICEBERG where GL blind",
+"obstacledeveloper/casmi26-v1-1-metric-audit-and-safe-tail",
+"code",
+true,
+null
+],
+[
+"nursrijan/casmi26-metric-fusion-consensus-backfill",
+"Nur Srijan",
+"CASMI26: Metric Fusion Consensus Backfill",
+"Metric Fusion Backfill",
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+"copy",
+false,
+null
+],
+[
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+"Xander",
+"CASMI26 E006 Window 40 ICE Fallback True",
+"E006 Window 40",
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+"code",
+true,
+null
+],
+[
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+"Maman Salto",
+"CASMI26 Dual-Band MassBank + ICEBERG SOTA",
+"Dual-Band MassBank",
+"samanyu1808/casmi26-iceberg-where-glacier-is-blind-lb-0-438",
+"code",
+true,
+null
+],
+[
+"uninhibitedscholar/enveda-casmi-2026-w80-samanyu-flexon-lb-0-440",
+"uninhibited-scholar",
+"Enveda CASMI 2026 W80 Samanyu+Flexon | LB 0.440",
+"W80 Samanyu+Flexon",
+"samanyu1808/casmi26-iceberg-where-glacier-is-blind-lb-0-438",
+"code",
+false,
+null
+],
+[
+"nursrijan/casmi26-w-e006-window-40-ice-fallback",
+"Nur Srijan",
+"CASMI26 w/ E006 Window 40 ICE Fallback",
+"w/ E006 Window 40",
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+"copy",
+false,
+null
+],
+[
+"nikitabakutov/casmi26-e1b-w015-icefb",
+"Nikita Bakutov",
+"casmi26-e1b-w015-icefb",
+"e1b-w015-icefb",
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+"code",
+false,
+null
+],
+[
+"nursrijan/casmi26-e007-window-80-ice-fallback-sota",
+"Nur Srijan",
+"CASMI26 E007 Window 80 ICE Fallback SOTA",
+"E007 Window 80",
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+"code",
+true,
+null
+],
+[
+"easonyanyan/casmi26-v18-massbank-gated",
+"easonyanyan",
+"CASMI26 V18 MassBank Gated",
+"V18 MassBank Gated",
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v439-forknur",
+"Hongbin Gu",
+"casmi26 v439 forknur",
+"v439 forknur",
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v280-sovereign-vanguard",
+"Raja Rajak",
+"CASMI26 Apex v280 Sovereign Vanguard",
+"Apex v280 Sovereign Vangua",
+"nursrijan/casmi26-e007-window-80-ice-fallback-sota",
+"code",
+false,
+null
+],
+[
+"shafiquatali/casmi26-e006-pub",
+"Ayan",
+"CASMI26 E006 Pub",
+"E006 Pub",
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+"copy",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v290-sovereign-zenith",
+"Raja Rajak",
+"CASMI26 Apex v290 Sovereign Zenith",
+"Apex v290 Sovereign Zenith",
+"rajrajak99/casmi26-apex-v280-sovereign-vanguard",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v7a-e006-port",
+"Ahmed Berat Özer",
+"casmi26-v7a-e006-port",
+"v7a E006 port",
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+"copy",
+true,
+null
+],
+[
+"rajrajak99/casmi26-apex-v300-sovereign-horizon",
+"Raja Rajak",
+"CASMI26 Apex v300 Sovereign Horizon",
+"Apex v300 Sovereign Horizo",
+"rajrajak99/casmi26-apex-v290-sovereign-zenith",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v310-sovereign-resonance",
+"Raja Rajak",
+"CASMI26 Apex v310 Sovereign Resonance",
+"Apex v310 Sovereign Resona",
+"rajrajak99/casmi26-apex-v290-sovereign-zenith",
+"code",
+false,
+null
+],
+[
+"nursrijan/casmi26-e008-dual-band-massbank-ice-fallback-sota",
+"Nur Srijan",
+"CASMI26 E008 Dual Band MassBank ICE Fallback SOTA",
+"E008 Dual Band",
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v320-grand-sovereign-consensus",
+"Raja Rajak",
+"CASMI26 Apex v320 Grand Sovereign Consensus",
+"Apex v320 Grand Sovereign ",
+"rajrajak99/casmi26-apex-v300-sovereign-horizon",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"Ahmed Berat Özer",
+"casmi26-v7c-e006-fraggap",
+"v7c frag-gap",
+"ahmedberatozer/casmi26-v7a-e006-port",
+"credit",
+true,
+null
+],
+[
+"shafiquatali/casmi26-e007-pub",
+"Ayan",
+"CASMI26 E007 Pub",
+"E007 Pub",
+"nursrijan/casmi26-e007-window-80-ice-fallback-sota",
+"copy",
+false,
+null
+],
+[
+"antriksharya/casmi26-e006-e2rank2",
+"Antriksh Arya",
+"casmi26-e006-e2rank2",
+"E006 + e2rank2",
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+"code",
+true,
+null
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+"Igor Zharov",
+"CASMI26: Closing the Evidence Gap",
+"Closing the Evidence Gap",
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"credit",
+true,
+null
+],
+[
+"nursrijan/casm26-e006-with-metfrag-lite-re-rank",
+"Nur Srijan",
+"CASM26 | E006 with MetFrag-lite re-rank",
+"E006 + MetFrag-lite",
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"fork",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v330-sovereign-vanguard-fraggap",
+"Raja Rajak",
+"CASMI26 Apex v330 Sovereign Vanguard-FragGap",
+"Apex v330 Sovereign Vangua",
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v340-sovereign-zenith-horizon",
+"Raja Rajak",
+"CASMI26 Apex v340 Sovereign Zenith-Horizon",
+"Apex v340 Sovereign Zenith",
+"rajrajak99/casmi26-apex-v330-sovereign-vanguard-fraggap",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v360-grand-sovereign-meta-consensus",
+"Raja Rajak",
+"CASMI26 Apex v360 Grand Sovereign Meta-Consensus",
+"Apex v360 Grand Sovereign ",
+"rajrajak99/casmi26-apex-v320-grand-sovereign-consensus",
+"code",
+false,
+null
+],
+[
+"antriksharya/casmi26-lb-0-443-v7c-engine-2-rank-2-insert",
+"Antriksh Arya",
+"CASMI26 | LB 0.443 | v7c + engine-2 rank-2 insert ",
+"v7c + rank-2 insert",
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"credit",
+true,
+null
+],
+[
+"lavinwins/enveda-casmi-gold",
+"Lavin Wins",
+"Enveda-Casmi Gold ⭐⭐",
+"Gold",
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"fork",
+false,
+null
+],
+[
+"ghazarosbarseghyan91/enveda-v7c-e006-fraggap-evgen-v14seeds",
+"Ghazaros Barseghyan",
+"enveda-v7c-e006-fraggap-evgen-v14seeds",
+"v7c evgen v14seeds",
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"code",
+true,
+null
+],
+[
+"drpatrickchan/casmi26-v7d-e007-na-glacier",
+"Patrick Chan",
+"CASMI26 v7d E007 Na GLACIER",
+"v7d E007 Na GLACIER",
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+"code",
+false,
+null
+],
+[
+"sibamsamanta07/casmi26-v7c-e006-fraggap",
+"SibamSamanta07",
+"casmi26-v7c-e006-fraggap",
+"v7c-e006-fraggap",
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"fork",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v7e-e006-glmultice",
+"Ahmed Berat Özer",
+"casmi26-v7e-e006-glmultice",
+"v7e GL multi-CE",
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v8b-native-treatment",
+"Ahmed Berat Özer",
+"casmi26-v8b-native-treatment",
+"v8b native treatment",
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v370-sovereign-multi-ce-horizon",
+"Raja Rajak",
+"CASMI26 Apex v370 Sovereign Multi-CE Horizon",
+"Apex v370 Sovereign Multi-",
+"rajrajak99/casmi26-apex-v340-sovereign-zenith-horizon",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v400-sovereign-hardneg-horizon",
+"Raja Rajak",
+"CASMI26 Apex v400 Sovereign Hardneg Horizon",
+"Apex v400 Sovereign Hardne",
+"rajrajak99/casmi26-apex-v340-sovereign-zenith-horizon",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v410-grand-sovereign-meta-consensus",
+"Raja Rajak",
+"CASMI26 Apex v410 Grand Sovereign Meta-Consensus",
+"Apex v410 Grand Sovereign ",
+"rajrajak99/casmi26-apex-v360-grand-sovereign-meta-consensus",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v380-sovereign-sodiated-horizon",
+"Raja Rajak",
+"CASMI26 Apex v380 Sovereign Sodiated Horizon",
+"Apex v380 Sovereign Sodiat",
+"rajrajak99/casmi26-apex-v340-sovereign-zenith-horizon",
+"code",
+false,
+null
+],
+[
+"farhanishraqq/casmi-v6-43-insert-e2-pre",
+"Farhan Ishraq",
+"casmi-v6-43-insert-e2-pre",
+"casmi-v6-43-insert-e2-pre",
+null,
+"root",
+false,
+null
+],
+[
+"farhanishraqq/casmi-v6-44-insert-e2-e1-pre",
+"Farhan Ishraq",
+"casmi-v6-44-insert-e2-e1-pre",
+"casmi-v6-44-insert-e2-e1-p",
+null,
+"root",
+false,
+null
+],
+[
+"seyitkaangunes/casmi26-e006-pubchem-promo-rel-150-lb-0-446",
+"Seyit kaan Gunes",
+"CASMI26 | E006 + PubChem Promo rel>150 | LB 0.446",
+"PubChem Promo rel>150",
+"antriksharya/casmi26-e006-e2rank2",
+"code",
+true,
+null
+],
+[
+"seyitkaangunes/casmi26-e006-n1a-cc-by-chebi-lb-0-452",
+"Seyit kaan Gunes",
+"CASMI26 | E006 + N1A + CC BY ChEBI | LB 0.452",
+"E006 + N1A",
+"antriksharya/casmi26-e006-e2rank2",
+"code",
+true,
+null
+],
+[
+"shuheitak/enveda-iceberg438",
+"shuhei tak",
+"enveda iceberg438",
+"enveda iceberg438",
+"samanyu1808/casmi26-iceberg-where-glacier-is-blind-lb-0-438",
+"copy",
+false,
+null
+],
+[
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+"Maman Salto",
+"Forensics Lab: The Apex Dossier (LB 0.442+ SOTA)",
+"Apex Dossier",
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+"code",
+true,
+null
+],
+[
+"dovydigital/casmi26-p040-antriksharya-v7c-e2rank2-0443-repro",
+"DovyDigital",
+"casmi26 p040 antriksharya v7c e2rank2 0443 repro",
+"p040 antriksharya v7c e2ra",
+"antriksharya/casmi26-lb-0-443-v7c-engine-2-rank-2-insert",
+"copy",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v11-e2rank2-rel150",
+"Ahmed Berat Özer",
+"casmi26-v11-e2rank2-rel150",
+"v11 e2rank2 rel150",
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"code",
+true,
+null
+],
+[
+"omerfarukmerey/casmi26-v7c-cc-by-chebi-engine-2-rank-2",
+"Omer Faruk Merey",
+"CASMI26 | v7c + CC BY ChEBI + engine-2 rank-2",
+"v7c + CC BY ChEBI",
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+"code",
+true,
+null
+],
+[
+"rajrajak99/casmi26-apex-v430-sovereign-nakayoshi-fraggap",
+"Raja Rajak",
+"CASMI26 Apex v430 Sovereign Nakayoshi FragGap",
+"Apex v430 Sovereign Nakayo",
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v420-sovereign-rank2-vanguard",
+"Raja Rajak",
+"CASMI26 Apex v420 Sovereign Rank2 Vanguard",
+"Apex v420 Sovereign Rank2 ",
+"seyitkaangunes/casmi26-e006-n1a-cc-by-chebi-lb-0-452",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v440-sovereign-multi-ce-rank2",
+"Raja Rajak",
+"CASMI26 Apex v440 Sovereign Multi-CE Rank2",
+"Apex v440 Sovereign Multi-",
+"rajrajak99/casmi26-apex-v370-sovereign-multi-ce-horizon",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v450-sovereign-sodiated-rank2",
+"Raja Rajak",
+"CASMI26 Apex v450 Sovereign Sodiated Rank2",
+"Apex v450 Sovereign Sodiat",
+"rajrajak99/casmi26-apex-v380-sovereign-sodiated-horizon",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v460-supreme-meta-consensus",
+"Raja Rajak",
+"CASMI26 Apex v460 Supreme Meta-Consensus",
+"Apex v460 Supreme Meta-Con",
+"rajrajak99/casmi26-apex-v360-grand-sovereign-meta-consensus",
+"code",
+false,
+null
+],
+[
+"nursrijan/casmi26-e013-rel150-e2rank2-sota",
+"Nur Srijan",
+"CASMI26 E013 Rel150 E2Rank2 SOTA",
+"E013 Rel150 E2Rank2",
+"ahmedberatozer/casmi26-v11-e2rank2-rel150",
+"code",
+false,
+null
+],
+[
+"ncorp14/casmi-e042-documented-p1-ports",
+"ncorp_1",
+"CASMI E042 Documented P1 Ports",
+"CASMI E042 Documented P1 P",
+"samanyu1808/casmi26-iceberg-where-glacier-is-blind-lb-0-438",
+"code",
+false,
+null
+],
+[
+"easonyanyan/casmi26-v22-rel150-e2r2-clean",
+"easonyanyan",
+"CASMI26 V22 Rel150 E2R2 Clean",
+"V22 Rel150 E2R2",
+"omerfarukmerey/casmi26-v7c-cc-by-chebi-engine-2-rank-2",
+"code",
+true,
+null
+],
+[
+"guhongbin/casmi26-v440-sam80",
+"Hongbin Gu",
+"casmi26 v440-sam80",
+"v440-sam80",
+"guhongbin/casmi26-v439-forknur",
+"code",
+false,
+null
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+"Dmitrii Gluzdov",
+"CASMI 26: The Data Behind Spectra to Structures",
+"The Data Behind S2S",
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+"code",
+true,
+null
+],
+[
+"guhongbin/casmi26-v441-e2r2",
+"Hongbin Gu",
+"casmi26 v441-e2r2",
+"v441-e2r2",
+"guhongbin/casmi26-v440-sam80",
+"copy",
+false,
+null
+],
+[
+"kingdamon/casmi26-apex-sota-precision-ensemble-v1",
+"King-damon",
+"CASMI26 Apex SOTA Precision Ensemble v1",
+"Apex Precision Ensemble v1",
+"ahmedberatozer/casmi26-v11-e2rank2-rel150",
+"code",
+false,
+null
+],
+[
+"kingdamon/casmi26-apex-sota-precision-ensemble-v2",
+"King-damon",
+"CASMI26 Apex SOTA Precision Ensemble v2",
+"Apex Precision Ensemble v2",
+"kingdamon/casmi26-apex-sota-precision-ensemble-v1",
+"copy",
+false,
+null
+],
+[
+"guhongbin/casmi26-v444-e2r2-injected",
+"Hongbin Gu",
+"casmi26 v444-e2r2-injected",
+"v444-e2r2-injected",
+"guhongbin/casmi26-v440-sam80",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v445-chebi-ccby",
+"Hongbin Gu",
+"casmi26 v445-chebi-ccby",
+"v445-chebi-ccby",
+"guhongbin/casmi26-v440-sam80",
+"copy",
+false,
+null
+],
+[
+"nursrijan/casmi26-the-apex-dossier-tuned-promo-rel150-e2r2",
+"Nur Srijan",
+"CASMI26 The Apex Dossier — Tuned Promo Rel150 E2R2",
+"Apex Dossier Tuned Promo",
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+"copy",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+"Raja Rajak",
+"CASMI26 Apex v470 Sovereign SOTA Synthesis",
+"Apex v470",
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+"code",
+true,
+null
+],
+[
+"kingdamon/casmi26-apex-sota-precision-ensemble-v5",
+"King-damon",
+"CASMI26 Apex SOTA Precision Ensemble v5",
+"Apex Precision Ensemble v5",
+"kingdamon/casmi26-apex-sota-precision-ensemble-v1",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v480-sovereign-deep-window",
+"Raja Rajak",
+"CASMI26 Apex v480 Sovereign Deep Window",
+"Apex v480 Sovereign Deep W",
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v490-sovereign-sodiated-horizon",
+"Raja Rajak",
+"CASMI26 Apex v490 Sovereign Sodiated Horizon",
+"Apex v490 Sovereign Sodiat",
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v446-chebi-ccby",
+"Hongbin Gu",
+"casmi26 v446-chebi-ccby",
+"v446-chebi-ccby",
+"guhongbin/casmi26-v439-forknur",
+"copy",
+false,
+null
+],
+[
+"guhongbin/casmi26-v447-pubchemlite",
+"Hongbin Gu",
+"casmi26 v447-pubchemlite",
+"v447-pubchemlite",
+"guhongbin/casmi26-v439-forknur",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v12-gentop-sync",
+"Ahmed Berat Özer",
+"casmi26-v12-gentop-sync",
+"v12 gentop sync",
+"easonyanyan/casmi26-v22-rel150-e2r2-clean",
+"copy",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v12-gentop-p1b",
+"Ahmed Berat Özer",
+"casmi26-v12-gentop-p1b",
+"v12 gentop p1b",
+"easonyanyan/casmi26-v22-rel150-e2r2-clean",
+"code",
+false,
+null
+],
+[
+"shawncsx/casmi26-v53-seyit446",
+"shawncsx",
+"CASMI26 v53 seyit446",
+"v53 seyit446",
+"seyitkaangunes/casmi26-e006-pubchem-promo-rel-150-lb-0-446",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v510-sovereign-precision-optima",
+"Raja Rajak",
+"CASMI26 Apex v510 Sovereign Precision Optima",
+"Apex v510 Sovereign Precis",
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v530-sovereign-grand-consensus",
+"Raja Rajak",
+"CASMI26 Apex v530 Sovereign Grand Consensus",
+"Apex v530 Sovereign Grand ",
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+"copy",
+false,
+null
+],
+[
+"guhongbin/casmi26-v449-rel150",
+"Hongbin Gu",
+"casmi26 v449-rel150",
+"v449-rel150",
+"guhongbin/casmi26-v447-pubchemlite",
+"code",
+false,
+null
+],
+[
+"kaiwalyaatulraut/enveda-casmi",
+"KAIWALYA RAUT",
+"Enveda CASMI",
+"Enveda CASMI",
+"flexonafft/casmi26-closing-the-evidence-gap",
+"copy",
+false,
+null
+],
+[
+"saddamaditya/dual-gate-evidence-margin-pubchemlite-cc0",
+"Maman Salto",
+"Dual-Gate Evidence Margin & PubChemLite CC0",
+"Dual-Gate Evidence Margin",
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v13-chebi-lmsd",
+"Ahmed Berat Özer",
+"casmi26-v13-chebi-lmsd",
+"v13 ChEBI/LMSD",
+"easonyanyan/casmi26-v22-rel150-e2r2-clean",
+"copy",
+true,
+null
+],
+[
+"mayankraaz/0-458-sota-spectraforge-apex-synthesis",
+"MAYANK RAJ",
+"⚡ 0.458+ SOTA | SpectraForge Apex Synthesis",
+"⚡ 0.458+ SpectraForge Apex",
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v459-e006-defaultimg",
+"Hongbin Gu",
+"casmi26 v459 e006 defaultimg",
+"v459 e006 defaultimg",
+"seyitkaangunes/casmi26-e006-pubchem-promo-rel-150-lb-0-446",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v461-e006-ccby-glob",
+"Hongbin Gu",
+"casmi26 v461 e006 ccby glob",
+"v461 e006 ccby glob",
+"guhongbin/casmi26-v459-e006-defaultimg",
+"code",
+false,
+null
+],
+[
+"varianceofx/casmi26-apex-fork",
+"varianceofx",
+"CASMI26 Apex Fork",
+"Apex Fork",
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+"copy",
+false,
+null
+],
+[
+"alexchilton/casmi26-public-guhongbin-v461",
+"alex chilton",
+"casmi26-public-guhongbin-v461",
+"public-guhongbin-v461",
+"guhongbin/casmi26-v461-e006-ccby-glob",
+"copy",
+false,
+null
+],
+[
+"alexchilton/casmi26-v461-depth7",
+"alex chilton",
+"casmi26-v461-depth7",
+"v461-depth7",
+"guhongbin/casmi26-v461-e006-ccby-glob",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v570-dual-gate-optima",
+"Raja Rajak",
+"CASMI26 Apex v570 Dual Gate Optima",
+"Apex v570 Dual Gate Optima",
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v560-multi-adduct-dual-gate",
+"Raja Rajak",
+"CASMI26 Apex v560 Multi Adduct Dual Gate",
+"Apex v560 Multi Adduct Dua",
+"rajrajak99/casmi26-apex-v490-sovereign-sodiated-horizon",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v580-grand-sovereign-consensus",
+"Raja Rajak",
+"CASMI26 Apex v580 Grand Sovereign Consensus",
+"Apex v580 Grand Sovereign ",
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v14-pubchemlite",
+"Ahmed Berat Özer",
+"casmi26-v14-pubchemlite",
+"v14 PubChemLite",
+"ahmedberatozer/casmi26-v13-chebi-lmsd",
+"credit",
+true,
+null
+],
+[
+"guhongbin/casmi26-v462-e006n1a-pubchemlite",
+"Hongbin Gu",
+"casmi26 v462 e006n1a pubchemlite",
+"v462 e006n1a pubchemlite",
+"seyitkaangunes/casmi26-e006-n1a-cc-by-chebi-lb-0-452",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v15-n1a",
+"Ahmed Berat Özer",
+"casmi26-v15-n1a",
+"v15 N1A",
+"ahmedberatozer/casmi26-v14-pubchemlite",
+"code",
+true,
+null
+],
+[
+"guhongbin/casmi26-v463-v14-clone",
+"Hongbin Gu",
+"casmi26 v463 v14 clone",
+"v463 v14 clone",
+"ahmedberatozer/casmi26-v14-pubchemlite",
+"copy",
+false,
+null
+],
+[
+"guhongbin/casmi26-v464-v15-clone",
+"Hongbin Gu",
+"casmi26 v464 v15 clone",
+"v464 v15 clone",
+"ahmedberatozer/casmi26-v15-n1a",
+"copy",
+false,
+null
+],
+[
+"guhongbin/casmi26-v465-v15-pop015",
+"Hongbin Gu",
+"casmi26 v465 v15 pop015",
+"v465 pop 0.15",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+true,
+null
+],
+[
+"guhongbin/casmi26-v466-v15-rel150",
+"Hongbin Gu",
+"casmi26 v466 v15 rel150",
+"v466 v15 rel150",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v467-v15-pop035",
+"Hongbin Gu",
+"casmi26 v467 v15 pop035",
+"v467 v15 pop035",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v468-v15-lib105",
+"Hongbin Gu",
+"casmi26 v468 v15 lib105",
+"v468 v15 lib105",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"su2567/casmi26-v22-control2",
+"SU RUI",
+"CASMI26 V22 Control2",
+"V22 Control2",
+null,
+"root",
+false,
+null
+],
+[
+"guhongbin/casmi26-v469-v15-pop005",
+"Hongbin Gu",
+"casmi26 v469 v15 pop005",
+"v469 v15 pop005",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v470-v15-ice9000",
+"Hongbin Gu",
+"casmi26 v470 v15 ice9000",
+"v470 v15 ice9000",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v471-v15-gl8000",
+"Hongbin Gu",
+"casmi26 v471 v15 gl8000",
+"v471 v15 gl8000",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v472-v15-popunion400",
+"Hongbin Gu",
+"casmi26 v472 v15 popunion400",
+"v472 v15 popunion400",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v473-v15-rel1200",
+"Hongbin Gu",
+"casmi26 v473 v15 rel1200",
+"v473 v15 rel1200",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"su2567/casmi26-v22-pubchemlite",
+"SU RUI",
+"CASMI26 V22 PubChemLite",
+"V22 PubChemLite",
+null,
+"root",
+false,
+null
+],
+[
+"su2567/casmi26-v22-pubchemlite-n1a",
+"SU RUI",
+"CASMI26 V22 PubChemLite N1A",
+"V22 PubChemLite N1A",
+null,
+"root",
+false,
+null
+],
+[
+"su2567/casmi26-v22-a50",
+"SU RUI",
+"CASMI26 V22 A50",
+"V22 A50",
+null,
+"root",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+"Ahmed Berat Özer",
+"casmi26-v16-pcbank-d2",
+"v16-pcbank-d2",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"yjsshisfsf/casmi26-v15e3",
+"小鸭子嘎嘎嘎",
+"casmi26 v15e3",
+"v15e3",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v474-v15-pop020",
+"Hongbin Gu",
+"casmi26 v474 v15 pop020",
+"v474 v15 pop020",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v475-v15-pop015union300",
+"Hongbin Gu",
+"casmi26 v475 v15 pop015union300",
+"v475 v15 pop015union300",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v476-v16-clone",
+"Hongbin Gu",
+"casmi26 v476 v16-clone",
+"v476 v16-clone",
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+"copy",
+false,
+null
+],
+[
+"varshithakolupuri/casmi26-13-steps-to-0-456-what-each-one-added",
+"varshitha kolupuri",
+"CASMI26: 13 Steps to 0.456, What Each One Added",
+"13 Steps to 0.456, What Ea",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v18-c3r3",
+"Ahmed Berat Özer",
+"casmi26-v18-c3r3",
+"v18-c3r3",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v600-sovereign-dreamsfp-d2",
+"Raja Rajak",
+"CASMI26 Apex v600 Sovereign DreamsFP D2",
+"Apex v600 Sovereign Dreams",
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+"copy",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v610-dreamsfp-dual-gate",
+"Raja Rajak",
+"CASMI26 Apex v610 DreamsFP Dual-Gate",
+"Apex v610 DreamsFP Dual-Ga",
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v620-dreamsfp-optima-backfill",
+"Raja Rajak",
+"CASMI26 Apex v620 DreamsFP Optima Backfill",
+"Apex v620 DreamsFP Optima ",
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+"code",
+false,
+null
+],
+[
+"lavinwins/enveda-casmi-gold-medal",
+"Lavin Wins",
+"Enveda CASMI Gold Medal ⭐🏅",
+"Gold Medal 🏅",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"howonkang/casmi26-v99-b-n1-on-pop025",
+"Howon Kang",
+"CASMI26 V99-B N1 ON POP025",
+"V99-B N1 ON POP025",
+"ahmedberatozer/casmi26-v14-pubchemlite",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v478-v18-clone",
+"Hongbin Gu",
+"casmi26 v478 v18-clone",
+"v478 v18-clone",
+"ahmedberatozer/casmi26-v18-c3r3",
+"copy",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v630-dreamsfp-pop-union",
+"Raja Rajak",
+"CASMI26 Apex v630 DreamsFP Pop Union",
+"Apex v630 DreamsFP Pop Uni",
+"rajrajak99/casmi26-apex-v610-dreamsfp-dual-gate",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v640-grand-sovereign-consensus",
+"Raja Rajak",
+"CASMI26 Apex v640 Grand Sovereign Consensus",
+"Apex v640 Grand Sovereign ",
+"rajrajak99/casmi26-apex-v610-dreamsfp-dual-gate",
+"copy",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v650-sovereign-precision-guardian",
+"Raja Rajak",
+"CASMI26 Apex v650 Sovereign Precision Guardian",
+"Apex v650 Sovereign Precis",
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+"code",
+false,
+null
+],
+[
+"zhangyiji/casmi26-full-baseline-1792471428",
+"Edge",
+"CASMI26 full baseline 1792471428",
+"full baseline 1792471428",
+"guhongbin/casmi26-v465-v15-pop015",
+"copy",
+false,
+null
+],
+[
+"egehseyinca/casmi26-v465-v15-pop015",
+"Ege Hüseyinca",
+"casmi26 v465 v15 pop015",
+"v465 v15 pop015",
+"guhongbin/casmi26-v465-v15-pop015",
+"fork",
+false,
+null
+],
+[
+"guhongbin/casmi26-v482-v15-dualgate",
+"Hongbin Gu",
+"casmi26 v482 v15 dualgate",
+"v482 v15 dualgate",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v483-v15-topn40",
+"Hongbin Gu",
+"casmi26 v483 v15 topn40",
+"v483 v15 topn40",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v484-v15-alpha08",
+"Hongbin Gu",
+"casmi26 v484 v15 alpha08",
+"v484 v15 alpha08",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"zhangyiji/casmi26-v18d2-run2-1792491388",
+"Edge",
+"CASMI26 v18d2 run2 1792491388",
+"v18d2 run2 1792491388",
+"ahmedberatozer/casmi26-v18-c3r3",
+"code",
+false,
+null
+],
+[
+"gbmorris1/casmi-sub41-port465",
+"Grant Morris",
+"casmi sub41 port465",
+"casmi sub41 port465",
+"guhongbin/casmi26-v465-v15-pop015",
+"copy",
+false,
+null
+],
+[
+"zhangyiji/casmi26-v466-rel150-pop025-run2-1792510421",
+"Edge",
+"CASMI26 v466 rel150 pop025 run2 1792510421",
+"v466 rel150 pop025 run2 17",
+"guhongbin/casmi26-v466-v15-rel150",
+"copy",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v19-bioext",
+"Ahmed Berat Özer",
+"casmi26-v19-bioext",
+"v19-bioext",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+false,
+null
+],
+[
+"gbmorris1/casmi-probe-dmg-0-10",
+"Grant Morris",
+"casmi probe dmg 0.10",
+"casmi probe dmg 0.10",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"zhangyiji/casmi26-v466-ice9000-gl8000-1792526598",
+"Edge",
+"CASMI26 v466 ice9000 gl8000 1792526598",
+"v466 ice9000 gl8000 179252",
+"guhongbin/casmi26-v466-v15-rel150",
+"code",
+false,
+null
+],
+[
+"lavinwins/casmi26-top-1-gold",
+"Lavin Wins",
+"CASMI26: Top 1% Gold ⭐🏅",
+"Top 1% Gold 🏅",
+"flexonafft/casmi26-closing-the-evidence-gap",
+"fork",
+false,
+null
+],
+[
+"zhangyiji/casmi26-lambdarank-ranker-1792548009",
+"Edge",
+"CASMI26 LambdaRank ranker 1792548009",
+"LambdaRank ranker 17925480",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"shawncsx/casmi26-v54-guhongbin465",
+"shawncsx",
+"casmi26 v54 guhongbin465",
+"v54 guhongbin465",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"zhangyiji/casmi26-weighted-lambdarank-1792567024",
+"Edge",
+"CASMI26 weighted LambdaRank 1792567024",
+"weighted LambdaRank 179256",
+"zhangyiji/casmi26-lambdarank-ranker-1792548009",
+"code",
+false,
+null
+],
+[
+"sanpier/casmi-26-the-data-behind-spectra-to-structures",
+"Saner Turhaner",
+"CASMI 26: The Data Behind Spectra to Structures",
+"The Data Behind Spectra to",
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+"fork",
+false,
+null
+],
+[
+"shawncsx/casmi26-v54b-rdkit256",
+"shawncsx",
+"casmi26 v54b rdkit256",
+"v54b rdkit256",
+"shawncsx/casmi26-v54-guhongbin465",
+"code",
+false,
+null
+],
+[
+"shawncsx/casmi26-v54b-rth300",
+"shawncsx",
+"casmi26 v54b rth300",
+"v54b rth300",
+"shawncsx/casmi26-v54b-rdkit256",
+"code",
+false,
+null
+],
+[
+"lavinwins/casmi-26-lb-top-1",
+"Lavin Wins",
+"CASMI 26: LB TOP 1 ⭐🏅??",
+"LB TOP 1 🏅??",
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+"fork",
+false,
+null
+],
+[
+"shawncsx/casmi26-v54b-pc10k",
+"shawncsx",
+"casmi26 v54b pc10k",
+"v54b pc10k",
+"shawncsx/casmi26-v54b-rdkit256",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v22-n1-challenger",
+"Ahmed Berat Özer",
+"casmi26-v22-n1-challenger",
+"v22 N1 challenger",
+"ahmedberatozer/casmi26-v15-n1a",
+"code",
+true,
+null
+],
+[
+"amrkhalid124/casmi26-upstream-data-v18",
+"Overfitter",
+"casmi26 upstream data v18",
+"upstream data v18",
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+"copy",
+false,
+null
+],
+[
+"amrkhalid124/casmi26-upstream-data-v16",
+"Overfitter",
+"casmi26 upstream data v16",
+"upstream data v16",
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v492-dg-v19",
+"Hongbin Gu",
+"casmi26 v492 dg-v19",
+"v492 dg-v19",
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v493-dg-v20",
+"Hongbin Gu",
+"casmi26 v493 dg-v20",
+"v493 dg-v20",
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+"copy",
+false,
+null
+],
+[
+"likedge/casmi26-n1-challenger-pair-lambdarank",
+"张一极",
+"CASMI26 N1 challenger + pair LambdaRank",
+"N1 challenger + pair Lambd",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v25-unq",
+"Ahmed Berat Özer",
+"casmi26-v25-unq",
+"v25-unq",
+"ahmedberatozer/casmi26-v22-n1-challenger",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v800-sovereign-v16-sota-foundation",
+"Raja Rajak",
+"CASMI26 Apex v800 Sovereign v16 SOTA Foundation",
+"Apex v800 Sovereign v16 Fo",
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v810-sovereign-dualgate-challenger",
+"Raja Rajak",
+"CASMI26 Apex v810 Sovereign DualGate Challenger",
+"Apex v810 Sovereign DualGa",
+"rajrajak99/casmi26-apex-v800-sovereign-v16-sota-foundation",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v820-sovereign-precision-guardian",
+"Raja Rajak",
+"CASMI26 Apex v820 Sovereign Precision Guardian",
+"Apex v820 Sovereign Precis",
+"rajrajak99/casmi26-apex-v810-sovereign-dualgate-challenger",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v830-sovereign-enhanced-popularity",
+"Raja Rajak",
+"CASMI26 Apex v830 Sovereign Enhanced Popularity",
+"Apex v830 Sovereign Enhanc",
+"rajrajak99/casmi26-apex-v810-sovereign-dualgate-challenger",
+"code",
+false,
+null
+],
+[
+"rajrajak99/casmi26-apex-v840-sovereign-consensus",
+"Raja Rajak",
+"CASMI26 Apex v840 Sovereign Consensus",
+"Apex v840 Sovereign Consen",
+"rajrajak99/casmi26-apex-v810-sovereign-dualgate-challenger",
+"code",
+false,
+null
+],
+[
+"likedge/casmi26-a-pair-lambdarank-only",
+"张一极",
+"CASMI26 A pair-lambdarank only",
+"A pair-lambdarank only",
+"likedge/casmi26-n1-challenger-pair-lambdarank",
+"code",
+false,
+null
+],
+[
+"ahmedberatozer/casmi26-v23a-fpnet-s-views",
+"Ahmed Berat Özer",
+"casmi26-v23a-fpnet-s-views",
+"v23a-fpnet-s-views",
+"ahmedberatozer/casmi26-v22-n1-challenger",
+"code",
+false,
+null
+],
+[
+"d1m4official/enveda-casmi-2026-solution-v28",
+"d1m4_official",
+"Enveda CASMI 2026 Solution V28",
+"Solution V28",
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+"copy",
+false,
+null
+],
+[
+"gbmorris1/casmi-inject-a1",
+"Grant Morris",
+"casmi inject a1",
+"casmi inject a1",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"anthony8848/casmi26-v15-e006-repro",
+"Anthony8848",
+"CASMI26 v15 E006 repro",
+"v15 E006 repro",
+"antriksharya/casmi26-e006-e2rank2",
+"code",
+false,
+null
+],
+[
+"gbmorris1/casmi-icejoint",
+"Grant Morris",
+"casmi icejoint",
+"casmi icejoint",
+"guhongbin/casmi26-v465-v15-pop015",
+"code",
+false,
+null
+],
+[
+"likedge/casmi26-c-v22-n1-challenger-exact",
+"张一极",
+"CASMI26 C v22 n1-challenger exact",
+"C v22 n1-challenger exact",
+"ahmedberatozer/casmi26-v22-n1-challenger",
+"copy",
+false,
+null
+],
+[
+"hailonglv/casmi26-upstream-v16-run",
+"dan mx",
+"casmi26 upstream v16 run",
+"upstream v16 run",
+"amrkhalid124/casmi26-upstream-data-v16",
+"copy",
+false,
+null
+],
+[
+"guhongbin/casmi26-v494-dg-n1comp",
+"Hongbin Gu",
+"casmi26 v494 dg n1comp",
+"v494 dg n1comp",
+"guhongbin/casmi26-v492-dg-v19",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v495-dg-arm-n1a",
+"Hongbin Gu",
+"casmi26 v495 dg arm n1a",
+"v495 dg arm n1a",
+"guhongbin/casmi26-v492-dg-v19",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v496-dg-lotus10",
+"Hongbin Gu",
+"casmi26 v496 dg lotus10",
+"v496 dg lotus10",
+"guhongbin/casmi26-v492-dg-v19",
+"code",
+false,
+null
+],
+[
+"guhongbin/casmi26-v497-dg-gate-loose",
+"Hongbin Gu",
+"casmi26 v497 dg gate loose",
+"v497 dg gate loose",
+"guhongbin/casmi26-v492-dg-v19",
+"code",
+false,
+null
+],
+[
+"hailonglv/casmi26-v16-unq",
+"dan mx",
+"casmi26 v16 unq",
+"v16 unq",
+"hailonglv/casmi26-upstream-v16-run",
+"code",
+false,
+null
+],
+[
+"hailonglv/casmi26-v19-run",
+"dan mx",
+"casmi26 v19 run",
+"v19 run",
+"guhongbin/casmi26-v492-dg-v19",
+"copy",
+false,
+null
+],
+[
+"gbmorris1/casmi-dg464",
+"Grant Morris",
+"casmi dg464",
+"casmi dg464",
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+"code",
+false,
+null
+]
+],
+"VERSIONS": [
+[
+"evgendvorkin/enveda-casmi-2026",
+2,
+"2026-09-15 10:23",
+0.16,
+null,
+null,
+"first",
+"first version: cosine library search of the test spectra against the training spectra, plus a neutral-loss score for COCONUT structures, inside an EDA notebook"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+3,
+"2026-09-15 11:06",
+0.161,
+"evgendvorkin/enveda-casmi-2026",
+2,
+"code",
+"the neutral-loss score now uses only losses the candidate's formula allows (H2O, NH3, CO, CO2 …), as a cosine against the spectrum; credits starkhushi's and haideptry's baselines"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+4,
+"2026-09-15 11:16",
+0.151,
+"evgendvorkin/enveda-casmi-2026",
+3,
+"code",
+"code changed vs v3 (+2 / −2 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+5,
+"2026-09-15 19:31",
+0.207,
+"evgendvorkin/enveda-casmi-2026",
+4,
+"code",
+"code changed vs v4 (+456 / −416 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+6,
+"2026-09-15 20:29",
+0.207,
+"evgendvorkin/enveda-casmi-2026",
+5,
+"data",
+"same code as v5; adds dataset default"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+7,
+"2026-09-16 12:15",
+0.273,
+"evgendvorkin/enveda-casmi-2026",
+6,
+"code",
+"replaces the rule-based pipeline with prvsiyan's analog-propagation baseline (same settings block) and mounts his ranker features and COCONUT candidates"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+8,
+"2026-09-17 12:05",
+0.333,
+"evgendvorkin/enveda-casmi-2026",
+7,
+"code",
+"code changed vs v7 (+468 / −219 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+9,
+"2026-09-17 15:19",
+0.331,
+"evgendvorkin/enveda-casmi-2026",
+8,
+"code",
+"PPM_WIN: 8.5 → 10.0; SEEDS: (0, 1, 2, 3) → (0, 1, 2, 3, 4, 5, 6, 7)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+10,
+"2026-09-18 11:15",
+0.331,
+"evgendvorkin/enveda-casmi-2026",
+9,
+"code",
+"code changed vs v9 (+14 / −6 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+11,
+"2026-09-18 14:01",
+0.331,
+"evgendvorkin/enveda-casmi-2026",
+10,
+"code",
+"PPM_WIN: 10.0 → 8.5"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+12,
+"2026-09-18 21:35",
+0.333,
+"evgendvorkin/enveda-casmi-2026",
+11,
+"code",
+"code changed vs v11 (+7 / −15 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+13,
+"2026-09-22 11:58",
+0.346,
+"evgendvorkin/enveda-casmi-2026",
+12,
+"code",
+"code changed vs v12 (+998 / −838 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+14,
+"2026-09-25 13:10",
+0.344,
+"evgendvorkin/enveda-casmi-2026",
+13,
+"code",
+"E.RANK.SEEDS: (0, 1) → (0, 1, 2, 3, 4, 5)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+15,
+"2026-09-25 21:28",
+0.35,
+"evgendvorkin/enveda-casmi-2026",
+14,
+"code",
+"code changed vs v14 (+2 / −2 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+16,
+"2026-09-29 17:54",
+0.377,
+"evgendvorkin/enveda-casmi-2026",
+15,
+"code",
+"code changed vs v15 (+461 / −1000 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+17,
+"2026-09-30 08:33",
+0.38,
+"evgendvorkin/enveda-casmi-2026",
+16,
+"code",
+"code changed vs v16 (+1313 / −36 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+19,
+"2026-09-30 13:21",
+0.398,
+"evgendvorkin/enveda-casmi-2026",
+17,
+"code",
+"code changed vs v17 (+39 / −219 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+20,
+"2026-09-30 19:54",
+0.4,
+"evgendvorkin/enveda-casmi-2026",
+19,
+"code",
+"code changed vs v19 (+28 / −1 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+21,
+"2026-10-02 05:59",
+0.4,
+"evgendvorkin/enveda-casmi-2026",
+20,
+"code",
+"code changed vs v20 (+4 / −1 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+22,
+"2026-10-02 11:19",
+0.398,
+"evgendvorkin/enveda-casmi-2026",
+21,
+"rerun",
+"same code, same datasets and same image as v21 (a re-run)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+23,
+"2026-10-04 11:23",
+0.007,
+"evgendvorkin/enveda-casmi-2026",
+22,
+"code",
+"code changed vs v22 (+65 / −23 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+24,
+"2026-10-05 04:50",
+0.42,
+"evgendvorkin/enveda-casmi-2026",
+23,
+"code",
+"IS_RERUN: False → True"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+25,
+"2026-10-09 13:54",
+0.433,
+"evgendvorkin/enveda-casmi-2026",
+24,
+"code",
+"code changed vs v24 (+524 / −251 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+26,
+"2026-10-14 12:44",
+0.441,
+"evgendvorkin/enveda-casmi-2026",
+25,
+"code",
+"code changed vs v25 (+472 / −23 lines)"
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+27,
+"2026-10-23 14:02",
+0.464,
+"evgendvorkin/enveda-casmi-2026",
+26,
+"code",
+"becomes Dmitrii Gluzdov's Data Behind v20, credited as the original work: his five datasets replace the engine datasets; new text around it"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+2,
+"2026-09-15 11:48",
+0.092,
+null,
+null,
+"first",
+"first version: an EDA notebook on how tandem spectra map back to structures, with a simple retrieval submission"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+3,
+"2026-09-15 13:29",
+0.156,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+2,
+"code",
+"code changed vs v2 (+62 / −25 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+5,
+"2026-09-22 11:10",
+0.33,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+3,
+"code",
+"code changed vs v3 (+1428 / −370 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+6,
+"2026-09-22 15:41",
+0.33,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+5,
+"code",
+"code changed vs v5 (+1754 / −1101 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+7,
+"2026-09-22 18:43",
+0.33,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+6,
+"code",
+"code changed vs v6 (+1438 / −193 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+9,
+"2026-09-24 12:28",
+0.329,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+7,
+"code",
+"code changed vs v7 (+124 / −207 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+12,
+"2026-09-24 14:59",
+0.334,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+9,
+"code",
+"code changed vs v9 (+39 / −16 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+13,
+"2026-09-26 16:19",
+0.349,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+12,
+"code",
+"code changed vs v12 (+195 / −1591 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+14,
+"2026-09-26 21:39",
+0.333,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+13,
+"code",
+"code changed vs v13 (+7 / −7 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+15,
+"2026-09-27 17:21",
+0.349,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+14,
+"code",
+"code changed vs v14 (+703 / −43 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+16,
+"2026-09-28 08:50",
+0.216,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+15,
+"code",
+"code changed vs v15 (+110 / −1814 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+17,
+"2026-09-28 10:39",
+0.371,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+16,
+"code",
+"code changed vs v16 (+499 / −809 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+18,
+"2026-09-29 08:29",
+0.378,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+17,
+"code",
+"code changed vs v17 (+86 / −39 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+19,
+"2026-09-30 06:05",
+0.386,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+18,
+"code",
+"code changed vs v18 (+172 / −10 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+20,
+"2026-09-30 10:30",
+0.375,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+19,
+"code",
+"code changed vs v19 (+154 / −28 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+21,
+"2026-09-30 14:40",
+0.395,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+20,
+"code",
+"code changed vs v20 (+1206 / −64 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+22,
+"2026-10-01 18:48",
+0.396,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+21,
+"code",
+"code changed vs v21 (+68 / −23 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+23,
+"2026-10-01 21:22",
+0.39,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+22,
+"code",
+"FUSE_ALL: True → False"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+24,
+"2026-10-02 08:55",
+0.401,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+23,
+"code",
+"code changed vs v23 (+22 / −63 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+25,
+"2026-10-02 14:43",
+0.397,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+24,
+"code",
+"code changed vs v24 (+112 / −31 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+26,
+"2026-10-03 00:05",
+0.402,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+25,
+"code",
+"code changed vs v25 (+8 / −41 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+27,
+"2026-10-03 06:30",
+0.396,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+26,
+"code",
+"code changed vs v26 (+6 / −5 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+29,
+"2026-10-03 15:05",
+0.398,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+27,
+"code",
+"code changed vs v27 (+6 / −6 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+30,
+"2026-10-03 20:43",
+0.405,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+29,
+"code",
+"code changed vs v29 (+8 / −8 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+31,
+"2026-10-04 03:56",
+0.402,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+30,
+"code",
+"code changed vs v30 (+256 / −6 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+32,
+"2026-10-04 06:30",
+0.397,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+31,
+"code",
+"code changed vs v31 (+35 / −253 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+33,
+"2026-10-04 12:37",
+0.401,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+32,
+"code",
+"code changed vs v32 (+394 / −74 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+34,
+"2026-10-05 02:47",
+0.401,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+33,
+"code",
+"code changed vs v33 (+32 / −5 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+36,
+"2026-10-07 05:01",
+0.401,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+34,
+"code",
+"code changed vs v34 (+271 / −11 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+37,
+"2026-10-07 15:12",
+0.402,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+36,
+"code",
+"code changed vs v36 (+3 / −3 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+39,
+"2026-10-09 13:57",
+0.415,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+37,
+"code",
+"code changed vs v37 (+18 / −11 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+40,
+"2026-10-11 01:13",
+0.422,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+39,
+"code",
+"code changed vs v39 (+6 / −6 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+41,
+"2026-10-11 11:33",
+0.419,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+40,
+"code",
+"code changed vs v40 (+15 / −6 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+42,
+"2026-10-12 06:47",
+0.423,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+41,
+"code",
+"code changed vs v41 (+51 / −6 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+43,
+"2026-10-12 11:33",
+0.44,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+42,
+"code",
+"rebuilds the submission on the V1.1 / V18 public pipeline (Ahmed Berat Özer's engine and simulators, prvsiyan's models) in place of its own (large rewrite)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+44,
+"2026-10-12 16:25",
+0.44,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+43,
+"code",
+"code changed vs v43 (+53 / −58 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+45,
+"2026-10-13 12:45",
+0.44,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+44,
+"code",
+"code changed vs v44 (+13 / −2 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+46,
+"2026-10-14 14:00",
+0.441,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+45,
+"code",
+"adds v7c's MetFrag-lite fragment re-rank for molecules with no forward-model evidence"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+47,
+"2026-10-15 02:57",
+0.44,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+46,
+"code",
+"code changed vs v46 (+8 / −3 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+48,
+"2026-10-15 08:41",
+0.443,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+47,
+"code",
+"adds Antriksh Arya's engine-2 rank-2 insert; the fragment re-rank now skips molecules ICEBERG can score"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+49,
+"2026-10-15 15:04",
+0.446,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+48,
+"code",
+"one change: PubChem promotion threshold rel > 250 → 150"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+51,
+"2026-10-16 09:17",
+0.45,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+49,
+"code",
+"engine 2's rankers get more seeds (4 → 8, 2 → 6) and deeper trees (max_depth 6 → 7)"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+52,
+"2026-10-17 00:25",
+0.451,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+51,
+"code",
+"engine 2's BIO pool from sergiomalv's CC BY ChEBI + LIPID MAPS set"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+53,
+"2026-10-17 05:21",
+0.445,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+52,
+"code",
+"passes the larger seed set to two more ranker fits"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+54,
+"2026-10-17 13:58",
+0.451,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+53,
+"code",
+"engine 2's rankers back to the default two seeds, undoing v53's larger seed ensembles"
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+55,
+"2026-10-20 19:04",
+0.455,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+54,
+"code",
+"ports his Data Behind recipe: PubChemLite CC0 candidates in engine 2, engine-2 rankers at depth 6, popularity weight 0.15, a natural-product bonus and a fold-safe FPNet model"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+1,
+"2026-09-15 18:48",
+0.254,
+null,
+null,
+"first",
+"first version: retrieval from a 711,705-structure pool (training structures + COCONUT): spectral library search plus mass-shifted analog propagation, ordered by a calibrated gradient-boosting ranker"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+6,
+"2026-09-15 20:45",
+0.259,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+1,
+"code",
+"adds an optional RDKit in-silico fragmentation channel and rebuilds the training half of the candidate pool at run time from train.parquet"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+7,
+"2026-09-16 16:11",
+0.307,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+6,
+"code",
+"adds a fourth channel: a spectrum-to-fingerprint neural model (casmi26-fp-models), scored as a dot product against each candidate's fingerprint"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+9,
+"2026-09-16 19:52",
+0.32,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+7,
+"code",
+"larger, slower ranker (depth 4 → 6, 220 → 500 iterations, learning rate 0.07 → 0.03), channel weight W1 0.42 → 0.5, best single fingerprint model; optional ChEBI/LIPID MAPS pool left off"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+10,
+"2026-09-16 22:51",
+0.345,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+9,
+"code",
+"averages the ranker over seeds (it had no fixed random_state) and switches to the merged-spectrum fingerprint models (casmi26-fp-models-v2); ships the model training script"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+11,
+"2026-09-17 08:27",
+0.291,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+10,
+"code",
+"code changed vs v10 (+9 / −4 lines)"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+14,
+"2026-09-17 10:21",
+0.334,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+11,
+"code",
+"PPM_WIN: 8.5 → 10.0; SEEDS: (0, 1, 2, 3) → (0, 1, 2, 3, 4, 5, 6, 7); CAND_CAP: 80 → 500; coarse: lv * 100.0 - np.abs(pool.mass[cand] - target) → coarse - np.abs(pool.mass[cand] - target)"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+16,
+"2026-09-17 13:49",
+0.336,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+14,
+"code",
+"code changed vs v14 (+6 / −6 lines)"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+18,
+"2026-09-18 08:45",
+0.323,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+16,
+"data",
+"same code as v16; adds dataset casmi26-fp-merged; drops dataset casmi26-fp-models-v2"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+19,
+"2026-09-18 15:33",
+0.341,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+18,
+"code",
+"W1_PRIORS: (0.4, 0.45, 0.5) → (0.3, 0.6); SEEDS: (0, 1, 2) → (0, 1, 2, 3); W1: 0.45 → 0.5"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+22,
+"2026-09-19 11:32",
+0.216,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+19,
+"code",
+"code changed vs v19 (+76 / −3 lines)"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+24,
+"2026-09-19 14:46",
+0.325,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+22,
+"code",
+"PC_TOPK: 50 → 0; PC_WINCAP: 2000 → 10000"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+26,
+"2026-09-19 17:02",
+0.331,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+24,
+"data",
+"same code as v24; adds dataset casmi26-fp-models-late; drops dataset casmi26-fp-models-v2"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+28,
+"2026-09-21 14:29",
+0.325,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+26,
+"code",
+"code changed vs v26 (+55 / −13 lines)"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+29,
+"2026-09-21 15:58",
+0.329,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+28,
+"code",
+"N_ANALOG: 80 → 200"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+30,
+"2026-09-21 17:16",
+0.33,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+29,
+"code",
+"code changed vs v29 (+5 / −3 lines)"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+31,
+"2026-09-21 19:42",
+0.329,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+30,
+"code",
+"N_ANALOG: 80 → 200; LIB_MASS_FORMULA: False → True; ANALOG_MATCH_INSTR: False → True"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+33,
+"2026-10-08 12:23",
+0.344,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+31,
+"code",
+"code changed vs v31 (+214 / −1233 lines)"
+],
+[
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+43,
+"2026-10-20 17:03",
+0.456,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+33,
+"code",
+"the notebook becomes a credited reproduction of Hongbin Gu's v465 (script 359783615): its code unchanged, the same mounted datasets, new text around it"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+2,
+"2026-09-17 04:57",
+0.303,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+9,
+"first",
+"prvsiyan's baseline retuned (mass window 10 → 8.5 ppm, analogs 80 → 100, similarity power 3 → 4) with two blend priors and four ranker seeds, run in parallel processes (large rewrite)"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+3,
+"2026-09-24 15:47",
+0.33,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+2,
+"code",
+"code changed vs v2 (+1151 / −847 lines)"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+5,
+"2026-09-25 13:27",
+0.339,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+3,
+"code",
+"code changed vs v3 (+112 / −50 lines)"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+6,
+"2026-10-01 11:42",
+0.396,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+5,
+"code",
+"code changed vs v5 (+1683 / −1209 lines)"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+7,
+"2026-10-06 08:04",
+0.38,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+6,
+"code",
+"code changed vs v6 (+255 / −27 lines)"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+8,
+"2026-10-06 13:50",
+0.402,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+7,
+"code",
+"code changed vs v7 (+55 / −84 lines)"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+9,
+"2026-10-07 15:10",
+0.388,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+8,
+"code",
+"code changed vs v8 (+66 / −90 lines)"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+10,
+"2026-10-08 04:54",
+0.409,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+9,
+"code",
+"code changed vs v9 (+0 / −19 lines)"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+11,
+"2026-10-08 16:30",
+0.419,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+10,
+"code",
+"code changed vs v10 (+331 / −204 lines)"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+12,
+"2026-10-09 03:39",
+0.382,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+11,
+"code",
+"code changed vs v11 (+152 / −234 lines)"
+],
+[
+"haideptry/0-350-casmi-2026-v32-ensemble",
+13,
+"2026-10-09 08:12",
+0.433,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+12,
+"code",
+"code changed vs v12 (+23 / −12 lines)"
+],
+[
+"megayak/casmi26-two-rankers-one-engine",
+1,
+"2026-09-17 05:40",
+0.343,
+"prvsiyan/analog-propagation-casmi-2026-baseline",
+10,
+"first",
+"rebuilds prvsiyan's engine and adds a second ranker trained on 2,250 simulated molecules from 7 libraries (instead of ~819), adduct-shifted library similarity and same-polarity analogs; blends the two rankers"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+3,
+"2026-09-18 08:44",
+0.129,
+"megayak/casmi26-two-rankers-one-engine",
+1,
+"first",
+"partial source: an adaptation of megayak's two-ranker notebook (the version is too large to download in full, so it is not compared line by line)"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+4,
+"2026-09-18 14:29",
+0.324,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+3,
+"nosource",
+"source too large to download in full (the download stops at 50 MiB), so not compared"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+5,
+"2026-09-18 20:44",
+0.319,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+4,
+"code",
+"code changed vs v4 (+6 / −0 lines); author's version note: “--change params on candidate pool method”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+6,
+"2026-09-19 09:04",
+0.333,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+5,
+"code",
+"code changed vs v5 (+841 / −52 lines); author's version note: “--update & --add 4-channel hypothesis”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+7,
+"2026-09-19 09:06",
+0.33,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+6,
+"code",
+"code changed vs v6 (+531 / −255 lines); author's version note: “--update & --add Analog Propagation hypothesis”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+12,
+"2026-09-19 12:40",
+0.335,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+7,
+"code",
+"code changed vs v7 (+14 / −0 lines); author's version note: “--another-fast-fix”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+14,
+"2026-09-21 10:21",
+0.33,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+12,
+"code",
+"code changed vs v12 (+29 / −14 lines); author's version note: “--research basement on v17 public reference”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+16,
+"2026-09-21 10:52",
+0.343,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+14,
+"code",
+"code changed vs v14 (+28 / −15 lines); author's version note: “--input-bug-fix”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+17,
+"2026-09-21 14:15",
+0.33,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+16,
+"code",
+"code changed vs v16 (+18 / −30 lines); author's version note: “--update v17 --add key backfill”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+18,
+"2026-09-21 14:17",
+0.331,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+17,
+"code",
+"PPM_WIN: 8.5 → 10.0; order: np.argsort(-p)[:min(len(p), CFG.KEY_BACKFILL)] → np.argsort(-p)[:CFG.TOPN]"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+19,
+"2026-09-21 18:18",
+0.331,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+18,
+"code",
+"code changed vs v18 (+21 / −4 lines); author's version note: “--try adduct grouped mode --on-fp”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+20,
+"2026-09-22 12:55",
+0.33,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+19,
+"code",
+"SIM_POWER: 4.0 → 3.0"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+21,
+"2026-09-22 12:56",
+0.329,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+20,
+"code",
+"N_ANALOG: 100 → 80; SIM_POWER: 3.0 → 4.0"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+22,
+"2026-09-24 11:32",
+0.334,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+21,
+"code",
+"code changed vs v21 (+12 / −10 lines); author's version note: “--init new light-gbm evidence ranker”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+23,
+"2026-09-24 11:33",
+0.334,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+22,
+"code",
+"code changed vs v22 (+10 / −3 lines); author's version note: “--try dual-ranker evidence fusion”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+25,
+"2026-09-25 14:42",
+0.327,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+23,
+"code",
+"code changed vs v23 (+66 / −13 lines); author's version note: “Generate mass-matched analogs for low-confidence q”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+26,
+"2026-09-25 15:16",
+0.329,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+25,
+"code",
+"code changed vs v25 (+70 / −70 lines); author's version note: “--fast-dataset bug-fix”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+27,
+"2026-09-26 13:15",
+0.336,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+26,
+"code",
+"code changed vs v26 (+37 / −86 lines); author's version note: “--try new hybrid static component fallback”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+28,
+"2026-09-26 13:16",
+0.329,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+27,
+"code",
+"cand: wide → pool.window(target, CFG.PPM_FALLBACK); keep: np.concatenate([primary_pos, fallback_pos]) → np.argsort(-coarse)[:CFG.CAND_CAP]; order: protected + tail[:CFG.TOPN - len(protected)] → np.argsort(-p)[:CFG.TOPN]"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+36,
+"2026-09-28 12:25",
+0.355,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+28,
+"code",
+"code changed vs v28 (+424 / −1133 lines); author's version note: “--another full-stack bug-fix”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+37,
+"2026-09-28 12:28",
+0.355,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+36,
+"code",
+"code changed vs v36 (+1 / −1 lines); author's version note: “--try outside ICEBERG bug-fix”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+38,
+"2026-09-29 10:19",
+0.378,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+37,
+"code",
+"code changed vs v37 (+64 / −4 lines); author's version note: “--adaptate public faithfull reference”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+39,
+"2026-09-29 10:20",
+0.378,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+38,
+"code",
+"EXPERIMENT: 'g_v4h_reference' → 'h_v4h_glacier_quarter'"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+40,
+"2026-09-29 18:02",
+0.377,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+39,
+"code",
+"code changed vs v39 (+11 / −8 lines); author's version note: “--new faithfull reference try”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+41,
+"2026-09-29 18:03",
+0.383,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+40,
+"code",
+"experiment j: the FPNet bank becomes an ensemble of the full-data model and model A (full1 + A)"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+42,
+"2026-09-30 12:09",
+0.38,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+41,
+"code",
+"code changed vs v41 (+1325 / −61 lines); author's version note: “--init-to-try new public methods”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+45,
+"2026-09-30 12:40",
+0.381,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+42,
+"code",
+"code changed vs v42 (+313 / −1361 lines); author's version note: “--bug-fixes and changes of logic”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+46,
+"2026-10-01 10:02",
+0.4,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+45,
+"code",
+"code changed vs v45 (+1189 / −286 lines); author's version note: “--change pub-chem popularity-prior”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+47,
+"2026-10-01 10:07",
+0.4,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+46,
+"rerun",
+"same code, same datasets and same image as v46 (a re-run)"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+48,
+"2026-10-01 13:57",
+0.39,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+47,
+"code",
+"EXPERIMENT: 'apex_popularity' → 'apex_stronger_fusion'"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+49,
+"2026-10-01 13:58",
+0.4,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+48,
+"code",
+"EXPERIMENT: 'apex_stronger_fusion' → 'apex_stronger_popularity'"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+50,
+"2026-10-01 15:12",
+0.39,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+49,
+"code",
+"code changed vs v49 (+291 / −190 lines); author's version note: “--new v29 popularity fusion method --update”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+51,
+"2026-10-02 11:50",
+0.398,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+50,
+"code",
+"code changed vs v50 (+175 / −299 lines); author's version note: “--try to adaptate GLACIER Fusion”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+52,
+"2026-10-02 11:51",
+0.398,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+51,
+"code",
+"code changed vs v51 (+1 / −1 lines); author's version note: “--adaptate on Glacier Fusion --more-stronger”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+53,
+"2026-10-02 12:17",
+0.407,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+52,
+"code",
+"code changed vs v52 (+1 / −1 lines); author's version note: “--new-blinfull experiment on glacier 0.7”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+54,
+"2026-10-02 12:18",
+0.389,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+53,
+"code",
+"code changed vs v53 (+2 / −2 lines); author's version note: “--full-blindfull experiment glacier 0.7 <- alpha”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+55,
+"2026-10-02 20:21",
+0.404,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+54,
+"code",
+"code changed vs v54 (+1856 / −1476 lines); author's version note: “--lib gated mthod --try this on public”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+56,
+"2026-10-03 08:08",
+0.404,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+55,
+"code",
+"code changed vs v55 (+27 / −3 lines); author's version note: “--upload consensus-promotion update”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+57,
+"2026-10-03 08:10",
+0.404,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+56,
+"code",
+"code changed vs v56 (+22 / −23 lines); author's version note: “--upload pub-chem tail coverage”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+58,
+"2026-10-03 12:58",
+0.389,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+57,
+"code",
+"code changed vs v57 (+1623 / −1879 lines); author's version note: “--change pop-union +gl-only method”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+59,
+"2026-10-03 12:59",
+0.402,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+58,
+"code",
+"code changed vs v58 (+0 / −14 lines); author's version note: “--another pop-union + glacier fusion method”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+62,
+"2026-10-05 10:53",
+0.402,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+59,
+"code",
+"code changed vs v59 (+14 / −3 lines); author's version note: “--bug-fix with datasets”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+63,
+"2026-10-05 15:04",
+0.401,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+62,
+"code",
+"code changed vs v62 (+35 / −14 lines); author's version note: “--add-res on solution_1”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+64,
+"2026-10-05 15:15",
+0.402,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+63,
+"code",
+"code changed vs v63 (+14 / −35 lines); author's version note: “--bug-fix & --upload public-routes”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+65,
+"2026-10-06 09:37",
+0.402,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+64,
+"code",
+"code changed vs v64 (+60 / −36 lines); author's version note: “--new public gate-adaptation --try”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+66,
+"2026-10-06 09:55",
+0.406,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+65,
+"code",
+"code changed vs v65 (+38 / −29 lines); author's version note: “--new dual PubChem --experiment”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+67,
+"2026-10-07 18:12",
+0.392,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+66,
+"code",
+"code changed vs v66 (+18 / −7 lines); author's version note: “--change --try candidate-aligned-confidence-fusion”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+68,
+"2026-10-07 18:13",
+0.402,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+67,
+"code",
+"code changed vs v67 (+45 / −89 lines); author's version note: “--change --try targeted-candidate-exp&rep”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+69,
+"2026-10-07 18:38",
+0.407,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+68,
+"code",
+"code changed vs v68 (+125 / −40 lines); author's version note: “--experiment candidate-aligned-confidence-fusion”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+70,
+"2026-10-07 18:39",
+0.406,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+69,
+"code",
+"code changed vs v69 (+70 / −49 lines); author's version note: “--experiment Targeted Candidate Exp&Rer”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+71,
+"2026-10-08 09:24",
+0.408,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+70,
+"code",
+"code changed vs v70 (+64 / −72 lines); author's version note: “--four-seed-analog250”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+72,
+"2026-10-08 09:25",
+0.404,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+71,
+"code",
+"code changed vs v71 (+39 / −14 lines); author's version note: “--final-top1-shield”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+73,
+"2026-10-08 10:48",
+0.406,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+72,
+"code",
+"code changed vs v72 (+35 / −37 lines); author's version note: “--experiment single-pass GLACIER reranking”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+74,
+"2026-10-08 10:49",
+0.406,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+73,
+"code",
+"code changed vs v73 (+18 / −41 lines); author's version note: “--experiment adduct-safe PubChem aggregation”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+75,
+"2026-10-08 17:13",
+0.403,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+74,
+"code",
+"code changed vs v74 (+55 / −18 lines); author's version note: “--experiment top20-locked consensus tail”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+78,
+"2026-10-09 10:47",
+0.433,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+75,
+"code",
+"code changed vs v75 (+249 / −219 lines); author's version note: “--bug-fix with sources & packages”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+79,
+"2026-10-09 10:47",
+0.433,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+78,
+"code",
+"code changed vs v78 (+45 / −0 lines); author's version note: “--bug-fix with sources & packages_2”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+80,
+"2026-10-09 11:32",
+0.436,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+79,
+"code",
+"re-fuses the engine-1 and engine-2 lists by reciprocal-rank fusion on the official metric identity (duplicates collapse to one key; α 0.6, top 40), then GLACIER re-ranks; the wide-mass tail fill is dropped"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+81,
+"2026-10-09 11:33",
+0.427,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+80,
+"code",
+"code changed vs v80 (+47 / −32 lines); author's version note: “--experiment cross-formula glacier reranking”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+82,
+"2026-10-09 16:06",
+0.435,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+81,
+"code",
+"code changed vs v81 (+88 / −47 lines); author's version note: “--experiment metric-fusion consensus backfill”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+83,
+"2026-10-11 11:38",
+0.44,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+82,
+"code",
+"code changed vs v82 (+161 / −56 lines); author's version note: “--adaptation metric-fusion ice fallback”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+84,
+"2026-10-11 11:39",
+0.44,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+83,
+"code",
+"code changed vs v83 (+110 / −0 lines); author's version note: “--experiment ice-fallback extended fusion window”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+85,
+"2026-10-11 12:07",
+0.439,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+84,
+"code",
+"code changed vs v84 (+70 / −8 lines); author's version note: “--experiment metric-aligned simulator evidence”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+86,
+"2026-10-11 12:07",
+0.438,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+85,
+"code",
+"code changed vs v85 (+10 / −11 lines); author's version note: “- --experiment complete-coverage ice-gl fusion”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+87,
+"2026-10-12 08:50",
+0.437,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+86,
+"code",
+"code changed vs v86 (+140 / −64 lines); author's version note: “--experiment quality-weighted spectral evidence”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+88,
+"2026-10-12 08:50",
+0.428,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+87,
+"code",
+"MODE: EXPERIMENT = 'quality_weighted' → EXPERIMENT = 'precursor_masked'"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+89,
+"2026-10-12 13:55",
+0.44,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+88,
+"code",
+"code changed vs v88 (+194 / −242 lines); author's version note: “--experiment dual-polarity pubchem retrieval”"
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+90,
+"2026-10-12 13:56",
+0.415,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+89,
+"code",
+"MODE: 'dual' → 'joint'"
+],
+[
+"llccqq624/casmi26-next-direct-w088",
+1,
+"2026-09-20 06:31",
+0.346,
+"megayak/casmi26-two-rankers-one-engine",
+1,
+"first",
+"megayak's two-ranker engine with the blend weight on prvsiyan's ranker (w_pv) 0.65 → 0.88, plus plots of the weight sweep"
+],
+[
+"ahmedberatozer/casmi26-v2-baseline",
+1,
+"2026-09-21 15:36",
+0.348,
+null,
+null,
+"first",
+"first version: his own engine, retrieval from training structures + COCONUT with multi-channel evidence and a LightGBM reranker (code and models loaded from his datasets)"
+],
+[
+"ahmedberatozer/casmi26-v3-inference",
+1,
+"2026-09-21 18:40",
+0.333,
+"ahmedberatozer/casmi26-v2-baseline",
+1,
+"first",
+"same pipeline as v2; which ranker to load becomes a setting (ranker 0, as before)"
+],
+[
+"ahmedberatozer/casmi26-v3-inference",
+2,
+"2026-09-22 06:29",
+0.322,
+"ahmedberatozer/casmi26-v3-inference",
+1,
+"code",
+"code changed vs v1 (+8 / −2 lines)"
+],
+[
+"ahmedberatozer/casmi26-v3-inference",
+3,
+"2026-09-22 09:50",
+0.332,
+"ahmedberatozer/casmi26-v3-inference",
+2,
+"code",
+"GENERATE: False → True; score: rb.predict(X) → rb.predict(X, FEATURES)"
+],
+[
+"ahmedberatozer/casmi26-v3-inference",
+4,
+"2026-09-22 13:56",
+0.235,
+"ahmedberatozer/casmi26-v3-inference",
+3,
+"code",
+"code changed vs v3 (+1 / −1 lines)"
+],
+[
+"ahmedberatozer/casmi26-v3-inference",
+5,
+"2026-09-23 10:46",
+0.337,
+"ahmedberatozer/casmi26-v3-inference",
+4,
+"code",
+"code changed vs v4 (+29 / −26 lines)"
+],
+[
+"ahmedberatozer/casmi26-v3-inference",
+6,
+"2026-09-23 16:33",
+0.353,
+"ahmedberatozer/casmi26-v3-inference",
+5,
+"code",
+"adds a gated PubChem-only channel (library lock at similarity 0.9, merge threshold rel 600; PubChem proposals into slots 2, 4, 6, 8, 10 or 4, 8, 12 …) using v2 and v3 models"
+],
+[
+"ahmedberatozer/casmi26-v4f-inference",
+1,
+"2026-09-26 12:23",
+0.369,
+"ahmedberatozer/casmi26-v3-inference",
+6,
+"first",
+"new v4 models (checked against a manifest) and an ICEBERG re-score of each top-60 list (weight 0.5, 2,700 s budget)"
+],
+[
+"ahmedberatozer/casmi26-v4g-inference",
+1,
+"2026-09-26 12:26",
+0.369,
+"ahmedberatozer/casmi26-v4f-inference",
+1,
+"first",
+"ICEBERG also re-scores the PubChem channel's top-25 proposals for molecules below the library lock"
+],
+[
+"ahmedberatozer/casmi26-v4h-inference",
+1,
+"2026-09-28 09:33",
+0.378,
+"ahmedberatozer/casmi26-v4g-inference",
+1,
+"first",
+"adds a GLACIER re-score next to ICEBERG (weight 0.5, 2,400 s budget)"
+],
+[
+"lszlst/casmi26-p1-offset",
+1,
+"2026-09-28 19:40",
+0.319,
+"haideptry/0-350-casmi-2026-v32-ensemble",
+2,
+"first",
+"mass window 8.5 → 3.5 ppm and a per-adduct precursor offset table subtracted from each molecule's precursor-derived mass"
+],
+[
+"lszlst/casmi26-p1-offset",
+2,
+"2026-10-13 18:52",
+0.313,
+"lszlst/casmi26-p1-offset",
+1,
+"code",
+"code changed vs v1 (+12 / −4 lines)"
+],
+[
+"lszlst/casmi26-p1-offset",
+3,
+"2026-10-13 19:52",
+0.317,
+"lszlst/casmi26-p1-offset",
+2,
+"code",
+"code changed vs v2 (+2 / −2 lines)"
+],
+[
+"lszlst/casmi26-p1-offset",
+4,
+"2026-10-13 22:00",
+0.319,
+"lszlst/casmi26-p1-offset",
+3,
+"code",
+"code changed vs v3 (+4 / −12 lines)"
+],
+[
+"lszlst/casmi26-p1-offset",
+6,
+"2026-10-14 02:51",
+0.384,
+"lszlst/casmi26-p1-offset",
+4,
+"code",
+"code changed vs v4 (+1780 / −842 lines)"
+],
+[
+"lszlst/casmi26-p1-offset",
+7,
+"2026-10-14 05:45",
+0.44,
+"lszlst/casmi26-p1-offset",
+6,
+"code",
+"code changed vs v6 (+366 / −42 lines)"
+],
+[
+"ahmedberatozer/casmi26-v4l-inference",
+1,
+"2026-09-29 10:10",
+0.379,
+"ahmedberatozer/casmi26-v4h-inference",
+1,
+"first",
+"ICEBERG and GLACIER weights 0.5 → 1.0; the PubChem pass widens from 1,000 to 5,000 candidates"
+],
+[
+"ahmedberatozer/casmi26-v4m-inference",
+1,
+"2026-09-29 10:11",
+0.377,
+"ahmedberatozer/casmi26-v4h-inference",
+1,
+"first",
+"PubChem pass 1,000 → 5,000 and the full-data FPNet model (fpnet_full1) in place of fpnet_0"
+],
+[
+"ahmedberatozer/casmi26-v4n-inference",
+1,
+"2026-09-29 14:01",
+0.382,
+"ahmedberatozer/casmi26-v4l-inference",
+1,
+"first",
+"the full-data FPNet model (fpnet_full1) in place of fpnet_0"
+],
+[
+"seyitkaangunes/casmi26-e5c-union-gl-a06",
+1,
+"2026-09-29 21:30",
+0.386,
+"ahmedberatozer/casmi26-v4g-inference",
+1,
+"first",
+"fuses v4g's lists with a two-ranker engine (BIO + AFIX candidates, Jiachen Li's w088 blend) by weighted reciprocal-rank fusion (α 0.6, K 3); ICEBERG + GLACIER re-score the fused list; ICEBERG budget 2,700 → 5,400 s"
+],
+[
+"seyitkaangunes/casmi26-v4n-engine-fusion-union-lb-0-399",
+1,
+"2026-09-30 07:52",
+0.398,
+"seyitkaangunes/casmi26-e5c-union-gl-a06",
+1,
+"first",
+"the same fusion on the v4n base: forward-model weights 0.5 → 1.0, PubChem pass 5,000, full-data FPNet"
+],
+[
+"ahmedberatozer/casmi26-v4q-inference",
+1,
+"2026-09-30 09:59",
+0.396,
+"seyitkaangunes/casmi26-v4n-engine-fusion-union-lb-0-399",
+1,
+"first",
+"Seyit kaan Gunes's fusion recipe with the GLACIER time budget 4,000 → 3,600 s and a guarded GLACIER re-rank; drops the commit-run smoke switch"
+],
+[
+"bobthebot369/enveda-casmi-2026-v10-apex-fusion-sota",
+1,
+"2026-09-30 12:55",
+0.4,
+"seyitkaangunes/casmi26-v4n-engine-fusion-union-lb-0-399",
+1,
+"first",
+"Seyit kaan Gunes's fusion recipe + re-orders pool candidates by z(score) + 0.15 × PubChem popularity (dmitriigluzdov's public popularity prior)"
+],
+[
+"wangpenghua/casmi26-v29-fusion-pop-glmh",
+1,
+"2026-10-01 02:15",
+0.418,
+"seyitkaangunes/casmi26-v4n-engine-fusion-union-lb-0-399",
+1,
+"first",
+"Seyit kaan Gunes's fusion recipe + a PubChem popularity prior on the PubChem channel (λ 0.25, union 200) and on the main list (μ 0.15); GLACIER only on [M+H]+ spectra"
+],
+[
+"huseyinemreaksoy/casmi26-sub-v4b-0-409-on-the-public",
+1,
+"2026-10-01 11:33",
+0.404,
+"seyitkaangunes/casmi26-v4n-engine-fusion-union-lb-0-399",
+1,
+"first",
+"restructures the fusion recipe into embedded modules and adds pool popularity (μ 0.25), a MetFrag-lite fragment re-score where ICEBERG cannot score, and no forward-model re-rank for strong library hits"
+],
+[
+"huseyinemreaksoy/casmi26-v4n-fusion-pubchem-on-public-0-421",
+1,
+"2026-10-02 21:25",
+0.415,
+"huseyinemreaksoy/casmi26-sub-v4b-0-409-on-the-public",
+1,
+"first",
+"adds a PubChem join: PubChem proposals join the candidate list for weak library matches, with a forward-model margin check before they move up"
+],
+[
+"huseyinemreaksoy/casmi26-v4n-fusion-pubchem-on-public-0-421",
+5,
+"2026-10-05 22:51",
+0.415,
+"huseyinemreaksoy/casmi26-v4n-fusion-pubchem-on-public-0-421",
+1,
+"data",
+"same code as v1; new version of dataset casmi26-pubchem-popularity-prior"
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+2,
+"2026-10-02 22:13",
+0.38,
+"wangpenghua/casmi26-v29-fusion-pop-glmh",
+1,
+"first",
+"built on wang penghua · v29 fusion pop glmh v1 (change not written up yet)"
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+3,
+"2026-10-03 21:16",
+0.363,
+"matterhorn3838/evenda-casmi-2026-nextgen",
+2,
+"code",
+"code changed vs v2 (+1860 / −1575 lines)"
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+4,
+"2026-10-04 00:48",
+0.384,
+"matterhorn3838/evenda-casmi-2026-nextgen",
+3,
+"code",
+"code changed vs v3 (+1609 / −1859 lines)"
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+5,
+"2026-10-04 04:24",
+0.384,
+"matterhorn3838/evenda-casmi-2026-nextgen",
+4,
+"rerun",
+"same code, same datasets and same image as v4 (a re-run)"
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+6,
+"2026-10-04 08:44",
+0.381,
+"matterhorn3838/evenda-casmi-2026-nextgen",
+5,
+"code",
+"code changed vs v5 (+283 / −332 lines)"
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+7,
+"2026-10-04 20:56",
+0.381,
+"matterhorn3838/evenda-casmi-2026-nextgen",
+6,
+"rerun",
+"same code, same datasets and same image as v6 (a re-run)"
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+8,
+"2026-10-05 06:30",
+0.384,
+"matterhorn3838/evenda-casmi-2026-nextgen",
+7,
+"code",
+"code changed vs v7 (+332 / −283 lines)"
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+9,
+"2026-10-05 23:49",
+0.378,
+"matterhorn3838/evenda-casmi-2026-nextgen",
+8,
+"code",
+"code changed vs v8 (+2471 / −1612 lines)"
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+12,
+"2026-10-08 08:38",
+0.419,
+"matterhorn3838/evenda-casmi-2026-nextgen",
+9,
+"code",
+"code changed vs v9 (+1848 / −2471 lines)"
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+15,
+"2026-10-17 07:59",
+0.451,
+"matterhorn3838/evenda-casmi-2026-nextgen",
+12,
+"code",
+"code changed vs v12 (+2589 / −1958 lines)"
+],
+[
+"imranarif536/casmi26-v44-pairtail-locked-top1",
+1,
+"2026-10-03 01:45",
+0.37,
+"evgendvorkin/enveda-casmi-2026",
+21,
+"first",
+"evgendvorkin's fusion pipeline with the ICEBERG budget cut to 300 s and the engine-2 run removed"
+],
+[
+"imranarif536/casmi26-v44-pairtail-locked-top1",
+3,
+"2026-10-03 15:11",
+0.42,
+"imranarif536/casmi26-v44-pairtail-locked-top1",
+1,
+"code",
+"re-enables the engine-2 run with \"pair-tail\" routing and adds the \"locked top-1\" step the title names"
+],
+[
+"lszlst/casmi26-b416",
+1,
+"2026-10-03 20:23",
+0.425,
+"wangpenghua/casmi26-v29-fusion-pop-glmh",
+1,
+"first",
+"adds a promotion rule: the best PubChem proposal goes to rank 1 when its score S > 6 and its popularity ≥ 5; simulators get a cp313 RDKit wheel"
+],
+[
+"lszlst/casmi26-b416",
+2,
+"2026-10-05 05:05",
+0.384,
+"lszlst/casmi26-b416",
+1,
+"data",
+"same code as v1; new version of dataset casmi26-pubchem-popularity-prior"
+],
+[
+"lehau007/casmi26-sota-v26-golden-apex-0413",
+1,
+"2026-10-04 08:26",
+0.403,
+"huseyinemreaksoy/casmi26-sub-v4b-0-409-on-the-public",
+1,
+"first",
+"Huseyin Emre Aksoy's 0.409 notebook with GLACIER restricted to [M+H]+ spectra"
+],
+[
+"lehau007/casmi26-sota-v30-extlib-provenance-0418",
+1,
+"2026-10-05 08:04",
+0.402,
+"lehau007/casmi26-sota-v26-golden-apex-0413",
+1,
+"first",
+"adds takumuhata's ExtLib (about 200k reference spectra): fused candidates found there get a small bonus (EXT_BONUS 0.05); stricter library shield; fill to 25"
+],
+[
+"lszlst/casmi26-b420",
+1,
+"2026-10-05 09:17",
+0.407,
+"lszlst/casmi26-b416",
+1,
+"first",
+"ICEBERG off in the base lists (BASE_ICE False); health checks for both simulators; the RDKit wheel is pre-seeded"
+],
+[
+"lehau007/casmi26-sota-v32-fiora-tri-forward-0420",
+2,
+"2026-10-05 12:45",
+0.394,
+"lehau007/casmi26-sota-v30-extlib-provenance-0418",
+1,
+"first",
+"adds FIORA, a third forward model that also covers [M-H]- and [M]- spectra, next to ICEBERG and GLACIER (large rewrite)"
+],
+[
+"lszlst/casmi26-b421",
+1,
+"2026-10-05 18:18",
+0.426,
+"lszlst/casmi26-b420",
+1,
+"first",
+"ICEBERG also off in the fused re-rank, so GLACIER alone re-ranks the fused list (CELL19_ICE False)"
+],
+[
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+1,
+"2026-10-05 22:29",
+0.433,
+"lszlst/casmi26-b421",
+1,
+"first",
+"promotion also fires when the structure-evidence margin rel > 250 (credited to skomuro); --any-rdkit wheel for the simulators; a DreaMS tail fills empty slots"
+],
+[
+"arman1o1/enveda-casmi26-molecule-id-v11",
+1,
+"2026-10-07 08:14",
+0.433,
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+1,
+"first",
+"V18 with the full run forced on commit as well (IS_RERUN = True); no other code change"
+],
+[
+"rajrajak99/casmi26-apex-v170-sovereign-emperor",
+1,
+"2026-10-07 11:19",
+0.422,
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+1,
+"first",
+"V18 + a library shield (a strong library match keeps rank 1), fusion weight α 0.70 instead of 0.6 when the library match is weak, a consensus shield and back-fill to 25 candidates"
+],
+[
+"amanatar/casmi26-v18",
+4,
+"2026-10-07 12:05",
+0.433,
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+1,
+"first",
+"no change to the ranking code (logging/paths/setup only): competition folder found via glob of /kaggle/input/*/test.parquet before find(), COMP printed, ICEBERG runs on cuda only if available, else cpu."
+],
+[
+"rajrajak99/casmi26-apex-v175-sovereign-fusion",
+1,
+"2026-10-07 13:25",
+0.419,
+"rajrajak99/casmi26-apex-v170-sovereign-emperor",
+1,
+"first",
+"pool popularity mu 0.15 → 0.20; adds adduct reconciliation to the median neutral mass (10 ppm) and a 5-per-formula cap from rank 8 when GLACIER z-gap < 0.5."
+],
+[
+"rajrajak99/casmi26-apex-v180-sovereign-titan",
+1,
+"2026-10-07 13:48",
+0.423,
+"rajrajak99/casmi26-apex-v175-sovereign-fusion",
+1,
+"first",
+"engine-2 ranker seeds (0, 1) → (0, 1, 2, 3), analogs per query 200 → 250, pool popularity μ 0.20 → 0.25"
+],
+[
+"obstacledeveloper/casmi26-v1-1-metric-audit-and-safe-tail",
+1,
+"2026-10-08 11:54",
+0.433,
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+1,
+"first",
+"replaces V18's DreaMS tail cell (its author found it bypassed by a NameError) with a final pass: dedupe on the official metric identity, fill empty slots, assert no correct identity drops; pins RDKit 2026.03.3"
+],
+[
+"samanyu1808/casmi-v11",
+1,
+"2026-10-09 04:58",
+0.433,
+"obstacledeveloper/casmi26-v1-1-metric-audit-and-safe-tail",
+1,
+"first",
+"exact copy of OBSTACLE DEVELOPER · V1.1 Metric Audit v1 (same code)"
+],
+[
+"spark328/casmi26-top-public",
+1,
+"2026-10-09 11:20",
+0.433,
+"amanatar/casmi26-v18",
+4,
+"first",
+"exact copy of Aman Atar · v18 v4 (same code)"
+],
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+2,
+"2026-10-09 11:44",
+0.0,
+null,
+null,
+"first",
+"first version: writes the sample submission unchanged (a transformer class is defined but not applied)"
+],
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+6,
+"2026-10-10 06:11",
+0.0,
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+2,
+"code",
+"code changed vs v2 (+86 / −20 lines)"
+],
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+7,
+"2026-10-10 06:25",
+0.007,
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+6,
+"code",
+"code changed vs v6 (+46 / −29 lines)"
+],
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+9,
+"2026-10-10 06:41",
+0.012,
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+7,
+"code",
+"code changed vs v7 (+33 / −6 lines)"
+],
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+10,
+"2026-10-10 23:21",
+0.013,
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+9,
+"code",
+"code changed vs v9 (+15 / −12 lines)"
+],
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+11,
+"2026-10-11 11:07",
+0.013,
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+10,
+"rerun",
+"same code, same datasets and same image as v10 (a re-run)"
+],
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+13,
+"2026-10-11 20:18",
+0.438,
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+11,
+"code",
+"code changed vs v11 (+1889 / −134 lines)"
+],
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+21,
+"2026-10-18 19:22",
+0.436,
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+13,
+"code",
+"code changed vs v13 (+242 / −16 lines)"
+],
+[
+"samanyu1808/casmi26-iceberg-where-glacier-is-blind-lb-0-438",
+1,
+"2026-10-09 14:42",
+0.438,
+"obstacledeveloper/casmi26-v1-1-metric-audit-and-safe-tail",
+1,
+"first",
+"the GLACIER re-rank of the fused list widens from the top 40 to the top 80, and ICEBERG re-ranks molecules that have no GLACIER score (no [M+H]+ spectra)"
+],
+[
+"nursrijan/casmi26-metric-fusion-consensus-backfill",
+1,
+"2026-10-09 20:18",
+0.435,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+82,
+"first",
+"exact copy of Igor Zharov · Public Baseline Adapt. v82 (same code)"
+],
+[
+"nursrijan/casmi26-metric-fusion-consensus-backfill",
+2,
+"2026-10-10 07:04",
+0.435,
+"nursrijan/casmi26-metric-fusion-consensus-backfill",
+1,
+"rerun",
+"same code, same datasets and same image as v1 (a re-run)"
+],
+[
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+1,
+"2026-10-10 06:52",
+0.44,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+80,
+"first",
+"Igor Zharov's v80 recipe reproduced cell for cell (pinned image and datasets, preflight checks) + an overlay: metric-fusion shortlist of 40 with ICEBERG as fallback where GLACIER has no score"
+],
+[
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+1,
+"2026-10-10 10:12",
+0.437,
+"samanyu1808/casmi26-iceberg-where-glacier-is-blind-lb-0-438",
+1,
+"first",
+"adds a MassBank reference-spectra channel (records flagged as CASMI subset excluded) to samanyu1808's GLACIER/ICEBERG split; RDKit version check relaxed"
+],
+[
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+2,
+"2026-10-11 06:00",
+0.439,
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+1,
+"code",
+"code changed vs v1 (+120 / −84 lines)"
+],
+[
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+3,
+"2026-10-11 11:58",
+0.438,
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+2,
+"code",
+"code changed vs v2 (+18 / −6 lines)"
+],
+[
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+5,
+"2026-10-13 03:43",
+0.43,
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+3,
+"code",
+"code changed vs v3 (+17 / −24 lines)"
+],
+[
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+7,
+"2026-10-13 08:46",
+0.441,
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+5,
+"code",
+"code changed vs v5 (+524 / −252 lines)"
+],
+[
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+9,
+"2026-10-14 02:45",
+0.441,
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+7,
+"code",
+"code changed vs v7 (+38 / −9 lines)"
+],
+[
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+10,
+"2026-10-14 08:21",
+0.431,
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+9,
+"code",
+"code changed vs v9 (+15 / −4 lines)"
+],
+[
+"uninhibitedscholar/enveda-casmi-2026-w80-samanyu-flexon-lb-0-440",
+1,
+"2026-10-10 10:27",
+0.44,
+"samanyu1808/casmi26-iceberg-where-glacier-is-blind-lb-0-438",
+1,
+"first",
+"RRF fusion now keys candidates by metric identity (tautomer-canonical InChIKey-14 plus heavy-atom composition), de-duplicating each list and ranking by position among unique identities; adds safe_extend and assert_monotone helpers."
+],
+[
+"nursrijan/casmi26-w-e006-window-40-ice-fallback",
+2,
+"2026-10-11 07:39",
+0.44,
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+1,
+"first",
+"exact copy of Xander · E006 Window 40 v1 (same code)"
+],
+[
+"nikitabakutov/casmi26-e1b-w015-icefb",
+1,
+"2026-10-11 12:14",
+0.438,
+"bobthebot369/enveda-casmi-2026-v18-sovereign-zenith",
+1,
+"first",
+"partial source: adds frozen E1b multi-spectrum transformer re-rank (fingerprint log-likelihood rank-fused, weight 0.15, max 16 spectra, lib_max < 0.9), pins RDKit 2026.3.3, adds E4 diagnostics (large rewrite, +495/-5 lines)."
+],
+[
+"nikitabakutov/casmi26-e1b-w015-icefb",
+2,
+"2026-10-12 10:34",
+0.438,
+"nikitabakutov/casmi26-e1b-w015-icefb",
+1,
+"rerun",
+"same code, same datasets and same image as v1 (a re-run)"
+],
+[
+"nursrijan/casmi26-e007-window-80-ice-fallback-sota",
+1,
+"2026-10-11 16:47",
+0.44,
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+1,
+"first",
+"E006 with the fusion shortlist widened from 40 to 80 (ICEBERG fallback kept)"
+],
+[
+"easonyanyan/casmi26-v18-massbank-gated",
+1,
+"2026-10-11 17:26",
+0.44,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+82,
+"first",
+"adds ICEBERG fallback where GLACIER scores are missing, plus post-ranking CC BY/CC0 MassBank promotion (cosine/margin 0.50/0.10 → rank 1; 0.40/0.08 → rank 2; 10 ppm); simplifies RDKit wheel lookup."
+],
+[
+"guhongbin/casmi26-v439-forknur",
+1,
+"2026-10-12 03:17",
+0.434,
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+82,
+"first",
+"POP_LAM (PubChem-channel popularity weight) 0.25 → 0.15; POP_UNION stays 200; no other code change (markdown rewritten with credits)."
+],
+[
+"rajrajak99/casmi26-apex-v280-sovereign-vanguard",
+2,
+"2026-10-12 04:16",
+0.44,
+"nursrijan/casmi26-e007-window-80-ice-fallback-sota",
+1,
+"first",
+"no change to the ranking code (logging/paths/setup only): Python version assertion now accepts 3.12 or 3.13 (was 3.12 only); markdown retitled."
+],
+[
+"shafiquatali/casmi26-e006-pub",
+1,
+"2026-10-12 08:55",
+0.44,
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+1,
+"first",
+"exact copy of Xander · E006 Window 40 v1 (same code)"
+],
+[
+"rajrajak99/casmi26-apex-v290-sovereign-zenith",
+1,
+"2026-10-12 10:06",
+0.44,
+"rajrajak99/casmi26-apex-v280-sovereign-vanguard",
+2,
+"first",
+"adds final submission.csv overlay: metric-key (InChIKey-14) dedupe, library lock (lib_max >= 0.9 puts library top-1 at rank 1), DreaMS-index tail fill within 10 ppm for rows under 25."
+],
+[
+"ahmedberatozer/casmi26-v7a-e006-port",
+1,
+"2026-10-12 12:08",
+0.44,
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+1,
+"first",
+"exact copy of Xander · E006 Window 40 v1 (same code)"
+],
+[
+"rajrajak99/casmi26-apex-v300-sovereign-horizon",
+1,
+"2026-10-12 13:44",
+0.43,
+"rajrajak99/casmi26-apex-v290-sovereign-zenith",
+1,
+"first",
+"overlay now re-orders each row by RRF (K=3, top 35 each) over the submitted list (1.0), engine 2 (0.4) and engine-1 pre-fusion list (0.35), then re-applies the library lock."
+],
+[
+"rajrajak99/casmi26-apex-v310-sovereign-resonance",
+1,
+"2026-10-12 13:48",
+0.43,
+"rajrajak99/casmi26-apex-v290-sovereign-zenith",
+1,
+"first",
+"adds MassBank search to the overlay: for non-library-locked molecules, a 10 ppm match with cosine >= 0.50 and margin >= 0.10 goes to rank 1; no rank-2 tier."
+],
+[
+"nursrijan/casmi26-e008-dual-band-massbank-ice-fallback-sota",
+2,
+"2026-10-12 15:25",
+0.44,
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+1,
+"first",
+"adds post-ranking MassBank search (10 ppm): 0.50/0.10 cosine/margin → rank 1 (rank 2 if lib_max >= 0.9), 0.40/0.08 → rank 2; metric-identity dedupe; Python 3.13 allowed."
+],
+[
+"rajrajak99/casmi26-apex-v320-grand-sovereign-consensus",
+1,
+"2026-10-12 15:43",
+0.433,
+"rajrajak99/casmi26-apex-v300-sovereign-horizon",
+1,
+"first",
+"consensus RRF: depth 35 → 40 on all three lists; submitted-list K 3.0 → 2.5; engine 2 weight 0.40 → 0.45; pre-fusion weight 0.35 unchanged; log text edits."
+],
+[
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"2026-10-12 17:11",
+0.441,
+"ahmedberatozer/casmi26-v7a-e006-port",
+1,
+"first",
+"one change: molecules with no forward-model evidence (no GLACIER, no ICEBERG) get a MetFrag-lite fragment re-rank of their fused list (λ 0.5, Huseyin Emre Aksoy's frag_rescore.py)"
+],
+[
+"shafiquatali/casmi26-e007-pub",
+1,
+"2026-10-12 20:49",
+0.44,
+"nursrijan/casmi26-e007-window-80-ice-fallback-sota",
+1,
+"first",
+"exact copy of Nur Srijan · E007 Window 80 v1 (same code)"
+],
+[
+"shafiquatali/casmi26-e007-pub",
+7,
+"2026-10-17 01:34",
+0.428,
+"shafiquatali/casmi26-e007-pub",
+1,
+"code",
+"code changed vs v1 (+17 / −4 lines)"
+],
+[
+"shafiquatali/casmi26-e007-pub",
+10,
+"2026-10-17 04:31",
+0.441,
+"shafiquatali/casmi26-e007-pub",
+7,
+"code",
+"code changed vs v7 (+42 / −1 lines)"
+],
+[
+"shafiquatali/casmi26-e007-pub",
+12,
+"2026-10-17 07:01",
+0.451,
+"shafiquatali/casmi26-e007-pub",
+10,
+"code",
+"code changed vs v10 (+150 / −20 lines)"
+],
+[
+"antriksharya/casmi26-e006-e2rank2",
+1,
+"2026-10-13 10:24",
+0.442,
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+1,
+"first",
+"one appended cell: when engine 2's top-1 differs from the final rank 1 (by metric key), it is inserted at rank 2; rank 1 never changes"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+7,
+"2026-10-13 11:32",
+0.441,
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"first",
+"rewrites v7c's evidence routing (GLACIER, then ICEBERG, then MetFrag-lite where neither scores) as an object-oriented pipeline (large rewrite)"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+8,
+"2026-10-13 11:32",
+0.441,
+"flexonafft/casmi26-closing-the-evidence-gap",
+7,
+"code",
+"config: ExperimentConfig(group_fragment_fallback=True) → ExperimentConfig(group_fragment_fallback=False)"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+11,
+"2026-10-14 09:21",
+0.441,
+"flexonafft/casmi26-closing-the-evidence-gap",
+8,
+"code",
+"code changed vs v8 (+116 / −0 lines); author's version note: “--bug-fix-iteration-04.2”"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+12,
+"2026-10-14 09:22",
+0.44,
+"flexonafft/casmi26-closing-the-evidence-gap",
+11,
+"code",
+"code changed vs v11 (+92 / −51 lines); author's version note: “--bug-fix-iteration03”"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+13,
+"2026-10-14 15:25",
+0.441,
+"flexonafft/casmi26-closing-the-evidence-gap",
+12,
+"code",
+"code changed vs v12 (+79 / −1 lines); author's version note: “--experiment: targeted ICE–GL consensus check”"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+14,
+"2026-10-14 15:26",
+0.441,
+"flexonafft/casmi26-closing-the-evidence-gap",
+13,
+"code",
+"code changed vs v13 (+80 / −173 lines); author's version note: “--experiment: discriminative fragment evidence”"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+15,
+"2026-10-14 18:37",
+0.441,
+"flexonafft/casmi26-closing-the-evidence-gap",
+14,
+"code",
+"code changed vs v14 (+10 / −6 lines); author's version note: “--experiment: replicated fragment evidence”"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+16,
+"2026-10-15 10:34",
+0.444,
+"flexonafft/casmi26-closing-the-evidence-gap",
+15,
+"code",
+"adds PubChem promotion at rel > 100 and the engine-2 rank-2 insert (refactor; author's note: \"adaptation: PubChem rel100 + engine-2 rank2 hedge\")"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+17,
+"2026-10-15 10:34",
+0.446,
+"flexonafft/casmi26-closing-the-evidence-gap",
+16,
+"code",
+"one change: PubChem promotion threshold rel > 100 → 150"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+18,
+"2026-10-15 11:22",
+0.442,
+"flexonafft/casmi26-closing-the-evidence-gap",
+17,
+"code",
+"code changed vs v17 (+84 / −2 lines); author's version note: “--experiment: rel100 + top10-supported rank2 hedge”"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+19,
+"2026-10-15 11:23",
+0.443,
+"flexonafft/casmi26-closing-the-evidence-gap",
+18,
+"code",
+"hedge_experiment: HedgeExperiment(experiment, 'supported_rank2') → HedgeExperiment(experiment, 'rank3')"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+22,
+"2026-10-16 19:40",
+0.447,
+"flexonafft/casmi26-closing-the-evidence-gap",
+19,
+"code",
+"runs easonyanyan's V22 cells with a metric-distinct runner-up variant of the rank-2 step (author's note: \"new-v22-gate\"); hengck23's DreaMS mount removed"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+23,
+"2026-10-16 19:41",
+0.451,
+"flexonafft/casmi26-closing-the-evidence-gap",
+22,
+"code",
+"the plain V22 route (runner-up variant switched off)"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+24,
+"2026-10-17 07:30",
+0.451,
+"flexonafft/casmi26-closing-the-evidence-gap",
+23,
+"code",
+"ablation: V22 without the fragment-gap fallback (author's note)"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+25,
+"2026-10-17 07:32",
+0.445,
+"flexonafft/casmi26-closing-the-evidence-gap",
+24,
+"code",
+"ablation: V22Ablation(experiment, SOURCE_CELLS, 'no_fragment_gap') → V22Ablation(experiment, SOURCE_CELLS, 'promotion_rel200')"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+28,
+"2026-10-17 08:03",
+0.451,
+"flexonafft/casmi26-closing-the-evidence-gap",
+25,
+"code",
+"code changed vs v25 (+129 / −82 lines); author's version note: “--bug-fix --rdkit_01”"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+30,
+"2026-10-17 08:04",
+0.451,
+"flexonafft/casmi26-closing-the-evidence-gap",
+28,
+"code",
+"mounts and checks both ChEBI/LIPID MAPS sets (sergiomalv's and prvsiyan's) for a union of the BIO pools"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+31,
+"2026-10-18 08:29",
+0.454,
+"flexonafft/casmi26-closing-the-evidence-gap",
+30,
+"code",
+"author's note \"public PubChemLite recipe reproduction\": a rewrite that mounts the PubChemLite CC0 set and hengck23's DreaMS resource and returns the BIO pool to prvsiyan's ChEBI/LIPID MAPS set"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+39,
+"2026-10-18 12:14",
+0.452,
+"flexonafft/casmi26-closing-the-evidence-gap",
+31,
+"code",
+"adds the metric-identity rank-2 insert (E2R2) code, run in a \"no final rank 2\" mode"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+42,
+"2026-10-18 12:40",
+0.454,
+"flexonafft/casmi26-closing-the-evidence-gap",
+39,
+"code",
+"rank-2 mode \"no final rank 2\" → \"metric-exact rank 2\" (one-line change)"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+45,
+"2026-10-19 13:34",
+0.454,
+"flexonafft/casmi26-closing-the-evidence-gap",
+42,
+"code",
+"popularity weight POP_LAM 0.25 → 0.15, and promotion also fires at rel > 130 when popularity ≥ 2.5"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+46,
+"2026-10-19 13:36",
+0.454,
+"flexonafft/casmi26-closing-the-evidence-gap",
+45,
+"code",
+"popularity weight back to 0.25 and adds N1A ([M+NH4]+ / [M−H2O+H]+ spectra rebuilt as [M+H]+ GLACIER proxies for molecules with no [M+H]+ spectrum)"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+47,
+"2026-10-20 16:30",
+0.462,
+"flexonafft/casmi26-closing-the-evidence-gap",
+46,
+"code",
+"the N1 challenger: N1A's complement filter off, so proxy GLACIER scores stay where ICEBERG scores exist; those lists re-ordered by ICEBERG and proxy GLACIER together; a control pass runs first"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+48,
+"2026-10-21 09:38",
+0.462,
+"flexonafft/casmi26-closing-the-evidence-gap",
+47,
+"code",
+"adds a research pass the author calls \"N1A full-shortlist spectral coverage\" after the challenger"
+],
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+49,
+"2026-10-21 10:11",
+0.457,
+"flexonafft/casmi26-closing-the-evidence-gap",
+48,
+"code",
+"the research pass switches from \"shortlist coverage\" to \"collision-energy ensemble\" (one-line change)"
+],
+[
+"nursrijan/casm26-e006-with-metfrag-lite-re-rank",
+1,
+"2026-10-13 12:44",
+0.441,
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"first",
+"no change to the ranking code (code identical to parent; markdown retitled and credits/documentation added)."
+],
+[
+"nursrijan/casm26-e006-with-metfrag-lite-re-rank",
+2,
+"2026-10-14 06:33",
+0.441,
+"nursrijan/casm26-e006-with-metfrag-lite-re-rank",
+1,
+"rerun",
+"same code, same datasets and same image as v1 (a re-run)"
+],
+[
+"rajrajak99/casmi26-apex-v330-sovereign-vanguard-fraggap",
+1,
+"2026-10-13 14:47",
+0.44,
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+7,
+"first",
+"run_overlay experiment E006 → E007_FRAGGAP and window 40 → 80; appends final audit: library lock (lib_max >= 0.9), tautomer-canonical InChIKey-14 dedupe, DreaMS-index tail fill within 10 ppm."
+],
+[
+"rajrajak99/casmi26-apex-v340-sovereign-zenith-horizon",
+1,
+"2026-10-13 14:47",
+0.441,
+"rajrajak99/casmi26-apex-v330-sovereign-vanguard-fraggap",
+1,
+"first",
+"metric-fusion window 80 → 120 (experiment E007_HORIZON_120); GLACIER/ICEBERG candidate feed takes main-list top 50 (was TOPN) plus engine-2 top 70 (was 40); print labels renamed."
+],
+[
+"rajrajak99/casmi26-apex-v360-grand-sovereign-meta-consensus",
+1,
+"2026-10-13 15:19",
+0.441,
+"rajrajak99/casmi26-apex-v320-grand-sovereign-consensus",
+1,
+"first",
+"keeps rank 1 fixed (library top-1 if lib_max >= 0.9, else submitted top-1) and orders ranks 2+ by the existing 3-list RRF; swaps in _audit_ik14 canonicalizer; drops final assertions."
+],
+[
+"antriksharya/casmi26-lb-0-443-v7c-engine-2-rank-2-insert",
+1,
+"2026-10-13 16:33",
+0.443,
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"first",
+"the same rank-2 insert on Ahmed Berat Özer's v7c; the Python version check also accepts 3.13"
+],
+[
+"lavinwins/enveda-casmi-gold",
+1,
+"2026-10-13 16:45",
+0.441,
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"first",
+"no change to the ranking code (code and markdown identical to parent)."
+],
+[
+"lavinwins/enveda-casmi-gold",
+2,
+"2026-10-14 09:54",
+0.363,
+"lavinwins/enveda-casmi-gold",
+1,
+"code",
+"code changed vs v1 (+245 / −640 lines)"
+],
+[
+"ghazarosbarseghyan91/enveda-v7c-e006-fraggap-evgen-v14seeds",
+1,
+"2026-10-13 17:41",
+0.444,
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"first",
+"one change: engine 2's rankers get more seeds (4 → 8 and 2 → 6) and deeper trees (max_depth 6 → 7), credited to evgendvorkin's notebook"
+],
+[
+"ghazarosbarseghyan91/enveda-v7c-e006-fraggap-evgen-v14seeds",
+3,
+"2026-10-14 15:57",
+0.444,
+"ghazarosbarseghyan91/enveda-v7c-e006-fraggap-evgen-v14seeds",
+1,
+"rerun",
+"same code, same datasets and same image as v1 (a re-run)"
+],
+[
+"drpatrickchan/casmi26-v7d-e007-na-glacier",
+4,
+"2026-10-13 23:45",
+0.433,
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+7,
+"first",
+"adds E007 overlay: shifts [M+Na]+ peak lists by -21.98194, relabels them [M+H]+, re-runs GLACIER, then re-fuses and re-ranks only molecules lacking GLACIER scores before; other rows unchanged."
+],
+[
+"sibamsamanta07/casmi26-v7c-e006-fraggap",
+1,
+"2026-10-14 05:38",
+0.441,
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"first",
+"no change to the ranking code (code and markdown identical to parent)."
+],
+[
+"ahmedberatozer/casmi26-v7e-e006-glmultice",
+1,
+"2026-10-14 06:29",
+0.436,
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"first",
+"patches the GLACIER runner (mode meansim): merged multi-collision-energy spectra are predicted at each listed energy and scored by mean entropy similarity, not once at one bucketed energy."
+],
+[
+"ahmedberatozer/casmi26-v8b-native-treatment",
+1,
+"2026-10-14 06:32",
+0.431,
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"first",
+"engine-1 FPNet bank loads MAIN_PM_PLUS_FROZEN_AB_HARD_TREATMENT.pt (globbed from inputs) instead of the fpnet_full1 checkpoint, falling back to fpnet_full1 if the load fails; nothing else changes."
+],
+[
+"rajrajak99/casmi26-apex-v370-sovereign-multi-ce-horizon",
+1,
+"2026-10-14 10:54",
+0.436,
+"rajrajak99/casmi26-apex-v340-sovereign-zenith-horizon",
+1,
+"first",
+"GLACIER runs via a patched gl_runner (meansim): merged multi-CE spectra are predicted at each listed CE bucket and their entropy similarities averaged, instead of a single CE-bucket prediction."
+],
+[
+"rajrajak99/casmi26-apex-v400-sovereign-hardneg-horizon",
+1,
+"2026-10-14 11:16",
+0.431,
+"rajrajak99/casmi26-apex-v340-sovereign-zenith-horizon",
+1,
+"first",
+"engine 1's FPNet loads Ahmed Berat Özer's hard-negative checkpoint (MAIN_PM_PLUS_FROZEN_AB_HARD_TREATMENT.pt) instead of fpnet_full1, with fpnet_full1 as fallback"
+],
+[
+"rajrajak99/casmi26-apex-v410-grand-sovereign-meta-consensus",
+1,
+"2026-10-14 13:10",
+0.441,
+"rajrajak99/casmi26-apex-v360-grand-sovereign-meta-consensus",
+1,
+"first",
+"no change to the ranking code (logging/paths/setup only): two print lines renamed v360 → v410; markdown retitled."
+],
+[
+"rajrajak99/casmi26-apex-v380-sovereign-sodiated-horizon",
+2,
+"2026-10-14 13:18",
+0.433,
+"rajrajak99/casmi26-apex-v340-sovereign-zenith-horizon",
+1,
+"first",
+"adds an E007 post-step: [M+Na]+ spectra are shifted by -21.98194 m/z and relabelled [M+H]+, GLACIER is re-run on them, and only molecules that newly gain finite GLACIER scores are re-fused."
+],
+[
+"farhanishraqq/casmi-v6-43-insert-e2-pre",
+1,
+"2026-10-14 19:48",
+0.446,
+null,
+null,
+"first",
+"first version of a new pipeline"
+],
+[
+"farhanishraqq/casmi-v6-44-insert-e2-e1-pre",
+1,
+"2026-10-14 20:06",
+0.446,
+null,
+null,
+"first",
+"first version of a new pipeline"
+],
+[
+"seyitkaangunes/casmi26-e006-pubchem-promo-rel-150-lb-0-446",
+1,
+"2026-10-14 22:18",
+0.446,
+"antriksharya/casmi26-e006-e2rank2",
+1,
+"first",
+"one change: PubChem promotion threshold rel > 250 → 150 (the rest is Antriksh Arya's E006 + rank-2 insert)"
+],
+[
+"seyitkaangunes/casmi26-e006-n1a-cc-by-chebi-lb-0-452",
+1,
+"2026-10-14 22:19",
+0.444,
+"antriksharya/casmi26-e006-e2rank2",
+1,
+"first",
+"the E006 + rank-2 notebook (Antriksh Arya) with the PubChem promotion threshold rel > 250 → 100 (one-line change)"
+],
+[
+"seyitkaangunes/casmi26-e006-n1a-cc-by-chebi-lb-0-452",
+3,
+"2026-10-17 16:32",
+0.452,
+"seyitkaangunes/casmi26-e006-n1a-cc-by-chebi-lb-0-452",
+1,
+"code",
+"adds N1A ([M+NH4]+ / [M−H2O+H]+ spectra rebuilt as [M+H]+ GLACIER proxies where no [M+H]+ spectrum exists), promotion threshold 100 → 150, BIO pool → sergiomalv's CC BY ChEBI/LMSD set"
+],
+[
+"shuheitak/enveda-iceberg438",
+1,
+"2026-10-15 00:24",
+0.438,
+"samanyu1808/casmi26-iceberg-where-glacier-is-blind-lb-0-438",
+1,
+"first",
+"exact copy of samanyu1808 · ICEBERG where GL blind v1 (same code)"
+],
+[
+"shuheitak/enveda-iceberg438",
+2,
+"2026-10-15 06:00",
+0.43,
+"shuheitak/enveda-iceberg438",
+1,
+"code",
+"code changed vs v1 (+21 / −5 lines)"
+],
+[
+"shuheitak/enveda-iceberg438",
+4,
+"2026-10-16 02:11",
+0.398,
+"shuheitak/enveda-iceberg438",
+2,
+"code",
+"code changed vs v2 (+71 / −0 lines)"
+],
+[
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+1,
+"2026-10-15 01:38",
+0.443,
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+9,
+"first",
+"his dual-band notebook + Antriksh Arya's rank-2 insert, with a safer finite-score test in the fragment-gap coverage check"
+],
+[
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+3,
+"2026-10-15 09:56",
+0.446,
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+1,
+"code",
+"one change: PubChem promotion threshold rel > 250 → 150"
+],
+[
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+4,
+"2026-10-16 02:30",
+0.451,
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+3,
+"code",
+"engine 2's BIO pool from sergiomalv's CC BY ChEBI + LIPID MAPS set, and the rank-2 insert re-keyed on the metric identity"
+],
+[
+"dovydigital/casmi26-p040-antriksharya-v7c-e2rank2-0443-repro",
+1,
+"2026-10-15 06:25",
+0.443,
+"antriksharya/casmi26-lb-0-443-v7c-engine-2-rank-2-insert",
+1,
+"first",
+"exact copy of Antriksh Arya · v7c + rank-2 insert v1 (same code)"
+],
+[
+"ahmedberatozer/casmi26-v11-e2rank2-rel150",
+1,
+"2026-10-15 10:20",
+0.446,
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"first",
+"v7c + Antriksh Arya's rank-2 insert (his final cell, verbatim) + PubChem promotion threshold rel > 250 → 150 (Seyit kaan Gunes's sweep)"
+],
+[
+"omerfarukmerey/casmi26-v7c-cc-by-chebi-engine-2-rank-2",
+1,
+"2026-10-15 10:22",
+0.445,
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1,
+"first",
+"v7c + a rank-2 insert keyed on the official metric identity (a stereo or tautomer twin of rank 1 never takes rank 2), and engine 2's BIO pool from sergiomalv's CC BY ChEBI + LIPID MAPS set"
+],
+[
+"omerfarukmerey/casmi26-v7c-cc-by-chebi-engine-2-rank-2",
+3,
+"2026-10-15 18:23",
+0.445,
+"omerfarukmerey/casmi26-v7c-cc-by-chebi-engine-2-rank-2",
+1,
+"rerun",
+"same code, same datasets and same image as v1 (a re-run)"
+],
+[
+"rajrajak99/casmi26-apex-v430-sovereign-nakayoshi-fraggap",
+1,
+"2026-10-15 11:05",
+0.443,
+"saddamaditya/casmi26-dual-band-massbank-iceberg-sota",
+7,
+"first",
+"appends a final cell: engine-2 rank-2 insert (if metric key differs from rank 1), library lock (lib_max >= 0.9) at rank 1, DreaMS-tail fill within 10 ppm to 25 slots."
+],
+[
+"rajrajak99/casmi26-apex-v420-sovereign-rank2-vanguard",
+2,
+"2026-10-15 11:27",
+0.444,
+"seyitkaangunes/casmi26-e006-n1a-cc-by-chebi-lb-0-452",
+1,
+"first",
+"rank-2 cell rewritten: engine-2 insert kept (probe/r1probe/swap modes dropped), key reimplemented in RDKit, adds library lock (lib_max >= 0.9) at rank 1 and DreaMS-tail fill within 10 ppm."
+],
+[
+"rajrajak99/casmi26-apex-v440-sovereign-multi-ce-rank2",
+1,
+"2026-10-15 13:35",
+0.438,
+"rajrajak99/casmi26-apex-v370-sovereign-multi-ce-horizon",
+1,
+"first",
+"post-audit step adds engine-2 rank-2 insert after the library-locked or current rank 1 (if InChIKey14 differs), appends remaining engine-2 candidates as tail, and drops entries with no InChIKey."
+],
+[
+"rajrajak99/casmi26-apex-v450-sovereign-sodiated-rank2",
+1,
+"2026-10-15 13:35",
+0.435,
+"rajrajak99/casmi26-apex-v380-sovereign-sodiated-horizon",
+2,
+"first",
+"post-audit step adds engine-2 rank-2 insert after the library-locked or current rank 1 (if InChIKey14 differs), appends remaining engine-2 candidates as tail, and drops entries with no InChIKey."
+],
+[
+"rajrajak99/casmi26-apex-v460-supreme-meta-consensus",
+1,
+"2026-10-15 13:54",
+0.441,
+"rajrajak99/casmi26-apex-v360-grand-sovereign-meta-consensus",
+1,
+"first",
+"adds engine-2 rank-2 insert right after the frozen top-1 (library match or E007 top-1) and excludes both from the RRF over remaining candidates; one RRF weight 0.45 → 0.5."
+],
+[
+"nursrijan/casmi26-e013-rel150-e2rank2-sota",
+1,
+"2026-10-15 17:56",
+0.446,
+"ahmedberatozer/casmi26-v11-e2rank2-rel150",
+1,
+"first",
+"Ahmed Berat Özer's v11 run as experiment E013 in the E006 overlay; the Python version check also accepts 3.13"
+],
+[
+"ncorp14/casmi-e042-documented-p1-ports",
+1,
+"2026-10-15 20:27",
+0.446,
+"samanyu1808/casmi26-iceberg-where-glacier-is-blind-lb-0-438",
+1,
+"first",
+"partial source: PubChem promotion rel > 250 → 150, FUSE_N 80 → 40, ICE-only re-rank dropped; adds fragment-gap re-rank and final RRF fusion with the author's own engine (+728/-3 lines)."
+],
+[
+"easonyanyan/casmi26-v22-rel150-e2r2-clean",
+1,
+"2026-10-15 23:09",
+0.451,
+"omerfarukmerey/casmi26-v7c-cc-by-chebi-engine-2-rank-2",
+1,
+"first",
+"one change: PubChem promotion threshold rel > 250 → 150 on Omer Faruk Merey's notebook (metric-exact rank-2 insert, CC BY ChEBI + LIPID MAPS pool, v7c fragment gap)"
+],
+[
+"guhongbin/casmi26-v440-sam80",
+1,
+"2026-10-16 00:38",
+0.434,
+"guhongbin/casmi26-v439-forknur",
+1,
+"first",
+"metric-fusion window (fuse2 n) 40 → 80 via FUSE_N, and the ICEBERG re-rank now also applies to molecules without GLACIER scores (previously only if CELL19_ICE); adds a count print."
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+1,
+"2026-10-16 04:21",
+0.45,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+49,
+"first",
+"v49 of From Spectra to Structures with engine 2's rankers given more seeds (4 → 8, 2 → 6) and deeper trees (max_depth 6 → 7)"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+3,
+"2026-10-17 00:50",
+0.451,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+1,
+"code",
+"code changed vs v1 (+79 / −583 lines)"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+5,
+"2026-10-18 00:08",
+0.451,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+3,
+"code",
+"adds a natural-product bonus (weight 1.0) to the PubChem channel's documentation prior, plus tables on the documentation fields"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+7,
+"2026-10-18 19:22",
+0.448,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+5,
+"code",
+"engine 2's candidate pool also takes the PubChemLite CC0 structures that are not in COCONUT (Francisco Angulo de Lafuente's fingerprint set)"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+8,
+"2026-10-18 19:45",
+0.448,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+7,
+"code",
+"adds a LOTUS literature prior (weight 0.5) to the PubChem channel"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+9,
+"2026-10-19 04:27",
+0.455,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+8,
+"code",
+"engine 2's two rankers at max_depth 7 → 6"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+10,
+"2026-10-19 04:52",
+0.455,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+9,
+"code",
+"PubChem-channel popularity weight POP_LAM 0.25 → 0.15"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+12,
+"2026-10-19 12:03",
+0.455,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+10,
+"code",
+"adds one fold-safe FPNet model (fold 0, hash-checked) to the PubChem channel's fingerprint scores; the LOTUS reference prior loads through the dataset's own helper; adds tables on both"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+13,
+"2026-10-20 04:32",
+0.456,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+12,
+"code",
+"adds N1A: molecules with no [M+H]+ spectrum get GLACIER scores from [M+NH4]+ and [M−H2O+H]+ spectra rebuilt as [M+H]+ proxies, unless ICEBERG already scores them"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+14,
+"2026-10-20 05:00",
+0.456,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+13,
+"code",
+"adds PubChem synonym counts (weight 0.5) to the PubChem channel's prior"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+15,
+"2026-10-20 12:16",
+0.456,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+14,
+"code",
+"the PubChem channel also searches the dataset's supplement rows (legacy delta + growth), and public external reference spectra join the main library (checksum-pinned)"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+16,
+"2026-10-21 03:42",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+15,
+"code",
+"the N1 challenger, credited to Igor Zharov: proxy GLACIER scores are kept where ICEBERG scores exist, and those lists are re-ordered by ICEBERG and proxy GLACIER together"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+17,
+"2026-10-21 12:44",
+0.456,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+16,
+"code",
+"generated candidates come from 20 spectral-analogue parents instead of 6"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+18,
+"2026-10-21 14:44",
+0.456,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+17,
+"code",
+"five fold-safe FPNet models instead of one in the PubChem channel (their mean enters the fingerprint score)"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+19,
+"2026-10-21 20:15",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+18,
+"code",
+"back to 6 spectral-analogue parents (v17's 20 removed); the five fold-safe FPNet models of v18 stay"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+20,
+"2026-10-22 04:28",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+19,
+"code",
+"PubChem proposals get a sixth slot, at rank 24, in both the aggressive and the gentle slot lists"
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+24,
+"2026-10-22 13:12",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+20,
+"code",
+"adds tables from the knowledge table's spectra-chemistry files (mass and collision-energy bins) and mounts the table's newer version"
+],
+[
+"guhongbin/casmi26-v441-e2r2",
+1,
+"2026-10-16 04:36",
+0.434,
+"guhongbin/casmi26-v440-sam80",
+1,
+"first",
+"exact copy of Hongbin Gu · v440-sam80 v1 (same code)"
+],
+[
+"kingdamon/casmi26-apex-sota-precision-ensemble-v1",
+4,
+"2026-10-16 04:47",
+0.436,
+"ahmedberatozer/casmi26-v11-e2rank2-rel150",
+1,
+"first",
+"no change to the ranking code (logging/paths/setup only): nvidia-smi in try/except, SMOKE_N 12 → 6, smoke ICE_BUDGET 300 → 450, ICE/GLACIER stage asserts also accept status 'budget' (and CPU device)."
+],
+[
+"kingdamon/casmi26-apex-sota-precision-ensemble-v2",
+1,
+"2026-10-16 06:12",
+0.436,
+"kingdamon/casmi26-apex-sota-precision-ensemble-v1",
+4,
+"first",
+"exact copy of King-damon · Apex Precision Ensemble v1 v4 (same code)"
+],
+[
+"guhongbin/casmi26-v444-e2r2-injected",
+1,
+"2026-10-16 06:39",
+0.436,
+"guhongbin/casmi26-v440-sam80",
+1,
+"first",
+"appends a final cell inserting engine 2's top-1 at rank 2 (e2rank2; skipped if same metric key as rank 1; duplicates removed; capped at 25), with asserts and fail-safe restore."
+],
+[
+"guhongbin/casmi26-v445-chebi-ccby",
+1,
+"2026-10-16 07:23",
+0.436,
+"guhongbin/casmi26-v440-sam80",
+1,
+"first",
+"exact copy of Hongbin Gu · v440-sam80 v1 (same code)"
+],
+[
+"nursrijan/casmi26-the-apex-dossier-tuned-promo-rel150-e2r2",
+2,
+"2026-10-16 10:52",
+0.451,
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+4,
+"first",
+"exact copy of Maman Salto · Apex Dossier v4 (same code)"
+],
+[
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+1,
+"2026-10-16 11:07",
+0.451,
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+4,
+"first",
+"Maman Salto's Apex Dossier v4 + a shield that locks engine 1's library match at rank 1 when its cosine is at least 0.90"
+],
+[
+"kingdamon/casmi26-apex-sota-precision-ensemble-v5",
+1,
+"2026-10-16 11:08",
+0.435,
+"kingdamon/casmi26-apex-sota-precision-ensemble-v1",
+4,
+"first",
+"metric-fusion window 40 → 80 in two places: fuse2 default n and the E006 overlay's window argument (ice_fallback stays True)."
+],
+[
+"rajrajak99/casmi26-apex-v480-sovereign-deep-window",
+1,
+"2026-10-16 11:11",
+0.444,
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+1,
+"first",
+"window argument of the overlay's rerank_row call 40 → 80 (ice_fallback=False unchanged); no other code change."
+],
+[
+"rajrajak99/casmi26-apex-v480-sovereign-deep-window",
+2,
+"2026-10-16 16:24",
+0.451,
+"rajrajak99/casmi26-apex-v480-sovereign-deep-window",
+1,
+"code",
+"code changed vs v1 (+2 / −2 lines)"
+],
+[
+"rajrajak99/casmi26-apex-v490-sovereign-sodiated-horizon",
+1,
+"2026-10-16 16:28",
+0.438,
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+1,
+"first",
+"adds an E007 post-step: [M+Na]+ spectra are shifted by -21.98194 m/z and relabelled [M+H]+, GLACIER is re-run on them, and only molecules that newly gain finite GLACIER scores are re-fused."
+],
+[
+"guhongbin/casmi26-v446-chebi-ccby",
+1,
+"2026-10-17 00:47",
+0.436,
+"guhongbin/casmi26-v439-forknur",
+1,
+"first",
+"exact copy of Hongbin Gu · v439 forknur v1 (same code)"
+],
+[
+"guhongbin/casmi26-v447-pubchemlite",
+1,
+"2026-10-17 05:40",
+0.442,
+"guhongbin/casmi26-v439-forknur",
+1,
+"first",
+"appends PubChemLite structures (fingerprints, masses, keys, SMILES from pubchemlite_* files) not already in the embedded module's candidate pool (co_* arrays); logs the number of new structures."
+],
+[
+"ahmedberatozer/casmi26-v12-gentop-sync",
+1,
+"2026-10-17 06:24",
+0.446,
+"easonyanyan/casmi26-v22-rel150-e2r2-clean",
+1,
+"first",
+"exact copy of easonyanyan · V22 Rel150 E2R2 v1 (same code)"
+],
+[
+"ahmedberatozer/casmi26-v12-gentop-p1b",
+2,
+"2026-10-17 06:51",
+0.439,
+"easonyanyan/casmi26-v22-rel150-e2r2-clean",
+1,
+"first",
+"adds rule P1b: a generated engine-1 rank 1 differing from the final rank 1 takes rank 1; the old rank 1 moves to rank 2 (metric-deduped, cut at 25)."
+],
+[
+"shawncsx/casmi26-v53-seyit446",
+5,
+"2026-10-17 07:49",
+0.436,
+"seyitkaangunes/casmi26-e006-pubchem-promo-rel-150-lb-0-446",
+1,
+"first",
+"no change to the ranking code (logging/paths/setup only): T4 check hard-coded, ICE/GLACIER stage status/device/RDKit/error asserts become warnings (status 'budget' and 'missing' accepted); markdown rewritten as documentation."
+],
+[
+"shawncsx/casmi26-v53-seyit446",
+6,
+"2026-10-21 04:44",
+0.436,
+"shawncsx/casmi26-v53-seyit446",
+5,
+"data",
+"same code as v5; new version of dataset casmi26-pubchem-popularity-prior"
+],
+[
+"rajrajak99/casmi26-apex-v510-sovereign-precision-optima",
+1,
+"2026-10-17 10:26",
+0.445,
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+1,
+"first",
+"PubChem promotion threshold rel > 150 → 165 (one-line change)."
+],
+[
+"rajrajak99/casmi26-apex-v530-sovereign-grand-consensus",
+1,
+"2026-10-17 10:30",
+0.451,
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+1,
+"first",
+"exact copy of Raja Rajak · Apex v470 v1 (same code)"
+],
+[
+"guhongbin/casmi26-v449-rel150",
+1,
+"2026-10-17 12:40",
+0.447,
+"guhongbin/casmi26-v447-pubchemlite",
+1,
+"first",
+"PubChem promotion threshold rel > 250 → 150 (one-line change)."
+],
+[
+"kaiwalyaatulraut/enveda-casmi",
+1,
+"2026-10-17 12:42",
+0.451,
+"flexonafft/casmi26-closing-the-evidence-gap",
+30,
+"first",
+"exact copy of Igor Zharov · Closing the Evidence Gap v30 (same code)"
+],
+[
+"saddamaditya/dual-gate-evidence-margin-pubchemlite-cc0",
+1,
+"2026-10-17 13:38",
+0.451,
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+4,
+"first",
+"promotion also fires when rel > 130 and popularity ≥ 2.5 (besides rel > 150)"
+],
+[
+"saddamaditya/dual-gate-evidence-margin-pubchemlite-cc0",
+2,
+"2026-10-20 06:43",
+0.456,
+"saddamaditya/dual-gate-evidence-margin-pubchemlite-cc0",
+1,
+"code",
+"adds PubChemLite CC0 candidates to engine 2 and N1A GLACIER proxies, popularity weight 0.25 → 0.15, back on the Python 3.12 image"
+],
+[
+"ahmedberatozer/casmi26-v13-chebi-lmsd",
+1,
+"2026-10-17 15:33",
+0.451,
+"easonyanyan/casmi26-v22-rel150-e2r2-clean",
+1,
+"first",
+"exact copy of easonyanyan · V22 Rel150 E2R2 v1 (same code)"
+],
+[
+"mayankraaz/0-458-sota-spectraforge-apex-synthesis",
+3,
+"2026-10-17 18:41",
+0.448,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+52,
+"first",
+"built on Dmitrii Gluzdov · Spectra to Structures v52 (change not written up yet)"
+],
+[
+"guhongbin/casmi26-v459-e006-defaultimg",
+1,
+"2026-10-17 21:32",
+0.454,
+"seyitkaangunes/casmi26-e006-pubchem-promo-rel-150-lb-0-446",
+1,
+"first",
+"Seyit kaan Gunes's E006 + rel > 150 notebook on the default image (Python and GPU asserts become printed checks), with PubChemLite CC0 structures added to engine 2"
+],
+[
+"guhongbin/casmi26-v461-e006-ccby-glob",
+1,
+"2026-10-17 21:57",
+0.454,
+"guhongbin/casmi26-v459-e006-defaultimg",
+1,
+"first",
+"engine 2's BIO pool read from sergiomalv's CC BY ChEBI/LMSD folder, found by a directory search, when it is mounted"
+],
+[
+"varianceofx/casmi26-apex-fork",
+1,
+"2026-10-18 01:44",
+0.451,
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+4,
+"first",
+"exact copy of Maman Salto · Apex Dossier v4 (same code)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+2,
+"2026-10-18 07:06",
+0.455,
+"varianceofx/casmi26-apex-fork",
+1,
+"code",
+"code changed vs v1 (+25 / −0 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+3,
+"2026-10-18 08:24",
+0.448,
+"varianceofx/casmi26-apex-fork",
+2,
+"code",
+"code changed vs v2 (+4 / −4 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+5,
+"2026-10-18 16:04",
+0.453,
+"varianceofx/casmi26-apex-fork",
+3,
+"code",
+"code changed vs v3 (+17 / −4 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+6,
+"2026-10-19 02:57",
+0.454,
+"varianceofx/casmi26-apex-fork",
+5,
+"code",
+"code changed vs v5 (+260 / −0 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+7,
+"2026-10-20 04:15",
+0.453,
+"varianceofx/casmi26-apex-fork",
+6,
+"code",
+"code changed vs v6 (+246 / −0 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+8,
+"2026-10-20 10:37",
+0.448,
+"varianceofx/casmi26-apex-fork",
+7,
+"code",
+"code changed vs v7 (+68 / −665 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+9,
+"2026-10-21 00:48",
+0.454,
+"varianceofx/casmi26-apex-fork",
+8,
+"code",
+"code changed vs v8 (+147 / −69 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+10,
+"2026-10-21 02:03",
+0.432,
+"varianceofx/casmi26-apex-fork",
+9,
+"code",
+"code changed vs v9 (+64 / −3 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+12,
+"2026-10-21 07:55",
+0.446,
+"varianceofx/casmi26-apex-fork",
+10,
+"code",
+"code changed vs v10 (+16 / −64 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+14,
+"2026-10-21 13:37",
+0.453,
+"varianceofx/casmi26-apex-fork",
+12,
+"code",
+"code changed vs v12 (+1 / −14 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+15,
+"2026-10-22 03:18",
+0.441,
+"varianceofx/casmi26-apex-fork",
+14,
+"code",
+"code changed vs v14 (+29 / −9 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+16,
+"2026-10-22 11:36",
+0.444,
+"varianceofx/casmi26-apex-fork",
+15,
+"code",
+"code changed vs v15 (+8 / −28 lines)"
+],
+[
+"varianceofx/casmi26-apex-fork",
+18,
+"2026-10-23 01:07",
+0.45,
+"varianceofx/casmi26-apex-fork",
+16,
+"code",
+"code changed vs v16 (+267 / −1 lines)"
+],
+[
+"alexchilton/casmi26-public-guhongbin-v461",
+1,
+"2026-10-18 05:02",
+0.454,
+"guhongbin/casmi26-v461-e006-ccby-glob",
+1,
+"first",
+"exact copy of Hongbin Gu · v461 e006 ccby glob v1 (same code)"
+],
+[
+"alexchilton/casmi26-v461-depth7",
+1,
+"2026-10-18 05:02",
+0.448,
+"guhongbin/casmi26-v461-e006-ccby-glob",
+1,
+"first",
+"built on Hongbin Gu · v461 e006 ccby glob v1 (change not written up yet)"
+],
+[
+"rajrajak99/casmi26-apex-v570-dual-gate-optima",
+1,
+"2026-10-18 05:41",
+0.451,
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+1,
+"first",
+"built on Raja Rajak · Apex v470 v1 (change not written up yet)"
+],
+[
+"rajrajak99/casmi26-apex-v560-multi-adduct-dual-gate",
+1,
+"2026-10-18 05:41",
+0.438,
+"rajrajak99/casmi26-apex-v490-sovereign-sodiated-horizon",
+1,
+"first",
+"built on Raja Rajak · Apex v490 Sovereign Sodiat v1 (change not written up yet)"
+],
+[
+"rajrajak99/casmi26-apex-v580-grand-sovereign-consensus",
+1,
+"2026-10-18 06:03",
+0.451,
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+1,
+"first",
+"built on Raja Rajak · Apex v470 v1 (change not written up yet)"
+],
+[
+"ahmedberatozer/casmi26-v14-pubchemlite",
+1,
+"2026-10-18 07:58",
+0.455,
+"ahmedberatozer/casmi26-v13-chebi-lmsd",
+1,
+"first",
+"engine 2's candidate pool also takes the PubChemLite CC0 structures that are not in COCONUT (Francisco Angulo de Lafuente's fingerprint set, credited to Hongbin Gu's v447)"
+],
+[
+"guhongbin/casmi26-v462-e006n1a-pubchemlite",
+1,
+"2026-10-18 12:37",
+0.455,
+"seyitkaangunes/casmi26-e006-n1a-cc-by-chebi-lb-0-452",
+3,
+"first",
+"Seyit kaan Gunes's E006 + N1A notebook on the default image (asserts become printed checks), with PubChemLite CC0 structures added to engine 2"
+],
+[
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"2026-10-18 15:32",
+0.455,
+"ahmedberatozer/casmi26-v14-pubchemlite",
+1,
+"first",
+"adds N1A, credited to Seyit kaan Gunes: molecules with no [M+H]+ spectrum get GLACIER scores from [M+NH4]+ and [M−H2O+H]+ spectra rebuilt as [M+H]+ proxies, unless ICEBERG already scores them"
+],
+[
+"guhongbin/casmi26-v463-v14-clone",
+1,
+"2026-10-18 17:07",
+0.455,
+"ahmedberatozer/casmi26-v14-pubchemlite",
+1,
+"first",
+"exact copy of Ahmed Berat Özer · v14 PubChemLite v1 (same code)"
+],
+[
+"guhongbin/casmi26-v464-v15-clone",
+1,
+"2026-10-18 17:34",
+0.455,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"exact copy of Ahmed Berat Özer · v15 N1A v1 (same code)"
+],
+[
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"2026-10-18 17:41",
+0.456,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"Ahmed Berat Özer's v15 with the PubChem-channel popularity weight POP_LAM 0.25 → 0.15 (one-line change)"
+],
+[
+"guhongbin/casmi26-v466-v15-rel150",
+1,
+"2026-10-18 17:55",
+0.454,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"Ahmed Berat Özer's v15 with the aggressive-slot threshold REL_TH 600 → 150 (one-line change)"
+],
+[
+"guhongbin/casmi26-v467-v15-pop035",
+1,
+"2026-10-18 18:02",
+0.447,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"built on Ahmed Berat Özer · v15 N1A v1 (change not written up yet)"
+],
+[
+"guhongbin/casmi26-v468-v15-lib105",
+1,
+"2026-10-18 20:46",
+0.455,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"built on Ahmed Berat Özer · v15 N1A v1 (change not written up yet)"
+],
+[
+"su2567/casmi26-v22-control2",
+2,
+"2026-10-18 22:39",
+0.451,
+null,
+null,
+"first",
+"first version of a new pipeline"
+],
+[
+"guhongbin/casmi26-v469-v15-pop005",
+1,
+"2026-10-19 00:02",
+0.448,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"built on Ahmed Berat Özer · v15 N1A v1 (change not written up yet)"
+],
+[
+"guhongbin/casmi26-v470-v15-ice9000",
+1,
+"2026-10-19 00:16",
+0.455,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"built on Ahmed Berat Özer · v15 N1A v1 (change not written up yet)"
+],
+[
+"guhongbin/casmi26-v471-v15-gl8000",
+1,
+"2026-10-19 00:30",
+0.455,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"built on Ahmed Berat Özer · v15 N1A v1 (change not written up yet)"
+],
+[
+"guhongbin/casmi26-v472-v15-popunion400",
+1,
+"2026-10-19 00:41",
+0.455,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"built on Ahmed Berat Özer · v15 N1A v1 (change not written up yet)"
+],
+[
+"guhongbin/casmi26-v473-v15-rel1200",
+1,
+"2026-10-19 00:52",
+0.455,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"built on Ahmed Berat Özer · v15 N1A v1 (change not written up yet)"
+],
+[
+"su2567/casmi26-v22-pubchemlite",
+1,
+"2026-10-19 04:09",
+0.455,
+null,
+null,
+"first",
+"first version of a new pipeline"
+],
+[
+"su2567/casmi26-v22-pubchemlite-n1a",
+1,
+"2026-10-19 04:50",
+0.451,
+null,
+null,
+"first",
+"first version of a new pipeline"
+],
+[
+"su2567/casmi26-v22-a50",
+2,
+"2026-10-19 05:42",
+0.448,
+null,
+null,
+"first",
+"first version of a new pipeline"
+],
+[
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+1,
+"2026-10-19 08:24",
+0.448,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"loads a DreaMS-fingerprint model (dreamsfp_d2) into the FPNet bank when its file is mounted"
+],
+[
+"yjsshisfsf/casmi26-v15e3",
+1,
+"2026-10-19 09:47",
+0.46,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"Ahmed Berat Özer's v15 plus a third engine that reads one dataset and three kernel outputs that are not public, so this step cannot be reproduced"
+],
+[
+"guhongbin/casmi26-v474-v15-pop020",
+1,
+"2026-10-19 10:11",
+0.455,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"built on Ahmed Berat Özer · v15 N1A v1 (change not written up yet)"
+],
+[
+"guhongbin/casmi26-v475-v15-pop015union300",
+1,
+"2026-10-19 10:19",
+0.456,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"built on Ahmed Berat Özer · v15 N1A v1 (change not written up yet)"
+],
+[
+"guhongbin/casmi26-v476-v16-clone",
+1,
+"2026-10-19 10:32",
+0.448,
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+1,
+"first",
+"exact copy of Ahmed Berat Özer · v16-pcbank-d2 v1 (same code)"
+],
+[
+"varshithakolupuri/casmi26-13-steps-to-0-456-what-each-one-added",
+2,
+"2026-10-19 11:42",
+0.456,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"Hongbin Gu's v465 run unchanged, plus a cell that plots a score ladder of the public steps that built it"
+],
+[
+"ahmedberatozer/casmi26-v18-c3r3",
+1,
+"2026-10-19 13:48",
+0.454,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"adds a \"C3\" candidate-generation pass (16 analogue parents, up to 400 new structures per molecule, one-hour budget)"
+],
+[
+"rajrajak99/casmi26-apex-v600-sovereign-dreamsfp-d2",
+1,
+"2026-10-19 14:22",
+0.444,
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+1,
+"first",
+"exact copy of Ahmed Berat Özer · v16-pcbank-d2 v1 (same code)"
+],
+[
+"rajrajak99/casmi26-apex-v610-dreamsfp-dual-gate",
+1,
+"2026-10-19 14:23",
+0.444,
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+1,
+"first",
+"built on Ahmed Berat Özer · v16-pcbank-d2 v1 (change not written up yet)"
+],
+[
+"rajrajak99/casmi26-apex-v620-dreamsfp-optima-backfill",
+1,
+"2026-10-19 14:44",
+0.444,
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+1,
+"first",
+"built on Ahmed Berat Özer · v16-pcbank-d2 v1 (change not written up yet)"
+],
+[
+"lavinwins/enveda-casmi-gold-medal",
+1,
+"2026-10-19 15:11",
+0.456,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"Hongbin Gu's v465 with promotion also at rel > 130 when popularity ≥ 2.5, plus a cell that draws the first answers"
+],
+[
+"howonkang/casmi26-v99-b-n1-on-pop025",
+5,
+"2026-10-19 16:51",
+0.454,
+"ahmedberatozer/casmi26-v14-pubchemlite",
+1,
+"first",
+"built on Ahmed Berat Özer · v14 PubChemLite v1 (change not written up yet)"
+],
+[
+"guhongbin/casmi26-v478-v18-clone",
+1,
+"2026-10-20 00:16",
+0.454,
+"ahmedberatozer/casmi26-v18-c3r3",
+1,
+"first",
+"exact copy of Ahmed Berat Özer · v18-c3r3 v1 (same code)"
+],
+[
+"rajrajak99/casmi26-apex-v630-dreamsfp-pop-union",
+1,
+"2026-10-20 04:04",
+0.445,
+"rajrajak99/casmi26-apex-v610-dreamsfp-dual-gate",
+1,
+"first",
+"built on Raja Rajak · Apex v610 DreamsFP Dual-Ga v1 (change not written up yet)"
+],
+[
+"rajrajak99/casmi26-apex-v640-grand-sovereign-consensus",
+1,
+"2026-10-20 04:04",
+0.444,
+"rajrajak99/casmi26-apex-v610-dreamsfp-dual-gate",
+1,
+"first",
+"exact copy of Raja Rajak · Apex v610 DreamsFP Dual-Ga v1 (same code)"
+],
+[
+"rajrajak99/casmi26-apex-v650-sovereign-precision-guardian",
+1,
+"2026-10-20 04:39",
+0.444,
+"ahmedberatozer/casmi26-v16-pcbank-d2",
+1,
+"first",
+"built on Ahmed Berat Özer · v16-pcbank-d2 v1 (change not written up yet)"
+],
+[
+"zhangyiji/casmi26-full-baseline-1792471428",
+1,
+"2026-10-20 04:43",
+0.456,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"exact copy of Hongbin Gu · v465 pop 0.15 v1 (same code)"
+],
+[
+"egehseyinca/casmi26-v465-v15-pop015",
+1,
+"2026-10-20 06:35",
+0.456,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"built on Hongbin Gu · v465 pop 0.15 v1 (change not written up yet)"
+],
+[
+"guhongbin/casmi26-v482-v15-dualgate",
+1,
+"2026-10-20 09:09",
+0.456,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"Hongbin Gu's v465 with promotion also at rel > 130 when popularity ≥ 2.5 (dual gate)"
+],
+[
+"guhongbin/casmi26-v483-v15-topn40",
+1,
+"2026-10-20 09:09",
+0.448,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"main-list length TOPN 60 → 40 (one-line change)"
+],
+[
+"guhongbin/casmi26-v484-v15-alpha08",
+1,
+"2026-10-20 09:44",
+0.445,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"engine-2 weight in the two-engine fusion ALPHA 0.6 → 0.8 (one-line change)"
+],
+[
+"zhangyiji/casmi26-v18d2-run2-1792491388",
+1,
+"2026-10-20 10:16",
+0.446,
+"ahmedberatozer/casmi26-v18-c3r3",
+1,
+"first",
+"built on Ahmed Berat Özer · v18-c3r3 v1 (change not written up yet)"
+],
+[
+"gbmorris1/casmi-sub41-port465",
+1,
+"2026-10-20 14:14",
+0.456,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"exact copy of Hongbin Gu · v465 pop 0.15 v1 (same code)"
+],
+[
+"zhangyiji/casmi26-v466-rel150-pop025-run2-1792510421",
+1,
+"2026-10-20 15:33",
+0.454,
+"guhongbin/casmi26-v466-v15-rel150",
+1,
+"first",
+"exact copy of Hongbin Gu · v466 v15 rel150 v1 (same code)"
+],
+[
+"ahmedberatozer/casmi26-v19-bioext",
+1,
+"2026-10-20 16:14",
+0.447,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"engine 2's candidate pool also takes a \"bioext\" structure set when it is mounted"
+],
+[
+"gbmorris1/casmi-probe-dmg-0-10",
+1,
+"2026-10-20 17:14",
+0.443,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"built on Hongbin Gu · v465 pop 0.15 v1 (change not written up yet)"
+],
+[
+"zhangyiji/casmi26-v466-ice9000-gl8000-1792526598",
+1,
+"2026-10-20 20:03",
+0.454,
+"guhongbin/casmi26-v466-v15-rel150",
+1,
+"first",
+"built on Hongbin Gu · v466 v15 rel150 v1 (change not written up yet)"
+],
+[
+"lavinwins/casmi26-top-1-gold",
+1,
+"2026-10-21 01:53",
+0.462,
+"flexonafft/casmi26-closing-the-evidence-gap",
+47,
+"first",
+"Igor Zharov's v47, forked unchanged"
+],
+[
+"lavinwins/casmi26-top-1-gold",
+2,
+"2026-10-21 08:21",
+0.423,
+"lavinwins/casmi26-top-1-gold",
+1,
+"code",
+"code changed vs v1 (+1956 / −2842 lines)"
+],
+[
+"zhangyiji/casmi26-lambdarank-ranker-1792548009",
+1,
+"2026-10-21 02:00",
+0.438,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"built on Hongbin Gu · v465 pop 0.15 v1 (change not written up yet)"
+],
+[
+"shawncsx/casmi26-v54-guhongbin465",
+7,
+"2026-10-21 05:19",
+0.456,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"Hongbin Gu's v465 with its assertions turned into printed warnings, on Kaggle's default image"
+],
+[
+"shawncsx/casmi26-v54-guhongbin465",
+8,
+"2026-10-23 12:58",
+0.456,
+"shawncsx/casmi26-v54-guhongbin465",
+7,
+"rerun",
+"same code, same datasets and same image as v7 (a re-run)"
+],
+[
+"zhangyiji/casmi26-weighted-lambdarank-1792567024",
+1,
+"2026-10-21 07:17",
+0.44,
+"zhangyiji/casmi26-lambdarank-ranker-1792548009",
+1,
+"first",
+"built on Edge · LambdaRank ranker 17925480 v1 (change not written up yet)"
+],
+[
+"sanpier/casmi-26-the-data-behind-spectra-to-structures",
+1,
+"2026-10-21 09:17",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+16,
+"first",
+"Dmitrii Gluzdov's v16, forked unchanged"
+],
+[
+"sanpier/casmi-26-the-data-behind-spectra-to-structures",
+2,
+"2026-10-23 13:03",
+0.465,
+"sanpier/casmi-26-the-data-behind-spectra-to-structures",
+1,
+"code",
+"the PubChem merge gate decides promotion on the evidence of the candidate it would promote (its own S, popularity and fingerprint margin) instead of channel-level values; thresholds unchanged"
+],
+[
+"shawncsx/casmi26-v54b-rdkit256",
+1,
+"2026-10-21 09:59",
+0.456,
+"shawncsx/casmi26-v54-guhongbin465",
+7,
+"first",
+"built on shawncsx · v54 guhongbin465 v7 (change not written up yet)"
+],
+[
+"shawncsx/casmi26-v54b-rth300",
+1,
+"2026-10-21 10:00",
+0.456,
+"shawncsx/casmi26-v54b-rdkit256",
+1,
+"first",
+"built on shawncsx · v54b rdkit256 v1 (change not written up yet)"
+],
+[
+"lavinwins/casmi-26-lb-top-1",
+1,
+"2026-10-21 10:28",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+16,
+"first",
+"Dmitrii Gluzdov's v16, forked unchanged"
+],
+[
+"shawncsx/casmi26-v54b-pc10k",
+1,
+"2026-10-21 15:18",
+0.456,
+"shawncsx/casmi26-v54b-rdkit256",
+1,
+"first",
+"PubChem pass PC_N1 5,000 → 10,000 candidates (one-line change)"
+],
+[
+"ahmedberatozer/casmi26-v22-n1-challenger",
+1,
+"2026-10-21 15:29",
+0.463,
+"ahmedberatozer/casmi26-v15-n1a",
+1,
+"first",
+"the N1 challenger, credited to Igor Zharov's v47 (also Dmitrii Gluzdov's v16): proxy GLACIER scores kept where ICEBERG scores exist; those lists re-ordered by ICEBERG and proxy GLACIER together"
+],
+[
+"amrkhalid124/casmi26-upstream-data-v18",
+1,
+"2026-10-21 17:37",
+0.456,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+18,
+"first",
+"exact copy of Dmitrii Gluzdov · The Data Behind S2S v18 (same code)"
+],
+[
+"amrkhalid124/casmi26-upstream-data-v16",
+1,
+"2026-10-21 18:45",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+18,
+"first",
+"Dmitrii Gluzdov's v18 set back to its v16 configuration: one fold-safe FPNet model (fold 0) and 6 analogue parents instead of five models and 20"
+],
+[
+"guhongbin/casmi26-v492-dg-v19",
+1,
+"2026-10-22 04:40",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+19,
+"first",
+"Dmitrii Gluzdov's v19 with an unused sixth-slot setting (PC_SIXTH_SLOT None) printed in the log"
+],
+[
+"guhongbin/casmi26-v493-dg-v20",
+1,
+"2026-10-22 04:40",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+20,
+"first",
+"exact copy of Dmitrii Gluzdov · The Data Behind S2S v20 (same code)"
+],
+[
+"likedge/casmi26-n1-challenger-pair-lambdarank",
+1,
+"2026-10-22 06:20",
+0.446,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"built on Hongbin Gu · v465 pop 0.15 v1 (change not written up yet)"
+],
+[
+"ahmedberatozer/casmi26-v25-unq",
+1,
+"2026-10-22 07:42",
+0.463,
+"ahmedberatozer/casmi26-v22-n1-challenger",
+1,
+"first",
+"built on Ahmed Berat Özer · v22 N1 challenger v1 (change not written up yet)"
+],
+[
+"rajrajak99/casmi26-apex-v800-sovereign-v16-sota-foundation",
+3,
+"2026-10-22 08:50",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+20,
+"first",
+"built on Dmitrii Gluzdov · The Data Behind S2S v20 (change not written up yet)"
+],
+[
+"rajrajak99/casmi26-apex-v810-sovereign-dualgate-challenger",
+2,
+"2026-10-22 08:50",
+0.464,
+"rajrajak99/casmi26-apex-v800-sovereign-v16-sota-foundation",
+3,
+"first",
+"promotion also fires when rel > 125 and popularity ≥ 3 (besides rel > 150)"
+],
+[
+"rajrajak99/casmi26-apex-v820-sovereign-precision-guardian",
+2,
+"2026-10-22 09:12",
+0.459,
+"rajrajak99/casmi26-apex-v810-sovereign-dualgate-challenger",
+2,
+"first",
+"promotion clause back to one threshold, rel > 165 (dual gate removed)"
+],
+[
+"rajrajak99/casmi26-apex-v830-sovereign-enhanced-popularity",
+2,
+"2026-10-22 10:13",
+0.464,
+"rajrajak99/casmi26-apex-v810-sovereign-dualgate-challenger",
+2,
+"first",
+"dual gate moved to rel > 120 with popularity ≥ 3.5"
+],
+[
+"rajrajak99/casmi26-apex-v840-sovereign-consensus",
+1,
+"2026-10-22 10:25",
+0.464,
+"rajrajak99/casmi26-apex-v810-sovereign-dualgate-challenger",
+2,
+"first",
+"built on Raja Rajak · Apex v810 Sovereign DualGa v2 (change not written up yet)"
+],
+[
+"likedge/casmi26-a-pair-lambdarank-only",
+1,
+"2026-10-22 11:30",
+0.45,
+"likedge/casmi26-n1-challenger-pair-lambdarank",
+1,
+"first",
+"N1 challenger switched off (N1_COMPLEMENT True); one-line change"
+],
+[
+"ahmedberatozer/casmi26-v23a-fpnet-s-views",
+1,
+"2026-10-22 13:37",
+0.454,
+"ahmedberatozer/casmi26-v22-n1-challenger",
+1,
+"first",
+"engine 1's feature models fe_A / fe_B swapped for fpnet_S25 / fpnet_S50 views from a mounted fpnet_s folder when present"
+],
+[
+"d1m4official/enveda-casmi-2026-solution-v28",
+2,
+"2026-10-22 14:00",
+0.464,
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+24,
+"first",
+"exact copy of Dmitrii Gluzdov · The Data Behind S2S v24 (same code)"
+],
+[
+"gbmorris1/casmi-inject-a1",
+3,
+"2026-10-22 14:25",
+0.459,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"built on Hongbin Gu · v465 pop 0.15 v1 (change not written up yet)"
+],
+[
+"anthony8848/casmi26-v15-e006-repro",
+1,
+"2026-10-22 14:25",
+0.442,
+"antriksharya/casmi26-e006-e2rank2",
+1,
+"first",
+"the E006 + rank-2 notebook (Antriksh Arya) with the commit switch forced to a full run (IS_RERUN True)"
+],
+[
+"gbmorris1/casmi-icejoint",
+1,
+"2026-10-22 14:38",
+0.456,
+"guhongbin/casmi26-v465-v15-pop015",
+1,
+"first",
+"ICEBERG also scores in the final re-rank of the fused list (CELL19_ICE False → True), plus an output clean-up cell"
+],
+[
+"likedge/casmi26-c-v22-n1-challenger-exact",
+1,
+"2026-10-22 16:42",
+0.463,
+"ahmedberatozer/casmi26-v22-n1-challenger",
+1,
+"first",
+"exact copy of Ahmed Berat Özer · v22 N1 challenger v1 (same code)"
+],
+[
+"hailonglv/casmi26-upstream-v16-run",
+1,
+"2026-10-23 00:14",
+0.464,
+"amrkhalid124/casmi26-upstream-data-v16",
+1,
+"first",
+"exact copy of Overfitter · upstream data v16 v1 (same code)"
+],
+[
+"hailonglv/casmi26-upstream-v16-run",
+2,
+"2026-10-23 00:54",
+0.456,
+"hailonglv/casmi26-upstream-v16-run",
+1,
+"code",
+"N1 challenger switched off (N1_COMPLEMENT True); one-line change"
+],
+[
+"guhongbin/casmi26-v494-dg-n1comp",
+1,
+"2026-10-23 04:47",
+0.456,
+"guhongbin/casmi26-v492-dg-v19",
+1,
+"first",
+"Hongbin Gu's v492 with the N1 challenger switched off (N1_COMPLEMENT True); one-line change"
+],
+[
+"guhongbin/casmi26-v495-dg-arm-n1a",
+1,
+"2026-10-23 04:48",
+0.464,
+"guhongbin/casmi26-v492-dg-v19",
+1,
+"first",
+"N1 proxy arm N1A_D → N1A (one-line change)"
+],
+[
+"guhongbin/casmi26-v496-dg-lotus10",
+1,
+"2026-10-23 05:13",
+0.464,
+"guhongbin/casmi26-v492-dg-v19",
+1,
+"first",
+"LOTUS literature prior weight 0.5 → 1.0 (one-line change)"
+],
+[
+"guhongbin/casmi26-v497-dg-gate-loose",
+1,
+"2026-10-23 05:14",
+0.464,
+"guhongbin/casmi26-v492-dg-v19",
+1,
+"first",
+"promotion thresholds S_TAU, POP_TAU 6, 5 → 5, 4 (one-line change)"
+],
+[
+"hailonglv/casmi26-v16-unq",
+1,
+"2026-10-23 09:49",
+0.456,
+"hailonglv/casmi26-upstream-v16-run",
+2,
+"first",
+"built on dan mx · upstream v16 run v2 (change not written up yet)"
+],
+[
+"hailonglv/casmi26-v19-run",
+1,
+"2026-10-23 09:50",
+0.464,
+"guhongbin/casmi26-v492-dg-v19",
+1,
+"first",
+"exact copy of Hongbin Gu · v492 dg-v19 v1 (same code)"
+],
+[
+"gbmorris1/casmi-dg464",
+1,
+"2026-10-23 14:17",
+0.455,
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+55,
+"first",
+"built on Dmitrii Gluzdov · Spectra to Structures v55 (change not written up yet)"
+]
+],
+"RERUN_GROUPS": [
+[
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+52
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+54
+]
+],
+[
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+23
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+15
+]
+],
+[
+[
+"flexonafft/casmi26-closing-the-evidence-gap",
+30
+],
+[
+"kaiwalyaatulraut/enveda-casmi",
+1
+]
+],
+[
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+16
+],
+[
+"sanpier/casmi-26-the-data-behind-spectra-to-structures",
+1
+],
+[
+"lavinwins/casmi-26-lb-top-1",
+1
+]
+],
+[
+[
+"rajrajak99/casmi26-apex-v470-sovereign-sota-synthesis",
+1
+],
+[
+"rajrajak99/casmi26-apex-v530-sovereign-grand-consensus",
+1
+]
+],
+[
+[
+"omerfarukmerey/casmi26-v7c-cc-by-chebi-engine-2-rank-2",
+1
+],
+[
+"omerfarukmerey/casmi26-v7c-cc-by-chebi-engine-2-rank-2",
+3
+]
+],
+[
+[
+"ghazarosbarseghyan91/enveda-v7c-e006-fraggap-evgen-v14seeds",
+1
+],
+[
+"ghazarosbarseghyan91/enveda-v7c-e006-fraggap-evgen-v14seeds",
+3
+]
+],
+[
+[
+"antriksharya/casmi26-lb-0-443-v7c-engine-2-rank-2-insert",
+1
+],
+[
+"dovydigital/casmi26-p040-antriksharya-v7c-e2rank2-0443-repro",
+1
+]
+],
+[
+[
+"evgendvorkin/enveda-casmi-2026",
+8
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+12
+]
+],
+[
+[
+"evgendvorkin/enveda-casmi-2026",
+16
+],
+[
+"ahmedberatozer/casmi26-v4m-inference",
+1
+]
+],
+[
+[
+"evgendvorkin/enveda-casmi-2026",
+17
+],
+[
+"seyitkaangunes/casmi26-e5c-union-gl-a06",
+1
+]
+],
+[
+[
+"evgendvorkin/enveda-casmi-2026",
+20
+],
+[
+"bobthebot369/enveda-casmi-2026-v10-apex-fusion-sota",
+1
+]
+],
+[
+[
+"evgendvorkin/enveda-casmi-2026",
+21
+],
+[
+"evgendvorkin/enveda-casmi-2026",
+22
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+51
+]
+],
+[
+[
+"evgendvorkin/enveda-casmi-2026",
+26
+],
+[
+"nursrijan/casm26-e006-with-metfrag-lite-re-rank",
+1
+],
+[
+"nursrijan/casm26-e006-with-metfrag-lite-re-rank",
+2
+],
+[
+"lavinwins/enveda-casmi-gold",
+1
+],
+[
+"sibamsamanta07/casmi26-v7c-e006-fraggap",
+1
+]
+],
+[
+[
+"shafiquatali/casmi26-e007-pub",
+1
+],
+[
+"nursrijan/casmi26-e007-window-80-ice-fallback-sota",
+1
+]
+],
+[
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+10
+],
+[
+"omn1v3r53/omniverse-enveda-casmi-molecule-id-sota",
+11
+]
+],
+[
+[
+"nikitabakutov/casmi26-e1b-w015-icefb",
+1
+],
+[
+"nikitabakutov/casmi26-e1b-w015-icefb",
+2
+]
+],
+[
+[
+"nursrijan/casmi26-metric-fusion-consensus-backfill",
+1
+],
+[
+"nursrijan/casmi26-metric-fusion-consensus-backfill",
+2
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+82
+]
+],
+[
+[
+"guhongbin/casmi26-v440-sam80",
+1
+],
+[
+"guhongbin/casmi26-v441-e2r2",
+1
+]
+],
+[
+[
+"rajrajak99/casmi26-apex-v180-sovereign-titan",
+1
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+12
+]
+],
+[
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+46
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+47
+]
+],
+[
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+62
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+64
+],
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+68
+]
+],
+[
+[
+"flexonafft/casmi26-public-baseline-adaptation-experiments",
+83
+],
+[
+"canqiang/casmi26-e006-window-40-ice-fallback-true",
+1
+],
+[
+"nursrijan/casmi26-w-e006-window-40-ice-fallback",
+2
+],
+[
+"shafiquatali/casmi26-e006-pub",
+1
+]
+],
+[
+[
+"lszlst/casmi26-p1-offset",
+1
+],
+[
+"lszlst/casmi26-p1-offset",
+4
+]
+],
+[
+[
+"obstacledeveloper/casmi26-v1-1-metric-audit-and-safe-tail",
+1
+],
+[
+"samanyu1808/casmi-v11",
+1
+]
+],
+[
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+4
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+5
+]
+],
+[
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+6
+],
+[
+"matterhorn3838/evenda-casmi-2026-nextgen",
+7
+]
+],
+[
+[
+"ahmedberatozer/casmi26-v22-n1-challenger",
+1
+],
+[
+"likedge/casmi26-c-v22-n1-challenger-exact",
+1
+]
+],
+[
+[
+"zhangyiji/casmi26-full-baseline-1792471428",
+1
+],
+[
+"egehseyinca/casmi26-v465-v15-pop015",
+1
+]
+],
+[
+[
+"shawncsx/casmi26-v54-guhongbin465",
+7
+],
+[
+"shawncsx/casmi26-v54-guhongbin465",
+8
+]
+],
+[
+[
+"ahmedberatozer/casmi26-v14-pubchemlite",
+1
+],
+[
+"guhongbin/casmi26-v463-v14-clone",
+1
+]
+],
+[
+[
+"ahmedberatozer/casmi26-v15-n1a",
+1
+],
+[
+"guhongbin/casmi26-v464-v15-clone",
+1
+]
+],
+[
+[
+"guhongbin/casmi26-v461-e006-ccby-glob",
+1
+],
+[
+"alexchilton/casmi26-public-guhongbin-v461",
+1
+]
+]
+],
+"STALE_BEST": [
+[
+"lehau007 · V30 ExtLib Provenance",
+0.413,
+1,
+0.402
+],
+[
+"lehau007 · V26 Golden Apex",
+0.413,
+1,
+0.403
+],
+[
+"lehau007 · V32 FIORA Tri-Forward",
+0.403,
+2,
+0.394
+],
+[
+"Sutee · b421",
+0.417,
+1,
+0.426
+],
+[
+"Sutee · b416",
+0.417,
+1,
+0.425
+],
+[
+"BobtheBot369 · V18 Sovereign Zenith",
+0.425,
+1,
+0.433
+],
+[
+"Ahmed Berat Özer · v4f inference",
+0.362,
+1,
+0.369
+],
+[
+"Raja Rajak · Apex v170",
+0.415,
+1,
+0.422
+],
+[
+"인공저능연구소( Artificial Idiocy Lab ) · Two Rankers One Engine",
+0.337,
+1,
+0.343
+],
+[
+"Ahmed Berat Özer · v2 baseline",
+0.354,
+1,
+0.348
+],
+[
+"Huseyin Emre Aksoy · v4n Fusion + PubChem",
+0.421,
+1,
+0.415
+],
+[
+"Ahmed Berat Özer · v3 inference",
+0.358,
+6,
+0.353
+],
+[
+"Ahmed Berat Özer · v4h inference",
+0.373,
+1,
+0.378
+],
+[
+"Raja Rajak · Apex v180",
+0.428,
+1,
+0.423
+],
+[
+"Jiachen Li · Next Direct W088",
+0.341,
+1,
+0.346
+],
+[
+"Huseyin Emre Aksoy · sub-v4b",
+0.409,
+1,
+0.404
+],
+[
+"Sutee · b420",
+0.402,
+1,
+0.407
+],
+[
+"Ahmed Berat Özer · v4q inference",
+0.399,
+1,
+0.396
+],
+[
+"wang penghua · v29 fusion pop glmh",
+0.415,
+1,
+0.418
+],
+[
+"Imran Arif · V44 PairTail Locked",
+0.417,
+3,
+0.42
+],
+[
+"Ahmed Berat Özer · v4l inference",
+0.381,
+1,
+0.379
+],
+[
+"Ahmed Berat Özer · v4n inference",
+0.384,
+1,
+0.382
+],
+[
+"Ahmed Berat Özer · v4g inference",
+0.37,
+1,
+0.369
+],
+[
+"Ahmed Berat Özer · v4m inference",
+0.378,
+1,
+0.377
+],
+[
+"Seyit kaan Gunes · v4n + Fusion + Union",
+0.399,
+1,
+0.398
+],
+[
+"BobtheBot369 · V10 Apex Fusion",
+0.401,
+1,
+0.4
+],
+[
+"Raja Rajak · Apex v175",
+0.418,
+1,
+0.419
+]
+],
+"SAME_CHANGE": {
+"PubChem promotion threshold rel > 250 → 150": [
+[
+"seyitkaangunes/casmi26-e006-pubchem-promo-rel-150-lb-0-446",
+1
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+49
+],
+[
+"saddamaditya/forensics-lab-the-apex-dossier-lb-0-442-sota",
+3
+],
+[
+"easonyanyan/casmi26-v22-rel150-e2r2-clean",
+1
+]
+],
+"PubChem promotion threshold rel > 250 → 100": [
+[
+"seyitkaangunes/casmi26-e006-n1a-cc-by-chebi-lb-0-452",
+1
+]
+],
+"engine-2 rank-2 insert": [
+[
+"antriksharya/casmi26-e006-e2rank2",
+1
+],
+[
+"antriksharya/casmi26-lb-0-443-v7c-engine-2-rank-2-insert",
+1
+]
+],
+"engine 2's rankers: more seeds, max_depth 7": [
+[
+"ghazarosbarseghyan91/enveda-v7c-e006-fraggap-evgen-v14seeds",
+1
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+51
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+1
+]
+],
+"MetFrag-lite re-rank where no simulator scores": [
+[
+"ahmedberatozer/casmi26-v7c-e006-fraggap",
+1
+],
+[
+"dmitriigluzdov/casmi-26-from-spectra-to-structures",
+46
+]
+],
+"PubChemLite CC0 candidates in engine 2": [
+[
+"ahmedberatozer/casmi26-v14-pubchemlite",
+1
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+7
+]
+],
+"N1A proxies for molecules with no [M+H]+ spectrum": [
+[
+"ahmedberatozer/casmi26-v15-n1a",
+1
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+13
+]
+],
+"N1 challenger: proxies kept where ICEBERG exists, joint re-order": [
+[
+"ahmedberatozer/casmi26-v22-n1-challenger",
+1
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+16
+]
+],
+"PubChem-channel popularity weight 0.25 → 0.15": [
+[
+"guhongbin/casmi26-v465-v15-pop015",
+1
+],
+[
+"dmitriigluzdov/casmi-26-the-data-behind-spectra-to-structures",
+10
+]
+],
+"N1 challenger switched off again (complement on)": [
+[
+"guhongbin/casmi26-v494-dg-n1comp",
+1
+],
+[
+"hailonglv/casmi26-upstream-v16-run",
+2
+],
+[
+"likedge/casmi26-a-pair-lambdarank-only",
+1
+]
+]
+}
+}
