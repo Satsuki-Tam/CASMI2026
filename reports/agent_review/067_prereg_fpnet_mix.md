@@ -1,0 +1,9 @@
+# 067 事前登録: 本番の FPNet の選択 — full_eval / 公開 fold0 / 0.5:0.5 の混合(未開封の locked2 を一回だけ開く)
+
+作成: 2026-10-27 07:05 JST(結果の前)。根拠: EXT(全モデルに未見の 60 分子)で公開 fold0 が full_eval より +0.038 [+0.003, +0.081]、P(5 本)が +0.020。dev2(両方に未見)では full_eval が C/G で上。本番の FPNet は既見のクラス 1(記憶)と未見のクラス 2(汎化)の両方に効くので、混合が候補になる(Codex 062 Q3 の「0.5F + 0.5P」と同系;locked2 では P は 4/5 既見なので、清潔に比べられる fold0 で代替)。
+- 集合: **locked2 v2(fold 0、500 分子 = C/D/E/F/G × 100、full_eval の lock = 未見、公開 fold0 にも未見、これまで一度も評価していない)**。
+- 条件(rank_v4b・主出力 anaw0.5 は固定、各 FPNet が自分の shortlist を作る): A = F(full_eval)、B = 公開 fold0、C = F と fold0 の logit の等重み平均(`b1_features --extra_ckpts`)。
+- 主指標: NP C2(C/D/E/F 等重み)の C − A と B − A(identity bootstrap)。
+- 主保護(ε = 0.01、三状態): 既見のクラス 1 の regime = パネル C1 clean(F は既見、fold0 はパネルを除外して学習 = 未見)で C − A(B − A は記録のみ — 記憶を失うので大きく負の見込み)。
+- stress: locked2 の C1 各層(identity 未見の C1)、G。
+- 判定: C − A の主指標 > 0 かつ下限 > −0.01、かつパネル C1 で C − A が非劣性(下限 > −0.01)→ **「0.5F + 0.5fold0」を本番の候補**(pipeline の変更 + parity の後に一変更の Public 比較)。B が最良でもパネル C1 で害なら B は採らない。
