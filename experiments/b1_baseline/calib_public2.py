@@ -36,7 +36,10 @@ def load(names):
     for f in names:
         R = pd.read_csv(f"diag/gf_{f}.csv")
         R["molecule"] = R["molecule"].astype(str)
-        out.append(R.fillna({k: 0.0 for k in FILT if k in R.columns}))
+        R = R.fillna({k: 0.0 for k in FILT if k in R.columns})
+        if "truth_rank" in R.columns:   # band26 = ranks 26-50 of the main order lifted to 1-25 (the Public band probe, Codex 027 definition)
+            tr_ = R.truth_rank.fillna(0).to_numpy(); R["band26"] = np.where((tr_ >= 26) & (tr_ <= 50), 1.0 / np.maximum(tr_ - 25, 1), 0.0)
+        out.append(R)
     return pd.concat(out, ignore_index=True)
 
 
@@ -63,7 +66,7 @@ NAMES = [t[0] for t in TYPES] + ["zero under every configuration"]
 K = len(NAMES)
 
 # ---------------- stage 1: weights from the fold-0 observables
-S1 = {v: np.array([F0[sel(F0)][v].mean() for _, _, sel in TYPES] + [0.0]) for v in ("main", "insurance", "pool", "pc", "pcd0.5", "pcd1", "pcd2", "pcd4")}
+S1 = {v: np.array([F0[sel(F0)][v].mean() for _, _, sel in TYPES] + [0.0]) for v in ("main", "insurance", "pool", "pc", "train", "coconut_only", "band26", "pcd0.5", "pcd1", "pcd2", "pcd4")}
 NT = np.array([int(sel(F0).sum()) for _, _, sel in TYPES] + [0])
 rng = np.random.default_rng(a.seed)
 Wd = rng.dirichlet(np.ones(K), size=a.draws)
@@ -110,7 +113,7 @@ ALL = {nm: True for nm in NAMES[:-1]}
 unseen_w7_rk = lambda j: ~j.molecule.isin(W7_SEEN_RK)
 VAR = {}
 # fold-0 tables: Pc demotion (same FPNet and ranker as the submitted main)
-for w in ("pcd0.5", "pcd1", "pcd2", "pcd4", "pool", "pc", "insurance"):
+for w in ("pcd0.5", "pcd1", "pcd2", "pcd4", "pool", "pc", "insurance", "train", "coconut_only", "band26"):   # last three = the 10/26 Public probes (T, COCONUT-only, band26)
     VAR[w] = deltas(F0.rename(columns={w: "_x"}), "_x", ALL, {}, False)
 fe_valid = {"C1 panel": True, "C1 hard NP dev2": True, "C2 COCONUT dev2": True, "C2 PubChem-only dev2": True}
 fe_imp = {"C1 W7 NP": "C1 panel", "C2 COCONUT panel": "C2 COCONUT dev2", "C2 COCONUT W7 NP": "C2 COCONUT dev2",
