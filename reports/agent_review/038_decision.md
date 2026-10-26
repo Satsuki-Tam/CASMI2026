@@ -1,4 +1,4 @@
-# 038 decision (13:40 JST, before the anaw0.5 Public result)
+# 038 decision (13:35 JST, before the anaw0.5 Public result)
 
 Adopted from Codex 038:
 1. **Candidate update (037b is kept as history, not overwritten):** the next Public comparison is **v7f = the rank_v7a combination + 1·z(frag) on the GL-coverage fallback path only**, frozen as experiments/b1_v7f038 (pipeline 6e3b4d04, b1_frag 8d552002, b1_analog 7c9b9973, rankfeats f705db7a, rank_v7a f3ffc0f6 = 600 trees), kernel casmi26-b1-fpnet-v7f v1 (lzma, 1,040,594 bytes). Unchanged from 037b: the branch A/B rule (decided by the 035 reading of 57650023), the comparison target (FE or anaw0.5), DUP 0.98, candidates, GL budget, analog routing and weights. Branch B's C/G unseen-C1 and panel-clean losses remain the recorded operational exception.
@@ -6,3 +6,7 @@ Adopted from Codex 038:
 3. F C1 on the confirmation set: 2 concrete losses (GTUZLDBHHIBAQG 1/12 → 0, UTBCORIJXVSSBE 1 → 1/2; both [M−H2O+H]+, one query), 24 unchanged; recorded as such (not excused by the interval). No dehydration-adduct exclusion is added to this candidate.
 4. Pre-submission conditions: the v7f Kaggle smoke completes, and the frag cost on fallback molecules is measured (it runs after the forward models, so it must fit the time left after GL under deadline_s); otherwise the prepared 037b v7a is used first.
 5. Limits kept: frag is an empirical structure score (mode-dependent ±proton and fixed H shifts, no explicit adduct chemistry); 0 means both "not computable" and "nothing explained"; the max over query spectra can be driven by one sparse spectrum; the +0.014 confirmation gain comes ~94% from the E layer and is not added to a Public forecast.
+
+## Pre-submission checks (done 13:37 JST)
+- Kaggle smoke casmi26-b1-fpnet-v7f v1: rc 0; manifest analog_w 0 / analog_w_fallback 1 / ap / frag_w_fallback 1 / dup 0.98 / ckpt 5b8d1c31; 600-tree rank_v7a loaded; learned 11, fallback 1 with analog + frag; the whole scoring stage after GL took < 20 s for 12 molecules.
+- Frag cost: ~1.3 ms per candidate per core on the Spark (333k candidates in 24 s on 18 workers) → ~0.3-0.6 s per fallback molecule single-threaded → ~1 min even if ~100 hidden molecules fall back. Projected hidden rerun ≈ features 3.3 h (29.5 s/mol in this smoke) + GL ≈ 0.65 h + scoring ≈ 4 h, under the 9 h limit; GL keeps its 14,000 s cap under deadline_s 30000 (≈ 17,300 s left after features). → **v7f is ready for the first slot after 09:00 JST; branch from 57650023.**
