@@ -98,6 +98,7 @@ def exact_dup(q, rmz, rit, rprec, radd):
 
 
 def main():
+    global MAX_REF   # --max_ref (2026-10-26) overrides the module default; nested helpers read the global
     ap = argparse.ArgumentParser()
     for k in ("eval_csv", "store", "tier", "pop", "pool", "coco", "fold_safe", "v3", "out"): ap.add_argument(f"--{k}", required=True)
     ap.add_argument("--k", type=int, default=100); ap.add_argument("--workers", type=int, default=12); ap.add_argument("--max_spectra", type=int, default=8)
@@ -114,7 +115,9 @@ def main():
                     "not only for the truth (symmetric mask), to check that library features do not exploit the evaluation mask; never for training tables")
     ap.add_argument("--extra_ckpts", nargs="*", default=[], help="additional FPNet checkpoints; the query fingerprint logits are averaged over <fold_safe>/fpnet_fold0.pt and these "
                     "(same rule as b1_pipeline with several models); default none = single model, unchanged")
+    ap.add_argument("--max_ref", type=int, default=MAX_REF, help="references kept per candidate after the duplicate rule (default 24 = unchanged; 2026-10-26 reference-cap test)")
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True)
+    MAX_REF = a.max_ref
     import torch
     sys.path.insert(0, a.v3)
     from casmi import fpnet, chem
