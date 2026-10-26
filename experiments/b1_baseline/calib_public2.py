@@ -11,7 +11,7 @@ Class 1 under the fold-0 FPNet is about q_seen seen; the seen part has no fold-0
 (1 - q_seen) * D_unseen + q_seen * D_seen, with D_seen unmeasured (0 in the main row, sensitivity rows +-).
 Usage: python -X utf8 calib_public2.py --obs main=0.354 insurance=0.336 [pool=.. pc=..] [--check fe_main=..]
 """
-import argparse
+import argparse, os
 import numpy as np
 import pandas as pd
 
@@ -24,17 +24,18 @@ ap.add_argument("--q_seen", type=float, default=0.8)
 ap.add_argument("--draws", type=int, default=1000000)
 ap.add_argument("--seed", type=int, default=0)
 ap.add_argument("--out", default="diag/calib_public2.md")
+ap.add_argument("--tables", default="gf", help="prefix of the per-molecule tables (gf = original, gf2 = + twin columns, 2026-10-26)")
 a = ap.parse_args()
 OBS = {k: float(v) for k, v in (s.split("=") for s in a.obs)}
 CHK = {k: float(v) for k, v in (s.split("=") for s in a.check)}
-FILT = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "pcd0.5", "pcd1", "pcd2", "pcd4"]
+FILT = ["main", "insurance", "pool", "pc", "train", "coconut_only", "nontrain", "pcd0.5", "pcd1", "pcd2", "pcd4", "twin_only"] + [f"twin1_t{t:g}" for t in (0.0, 0.5, 0.7, 0.8, 0.9)]
 key = ["set", "view", "molecule"]
 
 
 def load(names):
     out = []
     for f in names:
-        R = pd.read_csv(f"diag/gf_{f}.csv")
+        R = pd.read_csv(f"diag/{a.tables}_{f}.csv" if os.path.exists(f"diag/{a.tables}_{f}.csv") else f"diag/gf_{f}.csv")
         R["molecule"] = R["molecule"].astype(str)
         R = R.fillna({k: 0.0 for k in FILT if k in R.columns})
         if "truth_rank" in R.columns:   # band26 = ranks 26-50 of the main order lifted to 1-25 (the Public band probe, Codex 027 definition)
@@ -66,7 +67,7 @@ NAMES = [t[0] for t in TYPES] + ["zero under every configuration"]
 K = len(NAMES)
 
 # ---------------- stage 1: weights from the fold-0 observables
-S1 = {v: np.array([F0[sel(F0)][v].mean() for _, _, sel in TYPES] + [0.0]) for v in ("main", "insurance", "pool", "pc", "train", "coconut_only", "band26", "pcd0.5", "pcd1", "pcd2", "pcd4")}
+S1 = {v: np.array([F0[sel(F0)][v].mean() for _, _, sel in TYPES] + [0.0]) for v in ("main", "insurance", "pool", "pc", "train", "coconut_only", "band26", "pcd0.5", "pcd1", "pcd2", "pcd4") + tuple(c for c in FILT if c.startswith("twin") and c in F0.columns)}
 NT = np.array([int(sel(F0).sum()) for _, _, sel in TYPES] + [0])
 rng = np.random.default_rng(a.seed)
 Wd = rng.dirichlet(np.ones(K), size=a.draws)
@@ -113,7 +114,7 @@ ALL = {nm: True for nm in NAMES[:-1]}
 unseen_w7_rk = lambda j: ~j.molecule.isin(W7_SEEN_RK)
 VAR = {}
 # fold-0 tables: Pc demotion (same FPNet and ranker as the submitted main)
-for w in ("pcd0.5", "pcd1", "pcd2", "pcd4", "pool", "pc", "insurance", "train", "coconut_only", "band26"):   # last three = the 10/26 Public probes (T, COCONUT-only, band26)
+for w in ("pcd0.5", "pcd1", "pcd2", "pcd4", "pool", "pc", "insurance", "train", "coconut_only", "band26") + tuple(c for c in FILT if c.startswith("twin") and c in F0.columns):   # last three = the 10/26 Public probes (T, COCONUT-only, band26)
     VAR[w] = deltas(F0.rename(columns={w: "_x"}), "_x", ALL, {}, False)
 fe_valid = {"C1 panel": True, "C1 hard NP dev2": True, "C2 COCONUT dev2": True, "C2 PubChem-only dev2": True}
 fe_imp = {"C1 W7 NP": "C1 panel", "C2 COCONUT panel": "C2 COCONUT dev2", "C2 COCONUT W7 NP": "C2 COCONUT dev2",

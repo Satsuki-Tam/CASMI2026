@@ -19,3 +19,15 @@ The readings of 027_decision §2, 030_decision §1 and 032_decision §2 stay as 
   - **P_T ≤ 0.25**: B1's ordering among train candidates loses molecules that a one-guess twin rule gets. Class-1 handling becomes the primary suspect for the gap to E0 (0.464). Next: the twin-first variants (local, being computed now in `group_filter_eval.py`: twin_only / twin1_t{0,0.5,0.7,0.8,0.9}), together with the DUP result.
   - **P_T ≥ 0.29**: B1 already recovers the twin cases. The gap lies in non-train truths (COCONUT ordering, PubChem) or in the zero component.
   - In between: undecided. Use the DUP diagnostic and the local twin tables before acting.
+
+## 3. Addendum 09:35 JST: second calibration model with the community twin probe as an observation (before any result)
+- Local twin tables (`group_filter_eval.py` + twin columns -> `diag/gf2_{m2x,fe}_{panel,p2dev,devAB}.csv`; main/train identical to the gf tables): twin = best library match among B1's candidates of the view.
+  - fold-0 M2x: panel C1 main 0.882 / twin alone 0.852 / twin-first (any similarity) 0.910; **G timsTOF C1 main 0.612 / twin alone 0.816 / twin-first 0.867**; W7 B C1 0.913 / 0.887 / 0.925.
+  - The C2 views lose heavily under twin-first: panel C2 0.904 -> 0.494 (t0) / 0.799 (t0.7) / 0.896 (t0.9); G C2 0.716 -> 0.389 / 0.619 / 0.673.
+- Model B = calib_public2 `--tables gf2 --obs main=0.354 insurance=0.336 pc=0.046 pool=0.336 twin_only=0.275`, 4 seeds × 8M draws, 50 accepted (`diag/calib_twin1026_s{1..4}.md`):
+  - weights: class-1 proxies 0.31 [0.28, 0.34], COCONUT 0.09, PubChem-only 0.06, zero 0.54.
+  - **predicted P_T = 0.275 [0.26, 0.29], P_COCONUT = 0.078 [0.04, 0.11]**, P_26 = 0.003-0.006 (local types only).
+  - twin-first on the M2x order: t0 ±0.00, **t0.5 +0.022, t0.7 +0.025 [+0.006, +0.042], t0.8 +0.019**, t0.9 +0.003.
+- Model A (§1, no twin observation): P_T 0.209 [0.096, 0.296], P_COCONUT 0.149 [0.048, 0.272].
+- **Fixed reading: the T and COCONUT probes decide between A and B.** If both land inside B's intervals (P_T 0.26-0.29 and P_COCONUT ≤ 0.11), model B is supported. The twin-first family then becomes the next candidate, prepared on the working baseline (full_eval) with its own local protection table, plus one Public comparison. If they land in A's region (P_T ≤ 0.24 or P_COCONUT ≥ 0.13), the twin probe's constraint does not transfer (a different twin definition, or our local C1 types misrepresent hidden class 1), and twin-first is not promoted on this calibration.
+- Caveat fixed in advance: the calibration is valid only for changes inside the same FPNet and shortlist. Twin-first reorders within the list, so this applies. Its zero component cannot respond to the change.
