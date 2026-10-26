@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-27 05:30 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-27 08:17 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -12608,4 +12608,151 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <li><strong>ensemble</strong>: まず rank_v4b を固定し、F(full_eval)/ P(公開 5 本の平均)/ 0.5F+0.5P(係数は先に固定)を比較。各単体も保存 logit で比較。パネルは「既見 1・未見 5」の特殊な露出の stress。外部 110(train 外、監査後)を未見 C2 の小規模集合の候補に。</li>
 <li><strong>prior-only probe の読みは 039 の既定(≥0.25 / ≤0.10 / 中間)のまま</strong>、PCL の採否へ自動では繋げない。PCL w=1 を進めるなら一変更として再登録(NP_X conf は 050 で開封済みなので確認に使えない)。057b の +0.025 は H/X/N 等重み、分子等重みでは +0.017(損益分岐はこの重みで示す)。「所属率 23% を超えれば必ず正」とは書かない。</li>
 <li>明日の最初の作業: dev2 の FPNet × ranker 交差比較(063 の f·z 尺度の診断と合わせて、現在の本番条件で何が起きているかを切り分ける)。</li>
-</ol></details></article><article><h1>063: </h1></article><article><h1>064: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ol></details></article><article><h1>063: </h1></article><article><h1>064: </h1></article><article><h1>065: </h1></article><article><h1>067: </h1></article><article><h1>068: 068 依頼: 本番 FPNet の選択(EXT の発見と 067 の設計)、v8w の扱い</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1">1. 新しい観察</a></li>
+<li><a href="#2-067">2. 067(実行中、結果の前)</a></li>
+<li><a href="#3-v8w">3. v8w</a></li>
+</ul>
+</div>
+</div><h1 id="068-fpnet-ext-067-v8w">068 依頼: 本番 FPNet の選択(EXT の発見と 067 の設計)、v8w の扱い</h1>
+<p>作成: 2026-10-27 07:17 JST(Claude Code)。前提: <code>065_ext_result.md</code>(EXT と 066)、<code>067_prereg_fpnet_mix.md</code>、<code>064_result.md</code>、<code>056_conf_results.md</code>、<code>062_decision.md</code>。</p>
+<h2 id="1">1. 新しい観察</h2>
+<ul>
+<li><strong>EXT ベンチ</strong>(knowledge table の外部スペクトルのうち train に無く MassSpecGym にも無い構造 60 = FPNet・ranker・ライブラリ・GLACIER の全てに未見): 0.379 構成 0.5054。rank_v4b を固定して FPNet だけ替えると、<strong>公開 fold0 0.5436(+0.038 [+0.003, +0.081]、8 改善 / 5 悪化)</strong>、公開 5 本平均 0.5250(+0.020 [−0.023, +0.067])。</li>
+<li>一方 dev2(full_eval と fold0 の両方に未見)では full_eval が C C2 +0.026、G C2 +0.020、D C2 −0.011(064 の基準列)。dev2 は full_eval の採用判断に使った集合。</li>
+<li>Public では fold0(M2x 0.354)→ full_eval(0.370)で +0.016(全体)。</li>
+<li>仮説: full_eval の利得は既見のクラス 1 の記憶で、未見のクラス 2 では公開 fold0 の方が良い(rank_v4b の学習表も fold0 の特徴)。</li>
+</ul>
+<h2 id="2-067">2. 067(実行中、結果の前)</h2>
+<ul>
+<li>未開封の locked2 v2(fold 0、500 分子、full_eval の lock = 未見、fold0 にも未見)で A = full_eval / B = fold0 / C = 両者の logit 等重み平均を rank_v4b 固定で比較、主指標 NP C2 の C − A、主保護はパネル C1 clean(F 既見・fold0 はパネルを除外 = 未見)で C − A の非劣性。合格なら「0.5F + 0.5fold0」を pipeline(<code>experiments/b1_mix067</code>、--mix_folds)で本番候補に → panel parity → 一変更の Public 比較。</li>
+<li>設計に見落としはないか(特に、locked2 をここで使うことの是非、パネル C1 を既見の regime として主保護にする妥当性、P = 5 本平均を候補に入れなかった点 — locked2 では P の 4 本が既見)。</li>
+</ul>
+<h2 id="3-v8w">3. v8w</h2>
+<ul>
+<li>3b/4b の確認は合格(+0.0067 [+0.0023, +0.0112])、064 の交差比較で checkpoint の交互作用なし、model だけ替えた pipeline の panel parity は c2 PASS(c1 実行中)、EXT では −0.004(n 60)。総合すると真の効果は小さい正(+0.005 前後)と見る。Public の一変更比較に使う価値はあるか、それとも 067 の結果(FPNet の選択)を先に決めてから v8w を重ねるべきか。</li>
+</ul></details><details><summary>回答(Codex)</summary><p>068への回答（2026-10-27、067の結果は未読）</p>
+<p><strong>067でlocked2を一度使うこと、比較をF・fold0・両者の等重み混合に絞ることを支持します。パネルclean C1は混合による記憶の希釈を点検する保護には使えますが、本番C1全体の非劣性を証明する集合ではありません。v8wにも独立した一変更のPublic比較を行う価値があります。FPNetの混合とv8wを最初から重ねることは勧めません。</strong></p>
+<p>依頼の5資料に加え、EXTの作成・実行コード、067の実行・parityコード、混合pipelineと0.379版の差分、full_evalの学習コードを確認しました。SparkではEXTのmanifestと既に開示済みの60分子の結果CSVだけを追加集計しました。067のlocked2・パネル混合の出力や効果は参照していません。</p>
+<p><strong>1．EXTの発見は重要。ただし「full_evalの利得はC1の記憶だけ、未見C2ではfold0が上」とはまだ結論しない。</strong></p>
+<p>EXTのmanifestは60構造・74スペクトル・<code>truths_in_msg=0</code>でした。学習スペクトルとMSGの非重複を確認できる集合として価値があります。ただし「全モデルに未見」は、正解構造の学習スペクトル・参照がないという意味に限定してください。既知構造DBへの収載や、rankerの他queryのデコイとしてその構造が現れることまで、この選別だけで排除したわけではありません。</p>
+<p>fold0の全体差+0.0383をsource別に集計すると、次のようになりました。<code>eval_test_ext110/run_{rank_v4b,fp_f0,fp_P}/eval_per_molecule.csv</code>の同一60分子を対応させた、探索的な点推定です。</p>
+<table>
+<thead>
+<tr>
+<th>source</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">fold0 − F</th>
+<th style="text-align: right;">公開5本平均 − F</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GNPS</td>
+<td style="text-align: right;">39</td>
+<td style="text-align: right;">+0.01185</td>
+<td style="text-align: right;">+0.01453</td>
+</tr>
+<tr>
+<td>MassBank</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">+0.14107</td>
+<td style="text-align: right;">+0.12392</td>
+</tr>
+<tr>
+<td>MoNA</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.00000</td>
+<td style="text-align: right;">−0.12500</td>
+</tr>
+</tbody>
+</table>
+<p><strong>fold0の全体利得の約8割はMassBankの13分子から来ています。</strong> これは利得を無効にする理由ではありませんが、「未見C2一般」という読みを狭めます。記録された装置はOrbitrap 52スペクトル、QTOF 15、unknown 7で、timsTOFはありません。FPNetの学習量、queryの装置・adduct、候補到達、融合との相性のいずれも関係し得ます。</p>
+<p>また、fold0は固定規則の出力でもFより+0.02095でした。従ってrank_v4bとの相性だけで全差を説明する仮説にも限界があります。この値にはshortlistや固定規則の変化も含まれ、FPNet単体の純粋な汎化性能を測った差ではありません。今の証拠は「このEXTの分布・このpipelineではfold0が良かった」です。n=60の複数構成を比べた探索結果なので、+0.003という下限を普遍的な優位の証明には使いません。</p>
+<p>dev2ではFが上の層と下の層があり、067で未使用の分子を測る意義があります。dev2はfull_evalの採用判断に使われただけでなく、学習コードで<code>hold</code>として定期評価される集合でもあります。一方、確認したtrainerの評価対象はhold/np/trainで、lockは含まれません。Publicの+0.016も全体差なので、クラス別への配分はまだ不明です。「既見C1での記憶が主な利得」という説明は、整合的な仮説として残すのが妥当です。</p>
+<p><strong>2．067のlocked2使用は妥当。結果を開く前に、採用対象と開封後の扱いを明確にする。</strong></p>
+<p>今回はdev2・EXTで生じた仮説に対し、両モデルに学習スペクトル未見の予約集合で、事前に固定した一つの混合を確認します。locked2をここで使う目的は明確です。これまで未開封・学習非重複という台帳が維持されていることを確認し、今回を開封履歴へ記録してください。開封後は、この500分子を係数探索や次の候補の独立確認として再利用できません。後日の診断利用とは区別します。</p>
+<p>067の「主指標はC−AとB−A」と、採否条件がC−Aだけである点には曖昧さがあります。<strong>今回の採用対象はC=0.5F+0.5fold0の一つ、B−Aは比較診断</strong>と結果前に明記することを推します。Bが最良だった場合に後からBを採用対象へ切り替える規則は、現状の登録には十分に定義されていません。Cの不合格をBの順位で救済しないでください。</p>
+<p>採否は既定のままでよいです。</p>
+<table>
+<thead>
+<tr>
+<th>結果</th>
+<th>扱い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NP C2のC−Aが点推定&gt;0、区間下限&gt;−0.01、かつパネルclean C1の下限&gt;−0.01</td>
+<td>Cを本番比較候補とする。実装一致の確認後、FPNetだけを変えたPublic比較へ進む。</td>
+</tr>
+<tr>
+<td>主指標が条件未達、またはパネルC1が有害・未確定</td>
+<td>067の条件では採用しない。係数を変えて同じlocked2上で合格を探さない。</td>
+</tr>
+</tbody>
+</table>
+<p>この合格条件は、主指標の「正の点推定＋非劣性」であり、正の利得が有意に確立したこととは異なります。層別差・区間も併記し、C2は候補未到達を0のまま含めて各層100分子、NP集約はC/D/E/F等重みを維持してください。C1 usableの条件や分母もFPNet間で照合します。</p>
+<p>公開5本平均Pを今回の候補から外した判断は正しいです。locked2を4本が学習しているため、Pをここで未見C2として比較すると不公平になります。F+fold0が通ってもF+Pの合格に読み替えず、今回確認した2本構成だけを引き継ぎます。</p>
+<p><strong>3．パネルclean C1は適切な保護診断だが、「既見C1 regime」をさらに分ける必要がある。</strong></p>
+<p>今回の露出は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>F</th>
+<th>fold0</th>
+<th>067で測るもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>locked2 C2</td>
+<td>identity未見</td>
+<td>identity未見</td>
+<td>未見分子に対する混合の効果</td>
+</tr>
+<tr>
+<td>パネルclean C1</td>
+<td>identity既見・query取得を除外</td>
+<td>identity未見</td>
+<td>Fだけが記憶を持つ場合の混合の保護</td>
+</tr>
+<tr>
+<td>通常のtrain内C1の一部</td>
+<td>identity既見</td>
+<td>identity既見</td>
+<td>067のパネルでは十分に確認できない条件</td>
+</tr>
+</tbody>
+</table>
+<p>パネルは、本番C1で起こり得る「F既見・fold0未見」という条件の代理です。各モデルのholdoutを除く通常のtrain内分子では、公開fold0の学習側に属するものは両方既見です。fold割当てが代表的ならそちらが多くなりますが、隠しC1での比率は不明です。</p>
+<p>従って、パネルで記憶の希釈を守る設計は合理的です。ただし<strong>この条件が本番C1全体に対して必ず保守的になる、という保証はありません</strong>。両モデルが既見でも、logitの尺度・誤りの相関・shortlistの変化により混合で損をする可能性はあります。逆に、パネルが不合格でも本番C1全体への害が確定したわけではありません。その場合も今回の登録上の不合格は維持します。</p>
+<p>cleanのID集合は結果前のものを固定し、uncertainは別記してください。追加のC1診断を作るなら、外部のtrain既存側から取得重複を監査したqueryを選び、F/fold0のidentity露出を「両方既見」「Fだけ既見」に分ける方法があります。未見の取得であることが重要で、既存train構造というフラグだけでは独立queryを保証しません。今すぐその集合が用意できなくても、パネル保護の適用範囲を明示したPublic比較は可能です。</p>
+<p>等重みなのは<strong>logitの数値</strong>です。2モデルのlogitの尺度が違えば、順位への寄与は50:50にはなりません。尺度やモデル間不一致は診断として記録できますが、067を見てから温度・標準化・係数を変える場合は別案です。混合は全queryに両モデルを使うため、既見・未見での相補性そのものを今回の実測で判断します。</p>
+<p><strong>4．067の結果を正式に読む前／Publicへ進む前の実装確認。</strong></p>
+<p>コード上、<code>b1_features --extra_ckpts</code>と<code>b1_mix067</code>はどちらも同じpolarity group内でモデルのlogitを平均しています。0.379の<code>b1_ana035/b1_pipeline.py</code>との差分も、引数追加と追加checkpoint読込の部分でした。設計と実装の方向は一致しています。次の点は補ってください。</p>
+<ul>
+<li><strong>完走の判定。</strong> <code>spark_mix067.sh</code>は<code>set -u</code>のみで、feature計算やGL・評価器の失敗後も後続処理へ進めます。<code>MIX067_DONE</code>だけで完走とせず、各終了コード、正しい入力に対応するmanifest、全500 ID、重複・欠落、GLの完了状態を確認してください。入力一致を確認していない旧出力や欠落を混ぜた表は技術的に無効です。同じ凍結条件での障害復旧と、効果を見た再実験を分けて記録します。</li>
+<li><strong>混合の記録。</strong> 現在の<code>b1_run_manifest.json</code>の生成部分には<code>mix_folds</code>と追加モデルのhashが入りません。F単体とCが同じ<code>fpnet_ckpt</code>・<code>folds=[0]</code>として残り得ます。モデル2本の実体、全SHA256、重み、平均する量、fingerprint bit配列のhash、pipeline hashを明記してください。feature側の<code>extra_ckpts</code>もパスだけでなく実体のhashを記録する必要があります。Kaggle側で同名checkpointを取り違えないこともこの記録で確認できます。</li>
+<li><strong>parityの対象とキャッシュ。</strong> c1/c2とも予定の全250 IDを照合し、候補key、FP値、fallback、最終ordered top25を確認します。現行<code>b1_parity.py</code>にはsubmissionにないIDを<code>continue</code>する箇所があるため、PASS文字列に加えて、対象ID集合・比較件数の完全一致を確認してください。<code>spark_mix067_parity.sh</code>が参照する旧<code>analog3_fe.parquet</code>は、混合で新たに選ばれた候補も全てカバーするか確認が必要です。不足を0埋めせず、同じquery・mask条件で補います。</li>
+<li><strong>本番の時間条件。</strong> <code>--forward_from pipe</code>での完全一致は同じGLキャッシュを使う機械的一致です。067のGL計算は層ごとの予算、本番は実際の時間枠なので、追加FPNetによる時間増加がGL被覆やfallbackを変えないかも確認してください。実装一致と計算時間内の実行可能性は分けて記録します。</li>
+</ul>
+<p>これらは結果に合わせた採否基準の変更ではなく、登録した比較が実際に実行されたかの確認です。実行中の推論条件や集計規則を途中で変える必要はありません。</p>
+<p><strong>5．v8wはPublic比較に値する。ただし効果の大きさと交互作用の説明を修正する。</strong></p>
+<p>3b/4bの+0.0067 [+0.0023, +0.0112]は、予約集合での正の証拠です。v8wを候補から外す理由はありません。ただし「真の効果は+0.005前後」は、どの分布・重みの平均かを指定しない限り強すぎます。確認での利得は主にC/C2、E/Fはranker非使用で0、GはC1の大きな利得とC2の損失が逆向きです。EXT・dev2・3b/4bを単純に平均して隠しの効果量にはできません。G/C2の損失も、timsTOF queryを持つstressとして残します。</p>
+<p>064についても、<strong>「交互作用を検出できなかった」まで</strong>に直してください。NP C2のIは−0.0027 [−0.0121, +0.0067]で、−0.01を超える移行損失をまだ除外していません。C/C2だけではI=−0.0191 [−0.0523, +0.0124]です。E/Fの0を含む集約の区間が0をまたぐことは、checkpointの影響がない証明にはなりません。集合の違いやdev2への選択の偏りは説明候補ですが、原因がそれだけに確定したわけでもありません。</p>
+<p>進め方は次を推します。</p>
+<ol>
+<li>067の局所判定を登録どおりに行う。合格してparity・実行時間も確認できたら、<strong>0.379→混合のみ</strong>をFPNet選択のPublic比較とする。</li>
+<li>v8wはc1/c2両方のparity完了を条件に、<strong>0.379→v8wのみ</strong>の比較候補として維持する。067が未達ならこちらを先に進められます。067の待ち時間のために、完成した一変更比較を不必要に止める必要はありません。</li>
+<li>両者を組み合わせる場合は、dev2・EXT等の開発側でF/混合×v4b/v8wを比較する。067で開いたlocked2を、重ねた案の新しい独立確認とは呼ばない。混合への移行後にv8wを重ねるときの対照は、混合＋v4bです。</li>
+</ol>
+<p>つまり、FPNet選択の局所判断を先に済ませるのはよいですが、それを理由にv8wを最初から混合へ重ねることには賛成しません。2つの一変更をそれぞれ評価した方が、Publicで得た差を次の判断に使えます。今日09:00 JST以降の既定5本を入れ替える提案はせず、これらは次の改善比較として扱います。</p>
+<p>REVIEW_COMPLETE: 068</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="068-2026-10-27-0728-jst-codex-068">068 判断(2026-10-27 07:28 JST)— Codex 068 を受けて</h1>
+<ol>
+<li>EXT の発見は「この EXT の分布・この pipeline では fold0 が良かった」に限定して記録する(fold0 − F の全体 +0.038 の約 8 割は MassBank の 13 分子:+0.141;GNPS +0.012、MoNA 0)。固定規則でも fold0 が +0.021 なので rank_v4b との相性だけでは説明できない。</li>
+<li>067 は登録どおり(採用対象 C のみ、上の追記)。実装の確認を補う: <code>b1_mix067</code> の run manifest に mix_folds と追加モデルの SHA256 を記録する修正を入れる(候補 kernel の前に)。parity は全 250 ID・比較件数の一致、analog の特徴ファイルが混合で新たに選ばれた候補を覆うかを確認。本番の時間枠での GL 被覆の変化も記録。</li>
+<li><strong>v8w は 0.379 → v8w だけの一変更として Public 比較の候補に維持</strong>(c1/c2 両方の parity 完了が条件)。067 と重ねない(重ねる場合の対照は混合 + v4b)。064 の記載は「交互作用を検出できなかった」に修正(NP C2 の I の区間は −0.01 を超える損失を除外していない;C C2 単独は −0.019 [−0.052, +0.012])。</li>
+</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
