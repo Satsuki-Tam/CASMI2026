@@ -6,5 +6,5 @@ Model (own code, trained only on train.parquet): binned spectrum (0.1 Da, m/z 10
 
 Use (variants fixed now): analog retrieval and weighting by the learned similarity instead of entropy (ls), and the combination (max of the two weights, lsmax); candidate features exactly as before (ap = max tan × w³); blended as in the registered candidates (anaw0.5-type on FE, and inside the v7f routing). Selection: the 036 11-layer rule; a learned-similarity variant replaces the entropy one only if ≥ +0.005 on the objective with C1 (panel clean, C, G) not more than 0.005 below; then confirmation on the confirmation sets and Codex review. A first sanity check before any variant comparison: on held-out validation pairs, the learned similarity must correlate with Tanimoto better than the entropy similarity (otherwise stop).
 
-## Sanity check (13:45 JST): PASS
+## Sanity check (13:39 JST): PASS
 - ls_v1 (60,000 steps, 1,228,065 training spectra of 262,185 keys; 5,743 evaluation identity groups excluded): on 2,989 held-out-anchor validation pairs, Pearson with the structures' Tanimoto **0.673 (learned) vs 0.548 (entropy + shift)**, Spearman 0.659 vs 0.557 (best validation Pearson 0.689 on 20,000 pairs). → proceed to the analog-feature comparison.
