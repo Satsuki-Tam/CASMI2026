@@ -222,6 +222,8 @@ def main():
     ap.add_argument("--analog_w_fallback", type=float, default=None, help="analog weight for molecules on the GL-coverage fallback path (034 gated variant); default = --analog_w")
     ap.add_argument("--gen_rank", type=int, default=0, help="042: insert the best novel analog derivative (b1_gen: top --gen_parents analogs, 1-2 edits, structure not in the molecule's window; best by FPNet f.z) at this final rank; 0 = off")
     ap.add_argument("--gen_parents", type=int, default=10, help="042: analog parents per molecule for b1_gen")
+    ap.add_argument("--gen_gl", action="store_true", help="044 (ggt3): GLACIER on the top --gen_gl_k novel generated structures in a SEPARATE run after the base GL (own budget; the base GL, its coverage and the base order are untouched); the --gen_rank insertion then uses the DB-side FP + 2 GL scale where it is valid, the --gen_rule gate otherwise")
+    ap.add_argument("--gen_gl_k", type=int, default=5); ap.add_argument("--gen_gl_budget", type=int, default=1800)
     ap.add_argument("--gen_rule", default="always", choices=["always", "fzgate", "all"], help="042 v2: always = best novel structure at --gen_rank; fzgate = only if its f.z >= the f.z of the main list's candidate at that rank; all = best of novel + window-but-not-shortlisted structures")
     ap.add_argument("--gen_dv", type=float, default=0.0, help="042: main score + w * 1[candidate is a 1-2 edit derivative of a top analog] (derivability); 0 = off")
     ap.add_argument("--frag_w_fallback", type=float, default=0.0, help="MetFrag-lite (b1_frag, 038): + w * z(fragmentation score) for molecules on the GL-coverage fallback path; default 0 = off")
@@ -547,6 +549,32 @@ def main():
                                stdout=open(f"{P['work']}/{name}.log", "w"), stderr=subprocess.STDOUT)
                 try: (GL if name == "gl" else ICE).update(json.load(open(out))); log(f"{name} done")
                 except Exception as e: log(f"{name} output missing:", repr(e))
+    GLGEN, gen_gl_meta = {}, dict(enabled=bool(args.gen_gl), molecules=0, structures=0, status="off")
+    if args.gen_gl and args.gen_rank and not args.no_forward and GENC:   # 044: generated structures get their own GL run (base GL untouched)
+        spec_of = {str(it["mid"]): it["spectra"] for it in runner}
+        gitems = []
+        for mid_, lst_ in GENC.items():
+            top_ = [p_[1] for p_ in lst_ if p_[4] == "novel"][:args.gen_gl_k]
+            top_ = [x for x in top_ if heavy_ok(x)]
+            if top_ and mid_ in spec_of: gitems.append(dict(mid=mid_, spectra=spec_of[mid_], cands=top_))
+        gen_gl_meta.update(molecules=len(gitems), structures=sum(len(g_["cands"]) for g_ in gitems))
+        json.dump(gitems, open(f"{P['work']}/b1_gen_forward_in.json", "w"))
+        bud_ = _budget(args.gen_gl_budget) if args.deadline_s > 0 else args.gen_gl_budget
+        gen_gl_meta["budget_s"] = int(bud_); tg0 = time.time()
+        if gitems:
+            if KAGGLE:
+                try: GLGEN = gl_fuse.run_gl(P["glacier"], gitems, workdir=f"{P['work']}/gl_gen_work", device=dev, budget_s=bud_, site=f"{P['work']}/ice_site", wheels=os.path.join(P["iceberg"], "wheels"), extra_args=["--any-rdkit"]); gen_gl_meta["status"] = "ok"
+                except Exception as e: log("generated GL failed (gt3 gate used):", repr(e)); gen_gl_meta["status"] = "failed"
+            else:
+                out_ = f"{P['work']}/gl_gen_out.json"; pkg_ = P["glacier"]
+                driver = os.path.join(os.path.dirname(os.path.dirname(HERE)), "spark", "jobs", "ice_resume.py")
+                cmd_ = ([P["runner_python"], driver, "--python", P["runner_python"], f"{pkg_}/gl_runner.py", pkg_, f"{P['work']}/b1_gen_forward_in.json", out_, "--"] if os.path.exists(driver)
+                        else [P["runner_python"], f"{pkg_}/gl_runner.py", pkg_, f"{P['work']}/b1_gen_forward_in.json", out_])
+                subprocess.run(cmd_ + ["--device", dev, "--site", "none", "--budget", str(int(bud_))], stdout=open(f"{P['work']}/gl_gen.log", "w"), stderr=subprocess.STDOUT)
+                try: GLGEN = json.load(open(out_)); gen_gl_meta["status"] = "ok"
+                except Exception as e: log("generated GL output missing (gt3 gate used):", repr(e)); gen_gl_meta["status"] = "failed"
+        gen_gl_meta["seconds"] = round(time.time() - tg0, 1); gen_gl_meta["scored_molecules"] = int(sum(1 for v_ in GLGEN.values() if v_ and any(x is not None for x in v_.values())))
+        log(f"generated GL: {gen_gl_meta}")
     # ---- fusion + submission
     def z(x):
         x = np.asarray(x, float); ok = np.isfinite(x); out = np.full_like(x, np.nan)
@@ -630,13 +658,32 @@ def main():
         top_ = [rows[i]["smiles"] for i in order[:25]]
         if args.gen_rank or args.gen_dv:   # parity record (042): the base list before the derivability/generation terms, the chosen structure, derivable keys
             sub_base.append((mid, ";".join(rows[i]["smiles"] for i in order_base[:25])))
-            gen_choice[str(mid)] = dict(gen=next((p_ for p_ in (GENC.get(str(mid)) or []) if p_[4] == "novel"), None), gen_all=(GENC.get(str(mid)) or [None])[0], derivable=sorted({r["key"] for r in rows if r.get("gen_der")}))
+            gen_choice[str(mid)] = dict(gen_choice.get(str(mid), {}), gen=next((p_ for p_ in (GENC.get(str(mid)) or []) if p_[4] == "novel"), None), gen_all=(GENC.get(str(mid)) or [None])[0], derivable=sorted({r["key"] for r in rows if r.get("gen_der")}))
         if args.gen_rank and GENC.get(str(mid)):   # 042 v2: one generated structure at rank gen_rank (rule --gen_rule; base order = the anaw main order)
             pool_ = [p_ for p_ in GENC[str(mid)] if args.gen_rule == "all" or p_[4] == "novel"]
             if pool_:
                 ok_, smi_, fz_ = pool_[0][0], pool_[0][1], pool_[0][2]
                 fzk_ = rows[order_base[args.gen_rank - 1]]["fp"] if len(order_base) >= args.gen_rank else None
                 gate_ = args.gen_rule != "fzgate" or fzk_ is None or not np.isfinite(fzk_) or fz_ >= fzk_
+                if args.gen_gl:   # 044 ggt3: DB-side FP + 2 GL scale (gen_eval3), the --gen_rule gate where the scale or the generated GL is missing
+                    fpv_ = np.array([r["fp"] if r["fp"] is not None else np.nan for r in rows], float)
+                    glv_ = np.array([np.nan if (GL.get(str(mid)) or {}).get(r["smiles"]) is None else float((GL.get(str(mid)) or {}).get(r["smiles"])) for r in rows], float)
+                    ff_, gf_ = np.isfinite(fpv_), np.isfinite(glv_)
+                    mfp_, sfp_ = (float(np.mean(fpv_[ff_])), float(np.std(fpv_[ff_]))) if ff_.sum() >= 2 else (np.nan, 0.0)
+                    mgl_, sgl_ = (float(np.mean(glv_[gf_])), float(np.std(glv_[gf_]))) if gf_.sum() >= 2 else (np.nan, 0.0)
+                    scale_ok_ = bool(np.isfinite(mfp_) and sfp_ > 1e-6 and np.isfinite(mgl_) and sgl_ > 1e-6)
+                    cand_ = []
+                    for p_ in [p_ for p_ in GENC[str(mid)] if p_[4] == "novel"][:args.gen_gl_k]:
+                        gsc_ = (GLGEN.get(str(mid)) or {}).get(p_[1])
+                        if gsc_ is None or not np.isfinite(float(gsc_)) or not np.isfinite(p_[2]) or not scale_ok_: continue
+                        sc_ = float((p_[2] - mfp_) / sfp_ + 2 * (float(gsc_) - mgl_) / sgl_)
+                        if np.isfinite(sc_): cand_.append((sc_, p_[0], p_[1]))
+                    cand_.sort(key=lambda x: (-x[0], x[1]))
+                    if scale_ok_ and cand_:
+                        sdb_ = ((fpv_ - mfp_) / sfp_ + 2 * (glv_ - mgl_) / sgl_)
+                        k3_ = (float(sdb_[order_base[args.gen_rank - 1]]) if np.isfinite(sdb_[order_base[args.gen_rank - 1]]) else np.inf) if len(order_base) >= args.gen_rank else -np.inf
+                        ok_, smi_ = cand_[0][1], cand_[0][2]; gate_ = cand_[0][0] >= k3_; fused_stats["gen_gl_rule"] += 1
+                    gen_choice.setdefault(str(mid), {})["ggt3"] = dict(gl=bool(scale_ok_ and cand_), okey=(cand_[0][1] if (scale_ok_ and cand_) else None), insert=bool(gate_))
                 if gate_ and ok_ not in {rows[i]["key"] for i in order[:25]}:
                     top_ = (top_[:args.gen_rank - 1] + [smi_] + top_[args.gen_rank - 1:])[:25]; fused_stats["gen_inserted"] += 1
         sub.append((mid, ";".join(top_)))
@@ -651,7 +698,7 @@ def main():
     if sub_base:
         pd.DataFrame(sub_base, columns=["molecule_id", "smiles"]).to_csv(f"{P['work']}/submission_base.csv", index=False)
         json.dump(gen_choice, open(f"{P['work']}/gen_choice.json", "w"))
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, analog_w_fallback=args.analog_w_fallback, analog_feat=args.analog_feat, frag_w_fallback=args.frag_w_fallback, gen_rank=args.gen_rank, gen_parents=args.gen_parents, gen_dv=args.gen_dv, gen_rule=args.gen_rule, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, analog_w_fallback=args.analog_w_fallback, analog_feat=args.analog_feat, frag_w_fallback=args.frag_w_fallback, gen_rank=args.gen_rank, gen_parents=args.gen_parents, gen_dv=args.gen_dv, gen_rule=args.gen_rule, gen_gl=bool(args.gen_gl), gen_gl_k=args.gen_gl_k, gen_gl_budget=args.gen_gl_budget, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
