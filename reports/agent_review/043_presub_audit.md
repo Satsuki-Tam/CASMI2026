@@ -7,8 +7,11 @@
 
 ## (b) alias の gate(進行中)
 - parity16 には DB 3 位が alias 行の分子が無かったため、**パネル 250 分子すべて**で凍結 pipeline(gt3)と gen_eval2p の選択・gate・挿入、基準リスト(b1_parity)を比較中(`spark_gt3_panelpar.sh`)。
-- **C2 の結果(19:11)**: 基準リスト(anaw0.5)250/250 一致(top-1・RR・順序付き top-25)、アナログ特徴 56,130 候補で差 0、生成の parity **250 分子で不一致 0**(挿入 96 件 = 評価器の 96 件)。DB 3 位が alias 行の分子は 3 件、うち 2 件は新規生成物があり gate が alias の fp と比較された → 一致を確認。C1 は実行中。
+- **C2 の結果(19:11)**: 基準リスト(anaw0.5)250/250 一致(top-1・RR・順序付き top-25)、アナログ特徴 56,130 候補で差 0、生成の parity **250 分子で不一致 0**(挿入 96 件 = 評価器の 96 件)。DB 3 位が alias 行の分子は 3 件、うち 2 件は新規生成物があり gate が alias の fp と比較された → 一致を確認。**C1(19:51): 基準リスト 250/250、アナログ特徴 56,116 候補で差 0、生成の parity 0 不一致(挿入 145 件 = 評価器の 145 件)。両 view PASS。**
 - 提出ファイル(同じ凍結 pipeline のパネル 250 分子の出力): 250 行・id 一意・全リスト 25 件以内・公式 key 重複 0。
 
 ## smoke(Kaggle、12 分子)
 - `casmi26-b1-fpnet-gt3` v1: 完走 674 s、FPNet sha 5b8d1c31(full_eval)、引数 gen_rank 3 / gen_rule fzgate / gen_dv 0 / analog_w 0.5、生成物あり 11、挿入 8、400 行出力。提出ファイル本体のダウンロードは Kaggle API の rate limit(出力に pip site の多数のファイルを含むため一覧取得で上限)で未取得 → 同じ凍結 pipeline のパネル 250 分子の出力で行数・25 件上限・公式 key 重複を確認する。
+
+## 結論
+- 043 の提出前条件(a 新規性、b alias の gate、smoke、提出ファイル、累積 D の記録)をすべて満たした → **10/27 枠 3 = gt3**(kernel `casmi26-b1-fpnet-gt3` v1)。
