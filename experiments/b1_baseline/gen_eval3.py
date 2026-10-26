@@ -141,7 +141,7 @@ if __name__ == "__main__":
     _idf = pd.read_parquet(f"{ROOT}/{a.folds}", columns=["scorer_key", "identity_group"]).dropna().drop_duplicates()
     GROUP_KEYS = _idf.groupby("identity_group").scorer_key.apply(lambda x: set(x.astype(str))).to_dict(); KEY_GROUP = dict(zip(_idf.scorer_key.astype(str), _idf.identity_group))
     _winit(os.path.join(ROOT, a.v3), os.path.join(ROOT, a.fold_safe))
-    RULES = ["gk3", "gt3", "gg3", "ggt3", "gg2", "gg1d1", "gg1d2"] if a.gl_gen else ["gk2", "gk3", "gt3", "gk3all", "dv1"]
+    RULES = ["gk3", "gt3", "gg3", "ggt3", "gg2", "gg1d1", "gg1d2", "gt3t", "ggt3t"] if a.gl_gen else ["gk2", "gk3", "gt3", "gk3all", "dv1", "gt3t"]
     KEEP = [r_ for r_ in a.rules.split(",") if r_] if a.rules else None
     if KEEP and any(r_ not in RULES for r_ in KEEP): raise SystemExit(f"--rules names unknown rules: {[r_ for r_ in KEEP if r_ not in RULES]} (known {RULES})")
     # ---- union mask over every evaluated molecule (all sets of this run)
@@ -277,6 +277,9 @@ if __name__ == "__main__":
                 out["gk3"] = ins_at(3, nov[0][0]) if nov else out["main"]
                 fz3 = float(fp[order[2]]) if len(order) >= 3 and np.isfinite(fp[order[2]]) else -np.inf
                 out["gt3"] = ins_at(3, nov[0][0]) if (nov and nov[0][2] >= fz3) else out["main"]
+                fz2 = float(fp[order[1]]) if len(order) >= 2 and np.isfinite(fp[order[1]]) else -np.inf   # 048: tightened gate = max(f.z rank 2, rank 3)
+                thr_t = max(fz2, fz3) if len(order) >= 3 else -np.inf
+                out["gt3t"] = ins_at(3, nov[0][0]) if (nov and nov[0][2] >= thr_t) else out["main"]
                 out["gk3all"] = ins_at(3, alln[0][0]) if alln else out["main"]
                 if a.gl_gen:   # Codex 044: common FP + 2 GL scale fixed on the DB shortlist of the view; candidates = THIS view's top-K novel by f.z only
                     gfin = np.isfinite(glv); ffin = np.isfinite(fp)
@@ -304,6 +307,7 @@ if __name__ == "__main__":
                         out[nm] = ins_at(1, cand[0][1]) if (gl_ok_view and cand[0][0] >= sdb_at(1) + dd) else out["gg3"]
                     out["n_gen_gl"] = len(cand); out["gl_scale_ok"] = scale_ok; out["n_topk"] = len(topk)
                     out["ggt3"] = out["gg3"] if gl_ok_view else out["gt3"]   # GL rule when the DB scale is valid AND a top-K generated structure has a finite GL; the f.z gate (gt3) otherwise
+                    out["ggt3t"] = out["gg3"] if gl_ok_view else out["gt3t"]   # 048: tightened gate on the fallback
                 der = np.array([k_ in der_keys for k_ in okeys], float)
                 out.update(n_derivable=int(der.sum()), truth_derivable=bool((der * tr).sum() > 0))
                 out["dv1"] = rr_of([("db", int(i)) for i in np.argsort(-(score + 1.0 * der), kind="stable")])
@@ -314,7 +318,7 @@ if __name__ == "__main__":
     if a.emit_gl: log("GL inputs written"); sys.exit(0)
     if a.dump_choice: pd.DataFrame(choice).to_parquet(os.path.join(HERE, a.dump_choice), index=False)
     R = pd.DataFrame(rows)
-    ALLR = {"gk2", "gk3", "gt3", "gk3all", "dv1", "gg3", "ggt3", "gg2", "gg1d1", "gg1d2"}
+    ALLR = {"gk2", "gk3", "gt3", "gk3all", "dv1", "gg3", "ggt3", "gg2", "gg1d1", "gg1d2", "gt3t", "ggt3t"}
     if KEEP: R = R[[c for c in R.columns if c not in ALLR or c in KEEP]]; RULES = [r_ for r_ in RULES if r_ in KEEP]
     os.makedirs(os.path.dirname(os.path.join(HERE, a.out)), exist_ok=True); R.to_csv(os.path.join(HERE, a.out + ".csv"), index=False)
     L = [f"# 042 v2 generation merge ({time.strftime('%Y-%m-%d %H:%M')}; f.z parity max {max(parity) if parity else float('nan'):.4f}; b1_gen v2)", "",
