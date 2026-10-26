@@ -23,3 +23,4 @@
 ## ggt3(045 凍結 `experiments/b1_gen045`、pipeline a7f3f756)の parity(パネル 250、00:30)
 - 両 view で **PASS**: 基準リスト(b1_parity)、全 query の順序付き top-25(gen_parity4 --rule ggt3)、GL 規則の判定(gen_parity3)。C2: 生成 GL 157 分子・704 構造(有限に採点 591、complete=False を manifest に記録)、GL 規則 132、挿入 59;C1: 201 分子・948 構造、GL 規則 172、挿入 110、gt3 fallback 29。manifest に gen_gl_record(予算・残り・秒・採点数・入出力 hash)。
 - kernel `casmi26-b1-fpnet-ggt3` v2(045 凍結)を push(smoke 実行中)。v1(044 凍結)は使わない。
+- **ggt3 v2 の smoke(Kaggle 12 分子、01:35 確認)**: 完走 641 s、FPNet sha 5b8d1c31、gen_gl_record: 生成 GL 11 分子・48 構造・22.2 s(有限に採点 10 分子・43 構造)、remaining 28,485 s(deadline に余裕)、GL 規則 10・挿入 6・gt3 fallback 1。Kaggle 上で第 2 の GL run が動くことを確認。
