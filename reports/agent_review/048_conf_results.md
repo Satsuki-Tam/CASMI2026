@@ -12,3 +12,8 @@
 - **判定: ggt3t は合格** → ggt3 の改良版(GL 経路は同じ gg3、fallback の f·z gate を「主出力 2・3 位の f·z の最大以上」に締める)。gt3 / ggt3 の後継の候補。
 - 併記: この新しい集合では ggt3 自体も全層 ≥ −0.0072(C1 F −0.0057)で、fold-2 locked の C1 F −0.0126 は小さな層(n 50)の揺れを含むと考えられる(判定には使わない)。
 - 次: pipeline に締めた gate(新しい --gen_rule)を実装し、parity(全リスト)・smoke を経て、gt3 の Public 結果の後の比較候補にする。
+
+## 追記(2026-10-27 04:19): ggt3t の実装と parity
+- pipeline: `--gen_rule fzgate2`(GL の無い分子で「生成 f·z ≥ max(主出力 2・3 位の f·z)」)、凍結 `experiments/b1_gen048`(pipeline b48feb7f)。
+- パネル 250 の両 view で全 parity **PASS**: 基準リスト(b1_parity)、全リスト(gen_parity4 --rule ggt3t: c2 は 250 query・GL 経路 132・挿入 73・失敗 0)、GL 規則(gen_parity3: c2 は 132 分子・挿入 59・不一致 0)、c1 も PASS(`logs/spark_ggt3t_panel.log` の GGT3T_P250_DONE PASS)。
+- kernel `hayatetaf/casmi26-b1-fpnet-ggt3t` v1 を push(commit run の smoke 待ち)。提出は gt3 の Public の結果の後(045/046 の条件)。
