@@ -222,6 +222,7 @@ def main():
     ap.add_argument("--analog_w_fallback", type=float, default=None, help="analog weight for molecules on the GL-coverage fallback path (034 gated variant); default = --analog_w")
     ap.add_argument("--gen_rank", type=int, default=0, help="042: insert the best novel analog derivative (b1_gen: top --gen_parents analogs, 1-2 edits, structure not in the molecule's window; best by FPNet f.z) at this final rank; 0 = off")
     ap.add_argument("--gen_parents", type=int, default=10, help="042: analog parents per molecule for b1_gen")
+    ap.add_argument("--gen_rule", default="always", choices=["always", "fzgate", "all"], help="042 v2: always = best novel structure at --gen_rank; fzgate = only if its f.z >= the f.z of the main list's candidate at that rank; all = best of novel + window-but-not-shortlisted structures")
     ap.add_argument("--gen_dv", type=float, default=0.0, help="042: main score + w * 1[candidate is a 1-2 edit derivative of a top analog] (derivability); 0 = off")
     ap.add_argument("--frag_w_fallback", type=float, default=0.0, help="MetFrag-lite (b1_frag, 038): + w * z(fragmentation score) for molecules on the GL-coverage fallback path; default 0 = off")
     ap.add_argument("--analog_feat", default="ap", choices=["ap", "mean_tan", "ap_x", "mean_tan_x"], help="analog feature used by --analog_w (_x = the candidate's own key excluded from its analogs)")
@@ -321,28 +322,35 @@ def main():
                 from rdkit import DataStructs as _DS
                 from rdkit.Chem.Descriptors import ExactMolWt as _emw
                 GEN_BITS = np.load(f"{P['fold_safe']}/fp_bits.npy")
-                def gen_candidates(parents, Mt, zl_, wset):
-                    novel, inwin = {}, set()
+                def gen_candidates(parents, Mt, zl_, wset, short_keys):
+                    """b1_gen v2 products of the parents for the target mass Mt -> (best-first [(official key, smiles, f.z, loc)] for loc in novel/window, derivable official keys).
+                    Identity = official key; f.z = max over spellings, parent score = max sim^3 * Tanimoto (gen_eval2.gen_job, one view)."""
+                    prods, info = {}, {}
                     for psmi, sim in parents:
                         pm = _Chem.MolFromSmiles(psmi) if psmi else None
                         if pm is None: continue
                         pfp = ana_fp(psmi)
-                        for smi in BG.derive(psmi, Mt - _emw(pm)):
-                            m_ = _Chem.MolFromSmiles(smi)
-                            if m_ is None: continue
-                            try: k_ = _Chem.MolToInchiKey(m_)[:14]
-                            except Exception: continue
-                            if not k_: continue
-                            if k_ in wset: inwin.add(k_); continue
+                        for smi in BG.derive(psmi, Mt):
+                            if smi not in info:
+                                m_ = _Chem.MolFromSmiles(smi)
+                                if m_ is None: info[smi] = None; continue
+                                try: rk_ = _Chem.MolToInchiKey(m_)[:14]
+                                except Exception: info[smi] = None; continue
+                                ok_ = BG.official_key(smi); f_ = chem.raw_fingerprint(smi)
+                                info[smi] = None if (not rk_ or ok_ is None or f_ is None) else dict(rk=rk_, ok=ok_, fz=float(f_[GEN_BITS].astype(np.float32) @ zl_))
+                            d0 = info[smi]
+                            if d0 is None: continue
                             sc_ = sim ** 3 * _DS.TanimotoSimilarity(ana_fp(smi), pfp)
-                            d_ = novel.get(k_)
-                            if d_ is None:
-                                f_ = chem.raw_fingerprint(smi)
-                                if f_ is None: continue
-                                d_ = novel[k_] = dict(smiles=smi, fz=float(f_[GEN_BITS].astype(np.float32) @ zl_), apsc=0.0)
-                            d_["apsc"] = max(d_["apsc"], sc_)
-                    best = sorted(novel.items(), key=lambda kv: (-kv[1]["fz"], -kv[1]["apsc"], kv[0]))
-                    return [(k_, d_["smiles"], d_["fz"]) for k_, d_ in best[:5]], inwin
+                            d_ = prods.get(d0["ok"])
+                            if d_ is None: d_ = prods[d0["ok"]] = dict(smiles=smi, rk=d0["rk"], fz=d0["fz"], apsc=-1.0)
+                            if sc_ > d_["apsc"]: d_["apsc"] = sc_
+                            if d0["fz"] > d_["fz"]: d_["fz"] = d0["fz"]; d_["smiles"] = smi
+                    lst, der = [], set()
+                    for ok_, d_ in prods.items():
+                        if ok_ in short_keys: der.add(ok_); continue
+                        lst.append((ok_, d_["smiles"], d_["fz"], d_["apsc"], "window" if d_["rk"] in wset else "novel"))
+                    lst.sort(key=lambda p_: (-p_[2], -p_[3], p_[0]))
+                    return lst, der
         GENC = {}   # 042: best novel generated structures per molecule
         EXCL_ROWS = set(json.load(open(args.exclude_rows))) if args.exclude_rows else set()
         EXCL_IDS = set(json.load(open(args.exclude_identities))) if args.exclude_identities else set()
@@ -491,12 +499,9 @@ def main():
                 if (args.gen_rank or args.gen_dv) and M_by_add:   # 042: parents = top analogs (same masks as the analog channel)
                     try:
                         par_ = [(ANA_KEY_SMI[k_], float(v_)) for k_, v_ in an_ if k_ in ANA_KEY_SMI][:args.gen_parents]
-                        nov_, inwin_ = gen_candidates(par_, float(np.median(list(M_by_add.values()))), zlog, {k_ for k_ in raw_keys if k_})
-                        GENC[str(mid)] = nov_
-                        for r_ in rows:
-                            try: rk_ = _Chem.MolToInchiKey(_Chem.MolFromSmiles(r_["smiles"]))[:14]
-                            except Exception: rk_ = None
-                            r_["gen_der"] = float(rk_ in inwin_)
+                        lst_, der_ = gen_candidates(par_, float(np.median(list(M_by_add.values()))), zlog, {k_ for k_ in raw_keys if k_}, {r_["key"] for r_ in rows})
+                        GENC[str(mid)] = lst_[:20]
+                        for r_ in rows: r_["gen_der"] = float(r_["key"] in der_)
                     except Exception as e:
                         log("generation failed for", mid, repr(e))
             feats[mid] = rows
@@ -625,14 +630,15 @@ def main():
         top_ = [rows[i]["smiles"] for i in order[:25]]
         if args.gen_rank or args.gen_dv:   # parity record (042): the base list before the derivability/generation terms, the chosen structure, derivable keys
             sub_base.append((mid, ";".join(rows[i]["smiles"] for i in order_base[:25])))
-            gen_choice[str(mid)] = dict(gen=(GENC.get(str(mid)) or [None])[0], derivable=sorted({r["key"] for r in rows if r.get("gen_der")}))
-        if args.gen_rank and GENC.get(str(mid)) is not None and GENC.get(str(mid)):   # 042: the best novel generated structure at rank gen_rank
-            k_, smi_, fz_ = GENC[str(mid)][0]
-            try:
-                m_ = Chem.MolFromSmiles(smi_); Chem.RemoveStereochemistry(m_); ok_ = Chem.MolToInchiKey(TAUT.Canonicalize(m_))[:14]
-            except Exception: ok_ = None
-            if ok_ and ok_ not in {rows[i]["key"] for i in order[:25]}:
-                top_ = (top_[:args.gen_rank - 1] + [smi_] + top_[args.gen_rank - 1:])[:25]; fused_stats["gen_inserted"] += 1
+            gen_choice[str(mid)] = dict(gen=next((p_ for p_ in (GENC.get(str(mid)) or []) if p_[4] == "novel"), None), gen_all=(GENC.get(str(mid)) or [None])[0], derivable=sorted({r["key"] for r in rows if r.get("gen_der")}))
+        if args.gen_rank and GENC.get(str(mid)):   # 042 v2: one generated structure at rank gen_rank (rule --gen_rule; base order = the anaw main order)
+            pool_ = [p_ for p_ in GENC[str(mid)] if args.gen_rule == "all" or p_[4] == "novel"]
+            if pool_:
+                ok_, smi_, fz_ = pool_[0][0], pool_[0][1], pool_[0][2]
+                fzk_ = rows[order_base[args.gen_rank - 1]]["fp"] if len(order_base) >= args.gen_rank else None
+                gate_ = args.gen_rule != "fzgate" or fzk_ is None or not np.isfinite(fzk_) or fz_ >= fzk_
+                if gate_ and ok_ not in {rows[i]["key"] for i in order[:25]}:
+                    top_ = (top_[:args.gen_rank - 1] + [smi_] + top_[args.gen_rank - 1:])[:25]; fused_stats["gen_inserted"] += 1
         sub.append((mid, ";".join(top_)))
         _pop = np.array([r["pop"] for r in rows], float); _fp = np.array([r["fp"] if r["fp"] is not None else -1e9 for r in rows], float)
         sub_probe["prior"].append((mid, ";".join(rows[i]["smiles"] for i in np.lexsort((-_fp, -_pop))[:25])))   # DIAGNOSTIC (041): the shortlist by the prior alone (FP tie-break)
@@ -645,7 +651,7 @@ def main():
     if sub_base:
         pd.DataFrame(sub_base, columns=["molecule_id", "smiles"]).to_csv(f"{P['work']}/submission_base.csv", index=False)
         json.dump(gen_choice, open(f"{P['work']}/gen_choice.json", "w"))
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, analog_w_fallback=args.analog_w_fallback, analog_feat=args.analog_feat, frag_w_fallback=args.frag_w_fallback, gen_rank=args.gen_rank, gen_parents=args.gen_parents, gen_dv=args.gen_dv, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, analog_w_fallback=args.analog_w_fallback, analog_feat=args.analog_feat, frag_w_fallback=args.frag_w_fallback, gen_rank=args.gen_rank, gen_parents=args.gen_parents, gen_dv=args.gen_dv, gen_rule=args.gen_rule, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
