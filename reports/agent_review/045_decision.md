@@ -19,3 +19,7 @@
 
 ## ggt3 の累積 D(提出前の記録、22:04)
 - dev2 v2 の D/C2: ggt3 − anaw0.5 = **+0.000000**(変化した分子 0)、M2x 比の累積は anaw0.5 と同じ −0.022733(gt3 は −0.000738、累積 −0.023471)。→ ggt3 は D の追加損失なし。035 の例外(anaw0.5 自体の累積未達)は既知のリスクとして引き継ぐ。
+
+## ggt3(045 凍結 `experiments/b1_gen045`、pipeline a7f3f756)の parity(パネル 250、00:30)
+- 両 view で **PASS**: 基準リスト(b1_parity)、全 query の順序付き top-25(gen_parity4 --rule ggt3)、GL 規則の判定(gen_parity3)。C2: 生成 GL 157 分子・704 構造(有限に採点 591、complete=False を manifest に記録)、GL 規則 132、挿入 59;C1: 201 分子・948 構造、GL 規則 172、挿入 110、gt3 fallback 29。manifest に gen_gl_record(予算・残り・秒・採点数・入出力 hash)。
+- kernel `casmi26-b1-fpnet-ggt3` v2(045 凍結)を push(smoke 実行中)。v1(044 凍結)は使わない。
