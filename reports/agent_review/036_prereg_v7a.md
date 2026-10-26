@@ -8,3 +8,8 @@
 ## Result 1 (11:48 JST) and the next family (fixed before computing)
 - v7a alone (11 layers): objective +0.0212 vs anaw0.5 +0.0408 → **not** a replacement. Pattern: v7a > anaw0.5 on the GL-covered layers (fe C/D/G C2 +0.025/+0.032/+0.007 over anaw0.5; f0 C/D/G +0.037/+0.037/+0.025) but 0 on E/F (those molecules fall back to the insurance list, where the learned model is not used), and panel C1 clean −0.0001 (anaw0.5 +0.022).
 - Next family (computed only after this note): rank_v7a with an analog term on the fallback path and/or everywhere: v7a_g0_{0.5,1} (w 0 on the learned path, 0.5 / 1 on the fallback), v7a_w{0.25,0.5} (w on both paths). Same 11-layer rule, the +0.005 replacement bar against anaw0.5, then confirmation against anaw0.5 on all fresh sets.
+
+## Result 2 (11:49 JST): combined family
+- Development (11 layers): v7a_anag0_1 (rank_v7a on the learned path, analog weight 1 on the GL-fallback path) objective **+0.0745** vs anaw0.5 +0.0408 (min layer −0.0077; panel C1 clean +0.0102 vs anaw0.5 +0.0224) → passes the replacement bar. v7a_anag0_0.5 +0.0619, v7a_anaw0.25 +0.0471, v7a_anaw0.5 fails (f0 panel C2 −0.023).
+- **Fresh confirmation vs anaw0.5 (conf3 + fit pool + fit pool 2, fold-0)**: all C2 (686) **+0.023 [+0.013, +0.033]** (C +0.032, D +0.038 [+0.022, +0.056], E +0.010, F +0.039, G +0.015); all C1 (290) +0.012 [−0.012, +0.034], but **G C1 −0.082 [−0.136, −0.028]** and C C1 −0.079 [−0.175, 0.000].
+- Reading: a real class-2 gain over anaw0.5 that gives back class-1 accuracy in the G / C (and panel seen, −0.012) layers. Not decided here: needs a review of the class-1 trade-off (Codex) and comes after the Public result of anaw0.5 (57650023); never combined with anaw0.5's result into a new reading silently.
