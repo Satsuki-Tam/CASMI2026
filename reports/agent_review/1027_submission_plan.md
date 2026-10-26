@@ -17,7 +17,7 @@ kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/
 kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/casmi26-b1-fpnet-gt3 -v 1 -f submission.csv -m "Codex 043 one-change comparison vs 0.379 (FE + anaw0.5): + one generated analog derivative (own b1_gen v2 ef8c856a; top-10 analog parents, 1-2 biosynthetic edits, query-derived mass, raw-window absence) at rank 3 if its FPNet f.z >= the main rank-3 f.z; pipeline 8d0c415e"
 ```
 
-(02:40 追加、Codex 049 Q1)枠 4・5 のコマンド(commit run の完了を確認してから):
+(02:37 追加、Codex 049 Q1)枠 4・5 のコマンド(commit run の完了を確認してから):
 ```
 kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/casmi26-e0-probe-b -v 1 -f submission.csv -m "DIAGNOSTIC pair (Codex 049, 055): E0 (0.464 reproduction) final list restricted to group B = COCONUT and not training (official key; T-priority exclusive), order kept, no refill, empty -> CCO; not a method candidate"
 kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/casmi26-b1-probe-b379 -v 1 -f submission.csv -m "DIAGNOSTIC pair (Codex 049, 055): current B1 0.379 (57650023 kernel) final list restricted to group B with the identical appended cell; not a method candidate"
