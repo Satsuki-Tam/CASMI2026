@@ -28,13 +28,14 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 
 ap_ = argparse.ArgumentParser()
 ap_.add_argument("--run", required=True); ap_.add_argument("--gen", required=True); ap_.add_argument("--sets", nargs="+", required=True)
-ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", required=True)
+ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", default="diag/geneval3_out")
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
 ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default="")
 ap_.add_argument("--emit_gl", default="", help="pass 1: write <dir>/gl_gen_<set>_in.json (top --gl_k novel structures per molecule over the views) and exit")
 ap_.add_argument("--gl_gen", default="", help="pass 2: GLACIER scores of the generated structures (runner output; {mid: {smiles: score}}), one file per set: <prefix>_<set>.json")
 ap_.add_argument("--gl_k", type=int, default=5)
+ap_.add_argument("--rules", default="", help="comma list: report/save only these rules (one-time confirmation reads, Codex 043)")
 ap_.add_argument("--store", default="data/processed/spectra_store")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet")
@@ -139,6 +140,7 @@ if __name__ == "__main__":
     GROUP_KEYS = _idf.groupby("identity_group").scorer_key.apply(lambda x: set(x.astype(str))).to_dict(); KEY_GROUP = dict(zip(_idf.scorer_key.astype(str), _idf.identity_group))
     _winit(os.path.join(ROOT, a.v3), os.path.join(ROOT, a.fold_safe))
     RULES = ["gk3", "gt3", "gg3", "ggt3", "gg2", "gg1d1", "gg1d2"] if a.gl_gen else ["gk2", "gk3", "gt3", "gk3all", "dv1"]
+    KEEP = [r_ for r_ in a.rules.split(",") if r_] if a.rules else None
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -305,7 +307,9 @@ if __name__ == "__main__":
         log(f"{s}: evaluated")
     if a.emit_gl: log("GL inputs written"); sys.exit(0)
     if a.dump_choice: pd.DataFrame(choice).to_parquet(os.path.join(HERE, a.dump_choice), index=False)
-    R = pd.DataFrame(rows); os.makedirs(os.path.dirname(os.path.join(HERE, a.out)), exist_ok=True); R.to_csv(os.path.join(HERE, a.out + ".csv"), index=False)
+    R = pd.DataFrame(rows)
+    if KEEP: R = R[[c for c in R.columns if c not in RULES or c in KEEP]]; RULES = [r_ for r_ in RULES if r_ in KEEP]
+    os.makedirs(os.path.dirname(os.path.join(HERE, a.out)), exist_ok=True); R.to_csv(os.path.join(HERE, a.out + ".csv"), index=False)
     L = [f"# 042 v2 generation merge ({time.strftime('%Y-%m-%d %H:%M')}; f.z parity max {max(parity) if parity else float('nan'):.4f}; b1_gen v2)", "",
          "| set | view | n | main | truth generated | truth loc novel/window/short | median novel | truth derivable | " + " | ".join(RULES) + " |", "|---|---|---:|---:|---:|---|---:|---:|" + "---:|" * len(RULES)]
     for (s, v), g in R.groupby(["set", "view"], sort=False):
