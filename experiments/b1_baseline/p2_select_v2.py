@@ -20,6 +20,7 @@ ap = argparse.ArgumentParser(); ap.add_argument("--census", required=True); ap.a
 ap.add_argument("--exclude", nargs="*", default=[]); ap.add_argument("--n", type=int, default=100); ap.add_argument("--seed", type=int, default=5)
 ap.add_argument("--out_dir", required=True); ap.add_argument("--locked_dir", required=True); ap.add_argument("--panel_lib", default="enveda-np-examples")
 ap.add_argument("--ref_min", type=int, default=10); ap.add_argument("--max_spectra", type=int, default=8)
+ap.add_argument("--fold", type=int, default=0, help="identity fold of the selection (default 0 = unchanged; 2026-10-26: fold 1 + fold-1 FPNet = fresh sets unseen by FPNet and ranker)")
 a = ap.parse_args(); t0 = time.time(); rng = np.random.default_rng(a.seed)
 sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
 counts = {}
@@ -38,7 +39,7 @@ used_groups = set(folds.filter(pl.col("inchikey14").is_in(list(used)) | pl.col("
 c = c.join(folds, on="inchikey14", how="left")
 s1 = c.filter(~pl.col("in_msg_raw") & ~pl.col("in_msg_scorer")); counts["after_msg_exclusion"] = s1.height
 s2 = s1.filter(~pl.col("in_dev") & ~pl.col("identity_group").is_in(list(used_groups)) & pl.col("identity_group").is_not_null()); counts["after_dev_identity_group_exclusion"] = s2.height
-elig = s2.filter(pl.col("fold_identity") == 0); counts["fold0_eligible_raw_keys"] = elig.height; counts["fold0_eligible_groups"] = elig["identity_group"].n_unique()
+elig = s2.filter(pl.col("fold_identity") == a.fold); counts["fold0_eligible_raw_keys"] = elig.height; counts["fold0_eligible_groups"] = elig["identity_group"].n_unique(); counts["fold"] = a.fold
 print(f"census {counts['census_raw_keys']:,} -> not MSG {counts['after_msg_exclusion']:,} -> not dev (keys {len(used):,}, groups {len(used_groups):,}) {counts['after_dev_identity_group_exclusion']:,} -> fold 0 {counts['fold0_eligible_raw_keys']:,} raw keys / {counts['fold0_eligible_groups']:,} groups ({time.time()-t0:.0f}s)", flush=True)
 # ---- per-molecule spectra rows (eligible molecules only)
 m = meta.filter(pl.col("inchikey14").is_in(elig["inchikey14"].to_list())).with_columns(pl.col("ce_mean").fill_null(-1.0).round(1).alias("ce_r"), pl.col("precursor_mz").round(3).alias("prec_r"))
