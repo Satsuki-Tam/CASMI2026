@@ -15,6 +15,7 @@ ap.add_argument("--expect_ckpt_sha", default="", help="full sha256 the loaded --
 ap.add_argument("--smoke_n", type=int, default=0, help="commit-run smoke switch (E0 recipe): when test.parquet is the visible dummy (spectrum-id md5 654e030e...) and the run is not a competition rerun, run the pipeline on its first N molecules only (--limit; the other ids get the CCO placeholder) (saves ~3 h of GPU quota per version); 0 = off")
 A = ap.parse_args()
 files = {n: open(os.path.join(A.src_dir, n), encoding="utf-8").read() for n in ("b1_common.py", "b1_pipeline.py", "b1_rankfeats.py")}
+if os.path.exists(os.path.join(A.src_dir, "b1_analog.py")): files["b1_analog.py"] = open(os.path.join(A.src_dir, "b1_analog.py"), encoding="utf-8").read()   # analog channel (2026-10-26), imported by b1_pipeline only with --analog_w
 print("embedding sources from", A.src_dir)
 model = A.model
 if model and os.path.exists(model): files["lambdarank.txt"] = open(model, encoding="utf-8").read(); print("embedding model", model)

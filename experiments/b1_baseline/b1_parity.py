@@ -21,7 +21,7 @@ ap.add_argument("--forward_from", default="evaluator", choices=["evaluator", "pi
                 "run (independent GPU run -> ordering noise), 'pipe' = the pipeline's gl_out/ice_out (shared cache -> MECHANICAL check, Codex 014: outputs must then agree exactly)")
 ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
 ap.add_argument("--analog_w", type=float, default=0.0, help="evaluator side adds analog_w * z(ap) to the main score (b1_pipeline --analog_w); ap from --analog_parquet (analog_probe.py)")
-ap.add_argument("--analog_parquet", default=None)
+ap.add_argument("--analog_parquet", default=None); ap.add_argument("--analog_feat", default="ap")
 ap.add_argument("--top25_set_min_share", type=float, default=0.95, help="top-25 identical as SETS (strict criterion)"); ap.add_argument("--top25_min_share", type=float, default=0.85, help="ordered top-25 identical (tail order is subject to forward-score run-to-run noise)")
 ap.add_argument("--pipe_work", default=None, help="pipeline output dir with gl_out.json / ice_out.json: measures forward-score differences vs the evaluator run"); a = ap.parse_args()
 D = pd.read_parquet(a.dump); D["molecule"] = D["molecule"].astype(str)
@@ -87,7 +87,7 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
     ANA = {}
     if a.analog_w:
         _A = pd.read_parquet(a.analog_parquet); _A = _A[_A.view == v]; _A["molecule"] = _A["molecule"].astype(str)
-        ANA = {m_: dict(zip(h_.smiles.astype(str), h_.ap.astype(float))) for m_, h_ in _A.groupby("molecule")}
+        ANA = {m_: dict(zip(h_.smiles.astype(str), h_[a.analog_feat].astype(float))) for m_, h_ in _A.groupby("molecule")}
     ana_diff = []
     stats = dict(n=0, top1_main=0, top1_ins=0, rr_main=0, rr_ins=0, top25_main=0, top25_ins=0, set25_main=0, set25_ins=0, fallback_eval=0)
     truth_of = dict(zip(S.molecule_id, S.smiles))
@@ -113,8 +113,8 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
             if a.analog_w:   # same formula as b1_pipeline: main + w * z(ap) over the molecule's candidates
                 apx = np.array([ANA.get(mid, {}).get(str(sm), np.nan) for sm in g.smiles], float); assert np.isfinite(apx).all(), (mid, "analog features missing")
                 main = np.asarray(main, float) + a.analog_w * (apx - apx.mean()) / (apx.std() + 1e-9)
-                if "ana_ap" in D.columns:
-                    dd_ = D[D.molecule == mid].drop_duplicates("smiles").set_index("smiles").ana_ap
+                if "ana_" + a.analog_feat in D.columns:
+                    dd_ = D[D.molecule == mid].drop_duplicates("smiles").set_index("smiles")["ana_" + a.analog_feat]
                     ana_diff += [abs(float(dd_.get(str(sm), np.nan)) - x_) for sm, x_ in zip(g.smiles, apx) if str(sm) in dd_.index]
             ev_main = [ident(str(g.smiles.values[i])) for i in np.argsort(-main, kind="stable")[:25]]; ev_ins = [ident(str(g.smiles.values[i])) for i in np.argsort(-ins, kind="stable")[:25]]
             pp_main = [ident(x) for x in pm_of[mid].split(";")]; pp_ins = [ident(x) for x in pf_of[mid].split(";")]
