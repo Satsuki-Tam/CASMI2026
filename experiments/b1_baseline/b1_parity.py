@@ -84,10 +84,11 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
         try: ok = json.load(open(p + ".meta.json")).get("status") in ("ok", "partial")
         except Exception: ok = False
         return (json.load(open(p)) if ok else {}), ok
-    ANA = {}
-    if a.analog_w:
+    ANA, ANA_MT = {}, {}
+    if a.analog_parquet:
         _A = pd.read_parquet(a.analog_parquet); _A = _A[_A.view == v]; _A["molecule"] = _A["molecule"].astype(str)
         ANA = {m_: dict(zip(h_.smiles.astype(str), h_[a.analog_feat].astype(float))) for m_, h_ in _A.groupby("molecule")}
+        ANA_MT = {m_: (dict(zip(h_.smiles.astype(str), h_.ap.astype(float))), dict(zip(h_.smiles.astype(str), h_.mean_tan.astype(float)))) for m_, h_ in _A.groupby("molecule")}
     ana_diff = []
     stats = dict(n=0, top1_main=0, top1_ins=0, rr_main=0, rr_ins=0, top25_main=0, top25_ins=0, set25_main=0, set25_ins=0, fallback_eval=0)
     truth_of = dict(zip(S.molecule_id, S.smiles))
@@ -107,14 +108,15 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
             if gl_ok_:
                 X = feature_matrix(fp, glv, icv, pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values, lib, g[f"lib_same_{v}"].values,
                                    g[f"lib_nref_{v}"].values, g.in_tier.values, g[f"in_train_{v}"].values, g.in_coconut.values, g.ppm_err.values, g.fp_rank_window.values,
-                                   float(Mall.loc[mid, "n_query"]), float(Mall.loc[mid, "ce_known"]), n_window=float(Mall.loc[mid, "n_unique"]) if "n_unique" in Mall.columns else np.nan, feats=feats)
+                                   float(Mall.loc[mid, "n_query"]), float(Mall.loc[mid, "ce_known"]), n_window=float(Mall.loc[mid, "n_unique"]) if "n_unique" in Mall.columns else np.nan, feats=feats,
+                                   analog=(dict(ap=[ANA_MT[mid][0][str(sm)] for sm in g.smiles], mean_tan=[ANA_MT[mid][1][str(sm)] for sm in g.smiles]) if mid in ANA_MT else None))
                 main = booster.predict(X)
                 if a.main != "learned": main = (2.0 if a.main == "blend21" else 1.0) * z(main) + z(Sc)   # blend hedge, as in b1_pipeline --main
             else: main = ins; stats["fallback_eval"] += 1
-            if a.analog_w:   # same formula as b1_pipeline: main + w * z(ap) over the molecule's candidates
+            if a.analog_w or a.analog_w_fallback:   # same formula as b1_pipeline: main + w * z(ap) over the molecule's candidates
                 apx = np.array([ANA.get(mid, {}).get(str(sm), np.nan) for sm in g.smiles], float); assert np.isfinite(apx).all(), (mid, "analog features missing")
                 w_ = a.analog_w if (gl_ok_ or a.analog_w_fallback is None) else a.analog_w_fallback
-                main = np.asarray(main, float) + w_ * (apx - apx.mean()) / (apx.std() + 1e-9)
+                if w_: main = np.asarray(main, float) + w_ * (apx - apx.mean()) / (apx.std() + 1e-9)
                 if "ana_" + a.analog_feat in D.columns:
                     dd_ = D[D.molecule == mid].drop_duplicates("smiles").set_index("smiles")["ana_" + a.analog_feat]
                     ana_diff += [abs(float(dd_.get(str(sm), np.nan)) - x_) for sm, x_ in zip(g.smiles, apx) if str(sm) in dd_.index]
@@ -127,7 +129,7 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
             stats["rr_main"] += metric.per_molecule_reciprocal_rank(t, pm_of[mid].split(";")) == metric.per_molecule_reciprocal_rank(t, [str(g.smiles.values[i]) for i in np.argsort(-main, kind="stable")[:25]])
             stats["rr_ins"] += metric.per_molecule_reciprocal_rank(t, pf_of[mid].split(";")) == metric.per_molecule_reciprocal_rank(t, [str(g.smiles.values[i]) for i in np.argsort(-ins, kind="stable")[:25]])
     n = max(stats["n"], 1)
-    if a.analog_w: md += ["", f"analog feature parity (pipeline dump ana_ap vs analog_probe ap): {len(ana_diff)} candidates, max abs diff {max(ana_diff) if ana_diff else float('nan'):.6f}, share > 1e-6 {np.mean(np.array(ana_diff) > 1e-6) if ana_diff else float('nan'):.4f}"]
+    if a.analog_w or a.analog_w_fallback: md += ["", f"analog feature parity (pipeline dump ana_ap vs analog_probe ap): {len(ana_diff)} candidates, max abs diff {max(ana_diff) if ana_diff else float('nan'):.6f}, share > 1e-6 {np.mean(np.array(ana_diff) > 1e-6) if ana_diff else float('nan'):.4f}"]
     md += ["", f"## output agreement on {stats['n']} molecules (model {os.path.basename(a.model)}, w_ice {a.w_ice:g}, libpri({a.tau},{a.margin}), GL fallback < {a.min_gl_cover:g})", "",
            "| output | top-1 identical | RR identical | top-25 identical as sets | ordered top-25 identical (official identities) |", "|---|---:|---:|---:|---:|",
            f"| main (learned + fallback) | {stats['top1_main']}/{n} | {stats['rr_main']}/{n} | {stats['set25_main']}/{n} ({stats['set25_main']/n:.3f}) | {stats['top25_main']}/{n} ({stats['top25_main']/n:.3f}) |",

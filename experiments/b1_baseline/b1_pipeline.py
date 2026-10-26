@@ -295,7 +295,9 @@ def main():
             key_rows = {k: np.concatenate(v) for k, v in key_rows.items()}
         log(f"library index: {len(key_rows):,} official identities with reference spectra")
         ANA_STORE = None
-        if args.analog_w:   # analog channel: representative store over every train spectrum with an official key
+        _mp = args.rank_model or os.path.join(HERE, "lambdarank.txt")
+        _model_needs_ana = os.path.exists(_mp) and any("z_ana_ap" in ln for ln in open(_mp, encoding="utf-8") if ln.startswith("feature_names="))   # analog-aware ranker (036)
+        if args.analog_w or args.analog_w_fallback or _model_needs_ana:   # analog channel: representative store over every train spectrum with an official key
             import b1_analog as BA
             from rdkit import Chem as _Chem
             from rdkit.Chem import rdFingerprintGenerator as _rfg
@@ -546,17 +548,18 @@ def main():
                 X = feature_matrix(fp, g, ic, pop, [r["lsid"] for r in rows], [r["lpmid"] for r in rows], [r["lsynonyms"] for r in rows], [r["np"] for r in rows], [r["src_mask"] for r in rows],
                                    [r["lotus_refs"] for r in rows], lib, [r["lib_same"] for r in rows], [r["lib_nref"] for r in rows], [r["in_tier"] for r in rows], [r["in_train"] for r in rows],
                                    [r["in_coconut"] for r in rows], [r["ppm_err"] for r in rows], [r["fp_rank_window"] for r in rows], mi["n_query"], mi["ce_known"],
-                                   n_window=mi.get("n_unique", np.nan), feats=model_feats)
+                                   n_window=mi.get("n_unique", np.nan), feats=model_feats,
+                                   analog=(dict(ap=[r["ana_ap"] for r in rows], mean_tan=[r["ana_mean_tan"] for r in rows]) if (rows and "ana_ap" in rows[0]) else None))
                 pred = booster.predict(X)
                 if args.main == "learned": sc = pred
                 else: sc = (2.0 if args.main == "blend21" else 1.0) * z(pred) + z(S_plain)   # blend hedge (2026-10-25): z(learned) + z(fixed rule), 2:1 or 1:1
                 order = np.argsort(-sc, kind="stable"); fused_stats["learned"] += 1; main_sc = sc
             except Exception as e:
                 fused_stats["learned_failed"] += 1; log("learned fusion failed for", mid, repr(e))
-        if args.analog_w and rows and "ana_ap" in rows[0]:   # analog channel (Codex 034): registered main score + w * z(feature) within the molecule
+        if (args.analog_w or args.analog_w_fallback) and rows and "ana_ap" in rows[0]:   # analog channel (Codex 034): registered main score + w * z(feature) within the molecule
             ap_ = np.array([r["ana_" + args.analog_feat] for r in rows], float); zap_ = (ap_ - ap_.mean()) / (ap_.std() + 1e-9)
             w_ana = args.analog_w if (gl_cover_ok or args.analog_w_fallback is None) else args.analog_w_fallback   # gated: fallback molecules have no forward evidence
-            main_sc = np.asarray(main_sc, float) + w_ana * zap_; order = np.argsort(-main_sc, kind="stable"); fused_stats["analog"] += 1
+            if w_ana: main_sc = np.asarray(main_sc, float) + w_ana * zap_; order = np.argsort(-main_sc, kind="stable"); fused_stats["analog"] += 1
         if args.pcl_boost:   # PubChemLite prior on the main list (2026-10-25): main score (learned/blend, or the insurance fallback) + w * membership
             in_pcl = np.array([r["key"] in PCL_KEYS for r in rows], float); fused_stats["pcl_boost_mols"] += int(in_pcl.any())
             order = np.argsort(-(np.asarray(main_sc, float) + args.pcl_boost * in_pcl), kind="stable")
