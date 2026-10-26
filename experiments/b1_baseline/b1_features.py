@@ -115,6 +115,7 @@ def main():
                     "not only for the truth (symmetric mask), to check that library features do not exploit the evaluation mask; never for training tables")
     ap.add_argument("--extra_ckpts", nargs="*", default=[], help="additional FPNet checkpoints; the query fingerprint logits are averaged over <fold_safe>/fpnet_fold0.pt and these "
                     "(same rule as b1_pipeline with several models); default none = single model, unchanged")
+    ap.add_argument("--dump_gen", default="", help="042 (generation study): also write per molecule the averaged FPNet query logits, the neutral masses per adduct and the raw keys of every window structure to <dir>/gen_<set>.npz + gen_<set>_window.parquet; tables unchanged")
     ap.add_argument("--max_ref", type=int, default=MAX_REF, help="references kept per candidate after the duplicate rule (default 24 = unchanged; 2026-10-26 reference-cap test)")
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True)
     MAX_REF = a.max_ref
@@ -176,6 +177,7 @@ def main():
             ms = mols[mols.set == set_name]
             if a.limit: ms = ms.head(a.limit)
             rows_out, cand_out, runner, ref_cache = [], [], [], {}
+            gen_dump = dict(mol=[], zlog=[], masses=[], wkeys=[])   # --dump_gen
             for n_i, r in enumerate(ms.itertuples(index=False)):
                 tm0 = time.time(); mid = r.molecule; truth_key = r.scorer_key; lib = r.lib; shift = ELECTRON if lib == "enveda-180" else 0.0
                 truth_raw = getattr(r, "raw_key", None)
@@ -243,6 +245,8 @@ def main():
                         if p["pid"] < 0: p["pid"] = d["pid"]; p["pkey"] = d["pkey"]
                         if np.isfinite(fp[i]) and fp[i] > p["fp"]: p["fp"] = float(fp[i])
                 keys = list(rep); n_u = len(keys)
+                if a.dump_gen:
+                    gen_dump["mol"].append(str(mid)); gen_dump["zlog"].append(zlog); gen_dump["masses"].append(json.dumps(M_by_add)); gen_dump["wkeys"].append(keys)
                 if n_u == 0:
                     rows_out.append(dict(set=set_name, molecule=mid, group=r.group, lib=lib, identity_group=int(getattr(r, "identity_group", -1)), n_query=len(qspec), n_unique=0,
                                          reach_external_b1=False, truth_in_window=False, truth_in_shortlist=False, c1_possible=False, c1_usable=False)); continue
@@ -393,6 +397,10 @@ def main():
             pd.DataFrame(rows_out).to_csv(f"{a.out}/b1_molecules_{set_name}.csv", index=False)
             pd.DataFrame(cand_out).to_parquet(f"{a.out}/b1_features_{set_name}.parquet", index=False)
             json.dump(runner, open(f"{a.out}/b1_runner_{set_name}_in.json", "w"))
+            if a.dump_gen and gen_dump["mol"]:
+                os.makedirs(a.dump_gen, exist_ok=True)
+                np.savez_compressed(f"{a.dump_gen}/gen_{set_name}.npz", mol=np.array(gen_dump["mol"]), zlog=np.stack(gen_dump["zlog"]).astype(np.float32), masses=np.array(gen_dump["masses"]))
+                pd.DataFrame([(m_, k_) for m_, ks_ in zip(gen_dump["mol"], gen_dump["wkeys"]) for k_ in ks_], columns=["molecule", "key"]).to_parquet(f"{a.dump_gen}/gen_{set_name}_window.parquet", index=False)
             print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} shortlist rows ({time.time()-t0:.0f}s)", flush=True)
     import rdkit
     json.dump(dict(lib_conditions=bool(a.lib_conditions), sym_lib_mask=bool(a.sym_lib_mask), extra_ckpts=list(a.extra_ckpts), k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, k_pool=a.k_pool, adduct_proxy=bool(a.adduct_proxy), neg_proxy=bool(a.neg_proxy), shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=a.dup_sim, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
