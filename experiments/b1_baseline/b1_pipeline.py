@@ -559,8 +559,9 @@ def main():
             if top_ and mid_ in spec_of: gitems.append(dict(mid=mid_, spectra=spec_of[mid_], cands=top_))
         gen_gl_meta.update(molecules=len(gitems), structures=sum(len(g_["cands"]) for g_ in gitems))
         json.dump(gitems, open(f"{P['work']}/b1_gen_forward_in.json", "w"))
-        bud_ = _budget(args.gen_gl_budget) if args.deadline_s > 0 else args.gen_gl_budget
-        gen_gl_meta["budget_s"] = int(bud_); tg0 = time.time()
+        rem_ = (args.deadline_s - (time.time() - T0) - 900) if args.deadline_s > 0 else float(args.gen_gl_budget)   # Codex 045: the deadline is a hard limit
+        bud_ = int(min(args.gen_gl_budget, rem_)); gen_gl_meta.update(budget_s=bud_, remaining_s=int(rem_)); tg0 = time.time()
+        if gitems and bud_ < 300: gen_gl_meta["status"] = "deadline_abstain"; log(f"generated GL skipped: {int(rem_)} s left (gt3 gate used)"); gitems = []
         if gitems:
             if KAGGLE:
                 try: GLGEN = gl_fuse.run_gl(P["glacier"], gitems, workdir=f"{P['work']}/gl_gen_work", device=dev, budget_s=bud_, site=f"{P['work']}/ice_site", wheels=os.path.join(P["iceberg"], "wheels"), extra_args=["--any-rdkit"]); gen_gl_meta["status"] = "ok"
@@ -573,7 +574,18 @@ def main():
                 subprocess.run(cmd_ + ["--device", dev, "--site", "none", "--budget", str(int(bud_))], stdout=open(f"{P['work']}/gl_gen.log", "w"), stderr=subprocess.STDOUT)
                 try: GLGEN = json.load(open(out_)); gen_gl_meta["status"] = "ok"
                 except Exception as e: log("generated GL output missing (gt3 gate used):", repr(e)); gen_gl_meta["status"] = "failed"
-        gen_gl_meta["seconds"] = round(time.time() - tg0, 1); gen_gl_meta["scored_molecules"] = int(sum(1 for v_ in GLGEN.values() if v_ and any(x is not None for x in v_.values())))
+        def _fin(x):
+            try: return x is not None and np.isfinite(float(x))
+            except Exception: return False
+        gen_gl_meta["seconds"] = round(time.time() - tg0, 1)
+        gen_gl_meta["scored_molecules"] = int(sum(1 for v_ in GLGEN.values() if v_ and any(_fin(x) for x in v_.values())))
+        gen_gl_meta["scored_structures"] = int(sum(1 for v_ in GLGEN.values() if v_ for x in v_.values() if _fin(x)))
+        gen_gl_meta["complete"] = bool(gen_gl_meta.get("status") == "ok" and gen_gl_meta["scored_structures"] >= gen_gl_meta["structures"])
+        try:
+            import hashlib as _hl
+            gen_gl_meta["input_sha256"] = _hl.sha256(open(f"{P['work']}/b1_gen_forward_in.json", "rb").read()).hexdigest()
+            gen_gl_meta["output_sha256"] = _hl.sha256(json.dumps(GLGEN, sort_keys=True).encode()).hexdigest()
+        except Exception: pass
         log(f"generated GL: {gen_gl_meta}")
     # ---- fusion + submission
     def z(x):
@@ -679,6 +691,7 @@ def main():
                         sc_ = float((p_[2] - mfp_) / sfp_ + 2 * (float(gsc_) - mgl_) / sgl_)
                         if np.isfinite(sc_): cand_.append((sc_, p_[0], p_[1]))
                     cand_.sort(key=lambda x: (-x[0], x[1]))
+                    if not (scale_ok_ and cand_): fused_stats["gen_gl_fallback_gt3"] += 1
                     if scale_ok_ and cand_:
                         sdb_ = ((fpv_ - mfp_) / sfp_ + 2 * (glv_ - mgl_) / sgl_)
                         k3_ = (float(sdb_[order_base[args.gen_rank - 1]]) if np.isfinite(sdb_[order_base[args.gen_rank - 1]]) else np.inf) if len(order_base) >= args.gen_rank else -np.inf
@@ -698,7 +711,7 @@ def main():
     if sub_base:
         pd.DataFrame(sub_base, columns=["molecule_id", "smiles"]).to_csv(f"{P['work']}/submission_base.csv", index=False)
         json.dump(gen_choice, open(f"{P['work']}/gen_choice.json", "w"))
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, analog_w_fallback=args.analog_w_fallback, analog_feat=args.analog_feat, frag_w_fallback=args.frag_w_fallback, gen_rank=args.gen_rank, gen_parents=args.gen_parents, gen_dv=args.gen_dv, gen_rule=args.gen_rule, gen_gl=bool(args.gen_gl), gen_gl_k=args.gen_gl_k, gen_gl_budget=args.gen_gl_budget, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, analog_w_fallback=args.analog_w_fallback, analog_feat=args.analog_feat, frag_w_fallback=args.frag_w_fallback, gen_rank=args.gen_rank, gen_parents=args.gen_parents, gen_dv=args.gen_dv, gen_rule=args.gen_rule, gen_gl=bool(args.gen_gl), gen_gl_k=args.gen_gl_k, gen_gl_budget=args.gen_gl_budget, gen_gl_record=gen_gl_meta, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:

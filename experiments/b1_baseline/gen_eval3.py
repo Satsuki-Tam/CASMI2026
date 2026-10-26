@@ -143,6 +143,7 @@ if __name__ == "__main__":
     _winit(os.path.join(ROOT, a.v3), os.path.join(ROOT, a.fold_safe))
     RULES = ["gk3", "gt3", "gg3", "ggt3", "gg2", "gg1d1", "gg1d2"] if a.gl_gen else ["gk2", "gk3", "gt3", "gk3all", "dv1"]
     KEEP = [r_ for r_ in a.rules.split(",") if r_] if a.rules else None
+    if KEEP and any(r_ not in RULES for r_ in KEEP): raise SystemExit(f"--rules names unknown rules: {[r_ for r_ in KEEP if r_ not in RULES]} (known {RULES})")
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -307,7 +308,7 @@ if __name__ == "__main__":
                 out.update(n_derivable=int(der.sum()), truth_derivable=bool((der * tr).sum() > 0))
                 out["dv1"] = rr_of([("db", int(i)) for i in np.argsort(-(score + 1.0 * der), kind="stable")])
                 if a.dump_choice and v in ("c1", "c2"):
-                    choice.append(dict(set=s, view=v, molecule=mid, gen_okey=(nov[0][0] if nov else None), gen_smiles=(nov[0][1] if nov else None), gt3_insert=bool(nov and nov[0][2] >= fz3), ggt3_okey=(cand[0][1] if (a.gl_gen and gl_ok_view) else None), ggt3_gl=bool(a.gl_gen and gl_ok_view), ggt3_insert=(bool(gl_ok_view and cand[0][0] >= sdb_at(3)) if a.gl_gen else None), derivable=";".join(sorted(der_keys & set(okeys)))))
+                    choice.append(dict(set=s, view=v, molecule=mid, gen_okey=(nov[0][0] if nov else None), gen_smiles=(nov[0][1] if nov else None), gt3_insert=bool(nov and nov[0][2] >= fz3), ggt3_okey=(cand[0][1] if (a.gl_gen and gl_ok_view) else None), ggt3_smiles=(next((p_[1] for p_ in nov if p_[0] == cand[0][1]), None) if (a.gl_gen and gl_ok_view) else None), ggt3_gl=bool(a.gl_gen and gl_ok_view), ggt3_insert=(bool(gl_ok_view and cand[0][0] >= sdb_at(3)) if a.gl_gen else None), derivable=";".join(sorted(der_keys & set(okeys)))))
                 rows.append(out)
         log(f"{s}: evaluated")
     if a.emit_gl: log("GL inputs written"); sys.exit(0)

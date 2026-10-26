@@ -15,3 +15,7 @@
 
 ## 結論
 - 候補・実装照合は合格(a 新規性の範囲付きの監査、b alias の gate、smoke、累積 D の記録)→ **10/27 枠 3 = gt3**(kernel `casmi26-b1-fpnet-gt3` v1)。**最終提出物(400 行の現物・処理件数・hash)と本番の実効 GL 予算・被覆・fallback は実行時に確認して記録する**(Codex 044)。
+
+## 追記(22:02): 全リストの parity(Codex 045 の検査範囲)
+- `gen_parity4.py`: 評価器の決定(gen_eval2p の gt3_insert・選択構造)と pipeline の基準リストから期待リストを組み立て、**全 query の公式 key の順序付き top-25**、ID 集合・重複・25 件上限を比較(読めない SMILES は文字列で比較)。
+- パネル 250 分子の gt3: **C2 0 失敗(挿入 96)、C1 0 失敗(挿入 145)** → GENPARITY4 PASS(両 view)。

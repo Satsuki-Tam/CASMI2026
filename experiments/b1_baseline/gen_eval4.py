@@ -1,5 +1,6 @@
 """Stage 3 (2026-10-26): gen_eval3 + database-relative parents: besides the top-P train analogs, the top-P pool structures (train +
 COCONUT, v2 pool) whose mass equals the target minus one edit's formula change, ranked by FPNet f.z (gen_cov3 "both"), under the view's mask.
+DB parents carry the fixed parent score sim = 1.0 (used only for ties among generated structures).
 Stage 2 (2026-10-26): gen_eval2 + GLACIER scores for the generated structures.
 
 Pass 1 (--emit_gl DIR): writes GLACIER runner inputs with the molecule's query spectra (copied from the registered runner input) and the
@@ -37,8 +38,10 @@ ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dum
 ap_.add_argument("--emit_gl", default="", help="pass 1: write <dir>/gl_gen_<set>_in.json (top --gl_k novel structures per molecule over the views) and exit")
 ap_.add_argument("--gl_gen", default="", help="pass 2: GLACIER scores of the generated structures (runner output; {mid: {smiles: score}}), one file per set: <prefix>_<set>.json")
 ap_.add_argument("--gl_k", type=int, default=5)
-ap_.add_argument("--db_parents", type=int, default=10, help="stage 3: database-relative parents per view (0 = off = gen_eval3)")
+ap_.add_argument("--db_parents", type=int, required=True, help="stage 3: database-relative parents per view (0 = off = gen_eval3); must be given explicitly")
 ap_.add_argument("--pool", default="data/external/v2_pool/pool_meta.parquet")
+ap_.add_argument("--gl_base_json", default="", help="parity: base GL {mid: {smiles: score}} from the pipeline (gl_out.json) instead of the run's own GL")
+ap_.add_argument("--gl_gen_json", default="", help="parity: generated-structure GL from the pipeline (gl_gen_out.json) instead of --gl_gen files")
 ap_.add_argument("--rules", default="", help="comma list: report/save only these rules (one-time confirmation reads, Codex 043)")
 ap_.add_argument("--store", default="data/processed/spectra_store")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
@@ -169,6 +172,7 @@ if __name__ == "__main__":
         log(f"pool for database parents: {len(_W['pm']):,} structures")
     RULES = ["gk3", "gt3", "gg3", "ggt3", "gg2", "gg1d1", "gg1d2"] if a.gl_gen else ["gk2", "gk3", "gt3", "gk3all", "dv1"]
     KEEP = [r_ for r_ in a.rules.split(",") if r_] if a.rules else None
+    if KEEP and any(r_ not in RULES for r_ in KEEP): raise SystemExit(f"--rules names unknown rules: {[r_ for r_ in KEEP if r_ not in RULES]} (known {RULES})")
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -181,6 +185,7 @@ if __name__ == "__main__":
         F = pd.read_parquet(os.path.join(HERE, a.run, f"b1_features_{s}.parquet")); F["molecule"] = F["molecule"].astype(str)
         M = pd.read_csv(os.path.join(HERE, a.run, f"b1_molecules_{s}.csv")).set_index("molecule"); M.index = M.index.astype(str)
         gl, _, _ = E.runner(os.path.join(HERE, a.run), s, "gl"); gl = gl or {}
+        if a.gl_base_json: gl = json.load(open(a.gl_base_json))   # parity: the pipeline's own base GL (shared forward cache)
         G = np.load(os.path.join(HERE, a.gen, f"gen_{s}.npz")); ZL = dict(zip([str(x) for x in G["mol"]], G["zlog"])); MASS = dict(zip([str(x) for x in G["mol"]], [json.loads(x) for x in G["masses"]]))
         W = pd.read_parquet(os.path.join(HERE, a.gen, f"gen_{s}_window.parquet")); W["molecule"] = W["molecule"].astype(str); WK = W.groupby("molecule").key.apply(set).to_dict()
         mols = ev[ev.set == s]
@@ -256,7 +261,7 @@ if __name__ == "__main__":
             log(f"{s}: GL input for {len(outl)} molecules, {sum(len(d_['cands']) for d_ in outl)} structures"); continue
         GLG = {}
         if a.gl_gen:   # Codex 044: a missing or unreadable file stops the evaluation (no silent empty GL)
-            GLG = json.load(open(os.path.join(HERE, f"{a.gl_gen}_{s}.json")))
+            GLG = json.load(open(a.gl_gen_json)) if a.gl_gen_json else json.load(open(os.path.join(HERE, f"{a.gl_gen}_{s}.json")))
         for mid, mm in MM.items():
             for v in VIEWS:
                 vv = "c1" if v == "c1" else "c2"
@@ -333,7 +338,7 @@ if __name__ == "__main__":
                 out.update(n_derivable=int(der.sum()), truth_derivable=bool((der * tr).sum() > 0))
                 out["dv1"] = rr_of([("db", int(i)) for i in np.argsort(-(score + 1.0 * der), kind="stable")])
                 if a.dump_choice and v in ("c1", "c2"):
-                    choice.append(dict(set=s, view=v, molecule=mid, gen_okey=(nov[0][0] if nov else None), gen_smiles=(nov[0][1] if nov else None), gt3_insert=bool(nov and nov[0][2] >= fz3), derivable=";".join(sorted(der_keys & set(okeys)))))
+                    choice.append(dict(set=s, view=v, molecule=mid, gen_okey=(nov[0][0] if nov else None), gen_smiles=(nov[0][1] if nov else None), gt3_insert=bool(nov and nov[0][2] >= fz3), ggt3_okey=(cand[0][1] if (a.gl_gen and gl_ok_view) else None), ggt3_smiles=(next((p_[1] for p_ in nov if p_[0] == cand[0][1]), None) if (a.gl_gen and gl_ok_view) else None), ggt3_gl=bool(a.gl_gen and gl_ok_view), ggt3_insert=(bool(gl_ok_view and cand[0][0] >= sdb_at(3)) if a.gl_gen else None), derivable=";".join(sorted(der_keys & set(okeys)))))
                 rows.append(out)
         log(f"{s}: evaluated")
     if a.emit_gl: log("GL inputs written"); sys.exit(0)
