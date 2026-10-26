@@ -128,3 +128,9 @@
 - **新しい評価集合**: fold-1(dev/locked 各 500)・fold-2(dev/locked 各 500)を作成。FPNet(public fold-safe の各 fold モデル)と ranker のどちらにも未見で、確認集合の枯渇を解消。
 - Kaggle CLI の認証は 18:31 に自然回復。kernel 出力のダウンロードは出力ファイル数が多いため rate limit に当たる → 提出物の検証は Spark の同一パイプライン出力で行う方針。
 - **次の大きな候補(10/27 以降)**: ranker の学習データの大幅拡張。現 ranker(rank_v4b)の学習分子は数百〜千程度。identity fold 3・4 から層別の学習 pool(計 ~4,000 分子)を fold-safe FPNet(各 fold 未見)で作り、隠しのクラス 2 と同じ「FPNet 未見」の条件の行で ranker を学習 → fold-1/2 の dev(FPNet・ranker とも未見)で評価。E0 の engine の ranker が大規模なシミュレーションで学習されている点に対応する。fold-1/2 は評価用に取っておき、学習には使わない。
+
+## 17. 21:30〜23:16: 生成の改良(第 2 段の確認、第 3 段、hybrid)
+- 第 2 段 ggt3(生成物に GLACIER)は fold-1 locked の一回確認に合格(C3 は gt3 比 +0.004)。pipeline 実装(別 run・別予算、deadline を上限に、manifest に記録)と parity を済ませ、gt3 の Public 結果の後の候補に。
+- 第 3 段(DB の近縁構造も親に)は真の生成率を約 2 倍にしたが、GL の無い分子で f·z の gate を通るデコイが増え、保護(fold-1 C2 E −0.0116)で不採用。
+- 修正案 **ggt3h**(DB 近縁の親は GL のある経路だけ)を事前登録 → 開発で C3 +0.027(ggt3 +0.020)、保護の最悪 −0.0069、整合性チェック合格 → **fold-2 locked で一回確認中**。
+- gt3 の全リスト parity(パネル 250 × 2 view、全 query の top-25)も PASS。明日の枠 3 は予定どおり gt3。
