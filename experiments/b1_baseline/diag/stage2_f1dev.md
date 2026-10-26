@@ -1,4 +1,4 @@
-# 042 v2 generation merge (2026-10-26 19:50; f.z parity max 2.8196; b1_gen v2)
+# 042 v2 generation merge (2026-10-26 20:26; f.z parity max 2.8196; b1_gen v2)
 
 | set | view | n | main | truth generated | truth loc novel/window/short | median novel | truth derivable | gk3 | gt3 | gg3 | ggt3 | gg2 | gg1d1 | gg1d2 |
 |---|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
