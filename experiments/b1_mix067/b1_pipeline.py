@@ -263,11 +263,12 @@ def main():
         import hashlib
         with open(CKPT, "rb") as fh: CKPT_SHA = hashlib.sha256(fh.read()).hexdigest()
         models = [fpnet.load_model(CKPT, dev)]; log(f"FPNet checkpoint {CKPT} sha256 {CKPT_SHA[:16]}")
+        MIX_SHAS = []
         if args.mix_folds:   # 067: equal logit mean of the own checkpoint and these public fold-safe models (same bits)
             for k_ in [int(x) for x in args.mix_folds.split(",")]:
-                p_ = f"{P['fold_safe']}/fpnet_fold{k_}.pt"; models.append(fpnet.load_model(p_, dev)); log(f"FPNet mix + {p_} sha256 {hashlib.sha256(open(p_, 'rb').read()).hexdigest()[:16]}")
+                p_ = f"{P['fold_safe']}/fpnet_fold{k_}.pt"; models.append(fpnet.load_model(p_, dev)); MIX_SHAS.append(hashlib.sha256(open(p_, 'rb').read()).hexdigest()); log(f"FPNet mix + {p_} sha256 {MIX_SHAS[-1][:16]}")
     else:
-        CKPT, CKPT_SHA = None, None
+        CKPT, CKPT_SHA = None, None; MIX_SHAS = []
         models = [fpnet.load_model(f"{P['fold_safe']}/fpnet_fold{k}.pt", dev) for k in folds]
     dtype = fpnet.autocast_dtype(dev)
     log(f"FPNet folds {folds} loaded on {dev}; tier rows {tmass.shape[0]:,}; pool {pool.height:,}")
@@ -573,7 +574,7 @@ def main():
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
     for name_, v_ in sub_probe.items(): pd.DataFrame(v_, columns=["molecule_id", "smiles"]).to_csv(f"{P['work']}/submission_probe_{name_}.csv", index=False)
     df_fixed = pd.DataFrame(sub_fixed, columns=["molecule_id", "smiles"]); df_fixed.to_csv(f"{P['work']}/submission_fixed.csv", index=False)
-    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, analog_feat=args.analog_feat, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
+    json.dump(dict(seconds=round(time.time() - T0), molecules=len(all_ids), scored=len(feats), fusion=dict(fused_stats), gl_mols=len(GL), ice_mols=len(ICE), learned_model=(model_path if booster is not None else None), params=dict(K=args.k_short, K_fpp=args.k_fpp, K_pop=args.k_pop, K_pool=args.k_pool, pcl_boost=args.pcl_boost, dup_sim=args.dup_sim, twin_tau=args.twin_tau, twin_margin=args.twin_margin, analog_w=args.analog_w, analog_feat=args.analog_feat, fpnet_ckpt=CKPT, fpnet_ckpt_sha256=CKPT_SHA, mix_folds=args.mix_folds, mix_sha256=MIX_SHAS, fpnet_average='equal logit mean over [ckpt] + mix folds' if args.mix_folds else 'single', w_ice=args.w_ice, tau=args.tau, margin=args.margin, gl_budget=args.gl_budget, ice_budget=args.ice_budget, deadline_s=args.deadline_s, min_gl_cover=args.min_gl_cover, main=args.main, adduct_proxy=bool(args.adduct_proxy), neg_proxy=bool(args.neg_proxy), W_GL=W_GL, W_ICE=W_ICE, LAM=LAM, TAU=TAU, MARGIN=MARGIN, folds=folds)),
               open(f"{P['work']}/b1_run_manifest.json", "w"), indent=1)
     log(f"submission written: {df.shape}, fusion {dict(fused_stats)}")
     if args.solution:
