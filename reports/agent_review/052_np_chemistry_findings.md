@@ -1,5 +1,7 @@
 # 052 探索の記録: 開発集合の「NP 層」は NP の化学になっていない(結果は探索、登録された判定ではない)
 
+> **訂正(Codex 053、`053_decision.md`)**: 「NP / 非 NP」は「COCONUT 収載 / 非収載」と読む(非収載は非 NP の証明ではない)。§2・§4 の分析は正解が候補に入った分子に限った条件付き;§4 の「勝者の 80〜91% がより有名な NP 異性体」は三条件(COCONUT・prior 高・同式)では GL あり 52.5% / GL なし 84.6%。装置差(dg)は RIKEN で −0.078 [−0.115, −0.041] と小さくない。
+
 作成: 2026-10-27 02:25 JST(Claude Code)。スクリプト: `experiments/b1_baseline/np_ledger.py`、`gl_np_grid*.py`、`np_fusion_explore.py`、`np_pcl_explore.py`(Spark、fold-1/2 dev の C2、fpnet_fold1/2、MSG に無い分子)。
 
 ## 1. 正解の化学の比較
