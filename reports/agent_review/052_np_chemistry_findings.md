@@ -1,0 +1,25 @@
+# 052 探索の記録: 開発集合の「NP 層」は NP の化学になっていない(結果は探索、登録された判定ではない)
+
+作成: 2026-10-27 02:25 JST(Claude Code)。スクリプト: `experiments/b1_baseline/np_ledger.py`、`gl_np_grid*.py`、`np_fusion_explore.py`、`np_pcl_explore.py`(Spark、fold-1/2 dev の C2、fpnet_fold1/2、MSG に無い分子)。
+
+## 1. 正解の化学の比較
+| 集合 | 正解が COCONUT | PubChemLite | 正解の pop 中央値(デコイ) |
+|---|---:|---:|---|
+| パネル(Enveda NP、隠しに最も近い) | **0.996** | **0.924** | **18.2**(2.1) |
+| fold-1/2 dev C(NP 交差) | 0.38 | 0.21〜0.61 | COCONUT 正解 9.7〜10.1、tier のみ 1.7 |
+| D(NP 単一) | 0.17 | 0.09〜0.56 | 4.9〜7.5 / 0.0 |
+| E(負イオンのみ) | 0.42 | 0.18〜0.49 | 6.6〜7.6 / 2.1〜2.5 |
+| F(GL 非対応) | 0.65 | 0.16〜0.48 | 7.0〜7.4 / 1.9〜2.7 |
+| G(timsTOF 合成) | 0.00 | 0.006 | — |
+- dev の「NP 層」は query のライブラリで定義しており、正解の大半は NP ではない(D で PubChem/COCONUT に無い 58〜62% は GNPS の組合せ合成ライブラリ様の構造: N-アシルアミド、胆汁酸抱合体など)。**隠し(パネル型)は正解のほぼ全てが COCONUT の NP で、文献上もよく知られた化合物**。Public probe でも B(COCONUT かつ非 train)0.202 が最大の群。
+
+## 2. NP の正解では GLACIER が弱く、prior が強い(C2、GL 被覆あり、未見)
+- C 層: COCONUT の正解は GL の順位の中央値 **20**(top-1 5.8%)、tier のみの正解は **2**(top-1 41%)。D 層: 8 vs 4。GL は「正解と同じ型(NP / 合成)」の候補を上げるが、NP の異性体の間ではほぼ識別できない(正解が COCONUT のとき COCONUT デコイの GL z は tier デコイより +0.6 高い)。
+- 固定規則 S = z(FP) + wg z(GL) + wp pop の格子: COCONUT の正解は wg 0〜0.5 が最良(C: 0.596 vs 登録の wg 2 で 0.450)、tier のみは wg 1〜2 が最良。
+- learned を含む blend(analog 項なし)では差は縮む: COCONUT の正解は 2 z(L) + z(S) の S の wg を 2 → 0.5 にすると C 0.615 → 0.633、D 0.535 → 0.561、tier のみは C 0.681 → 0.642、D 0.590 → 0.585。
+- PubChemLite 加点は dev では小さい(D の COCONUT 正解 n 23 で w 4 のとき +0.06、他はほぼ 0)、パネルは天井近く(0.961 → 0.974)。
+
+## 3. 含意(仮説)
+- 開発の判定と融合の重みは、正解の 2/3 が非 NP(GL が強く prior が弱い)の集合で決めてきた。隠しの NP(パネル型)では GL の価値が低く、prior の価値が高い可能性が高い。E0 系譜は LB で直接調整しているので、この差が 0.085 の一部を説明し得る。
+- 次の評価は「正解が NP(COCONUT / LOTUS)」の分子に限定・再重み付けすべき。train ∩ COCONUT は約 2.6 万 identity あり、MSG を除いても fold-safe な NP クラス 2 の開発・確認・ranker の学習に十分な数がある。
+- 今日の prior-only probe(枠 2)は、隠しの正解がどれだけ「よく知られた化合物」かを直接測る(パネル型なら高い値が出るはず)。
