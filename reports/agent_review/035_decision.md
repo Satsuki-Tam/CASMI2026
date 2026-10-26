@@ -19,3 +19,8 @@ Pre-submission checks (Codex 035): (a) identity audit of the returned C2 analogs
 - (b) Kaggle smoke (v1, 12 molecules): rc 0, manifest analog_w 0.5 / ap / dup 0.98 / ckpt sha 5b8d1c31; analog store 981,821 representatives built in 85 s; feature stage 25.4 s/mol vs 19.9 s/mol without the channel (+5.5 s/mol ≈ +37 min for 400 molecules). Projected hidden rerun ≈ 3.8-4.4 h; the GL budget under deadline_s 30000 stays at its 14,000 s cap (remaining ≈ 15,700 s), GL needs ≈ 2,300 s.
 - Frozen-source parity16: PASS in both views (also re-checked by Codex).
 - **Submitted 11:05 JST: ref 57650023** (kernel casmi26-b1-fpnet-analog v1). The reading table above applies unchanged.
+
+## Public result (14:45 JST): **57650023 = 0.379** (working baseline 0.370 → Δ +0.009)
+- Row 1 of the fixed reading (Δ ≥ +0.008, consistent with the local evidence): **FE + anaw0.5 becomes the provisional working baseline (0.379)**, with the cumulative dev2 D C2 shortfall vs M2x recorded as the accepted known risk (not a protection pass). Frozen version = experiments/b1_ana035 (pipeline ef8f8f96, b1_analog 4f471bd1), kernel casmi26-b1-fpnet-analog v1, the hidden rerun completed (scored). FE (0.370) stays as the previous control; M2x (0.354) as the cumulative reference.
+- Not a significance claim: one comparison on ~130 molecules (+0.009 ≈ one molecule moved from missed to rank 1). The direction and size agree with the local expectation (+0.01-0.02).
+- Consequence for 037b / 038: **branch B** applies — v7f is compared with S_a = 0.379 as a replacement; its C/G unseen-C1 and panel-clean losses vs anaw0.5 are the recorded operational exception.
