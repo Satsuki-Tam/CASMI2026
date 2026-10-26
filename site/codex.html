@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-27 02:06 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-27 02:46 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -12028,4 +12028,117 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <li>A の E0 probe は今日の保留枠に使う価値があるか(読みと閾値、B1 側の比較対象 = 0.354 時点の probe で良いか、それとも 0.379 版で T/B を取り直すべきか)。</li>
 <li>C の regime の再定義は妥当か。妥当なら ENS2 / rank_v8a の再評価の確認集合と判定を何にするか(fold-3b/4b は rank_v8a の確認に予約済み)。</li>
 <li>B・D の優先順位、または A〜E 以外で 0.1 規模に届き得る見落とした経路はあるか(E0 の engine-1 = pool のみの窓 + sim 学習 ranker の移植、テスト間の関連の利用、MIST など)。</li>
-</ol></details></article><article><h1>050: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ol></details><details><summary>回答(Codex)</summary><p>049 レビュー（2026-10-27）</p>
+<p><strong>最優先はBのforward被覆拡張です。Cの評価条件の整理を並行し、rank_v8aは学習重みを揃えた対照を一つ追加します。今日の保留2枠を使うなら、E0_T / E0_Bより「E0_B と現行0.379のB1_B」の一対を推奨します。Dは共通holdoutでの2モデルから測り、生成の追加研究は後回しにするEに賛成です。</strong></p>
+<p>0.48を狙うには、今ある証拠を使える分子を増やすことと、候補取得・順位付け・融合のどこでE0に負けるかの切り分けを優先します。0.379がE0の過去のある版と近いことは、同じ機能段階に到達した証拠ではありません。過去のPublic上昇を足し算して、B1にも同じ +0.10 が残っているとは予測できません。</p>
+<p>047の旧登録での不採用、048の登録条件への合格には異論ありません。048の実装差分も、GL経路を保ち、fallbackだけを2・3位FPの最大値で締める形です。ただし新しい集合でFの損失が小さかったことだけで、以前の −0.0126 を単なる標本の揺れと断定はできません。parity・smokeを完了させ、固定した比較条件で扱います。</p>
+<p><strong>Q1：AのE0 probeは今日の枠に使う価値があるか</strong></p>
+<p><strong>比較対象を揃えた一対なら価値があります。旧B1 probeだけと比較して +0.085 の出所を直接分解する、という目的にはなりません。</strong></p>
+<p>T/Bは候補の出典区分で、公式classとは一致しません。公式class 1は「公開参照スペクトルがある分子」であり、provided trainへの所属だけではありません。Bの非train構造にも外部公開スペクトルを持つものがあり得ます。「E0_Bの差が大きい→COCONUT非train候補経路を重点調査」はよいですが、「→class 2が原因」は推論が一段強すぎます。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/data">公式Data</a>（本文は10/27保存版で確認）</p>
+<p>また、最終top-25を群で絞ると順位が詰まります。例えば元の10位がB内では3位になるので、probeが測るのは <strong>B内に絞った方策のMRR</strong> です。元の全体スコアへのBの寄与ではありません。</p>
+<p><code>P_B = 全queryでの mean(真がB内のリストにあれば 1 / B内順位、それ以外は0)</code></p>
+<p>元の寄与は分母が「全リストでの順位」で、別の量です。既存M2xでもT+B+Pc = 0.408で、本体0.354より高いことがこの違いを示します。E0_T/Bの差を足して0.085へ配分したり、その比をclass比率と読んだりはしません。両probeが近くても、群を混ぜる順序、Pc、生成物等に差が残ります。</p>
+<p><strong>今日使う場合の案は、枠4をE0_B、枠5をB1 0.379_Bです。</strong> Bを先に見るのは、旧probeで大きな得点を持ち、NPの候補取得・再ランキングという改善仮説に直接つながるためです。Tはこの結果と被覆監査で必要性を判断して別日に回せます。旧0.354_B=0.202は履歴として併記しますが、主対照にはしません。0.464−0.354は0.110であり、現行0.379との差0.085とも異なります。</p>
+<p>固定すべき仕様は、同じ公式key、同じtrain/COCONUT資産版と所属規則、T優先で排他的なB、<strong>同じ最終top-25からの抽出・相対順序保持・追加候補での補充なし</strong>です。E0側は0.464の元版・入力資産・全処理を固定し、最後の出力選択だけを変えます。変更前の本体出力、所属判定、空リスト処理、hash、被覆・実効予算を残します。E0の元版を正確に再現できない場合は「0.464からの診断」という表現も限定します。</p>
+<p>読みは連続値で残します。<code>E0_B − 現行B1_B ≥ +0.04</code> は、同じB限定方策で大きな差があるという<strong>調査優先度の目安</strong>にはできます。有意差や全体差の帰属の境界ではありません。その場合も、候補到達と順位・forward被覆を分けて調べます。差が小さい場合にBが無関係と断定せず、Tや群間融合を次の調査対象にします。閾値の微調整にPublicを使い続けることは避けます。</p>
+<p>E0を2回動かす約9時間という費用を払う前に、保存済みオフライン出力から候補数・source構成・GL/ICE被覆・proxy対象数は比較できます。「E0のモデルがtrainを見ているのでオフラインでは何も分解できない」は強すぎます。未見性能の推定は汚れますが、これらの処理上の差は測れます。identity既見・query独立のC1比較も有用です。</p>
+<p><strong>Q2：Cのregime再定義は妥当か</strong></p>
+<p><strong>目標条件に近い評価を主にし、ずれた条件をstress評価へ移す方向には賛成します。ただし、パネルC1だけを主保護にし、Gを無関係とみなす案には修正が必要です。</strong></p>
+<p>第一に、公式class 1は全てfull_eval既見とは限りません。provided trainは公開ライブラリの便宜的な集約であり、class 1の定義自体はより広いです。full_evalも完全な全量学習ではなく、check_inputsではhold/lockの500群ずつを除外し、structure行はtrain 274,801、hold 506、lock 503です。「identity未見C1は隠しに存在しない」とまでは置けません。</p>
+<p>第二に、Gが天然物の主評価と異なる領域であることには根拠があります。公式Dataもenveda-180を合成drug-likeの別領域と説明しています。一方、隠しには天然物アナログや自然に存在し得る合成分子も含まれます。GはtimsTOF queryと他装置参照のずれを測る役割を持ち、誤った類縁体参照を信じる失敗も検出します。化学領域が違うことと、その失敗機構がNPに起こらないことは別です。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/data">公式Data</a></p>
+<p>rank_v8aの失敗もGだけではありません。<strong>G/C1は大きく改善し、G/C2とfold-2のNP C/C1 −0.0137が悪化しています。</strong> 加えてdev2 C/C2は −0.0090です。Gの拘束を外すだけで、NPへの有害な副作用がないと結論することはできません。</p>
+<p>第三に、<strong>ensembleの露出条件はcheckpointごとに見る必要があります。</strong> 公開fold-safeの <code>make_split.py</code> は、全foldでパネルidentity群を除外します。従って、自前full_eval＋公開5本では次の違いがあります。</p>
+<table>
+<thead>
+<tr>
+<th>queryのidentity</th>
+<th>自前full_eval</th>
+<th>公開5本</th>
+<th>合計の典型的な露出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パネルC1</td>
+<td>他取得で既見</td>
+<td>全て未見</td>
+<td>既見1・未見5</td>
+</tr>
+<tr>
+<td>パネル以外の通常のtrain内identity</td>
+<td>既見なら</td>
+<td>対応foldだけ未見、他4本は既見</td>
+<td>既見5・未見1</td>
+</tr>
+<tr>
+<td>全モデルの実学習identity外</td>
+<td>未見</td>
+<td>全て未見</td>
+<td>未見6</td>
+</tr>
+</tbody>
+</table>
+<p>これは実際の学習台帳で成立を確認する条件付きの表です。<strong>ENS2/6のパネルC1の損失は、本番C1と異なる混合で測っている可能性があります。</strong> 逆に、パネルを緩めればensembleが本番で良くなると確定するわけでもありません。rankerだけを替えてfull_evalを固定する場合と、FPNet群を替える場合で、パネルの意味を分けてください。</p>
+<p>今後の登録では、例えば以下の役割分担が明確です。</p>
+<ul>
+<li>主な改善対象：未見NP C2のC/D/E/F等重みマクロ。同じ分子・checkpoint・候補資産で一対比較する。</li>
+<li>主保護：採用時のモデル露出に対応した、identity既見・query取得独立のNP C1と、NP C2各層。全体マクロだけで一層の大損を隠さない。</li>
+<li>stress：identity未見C1、GのC1/C2、パネルでの本番とは異なるensemble混合。損失・条件・該当母集団を明示する。</li>
+</ul>
+<p>stressを従来の −0.01 の一律拘束から外す選択はできますが、−0.03に一般的な根拠はありません。既に見た候補を通すための数字にせず、どの損失をどの適用範囲で受容するかを結果前に固定します。rank_v8aのG/C2 −0.0598を許すなら、その事実も明記します。過去の不合格はそのまま残します。</p>
+<p><strong>確認集合は候補ごとに分けます。</strong> rank_v8aは3b/4bが未開封なので、新しい目的・保護・重みを登録した上で、この予約を維持して一候補の確認に使えます。既定の限界（ranker学習外・query自身のFPはfold-safeで、全上流モデル未見ではない）も維持します。後述の重み対照も作る場合は、開発で一つ選んでからbを開きます。b上で候補や評価方針を選びません。</p>
+<p>ENS2は、現full_evalと公開モデルの<strong>両方が未見である新規確認集合</strong>が必要です。新しいfold-1分子へfull_evalを当てるだけではその条件になりません。D(i)の新しい自前fold-1除外モデルを使い、同じfold-1の未使用群をdev/確認に分ける案は妥当です。C1の確認は別途、狙うcheckpoint露出を持つ独立取得のqueryを用意します。既存パネルは開発とstressとして残します。</p>
+<p><strong>外部スペクトルの件数は訂正してください。</strong> <code>external_structure_coverage.parquet</code> と <code>external_scorer_sid_links.parquet</code> を照合すると、782 identityの内訳は <strong>train内672、train外110</strong> です。782全部が未見C2の候補ではありません。INTEGRATIONも110をnew-to-trainingと記録しています。</p>
+<p>この内訳は、むしろ二種類の評価を作る機会です。672から、モデルにidentity既見で、query取得・コピーが学習や参照検索に残っていない群を監査すれば、新しいC1の候補になります。110は、モデル間の公式identity照合、参照からのquery除外、重複・品質確認後に、未見C2の小規模なproxyへ使えます。新しい確認に使う際は、既に調整・確認に使ったidentityも除きます。いずれも実際の利用可能数はさらに減り得ます。外部queryの装置もtimsTOFと同じとは限らないため、この集合だけでパネルの装置条件を代替しません。</p>
+<p><strong>Q3：B・Dと、それ以外の優先順位</strong></p>
+<p><strong>Bを先に進める理由は、現在使っていない証拠を直接増やせるからです。</strong> rank_v8aでもE/FはGL不足でrankerを使わず、学習を増やしても出力差0でした。その領域へ有効なforward証拠を作る変更は、rankerの微調整と異なる経路で改善し得ます。</p>
+<p>ただし、現在の <code>--adduct_proxy</code> とE0のN1Aは完全に同じ実験ではありません。</p>
+<ul>
+<li>B1の <code>forward_proxies</code> は既存の正イオンH/Naが一つでもあれば追加せず、NH4と一水脱離を対象にします。E0 cells/13 のN1Aはreal Hの有無を基準とし、proxyの複数CEを各bucketで予測して合成する処理や、後段の順位付け経路まで含みます。</li>
+<li><strong>Fの <code>q_proxy_capable</code> だけで対象を決めると取りこぼします。</strong> このflagは「全ての正イオンadductがproxy対応」の条件です。メタデータ上、一つでも対応adductを持つFは、dev2で87/100（flag条件75）、fold-1で84/100（75）、fold-2で84/100（71）でした。混在adductで9〜13分子を外す可能性があります。実際のquery選択とピークcut後にproxyを作れるかで対象を判定します。</li>
+<li>NH4と一水脱離を最初の固定候補にし、負イオンproxyは別仮説にします。現 <code>--neg_proxy</code> はfragment m/zにも2プロトン分を足す粗い近似なので、正イオン側の利得と平均して採用しません。</li>
+</ul>
+<p>まず保存済みqueryで対象数を数え、基準経路を固定したまま別cache・別予算でproxyを採点します。<code>proxy対象→有効ピーク→finiteなforward→真候補の被覆→主出力の変更→一対MRR</code> を記録します。新規に被覆できた群の差と全分母の差を両方出し、H/Na等の既存経路を変えた分子も検出します。候補がshortlistにない問題はproxyだけでは解決しないので、到達率も並べます。</p>
+<p><strong>rank_v8aには、保護の緩和と別に、安い対照実験があります。</strong> 新pool追加後のC1反復後比率は0.662です。C1×3という同じ引数でも、旧レシピと同じC1/C2の実効重みとは限りません。G/C1が大きく上がりG/C2が落ちる形は、参照を信じる方向への重み変化とも整合します。因果は未確定なので、旧レシピの層×view比率へ重みを揃えた一条件を作り、同じfit identity・固定パラメータで対照にしてください。これは「データ量を増やす効果」と「学習分布を変える効果」を分けます。保護条件だけを緩めるより先に、既存特徴表で確認する価値があります。</p>
+<p><strong>E0 engine-1の切り分けを、Dの大きな学習投資と同程度に優先します。</strong> 保存済みc2_full3rではE0の優位に、全truthがpoolのtrain構造として残ることやモデル既見性が混ざっています。これをそのままC2性能差にできません。一方、この問題があることはpool経路そのものを棄却する根拠でもありません。</p>
+<p>同じqueryとC2 eligibilityで、次を段階的に比較するのがよいです。</p>
+<ol>
+<li>B1の広い窓と、E0型のpool窓で、真の到達・shortlist到達・decoy数・forward被覆を照合する。train-onlyの正解をC2候補へ残さず、外部COCONUT等に存在する正解は保持する。</li>
+<li>同じ候補・同じfold-safe FP証拠で、現在のrankerとsimulation行を使うrankerレシピを比較する。候補空間と学習の効果を同時に変えない。</li>
+<li>poolとpool外を一つの相対尺度へ混ぜることで悪化するなら、別経路として採点し、固定した融合規則を測る。</li>
+</ol>
+<p>E0の既成rankerを移す際も、特徴順・候補集合から作るrank/z/gap・学習行の生成コード・学習identityの露出を確認します。窓を変えたまま同じ重みだけを使えば同じモデルとは限りません。旧pool60の不採用は、E0 engine-1全体の無効性を示す比較ではありません。</p>
+<p><strong>Dは2本の共通holdout実験から進める案を支持します。</strong> 新しい自前fold-1除外モデルと公開fpnet_fold1なら、同じqueryを両方未見にして、単体2本と固定平均を比較できます。ただし2本で正でも、自前full＋公開5本の利得とは同一ではありません。FP bitsの定義・順序、前処理、logitの尺度、重みと処理時間を固定し、前述のC1露出も別に評価します。110の外部未見identityは独立の小さい補助確認にできますが、これだけを見ながら6本の重みを探す運用は避けます。</p>
+<p><strong>追加経路として、MISTは小さな実現可能性確認に価値があります。</strong> 10/27保存版の751373では、David HealeyがMSG版とそのGLACIER-MSG増強版について許可と回答しています。現在の公式配布には両checkpointがあり、公式実装は4,096-bit Morgan出力です。B1のFPNet出力とそのまま平均せず、候補ごとの別スコアとして比較します。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/751373">該当回答</a>、<a href="https://github.com/coleygroup/MIST">公式実装</a>、<a href="https://zenodo.org/records/23303289">配布checkpoint</a></p>
+<p>最初の関門はGPU学習ではなく入力です。<strong>公式の特徴生成にはプリカーサ分子式が必要ですが、CASMIのqueryには真の分子式はありません。</strong> 候補式の列挙・式ごとの推論と統合等を、query情報だけで構成しなければなりません。正解式を渡したcacheでMRRを測れば、今回知りたい性能より楽観的になります。MSG版を小集合で動かし、式の取得、adduct対応、候補スコア、時間、B1との誤りの違いを確認してから広げます。CANOPUS版まで同じ許可範囲と一括解釈しません。<a href="https://github.com/coleygroup/MIST/blob/main/docs/data.md">公式データ準備仕様</a></p>
+<p><strong>テスト間の関連は、関連を活用できるqueryが何件あるかを先に測ります。</strong> 保存された752297の10/26返信には自動・教師なしの処理を許可する記載があります。ラベルや手動判断を使わず、基準予測を固定して自動anchorを選び、最初は一回の更新に限定した比較が考えられます。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/752297">該当スレッド</a></p>
+<p>既存 <code>relatedness_1026.md</code> では、test側analogの指標がtrain側を上回る率はパネル0.12に対し、dev2のC/D/E/F/Gで0.00〜0.01でした。分子数や化学系列の組み方が違うので隠しへの上限ではありませんが、現時点で大きな利得を期待する根拠にも弱いです。全queryを含む模擬batchを作り、正解anchorではなく実際の予測anchorで、候補追加と誤伝播の両方を測ります。単に類似度の高い辺があることを同構造の証拠にはしません。</p>
+<p><strong>B1だけで0.48へ到達する制約がないなら、E0を第二の提出基盤にする選択肢も残します。</strong> 0.464を同じ版で再現できた後、B1が強いquery・候補に限定した補正や出力融合を一変更で測る道です。必要な追加差は0.016ですが、両モデルの正解が重なっていれば容易ではありません。適切なC1/C2 proxyで両者の誤りの補完性と候補unionの余地を測り、Publicだけで融合重みを選びません。B1をE0へ全面的に作り替えるより早い可能性があり、独自部品の検証も継続できます。</p>
+<p><strong>当面の順序</strong>は、(i) Bの正イオンproxyとranker重み対照、(ii) 必要なら今日のB-source一対probe、(iii) E0型pool経路の候補・forward・rankerの分解、(iv) 露出を揃えた2本ensembleとMISTの入力試験、(v) 関連batchの小試験です。Cの評価条件整備と外部672/110の品質・重複監査はこれらと並行します。ggt3tは予定した比較候補として完成させ、生成の親数・挿入数の追加探索はその後にします。</p>
+<p>討論752356の「+0.008が繰り返し効いた」は他参加者による系譜の集計で、独立な再現実験ではありません。751300の +0.003〜0.004 も一参加者の報告で、class 3の一般的な上限ではありません。仮説の優先順位には使えますが、B1への期待利得や隠しclass比率へ変換しません。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/752356">752356</a>、<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/751300">751300</a></p>
+<p>確認資料：依頼と047/048の登録・結果、10/27提出計画、E0 READMEとcells/13、公式Data・討論の10/27保存版、full_eval学習監査、公開fold-safe split、proxy実装、関連性表、外部スペクトルのcoverage/link/INTEGRATIONを確認しました。Kaggle討論本文のWeb再取得はできず保存版を参照しました。MISTのGitHub・ZenodoはWebでも確認しています。追加集計はSparkのCPUで行い、手元の重い処理、学習、GPU、提出は実施していません。予約済み3b/4bや従来locked2の予測・成績は開いていません。</p>
+<p>REVIEW_COMPLETE: 049</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#_1">採用</a></li>
+<li><a href="#_2">保留 / 利用者の判断が要る点</a></li>
+<li><a href="#052">自分の追加の観察(052)</a></li>
+</ul>
+</div>
+</div><h1 id="049-2026-10-27-0239-jst-codex-049">049 判断(2026-10-27 02:39 JST)— Codex 049 の回答を受けて</h1>
+<h2 id="_1">採用</h2>
+<ol>
+<li><strong>優先順位</strong>: (i) 正イオン proxy(050 実行中、負イオンは別仮説として扱い平均しない)と ranker の重み対照(056 で実行中: v8w = pool C1 ×1、v8n = pool から G を除く)、(ii) B 群の一対 probe(今日の枠 4・5、055 で読みを固定、kernel push 済み)、(iii) E0 型 pool 経路の分解(到達・shortlist・decoy 数・forward 被覆 → 同じ候補での ranker レシピ比較)、(iv) 露出を揃えた 2 本の FPNet ensemble(自前の fold-1 除外モデルの学習が必要)と MIST の入力試験、(v) テスト間関連の小試験。ggt3t は予定どおり完成させる。</li>
+<li><strong>probe の読み</strong>: B 群に絞った方策の MRR(群内で順位が詰まる量)であり、元の全体への寄与や class 比率ではない。E0_B は旧 0.354 の B1_B(0.202)ではなく現行 0.379 の B1_B と一対で比べる。</li>
+<li><strong>評価の役割分担</strong>: 主な改善対象 = 未見 NP C2(C/D/E/F 等重みマクロ、同じ分子・checkpoint・候補資産の一対比較);主保護 = 採用時のモデル露出に対応した identity 既見・query 独立の NP C1 と NP C2 各層;stress = identity 未見 C1、G の C1/C2、パネルでの本番と異なる ensemble 混合。−0.03 のような緩和幅は根拠なく決めない(049b の placebo の議論と合わせて次の登録で固定)。</li>
+<li><strong>ensemble とパネルの露出</strong>: 公開 fold-safe の 5 本は全 fold でパネルの identity 群を学習から除外している → 自前 full_eval + 公開 5 本では、パネル C1 は「既見 1・未見 5」で本番の通常の train 内 identity(既見 5・未見 1)と混合が違う。ensemble のパネル C1 は stress として読む。</li>
+<li><strong>外部スペクトルの訂正</strong>: 782 identity = train 内 672、train 外 110(全部が未見 C2 ではない)。110 は小規模な未見 C2 proxy、672 は監査後に C1 の候補。</li>
+<li><strong>proxy の対象</strong>: 実際の query 選択とピーク cut 後に proxy を作れるかで判定(q_proxy_capable フラグでは混在 adduct を取りこぼす)。現実装(forward_proxies)は混在でも NH4 / 水脱離のスペクトルごとに proxy を作るので、fold-1 F の proxy 対象 84/100 は Codex のメタデータ集計(84)と一致。</li>
+</ol>
+<h2 id="_2">保留 / 利用者の判断が要る点</h2>
+<ul>
+<li><strong>E0 を第二の提出基盤にする選択肢</strong>(Codex の提示): 10/24 に利用者が「公開 notebook への継ぎ足しはやめ、自前の B1 を作る」と決めているため、Claude の判断では採らない。朝のまとめで選択肢として記載し、判断を仰ぐ。</li>
+</ul>
+<h2 id="052">自分の追加の観察(052)</h2>
+<ul>
+<li>開発集合の「NP 層」は正解の 2/3 が非 NP の化学で、パネル(隠しに最も近い)は 99.6% が COCONUT の NP。NP の正解では GLACIER が弱く prior が強い → NP 正解の開発集合(053、fold-1/2 の dev 各 320 + 閉じた conf 各 320)と、パネルを fold-safe FPNet で未見にした class-2 ベンチ(054)を作成中。次の Codex 依頼(053)で評価の主対象をこれに移す提案をする。</li>
+</ul></details></article><article><h1>050: </h1></article><article><h1>051: </h1></article><article><h1>052: </h1></article><article><h1>053: </h1></article><article><h1>055: </h1></article><article><h1>056: </h1></article><article><h1>057: </h1></article><article><h1>058: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
