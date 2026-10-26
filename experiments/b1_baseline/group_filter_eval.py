@@ -20,6 +20,8 @@ ap.add_argument("--analog_view_c2", default="c2", help="analog parquet view used
 ap.add_argument("--tau", type=float, default=0.9); ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
 a = ap.parse_args()
 bst = lgb.Booster(model_file=a.model); c = dict(w_ice=a.w_ice, booster=bst, feats=bst.feature_name())
+from b1_rankfeats import EXTRA_ANA
+ANA_MODEL = any(f_ in EXTRA_ANA for f_ in c["feats"])
 ev = pd.read_csv(a.eval_csv); ev["molecule"] = ev["molecule"].astype(str)
 rows, mism = [], 0
 ANA = None
@@ -48,15 +50,22 @@ for s in a.sets:
             top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
             fire = bool(lib.max() >= a.tau and lib.max() - second >= a.margin); ins = np.where(lib >= a.tau, 100.0 + lib, S) if fire else S
             gl_ok = np.isfinite(glv).sum() >= max(2, a.min_gl_cover * len(g))
+            anaf = {}
+            if ANA is not None:
+                h = ANA.get((s, a.analog_view_c2 if v == "c2" else v, mid))
+                for c_ in ("ap", "mean_tan", "ap_x", "mean_tan_x"):
+                    x_ = np.array([float(h[c_].get(sm, 0.0)) if (h is not None and c_ in h.columns) else 0.0 for sm in g.smiles.astype(str)]); anaf[c_] = x_
             if gl_ok:
                 X = feature_matrix(fp, glv, icv, pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values, lib,
                                    g[f"lib_same_{v}"].values, g[f"lib_nref_{v}"].values, g.in_tier.values, g[f"in_train_{v}"].values, g.in_coconut.values, g.ppm_err.values,
-                                   g.fp_rank_window.values, float(M.loc[mid, "n_query"]), float(M.loc[mid, "ce_known"]), n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=c["feats"])
+                                   g.fp_rank_window.values, float(M.loc[mid, "n_query"]), float(M.loc[mid, "ce_known"]), n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=c["feats"],
+                                   analog=(dict(ap=anaf["ap"], mean_tan=anaf["mean_tan"]) if anaf else None))
                 score = 2 * z(np.asarray(bst.predict(X), float)) + z(np.asarray(S, float))
             else: score = ins
             order = np.argsort(-np.asarray(score, float), kind="stable")
-            ref, _ = E.scores_for(v, g, mid, gl, ice, True, bool(ice) and a.w_ice > 0, c, M, a.tau, a.margin, a.min_gl_cover)
-            if [str(g.smiles.values[i]) for i in order[:25]] != ref["blend21"]: mism += 1
+            if not ANA_MODEL:   # registered-evaluator parity of the main list (models with the analog block are checked by b1_parity instead)
+                ref, _ = E.scores_for(v, g, mid, gl, ice, True, bool(ice) and a.w_ice > 0, c, M, a.tau, a.margin, a.min_gl_cover)
+                if [str(g.smiles.values[i]) for i in order[:25]] != ref["blend21"]: mism += 1
             tr = g.is_truth.values.astype(bool); trn = g[f"in_train_{v}"].values.astype(bool); coco = g.in_coconut.values.astype(bool)
             grp = np.where(trn, "train", np.where(coco, "coconut_only", "pc"))
             tgroup = grp[np.flatnonzero(tr)[0]] if tr.any() else "absent"
@@ -74,11 +83,6 @@ for s in a.sets:
             def twin_gate(tau, m=0.0, k=None):   # + margin to the best other candidate's library match, + the twin already in the main top-k
                 if tw < 0 or lib_[tw] < tau or lib_[tw] - lib_2nd < m or (k is not None and pos_[tw] >= k): return order
                 return [tw] + [i for i in order if i != tw]
-            anaf = {}
-            if ANA is not None:
-                h = ANA.get((s, a.analog_view_c2 if v == "c2" else v, mid))
-                for c_ in ("ap", "mean_tan", "ap_x", "mean_tan_x"):
-                    x_ = np.array([float(h[c_].get(sm, 0.0)) if h is not None else 0.0 for sm in g.smiles.astype(str)]); anaf[c_] = x_
             def anag(wc, wu):   # GL-coverage-gated weight (034, 11:08): wc on the learned path, wu on the fallback path
                 return anav("ap", wc if gl_ok else wu)
             def anav(col, w):   # registered score + w * z(analog feature) within the molecule

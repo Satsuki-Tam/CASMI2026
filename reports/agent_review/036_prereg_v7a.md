@@ -1,0 +1,6 @@
+# 036 pre-registration: analog-aware ranker rank_v7a (written 11:33 JST, before training finished / any v7a result)
+
+- rank_v7a = rank_v4b recipe (same RUNS run_v3_p1 fit + run_v3_eval + run_v3_c1, v2_noice − lib_nref − in_train, C1 ×3, same params) + analog block (ana_ap, z_ana_ap, ana_mt, ana_gap from analog_probe features of the training tables with the evaluator's masks). Output rule unchanged: blend21 = 2·z(learned) + z(fixed), GL-cover fallback = insurance list. No extra analog term.
+- Comparison target: anaw0.5 on rank_v4b (the submitted candidate) and FE main.
+- The W7 sets (eval_set) are inside the training RUNS of both rankers → excluded from the selection objective (11 class-2 layers: fe dev2 C/D/E/F/G, f0 dev2 C/D/E/F/G, f0 panel C2 clean; constraints: every layer ≥ −0.02, panel C1 clean (fe) ≥ −0.01).
+- v7a becomes the next candidate only if its objective ≥ anaw0.5's + 0.005 and the constraints pass; then it is confirmed against anaw0.5 on ALL fresh sets (conf3 D80, fit pool C/E/F/G, fit pool E 101-300 + overflow D150) with paired intervals, before Codex and any Public use. A trainer regression (rank_v4b re-trained by the patched trainer with the old feature list) must reproduce the feature list and the number of trees.
