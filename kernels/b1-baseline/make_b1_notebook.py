@@ -10,6 +10,7 @@ import argparse
 ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--src_dir", default=SRC, help="directory holding b1_common.py / b1_pipeline.py / b1_rankfeats.py to embed (default: experiments/b1_baseline)"); ap.add_argument("--model", default=os.path.join(SRC, "rank", "lambdarank.txt"), help="LambdaRank model to embed ('' = none -> fixed rule)")
 ap.add_argument("--emit", default="main", choices=["main", "insurance", "probe_train", "probe_nontrain", "probe_coconut", "probe_pubchem", "probe_pool", "probe_band26"], help="which list becomes submission.csv (one Kaggle submission per kernel version); "
                 "probe_* = DIAGNOSTIC class-decomposition probes (Codex 023), needs a pipeline that writes submission_probe_*.csv")
+ap.add_argument("--compress", default="zlib", choices=["zlib", "lzma"], help="blob codec (lzma for large models, e.g. 600-tree rankers; default zlib = unchanged)")
 ap.add_argument("--pipeline_args", default="", help="extra b1_pipeline.py arguments, e.g. '--k_short 200 --k_pop 50 --w_ice 0'")
 ap.add_argument("--expect_ckpt_sha", default="", help="full sha256 the loaded --fpnet_ckpt must have (asserted from the run manifest; empty = not checked)")
 ap.add_argument("--smoke_n", type=int, default=0, help="commit-run smoke switch (E0 recipe): when test.parquet is the visible dummy (spectrum-id md5 654e030e...) and the run is not a competition rerun, run the pipeline on its first N molecules only (--limit; the other ids get the CCO placeholder) (saves ~3 h of GPU quota per version); 0 = off")
@@ -22,18 +23,19 @@ if model and os.path.exists(model): files["lambdarank.txt"] = open(model, encodi
 else: print("no model embedded -> fixed rule")
 shas = {n: hashlib.sha256(v.encode()).hexdigest() for n, v in files.items()}
 # the kernel API rejects notebooks above ~1 MiB (400 on SaveKernel, 2026-10-25): embed the sources + model as one zlib/base64 blob
-import base64, zlib
-BLOB = base64.b64encode(zlib.compress(json.dumps(files).encode("utf-8"), 9)).decode("ascii")
+import base64, zlib, lzma
+_raw = json.dumps(files).encode("utf-8")
+BLOB = base64.b64encode(lzma.compress(_raw, preset=9 | lzma.PRESET_EXTREME) if A.compress == "lzma" else zlib.compress(_raw, 9)).decode("ascii")
 print(f"embedded blob {len(BLOB)/1e3:.0f} KB (raw {sum(len(v) for v in files.values())/1e3:.0f} KB)")
 
 cells = []
 cells.append(f'''"""B1 baseline (own pipeline) -- label-free retrieval + FPNet + library similarity + GLACIER/ICEBERG + fixed fusion.
 Sources embedded from experiments/b1_baseline (sha256 b1_common {shas['b1_common.py'][:12]}, b1_pipeline {shas['b1_pipeline.py'][:12]})."""
-import os, sys, glob, subprocess, time, json, base64, zlib
+import os, sys, glob, subprocess, time, json, base64, zlib, lzma
 T0 = time.time()
 os.makedirs('/kaggle/working/b1', exist_ok=True)
 BLOB = {json.dumps(BLOB)}
-SOURCES = json.loads(zlib.decompress(base64.b64decode(BLOB)).decode('utf-8'))
+SOURCES = json.loads((lzma.decompress if {json.dumps(A.compress)} == 'lzma' else zlib.decompress)(base64.b64decode(BLOB)).decode('utf-8'))
 for name, text in SOURCES.items():
     open(f'/kaggle/working/b1/{{name}}', 'w', encoding='utf-8').write(text)
 print('sources written', list(SOURCES), flush=True)
