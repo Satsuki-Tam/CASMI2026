@@ -1,0 +1,21 @@
+# What building an honest retrieval baseline taught me about validating on this task
+topic 752735 | by **Pathik Patel** (https://www.kaggle.com/pathik1511) | posted 2026-10-26 | votes 1 | comments 0 | https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/752735
+
+Sharing validation lessons from my retrieval pipeline. Public scores were modest (0.281 to 0.303), but the measurement discipline is the part worth discussing, because my local metric and the leaderboard disagreed three times out of three.
+
+Lesson 1: Build a validation split that can actually be zero. The obvious local metric leaves the true structure in the candidate pool, so it never measures recall. I used an honest-recall split where the target survives in its mass window only if an external database genuinely has it. Under a naive library-search baseline, Class 2 scores exactly 0.0000 by construction. With mass-shifted analog propagation it reached 0.2226 locally, and the full pipeline 0.3448 on that honest split.
+
+Lesson 2: Check that your shortcut detector detects shortcuts. My first spectrum-blind control (swap the peaks for an unrelated molecule, keep the mass window) read a reassuring 0.0000. It was vacuous: candidate coverage under it was 0, so 0.0000 was arithmetically forced. Fixed, the blind floor was 0.0741 on a 36-candidate pool and 0.0348 on a 3,908-candidate pool, against 0.3448 sighted. If your blind control reads 0, check its candidate coverage before trusting it.
+
+Lesson 3: Find out where each molecule is actually lost. A per-molecule failure ledger (seed-0, n=500) broke down as: in no database at all 21.6%, in the window but ranked outside the top 25 14.8%, found but ranked 2 to 25 39.4%, and ranked first already 23.8%. MRR was 0.3448 overall but 0.4420 conditional on the answer being in the window. The biggest recoverable bucket is not what you miss, it is what you retrieve and rank badly.
+
+Lesson 4: The representation was not the bottleneck. I measured how often the true structure shares its entire 2048-bit Morgan vector with a decoy in its own mass window. Only 11.8% of in-window targets had even one bit-identical decoy, median nearest-decoy Tanimoto 0.698. Larger fingerprints were not the answer.
+
+Lesson 5: A channel can look great standalone and vanish in fusion. A fingerprint ranker scored standalone on the full pool at 0.1475 for v1 and 0.1847 for a retrained version, and on dense candidate windows it rose from 0.0964 to 0.1669. Fused with a fixed multiplicative rule, that same channel moved the result from 0.3448 to 0.3465, a paired +0.0017 (t = 0.36). Measure every channel standalone before trusting a fused number.
+
+Lesson 6: Local gains did not predict the leaderboard. Three changes with a clear local delta: the fingerprint ranker was +0.0093 locally (t=2.41) and +0.019 on the leaderboard; a 97M-structure pool expansion was +0.1129 locally (t=8.25) and +0.003 on the leaderboard; a larger ranker with a higher fusion weight was +0.0111 locally (t=1.74) and -0.011 on the leaderboard. One over-delivered, one under-delivered by more than 30x, one flipped sign. I stopped using local significance to decide what to ship.
+
+Happy to go deeper on any of these in the comments.
+
+## Comments (0 top-level)
+

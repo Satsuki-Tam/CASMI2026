@@ -1,0 +1,53 @@
+{
+  "id": 143318,
+  "ref": "https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra",
+  "title": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+  "url": "https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra",
+  "description": "Predict 2D chemical structures of small molecules detected in complex biological extracts",
+  "organizationName": "Enveda",
+  "category": "Featured",
+  "reward": "50,000 Usd",
+  "tags": [
+    {
+      "ref": "biology",
+      "name": "biology",
+      "description": "Explore datasets and kernels about gene expressions, transcriptomics, and even the works of Charles Darwin.",
+      "fullPath": "subject > earth and nature > biology",
+      "competitionCount": 47,
+      "datasetCount": 18296,
+      "scriptCount": 6788,
+      "totalCount": 25131
+    },
+    {
+      "ref": "chemistry",
+      "name": "chemistry",
+      "description": "Chemistry addresses topics such as how atoms and molecules interact via chemical bonds to form new chemical compounds.",
+      "fullPath": "subject > earth and nature > physical science > chemistry",
+      "competitionCount": 16,
+      "datasetCount": 1295,
+      "scriptCount": 3377,
+      "totalCount": 4688
+    },
+    {
+      "ref": "custom metric",
+      "name": "custom metric",
+      "description": "This competition's metric is defined under the 'Evaluation' tab",
+      "fullPath": ""
+    }
+  ],
+  "deadline": "2026-12-14T23:59:00.000Z",
+  "teamCount": 4098,
+  "userHasEntered": true,
+  "userRank": 638,
+  "newEntrantDeadline": "2026-12-07T23:59:00.000Z",
+  "enabledDate": "2026-09-14T22:57:37.417Z",
+  "maxDailySubmissions": 5,
+  "maxTeamSize": 5,
+  "evaluationMetric": "CASMI: Mean Average Precision",
+  "awardsPoints": true,
+  "isKernelsSubmissionsOnly": true,
+  "thumbnailImageUrl": "https://storage.googleapis.com/kaggle-competitions/kaggle/143318/logos/thumb76_76.png?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1793045727&Signature=Omg8Sp%2FBdnuZsyU6qnoydTVekEbkIR9xkLGtxpmvXC21t28ClUfygvwQ5iMSEZrEabZsaDarxrhp%2BtH4rWzFFYFySCkKlMWKuk7vVS%2F3wlpT7LfELjJuZHDMJwbgSXCA6HQyRD5XCkfcKy3Djmc%2B4RFy6CEPIZkY6AkKGUSMdOmFjHhebYlAjH9Q9cjexQET%2F0cQfRGa98RAzOd%2BRAaMyNWVgnncwr9I%2Fu9m9HC3EOdle6NnToJllMQE8TF7A7vT3ldT%2B09AIusE9tlRBAtm2lffJniqHLRxEzw74u%2BLqHsJhBCMdoU1KeP0QX1OdULqb1UgafFtRb3sWK0jiagqog%3D%3D&t=2026-08-24-20-49-45",
+  "hostName": "Enveda",
+  "dateCreated": "2026-05-18T20:41:21.563Z",
+  "licenseName": "Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)"
+}
