@@ -45,7 +45,8 @@ for r in C.itertuples(index=False):
     if pg:   # inserted unless its official key is already in the base top-25 (pipeline dedupe)
         base_ok = {ok(x) for x in BASE.get(r.molecule, "").split(";") if x}
         expect = ok(pg[1]) not in base_ok
-        ins_ok = True if a.gen_rule != "always" else ((len(lst) >= a.gen_rank and ok(lst[a.gen_rank - 1]) == pk) if expect else (pg[1] not in lst))
+        if a.gen_rule == "fzgate" and hasattr(r, "gt3_insert"): expect = expect and bool(r.gt3_insert)
+        ins_ok = ((len(lst) >= a.gen_rank and ok(lst[a.gen_rank - 1]) == pk) if expect else (pg[1] not in lst)) if a.gen_rule in ("always", "fzgate") else True
     good = bool(same_gen and same_der and ins_ok); bad += (not good)
     rows.append((r.molecule, f"gen {'=' if same_gen else '!='} ({pk} vs {ek}); derivable {len(der_p)} vs {len(der_e)} {'=' if same_der else '!='}; inserted@{a.gen_rank} {ins_ok}", good))
 L = [f"# 042 generation parity ({a.view}): {len(rows)} molecules, {bad} mismatches", ""] + [f"- {m}: {d} -> {'OK' if g_ else 'MISMATCH'}" for m, d, g_ in rows]
