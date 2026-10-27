@@ -32,7 +32,7 @@ ap_.add_argument("--run", required=True); ap_.add_argument("--gen", required=Tru
 ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", required=True)
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
-ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default="")
+ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--dump_rank", default="")
 ap_.add_argument("--store", default="data/processed/spectra_store")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet")
@@ -145,7 +145,7 @@ if __name__ == "__main__":
         tk = str(r.scorer_key); raw = {key_of_row[x] for x in ik_rows.get(str(r.molecule), []) if key_of_row[x] is not None}
         UNION |= raw | {tk} | set(GROUP_KEYS.get(KEY_GROUP.get(tk), set()))
     log(f"union mask: {len(UNION):,} keys over {len(allm)} molecules")
-    rows, parity, choice = [], [], []
+    rows, parity, choice = [], [], []; RANKS = []
     for s in a.sets:
         F = pd.read_parquet(os.path.join(HERE, a.run, f"b1_features_{s}.parquet")); F["molecule"] = F["molecule"].astype(str)
         M = pd.read_csv(os.path.join(HERE, a.run, f"b1_molecules_{s}.csv")).set_index("molecule"); M.index = M.index.astype(str)
@@ -277,6 +277,16 @@ if __name__ == "__main__":
                         ro = np.empty(len(g)); ro[np.argsort(-sc, kind="stable")] = np.arange(1, len(g) + 1)
                         out[f"rrf_{nm}"] = rr_idx(list(np.argsort(-(1.0 / (60 + rank_main) + 1.0 / (60 + ro)), kind="stable")))
                 out["gl_ok"] = bool(gl_ok); out["pos"] = bool(tr.any()); out["truth_coco"] = bool((g.in_coconut.values.astype(bool) & tr).any())
+                if a.dump_rank and v in ("c1", "c2"):   # Codex 081 B-route ledger: B = COCONUT and not train IN THE VIEW (C2 = counterfactual B^C2 proxy)
+                    isB_ = g.in_coconut.values.astype(bool) & ~g[f"in_train_{vv}"].values.astype(bool); isT_ = g[f"in_train_{vv}"].values.astype(bool)
+                    isP_ = g.in_tier.values.astype(bool) & ~g.in_coconut.values.astype(bool) & ~isT_
+                    for nm_, sc_ in (("main", score), ("ea0.5w1", score - 1.0 * (has_ref & (lib < 0.5)))):
+                        o_ = list(np.argsort(-np.asarray(sc_, float), kind="stable")); rk_ = np.empty(len(o_), int); rk_[np.array(o_)] = np.arange(1, len(o_) + 1)
+                        t_ = np.where(tr)[0]; R_ = int(rk_[t_].min()) if len(t_) else 0
+                        tb_ = [i_ for i_ in t_ if isB_[i_]]; rB_ = (1 + int(sum(isB_[j_] for j_ in o_[:int(rk_[tb_[0]]) - 1]))) if tb_ else 0
+                        top_ = o_[:25]
+                        RANKS.append(dict(set=s, view=v, molecule=mid, variant=nm_, R=R_, r_B=rB_, truth_B=bool(tb_), rr_probeB=(1.0 / rB_ if (tb_ and R_ <= 25) else 0.0),
+                                          n_B25=int(isB_[top_].sum()), n_T25=int(isT_[top_].sum()), n_P25=int(isP_[top_].sum()), gl_ok=bool(gl_ok), n_cand=len(g)))
                 nov = sorted([p_ for p_ in lst if p_[7] == "novel"], key=lambda p_: (-p_[2], -p_[3], p_[0]))
                 alln = sorted([p_ for p_ in lst if p_[7] in ("novel", "window")], key=lambda p_: (-p_[2], -p_[3], p_[0]))
                 if hit and hit[0][7] == "novel": out["truth_rank_novel_fz"] = 1 + [p_[0] for p_ in nov].index(hit[0][0])
@@ -294,6 +304,7 @@ if __name__ == "__main__":
                 rows.append(out)
         log(f"{s}: evaluated")
     if a.dump_choice: pd.DataFrame(choice).to_parquet(os.path.join(HERE, a.dump_choice), index=False)
+    if a.dump_rank: pd.DataFrame(RANKS).to_parquet(os.path.join(HERE, a.dump_rank), index=False)
     R = pd.DataFrame(rows)
     assert not R[PVARS + ['main']].isna().any().any(), 'variant columns missing for some rows'
     os.makedirs(os.path.dirname(os.path.join(HERE, a.out)), exist_ok=True); R.to_csv(os.path.join(HERE, a.out + ".csv"), index=False)
