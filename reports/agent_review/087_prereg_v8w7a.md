@@ -7,3 +7,8 @@
 - **主指標**: 053 dev の NP_H C2(COCONUT 収載正解、GL 経路)、f1/f2 block 等重み、**v8w7a − v7a_pc**、τ = +0.005。併記: B 群に絞った順位(B 内 1 位率、B probe 相当)の差、非収載正解の C2(正解 key を COCONUT 所属表に結合)、GL 経路と fallback の分け(fallback は ranker を通らないので Δ ≡ 0 の点検)。
 - **主保護**(ε = 0.01): パネル C1 clean、f1/f2 の G C1、f1/f2 NP C2(C/D/E/F)— 確認へ進む条件は三つとも下限 > −0.01(非劣性)。
 - **確認**(関門を通った場合だけ): 予約 **083**(fold 4 の COCONUT 正解、NP_H を主対象)を一回 — 条件は関門を通った時点で、結果を読む前に追記する。
+
+## 追記(2026-10-27 20:26、関門通過後・083 を読む前): 確認の条件
+- 集合: run_np083_f4conf(fpnet_fold4、--alias_perview、GL は NP_H のみ)。評価: gen_eval2m --v7f、rank_v7a_pc vs rank_v8w7a、--views c1,c2、--parents 0。
+- **合格条件: NP_H C2(600 分子、strict)の Δ の点推定 ≥ +0.005 かつ identity bootstrap(4,000)の 95% 下限 > 0**。NP_H C1(c1_usable の分子)は害(上限 U < −0.01)なら不合格、それ以外は記録。NP_X / NP_N は GL が無く fallback 経路なので **Δ ≡ 0 を実装の点検**とする(0 でなければ点検してから判断)。
+- 合格なら: v7f の pipeline で ranker だけを rank_v8w7a に替えた kernel を作り、パネル parity・smoke を経て、v7f(0.390)比の一変更として Public の候補(提出は許可された日に)。不合格なら記録して保留。
