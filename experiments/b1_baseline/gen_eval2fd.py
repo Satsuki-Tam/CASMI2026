@@ -1,4 +1,4 @@
-"""[gen_eval2fd = gen_eval2m + --pop_ws (090: fixed-rule prior weight variants pw<w>, same blend / fallback rules) + --fpD (089 stage b): DreaMS-FP scores (dreams_fp_score.py parquet: set, molecule, smiles, fpD) as variants
+"""[gen_eval2fd = gen_eval2m + --fp_override (091: per-spectrum FPNet logit mean on the fixed candidate rows) + --pop_ws (090: fixed-rule prior weight variants pw<w>, same blend / fallback rules) + --fpD (089 stage b): DreaMS-FP scores (dreams_fp_score.py parquet: set, molecule, smiles, fpD) as variants
 fd_s<w> (w * term(fpD) added to the fixed rule S, i.e. inside z(S) on the GL path and inside the insurance S on the fallback path) and
 fd_o<w> (w * term(fpD) added to the final score); main is unchanged (must equal gen_eval2m).]
 [gen_eval2m = gen_eval2 scoring SEVERAL rankers in one pass: --model m1,m2,... --out o1,o2,... (analogs / generation shared;
@@ -32,7 +32,8 @@ ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", require
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
 ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--refcmp", action="store_true"); ap_.add_argument("--v7f", action="store_true", help="087: the v7f main (analog features into rankers that use them, no outer analog term on the GL path; GL fallback = insurance + 1 z(ap) + 1 z(MetFrag-lite))")
-ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_argument("--fpD", default="", help="dreams_fp_score.py parquet"); ap_.add_argument("--pop_ws", default="", help="090: comma-separated fixed-rule prior weights -> variants pw<w>")
+ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_argument("--fpD", default="", help="dreams_fp_score.py parquet"); ap_.add_argument("--fp_override", default="", help="091: fp_mean_score.py parquet; fp <- fp_s and fp_rank_window <- fprw_s for every candidate row (main and variants)")
+ap_.add_argument("--pop_ws", default="", help="090: comma-separated fixed-rule prior weights -> variants pw<w>")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet")
 ap_.add_argument("--v3", default="data/external/v3_models/code"); ap_.add_argument("--fold_safe", default="data/external/fpnet_fulleval_as_fold0")
@@ -110,6 +111,11 @@ if __name__ == "__main__":
     MODELS = a.model.split(","); OUTS = a.out.split(","); assert len(MODELS) == len(OUTS), (MODELS, OUTS)
     BSTS = [lgb.Booster(model_file=os.path.join(HERE, m_)) for m_ in MODELS]; FEATS = BSTS[0].feature_name()
     FEATS_M = [tuple(b_.feature_name()) for b_ in BSTS]   # 078: models may use different feature lists (one matrix per distinct list)
+    FPO = {}
+    if a.fp_override:
+        _fo = pd.read_parquet(os.path.join(HERE, a.fp_override) if not os.path.isabs(a.fp_override) else a.fp_override)
+        FPO = {(str(s_), str(m_), str(sm_)): (float(v_), float(r_)) for s_, m_, sm_, v_, r_ in zip(_fo['set'], _fo['molecule'], _fo['smiles'], _fo['fp_s'], _fo['fprw_s'])}
+        log(f'fp override: {len(FPO):,} candidate rows from {a.fp_override}')
     FPD = {}
     if a.fpD:
         _fd = pd.read_parquet(os.path.join(HERE, a.fpD) if not os.path.isabs(a.fpD) else a.fpD)
@@ -228,6 +234,9 @@ if __name__ == "__main__":
                 if vv == "c1" and not bool(M.loc[mid, "c1_usable"]): continue
                 g = E.view_frame(F, M, mid, vv)
                 if v.startswith("c3") and len(g): g = g[~g.is_truth.values.astype(bool)]
+                if FPO and len(g):
+                    _ov = [FPO.get((s, mid, str(sm_)), (np.nan, np.nan)) for sm_ in g.smiles]
+                    g = g.assign(fp=[o_[0] for o_ in _ov], fp_rank_window=[o_[1] for o_ in _ov])
                 lst, der_keys = GEN.get(mid, {}).get(v, ([], set()))
                 hit = [p_ for p_ in lst if p_[0] in mm["tokeys"]]
                 base = dict(set=s, view=v, molecule=mid, n_prod=len(lst), n_novel=sum(p_[7] == "novel" for p_ in lst), n_window=sum(p_[7] == "window" for p_ in lst),
