@@ -14,7 +14,7 @@ from b1_common import ADDUCT_SHIFT
 ap = argparse.ArgumentParser(); ap.add_argument("--emb_dir", default=f"{ROOT}/data/processed/dreams_emb"); ap.add_argument("--holdout_fold", type=int, required=True)
 ap.add_argument("--out", required=True); ap.add_argument("--steps", type=int, default=30000); ap.add_argument("--bs", type=int, default=512); ap.add_argument("--K", type=int, default=63)
 ap.add_argument("--lr", type=float, default=1e-3); ap.add_argument("--wd", type=float, default=0.01); ap.add_argument("--hidden", type=int, default=2048); ap.add_argument("--drop", type=float, default=0.1)
-ap.add_argument("--w_bce", type=float, default=1.0); ap.add_argument("--seed", type=int, default=0); ap.add_argument("--eval_n", type=int, default=3000); ap.add_argument("--warmup", type=int, default=1000)
+ap.add_argument("--w_bce", type=float, default=1.0); ap.add_argument("--seed", type=int, default=0); ap.add_argument("--eval_n", type=int, default=0, help="0 = every fold-k molecule"); ap.add_argument("--warmup", type=int, default=1000)
 ap.add_argument("--exclude_keys", default="", help="text file of scorer keys never used for training (e.g. dev2 hold / locked2 lock for a production head)")
 ap.add_argument("--fpnet_eval", type=int, default=1, help="also score the eval molecules with the fold-safe FPNet fold k")
 a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
@@ -24,7 +24,8 @@ HW = f"{ROOT}/data/external/harness_work"; ST = f"{ROOT}/data/processed/spectra_
 meta = pl.read_parquet(f"{ST}/spec_meta.parquet", columns=["row", "scorer_ik14", "ingest_lib", "adduct", "ionization_mode", "ce_mean", "precursor_mz"])
 folds = pl.read_parquet(f"{ROOT}/data/external/identity_folds/spectra_folds.parquet", columns=["row", "fold_identity"])
 meta = meta.join(folds, on="row", how="left").sort("row")
-pool = pl.read_parquet(f"{HW}/pool_meta.parquet", columns=["key", "mass"]); pmass = pool["mass"].to_numpy().astype(np.float64)
+pool = pl.read_parquet(f"{HW}/pool_meta.parquet", columns=["key", "mass", "src", "np_likeness"]); pmass = pool["mass"].to_numpy().astype(np.float64)
+psrc = pool["src"].to_numpy(); pnpl = pool["np_likeness"].to_numpy().astype(np.float64)
 k2p = dict(zip(pool["key"].to_list(), range(pool.height)))
 key = meta["scorer_ik14"].to_list(); pid = np.array([k2p.get(k, -1) for k in key], np.int64)
 fold = meta["fold_identity"].fill_null(-1).to_numpy(); lib = meta["ingest_lib"].to_numpy()
@@ -94,7 +95,8 @@ torch.save(dict(state=model.state_dict(), din=1024 + SIDE.shape[1], hidden=a.hid
 model.eval()
 mol_rows = {}
 for r in ev_rows: mol_rows.setdefault(int(pid[r]), []).append(int(r))
-mols = list(mol_rows); rng2 = np.random.default_rng(123); mols = [mols[i] for i in rng2.choice(len(mols), min(a.eval_n, len(mols)), replace=False)]
+mols = sorted(mol_rows); rng2 = np.random.default_rng(123)
+if a.eval_n > 0: mols = [mols[i] for i in np.sort(rng2.choice(len(mols), min(a.eval_n, len(mols)), replace=False))]
 fpnet = None
 if a.fpnet_eval:
     sys.path.insert(0, f"{ROOT}/data/external/v3_models/code")
@@ -111,7 +113,7 @@ with torch.no_grad():
         zD = model(feats(np.array(rr))).float().mean(0)
         m = pmass[p_]; tol = m * 10e-6; lo = int(np.searchsorted(pmass, m - tol, "left")); hi = int(np.searchsorted(pmass, m + tol, "right"))
         W = unpack(PFP[lo:hi]); sD = (W @ zD).cpu().numpy(); t = p_ - lo
-        row = dict(pid=p_, lib=str(lib[rr[0]]), n_win=hi - lo, rD=int((sD > sD[t]).sum() + 1))
+        row = dict(pid=p_, lib=str(lib[rr[0]]), coco=bool(psrc[p_] in (2, 3)), npl=float(pnpl[p_]), n_win=hi - lo, rD=int((sD > sD[t]).sum() + 1))
         if fpnet is not None:
             items = []
             for r in rr:
@@ -130,9 +132,10 @@ with torch.no_grad():
 R = pl.DataFrame(res); out = dict(holdout_fold=a.holdout_fold, n_eval=R.height, train_spectra=int(len(tr)), steps=a.steps, seconds=round(time.time() - t0))
 def summ(df):
     d = {}
-    for c in [c for c in df.columns if c.startswith("r")]:
+    for c in [c for c in df.columns if c in ("rD", "rF") or c.startswith("rE")]:
         r_ = df[c].to_numpy(); d[c] = dict(top1=round(float((r_ == 1).mean()), 4), mrr25=round(float(np.where(r_ <= 25, 1.0 / r_, 0).mean()), 4))
     return d
-out["all"] = summ(R); out["by_lib"] = {str(l): dict(n=int(g.height), **summ(g)) for (l,), g in R.group_by("lib")}
+out["all"] = summ(R); out["coco"] = dict(n=int(R["coco"].sum()), **summ(R.filter(pl.col("coco")))); out["noncoco"] = summ(R.filter(~pl.col("coco")))
+out["by_lib"] = {str(l): dict(n=int(g.height), **summ(g)) for (l,), g in R.group_by("lib")}
 R.write_csv(f"{a.out}/eval_rows.csv"); json.dump(out, open(f"{a.out}/eval.json", "w"), indent=1)
-log(json.dumps(out["all"])); log("by lib:", json.dumps({k: (v["n"], v["rD"]["top1"], v.get("rF", {}).get("top1")) for k, v in out["by_lib"].items()}))
+log(json.dumps(out["all"])); log("coco:", json.dumps(out["coco"])); log("by lib:", json.dumps({k: (v["n"], v["rD"]["top1"], v.get("rF", {}).get("top1")) for k, v in out["by_lib"].items()}))
