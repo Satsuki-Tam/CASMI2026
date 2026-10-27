@@ -120,6 +120,8 @@ def main():
                     "seen by the FPNet that built the table, so a hidden-reference C2 row only measures memory residue)")
     ap.add_argument("--params_from", default="", help="Codex 019: reuse the SELECTED params + rounds of an earlier rank_results.json (no search) so that a pair "
                     "comparison changes only the training rows")
+    ap.add_argument("--c1_weight", type=float, default=1.0, help="Codex 075 (b): relative weight of every CLASS-1-view fit group vs class-2 groups (row weights, the mean group "
+                    "weight is renormalised to 1); 1.0 = no weights passed = unchanged")
     ap.add_argument("--c1_repeat_run", nargs="*", default=[], help="Codex 019: per-run C1 replication RUN_BASENAME=K overriding --c1_repeat for that run's C1 fit groups "
                     "(e.g. run_fitpool_v3=1 = 'G C1 weight reduced')")
     ap.add_argument("--c2_drop_exposure", default="", help="Codex 021/023: query_identity_exposure.csv of the FPNet that built the tables (molecule, exposure); the CLASS-2 "
@@ -184,6 +186,13 @@ def main():
     def to_ds(d):
         d = d.sort_values(["molecule", "view"], kind="stable")
         sizes = d.groupby(["molecule", "view"], sort=False).size().values
+        if a.c1_weight != 1.0:   # query-level weight carried by every row of the group; mean GROUP weight renormalised to 1
+            gview = d.groupby(["molecule", "view"], sort=False).view.first().values
+            gw = np.where(gview == "c1", a.c1_weight, 1.0); gw = gw / gw.mean()
+            w_rows = np.repeat(gw, sizes)
+            print(f"c1_weight {a.c1_weight}: group weights c1 {gw[gview == 'c1'][0] if (gview == 'c1').any() else float('nan'):.4f} / c2 {gw[gview == 'c2'][0] if (gview == 'c2').any() else float('nan'):.4f} | "
+                  f"effective c1 share {float(gw[gview == 'c1'].sum() / gw.sum()):.4f}", flush=True)
+            return lgb.Dataset(d[FE].values, label=d.is_truth.values, group=sizes, weight=w_rows, free_raw_data=False, feature_name=list(FE)), d
         return lgb.Dataset(d[FE].values, label=d.is_truth.values, group=sizes, free_raw_data=False, feature_name=list(FE)), d
     ds_fit, fit_s = to_ds(fit_t)
     FIXED = json.load(open(a.params_from))["selected"] if a.params_from else None
@@ -205,7 +214,7 @@ def main():
     ev = ev.copy(); ev["pred"] = bst.predict(ev[FE].values)
     out = dict(selected=best, tune_fixed=base_tune, eval_lambdarank=mrr_of(ev, "pred"), eval_fixed=mrr_of(ev, "S_fixed"), eval_fixed15=mrr_of(ev, "S_fixed15"),
                importance=dict(zip(FE, [int(x) for x in bst.feature_importance("gain").round().astype(int)])), n_fit_rows=len(fit_t), n_fit_groups=int(fit_t.groupby(["molecule", "view"]).ngroups),
-               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat), c1_only_runs=list(a.c1_only_runs), c2_drop_exposure=a.c2_drop_exposure, c1_seen_only=a.c1_seen_only, exposure_ledger=a.exposure_ledger)
+               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat), c1_weight=float(a.c1_weight), c1_only_runs=list(a.c1_only_runs), c2_drop_exposure=a.c2_drop_exposure, c1_seen_only=a.c1_seen_only, exposure_ledger=a.exposure_ledger)
     # paired bootstrap on eval (per molecule-view)
     rows = []
     for (mid, view), g in ev.groupby(["molecule", "view"], sort=False):
