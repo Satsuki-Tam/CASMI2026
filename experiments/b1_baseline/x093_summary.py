@@ -1,13 +1,14 @@
 """093 reading (093_prereg_pe.md): V = e086_v7f_* main, V+E = its ea0.5w1, V+P = e093_v8w7a_* main, V+P+E = its ea0.5w1 (same gen_eval2pv, tables, queries).
 Primary PE - P on 053 NP C2 (NP_H / NP_N equal within a fold, folds equal; = the 076/080 aggregate); next-stage condition: >= +0.005 and lower > 0 and
 non-inferiority (L >= -0.01) of PE - P on 053 NP C1, panel C1 clean, G C1 (f1/f2). Also PE - E, the identity interaction I = PE - P - E + V, C2 rows with PE < P."""
-import os
+import os, sys
 import numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); rng = np.random.default_rng(20261027); NB = 4000
 CLEAN = set(pd.read_csv(os.path.join(HERE, "..", "fpnet_full", "full_eval_audit", "panel_molecule_audit_groups.csv")).query("audit_group == 'clean_nearest_lt_0.90'").molecule.astype(str))
 TAGS = ["np053f1dev", "np053f2dev", "panel", "f1dev", "f2dev"]
+PV, PP = (sys.argv[1], sys.argv[2]) if len(sys.argv) > 2 else ("e086_v7f_", "e093_v8w7a_")   # Spark rerun: e093s_v7a_ e093s_v8w7a_
 def load(t):
-    a = pd.read_csv(os.path.join(HERE, f"diag/e086_v7f_{t}.csv")); b = pd.read_csv(os.path.join(HERE, f"diag/e093_v8w7a_{t}.csv"))
+    a = pd.read_csv(os.path.join(HERE, f"diag/{PV}{t}.csv")); b = pd.read_csv(os.path.join(HERE, f"diag/{PP}{t}.csv"))
     x = a.merge(b, on=["set", "view", "molecule"], suffixes=("_v", "_p")); assert len(x) == len(a) == len(b), (t, len(a), len(b), len(x))
     x["molecule"] = x.molecule.astype(str)
     return pd.DataFrame(dict(set=x.set, view=x.view, molecule=x.molecule, V=x.main_v, VE=x["ea0.5w1_v"], VP=x.main_p, VPE=x["ea0.5w1_p"]))
