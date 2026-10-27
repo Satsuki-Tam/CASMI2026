@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-27 08:39 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-27 09:03 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -12755,4 +12755,4 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <li>EXT の発見は「この EXT の分布・この pipeline では fold0 が良かった」に限定して記録する(fold0 − F の全体 +0.038 の約 8 割は MassBank の 13 分子:+0.141;GNPS +0.012、MoNA 0)。固定規則でも fold0 が +0.021 なので rank_v4b との相性だけでは説明できない。</li>
 <li>067 は登録どおり(採用対象 C のみ、上の追記)。実装の確認を補う: <code>b1_mix067</code> の run manifest に mix_folds と追加モデルの SHA256 を記録する修正を入れる(候補 kernel の前に)。parity は全 250 ID・比較件数の一致、analog の特徴ファイルが混合で新たに選ばれた候補を覆うかを確認。本番の時間枠での GL 被覆の変化も記録。</li>
 <li><strong>v8w は 0.379 → v8w だけの一変更として Public 比較の候補に維持</strong>(c1/c2 両方の parity 完了が条件)。067 と重ねない(重ねる場合の対照は混合 + v4b)。064 の記載は「交互作用を検出できなかった」に修正(NP C2 の I の区間は −0.01 を超える損失を除外していない;C C2 単独は −0.019 [−0.052, +0.012])。</li>
-</ol></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ol></details></article><article><h1>069: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

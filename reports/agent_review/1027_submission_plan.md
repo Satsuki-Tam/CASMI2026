@@ -22,3 +22,12 @@ kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/
 kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/casmi26-e0-probe-b -v 1 -f submission.csv -m "DIAGNOSTIC pair (Codex 049, 055): E0 (0.464 reproduction) final list restricted to group B = COCONUT and not training (official key; T-priority exclusive), order kept, no refill, empty -> CCO; not a method candidate"
 kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/casmi26-b1-probe-b379 -v 1 -f submission.csv -m "DIAGNOSTIC pair (Codex 049, 055): current B1 0.379 (57650023 kernel) final list restricted to group B with the identical appended cell; not a method candidate"
 ```
+
+## 提出の記録(09:01〜09:03 JST、`1027_submit.sh`)
+| 枠 | kernel | ref |
+|---|---|---|
+| 1 | casmi26-b1-fpnet-v7f v1 | 57681793 |
+| 2 | casmi26-b1-probe-prior v1 | 57681864 |
+| 3 | casmi26-b1-fpnet-gt3 v1 | 57681941 |
+| 4 | casmi26-e0-probe-b v1 | 57682008 |
+| 5 | casmi26-b1-probe-b379 v1 | 57682054 |
