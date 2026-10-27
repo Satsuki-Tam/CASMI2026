@@ -41,3 +41,7 @@
 | 追加 B(np061 f3pool、v9b) | 1,155 | 1,035 | **597** | 163 | 1,038 |
 - 本番で ranker が使われる「正例あり・GL 経路」の群は v8w の 2,457 → v9a 3,769(+53%)→ v9b 4,366。E/F/NP_X/NP_N の群(GL 無し)は学習には入るが本番では ranker を通らない(v8w と同じ扱いを維持;「GL 経路の群だけで学習」は別の実験)。
 - 追加 A の層構成は v8w の pool とほぼ同じ(F の C2 だけ 151 vs 400 と少ない)。
+
+### 追記(2026-10-27 09:52 JST、環境点検の結果 — 071 の差分は未読)
+- f1dev(794 行)で PC の gen_eval2m と Spark の CSV の main の一致: rank_v4b 792/794、rank_v8w 793/794、最大差 0.5。不一致は **F_np_uncovered c1 PJDABWGWSDUIAM**(GL の無い fallback 経路 = ranker を通らない、両 model で 1 位 ⇔ 2 位)と **C_np_crosslib c2 XZPCFZLGAZNCOI**(v4b だけ、11 位 ⇔ 10 位)。ranker の採点は単一 model 版と同じ式・同じ特徴行列なので、実装差ではなく、Spark(ARM)と PC(x86)の浮動小数(numba fastmath の analog 類似度など)による僅差の入れ替わりと判断した。
+- 対応: 登録の「完全一致」は厳しすぎたので「行の 0.5% 以下・僅差の入れ替わりは環境の揺れとして記録」に改める。**071 の比較はすべて PC の同じ一回の評価(r071m、6 model 同時)の中だけで行う**(Spark の CSV とは混ぜない)。f1dev は済み、残りの表の評価を再開する。

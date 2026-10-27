@@ -14,6 +14,11 @@ for t in TAGS:
     p = os.path.join(HERE, f"diag/p074_{t}.csv")
     if os.path.exists(p): d = pd.read_csv(p); d["molecule"] = d.molecule.astype(str); X[t] = d
 print("tables:", sorted(X))
+VARS_ALL = [v for vs in FAM.values() for v in vs] + ORA
+for t, d in X.items():
+    miss = [v for v in VARS_ALL + ["main"] if v not in d.columns or d[v].isna().any()]
+    assert not miss, (t, "missing / NaN variant columns", miss[:5])
+    print(f"  {t}: rows {len(d)}, molecules {d.molecule.nunique()}, empty-candidate rows {int((d.n_cand == 0).sum())}")
 def stat(frames, var):
     pts, boots = [], []
     for df, strata in frames:
@@ -27,7 +32,7 @@ st = lambda lo, hi, e=0.01: "harm" if hi < -e else ("non-inferior" if lo > -e el
 fmt = lambda p, ci: f"{p:+.4f} [{ci[0]:+.4f}, {ci[1]:+.4f}]"
 NP4 = ["C_np_crosslib", "D_np_single", "E_np_negonly", "F_np_uncovered"]
 L = ["# 074 development (P2 / EA / P5 variants of the 0.379 main), registered reading", "",
-     "| family | variant | primary 053 NP C2 (H,N) | blocks | NP_X C2 | panel C1 clean (state) | f1/f2 NP C2 C-F (state) | panel C2 | G C1 / C2 | dev2 NP C2 | 053 NP C1 |", "|---|---|---|---|---|---|---|---|---|---|---|"]
+     "| family | variant | primary 053 NP C2 (H,N) | blocks | NP_X C2 | panel C1 clean (state) | f1/f2 NP C2 C-F (state) | panel C2 | G C1 / C2 | dev2 NP C2 | 053 NP C1 | G C1 prot3 |", "|---|---|---|---|---|---|---|---|---|---|---|---|"]
 res = []
 for fam, vs in list(FAM.items()) + [("oracle", ORA)]:
     for v in vs:
@@ -45,15 +50,25 @@ for fam, vs in list(FAM.items()) + [("oracle", ORA)]:
         else: q, ciq, g1, g2 = np.nan, (np.nan, np.nan), np.nan, np.nan
         d2 = stat([(X["p2dev"][X["p2dev"].view == "c2"], NP4)], v)[0] if "p2dev" in X else np.nan
         c1 = stat([(X[t][X[t].view == "c1"], ["NP_H", "NP_N", "NP_X"]) for t in need], v)[0]
+        if all(t in X for t in ("f1dev", "f2dev")): gc, cig, _ = stat([(X[t][(X[t].view == "c1") & (X[t].set == "G_tims_crosslib")], None) for t in ("f1dev", "f2dev")], v)
+        else: gc, cig = np.nan, (np.nan, np.nan)
         res.append(dict(family=fam, variant=v, primary=p, lo=ci[0], hi=ci[1], prot1=st(*cic) if np.isfinite(pc) else "n/a", prot2=st(*ciq) if np.isfinite(q) else "n/a",
-                        prot1_hi=cic[1], prot2_hi=ciq[1]))
+                        prot3=st(*cig) if np.isfinite(gc) else "n/a", prot1_lo=cic[0], prot1_hi=cic[1], prot2_hi=ciq[1], prot3_lo=cig[0], prot3_hi=cig[1], g_c1=gc))
+        L[-1] = L[-1] + f" G C1 (prot3) {fmt(gc, cig)} ({st(*cig) if np.isfinite(gc) else 'n/a'}) |"
         L.append(f"| {fam} | {v} | {fmt(p, ci)} | {' / '.join(f'{b:+.4f}' for b in bl)} | {px:+.4f} | {fmt(pc, cic)} ({st(*cic) if np.isfinite(pc) else 'n/a'}) | "
                  f"{fmt(q, ciq)} ({st(*ciq) if np.isfinite(q) else 'n/a'}) | {p2:+.4f} | {g1:+.4f} / {g2:+.4f} | {d2:+.4f} | {c1:+.4f} |")
 R = pd.DataFrame(res)
 if len(R):
-    win = R[R.family != "oracle"].sort_values("primary", ascending=False).groupby("family").head(1)
-    ok = win[(win.primary >= 0.005) & (win.prot1_hi >= -0.01) & (win.prot2_hi >= -0.01)]
-    L += ["", "## selection (registered)", "", "family winners: " + "; ".join(f"{r.family} {r.variant} {r.primary:+.4f} (prot {r.prot1}/{r.prot2})" for r in win.itertuples()),
-          "eligible (primary >= +0.005, no main protection U < -0.01): " + (", ".join(ok.variant) if len(ok) else "none"),
-          "SELECTED for 073: " + (ok.sort_values("primary", ascending=False).variant.iloc[0] if len(ok) else "none (no confirmation)")]
+    STRENGTH = {"pcd0.5": 0.5, "pcd1": 1, "pcd2": 2, "ea0.3w1": 1.3, "ea0.3w2": 2.3, "ea0.5w1": 1.5, "ea0.5w2": 2.5}   # tie-break: weaker penalty first
+    R["strength"] = R.variant.map(STRENGTH).fillna(0)
+    cand = R[(R.family != "oracle") & (R.prot1_hi >= -0.01) & (R.prot2_hi >= -0.01) & (R.prot3_hi >= -0.01)]          # (1) no main protection with U < -eps
+    win = cand.sort_values(["primary", "strength"], ascending=[False, True]).groupby("family").head(1)                  # (2) family max, ties -> weaker penalty
+    ok = win[win.primary >= 0.005].sort_values(["primary", "strength"], ascending=[False, True])                          # (3) overall max with primary >= tau
+    sel = ok.iloc[0] if len(ok) else None
+    gate = None if sel is None else bool(sel.prot1_lo > -0.01 and sel.prot3_lo > -0.01)                                   # (4) 073 gate: panel C1 clean and G C1 lower > -0.01
+    L += ["", "## selection (registered, as amended 2026-10-27 after Codex 072)", "",
+          "after protection filter: " + (", ".join(cand.variant) if len(cand) else "none"),
+          "family winners: " + "; ".join(f"{r.family} {r.variant} {r.primary:+.4f}" for r in win.itertuples()),
+          "SELECTED: " + ("none" if sel is None else f"{sel.variant} ({sel.family}) primary {sel.primary:+.4f}"),
+          "073 gate (panel C1 clean lower > -0.01 and G C1 lower > -0.01): " + ("n/a" if gate is None else ("PASS -> open 073 once" if gate else "FAIL -> do not open 073"))]
 open(os.path.join(HERE, "diag/p074_summary.md"), "w", encoding="utf-8").write("\n".join(L) + "\n"); print("\n".join(L))

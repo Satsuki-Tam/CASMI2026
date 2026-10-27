@@ -135,6 +135,7 @@ if __name__ == "__main__":
     GROUP_KEYS = _idf.groupby("identity_group").scorer_key.apply(lambda x: set(x.astype(str))).to_dict(); KEY_GROUP = dict(zip(_idf.scorer_key.astype(str), _idf.identity_group))
     _winit(os.path.join(ROOT, a.v3), os.path.join(ROOT, a.fold_safe))
     RULES = ["gk2", "gk3", "gt3", "gk3all", "dv1"]
+    PVARS = ["pcd0.5", "pcd1", "pcd2", "ea0.3w1", "ea0.3w2", "ea0.5w1", "ea0.5w2"] + [f"{p_}_{n_}" for n_ in ("S", "prior", "fp", "lib", "ap") for p_ in ("h2", "o2")] + ["rrf_S", "rrf_prior"]
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -218,7 +219,7 @@ if __name__ == "__main__":
                 base = dict(set=s, view=v, molecule=mid, n_prod=len(lst), n_novel=sum(p_[7] == "novel" for p_ in lst), n_window=sum(p_[7] == "window" for p_ in lst),
                             truth_generated=bool(hit), truth_loc=(hit[0][7] if hit else ""), truth_n_parents=(hit[0][4] if hit else 0), truth_combo=(hit[0][6] if hit else ""))
                 if len(g) == 0:
-                    rows.append(dict(base, n_cand=0, main=0.0, n_derivable=0, truth_derivable=False, **{k: 0.0 for k in RULES})); continue
+                    rows.append(dict(base, n_cand=0, main=0.0, n_derivable=0, truth_derivable=False, gl_ok=False, pos=False, truth_coco=False, **{k: 0.0 for k in RULES + PVARS})); continue
                 fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float); lib = g[f"lib_sim_{vv}"].values.astype(float)
                 glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
                 zgl = term(glv, True)
@@ -286,7 +287,9 @@ if __name__ == "__main__":
                 rows.append(out)
         log(f"{s}: evaluated")
     if a.dump_choice: pd.DataFrame(choice).to_parquet(os.path.join(HERE, a.dump_choice), index=False)
-    R = pd.DataFrame(rows); os.makedirs(os.path.dirname(os.path.join(HERE, a.out)), exist_ok=True); R.to_csv(os.path.join(HERE, a.out + ".csv"), index=False)
+    R = pd.DataFrame(rows)
+    assert not R[PVARS + ['main']].isna().any().any(), 'variant columns missing for some rows'
+    os.makedirs(os.path.dirname(os.path.join(HERE, a.out)), exist_ok=True); R.to_csv(os.path.join(HERE, a.out + ".csv"), index=False)
     L = [f"# 042 v2 generation merge ({time.strftime('%Y-%m-%d %H:%M')}; f.z parity max {max(parity) if parity else float('nan'):.4f}; b1_gen v2)", "",
          "| set | view | n | main | truth generated | truth loc novel/window/short | median novel | truth derivable | " + " | ".join(RULES) + " |", "|---|---|---:|---:|---:|---|---:|---:|" + "---:|" * len(RULES)]
     for (s, v), g in R.groupby(["set", "view"], sort=False):
