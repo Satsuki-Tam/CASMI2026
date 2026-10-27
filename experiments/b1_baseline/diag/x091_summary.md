@@ -1,6 +1,6 @@
 # 091 development reading (per-spectrum FPNet logit mean vs PC-recomputed merged input)
 
-tables missing (stress only): ['p2dev']
+tables missing (stress only): []
 
 - **Primary (f1/f2 NP strict C2, fp_s - fp_m)**: +0.0016 [-0.0028, +0.0064] (fold 1 -0.0015, fold 2 +0.0046)
 - G C1 (f1/f2): +0.0079 [-0.0096, +0.0264] (non-inferior); 053 NP C1: -0.0032 [-0.0109, +0.0012] (undetermined); panel C1 clean: +0.0051 [-0.0001, +0.0127] (non-inferior)
@@ -18,3 +18,4 @@ tables missing (stress only): ['p2dev']
 - 053 C2 query spectra 1 (n 233): +0.0000
 - 053 C2 query spectra 2-3 (n 151): -0.0004
 - 053 C2 query spectra 4+ (n 249): +0.0017
+- dev2 NP C2 (stress): -0.0013 [-0.0082, +0.0048]
