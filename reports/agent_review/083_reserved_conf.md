@@ -5,3 +5,4 @@
 - 表: PC で b1_features(fpnet_fold4 = fold 4 の identity に未見)+ GL(NP_H)、`run_np083_f4conf`、gen dump 付き。表が出来ても主出力・差分は計算しない。
 - 用途: 一つに固定した候補の確認に一回だけ使う。割当ては候補の開発結果を読む前に別の登録で行う。
 - 追記(14:59): 083 の表は **--alias_perview**(Codex 082: 別表記の view 固有の列を、その view の shortlist 内の別表記だけで集約 = 本番 pipeline と同じ範囲)で作る。作る前にパネルの既知の 1 件(SQFSKOYWJBQGKQ / BEBLLQPTMVOKAX)で、C1 が pipeline と同じ(train でない・参照 0・lib 0)になることを検査する。fp / in_tier / in_coconut / ppm は従来どおり和集合で集約。
+- (21:39 訂正、Codex 092)「既存のどの集合とも identity group が素」は不正確: **パネル 250 と identity group が 1 つ重なる**(学習 pool・開発集合とは素であることを 087 の確認前に照合)。083 は 087 の確認で使用済み。
