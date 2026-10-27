@@ -10,3 +10,5 @@ sub hayatetaf/casmi26-b1-fpnet-ea05w1 1 "Codex 076/082b one-change vs 0.379: exp
 sub hayatetaf/casmi26-b1-fpnet-v7fea 1 "Codex 080/081 one-change vs v7f (0.390): v7f + EA (theta 0.5, w 1); 053 conf NP C2 +0.0163 [+0.0086, +0.0252]; parity v7f-alone PASS both views, v7f+EA C2 PASS, C1 outputs identical (1 known flag exception)"
 echo "== $(date +%H:%M:%S) four submitted (slot 5 held)"
 $K competitions submissions $C 2>&1 | head -8
+# slot 5 (only if the user allows it and the commit run of casmi26-e0-probe-baseb is COMPLETE):
+# sub hayatetaf/casmi26-e0-probe-baseb 1 "DIAGNOSTIC (Codex 088): E0 engine-1 BASE list top 25 restricted to group B (COCONUT and not training, official key, T-priority exclusive), order kept, no refill, empty -> CCO; compare with E0_B 0.259; not a method candidate"
