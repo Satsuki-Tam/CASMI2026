@@ -44,3 +44,4 @@
   - BASE_B ≤ 0.244 → 後段(engine 2・融合・forward・rank-2 等)が B probe を改善 → 次は ENG_B
   - BASE_B ≥ 0.274 → 後段は B probe では損(T / Pc との交換の可能性)
 - T 群の一対は二枠を確保できる日に回す(旧 B1 の T = 0.160 を対照に流用しない)。
+- (19:54) Kaggle CLI の認証は 19:53 に自然回復。kernel casmi26-e0-probe-baseb v1 の commit run は COMPLETE(追加セルが BASE を参照して例外なく完了)。枠 5 の提出は利用者の許可後。
