@@ -1,0 +1,29 @@
+{
+ "selected": {
+  "params": {
+   "num_leaves": 31,
+   "learning_rate": 0.03,
+   "min_data_in_leaf": 20,
+   "feature_fraction": 0.8,
+   "bagging_fraction": 0.8,
+   "bagging_freq": 1,
+   "lambda_l2": 1.0,
+   "verbose": -1,
+   "objective": "lambdarank",
+   "metric": "ndcg",
+   "eval_at": [
+    25
+   ],
+   "label_gain": [
+    0,
+    1
+   ],
+   "seed": 0
+  },
+  "rounds": 600,
+  "tune_c2_strict": 0.5595193031606075,
+  "tune_c1": 0.9064646464646464,
+  "tune_c2": 0.5595193031606075
+ },
+ "note": "params of rank_v7a (= rank_v4b params, 600 rounds; read from rank_v7a/lambdarank.txt parameters section) for PC re-training"
+}

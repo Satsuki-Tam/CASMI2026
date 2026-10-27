@@ -28,7 +28,7 @@ ap_.add_argument("--run", required=True); ap_.add_argument("--gen", required=Tru
 ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", required=True)
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
-ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--refcmp", action="store_true")
+ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--refcmp", action="store_true"); ap_.add_argument("--v7f", action="store_true", help="087: the v7f main (analog features into rankers that use them, no outer analog term on the GL path; GL fallback = insurance + 1 z(ap) + 1 z(MetFrag-lite))")
 ap_.add_argument("--store", default="data/processed/spectra_store")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet")
@@ -205,7 +205,7 @@ if __name__ == "__main__":
                 else: vwin[v] = wk
                 vshort[v] = ks
             Mt = float(np.median(list(MASS[mid].values())))
-            MM[mid] = dict(an=an, tokeys=tokeys)
+            MM[mid] = dict(an=an, tokeys=tokeys, qspec=qspec)
             tasks.append(((s, mid), Mt, ZL[mid], vpar, vwin, vshort))
         log(f"{s}: analogs for {len(MM)} molecules")
         GEN = {}
@@ -243,11 +243,18 @@ if __name__ == "__main__":
                   for fl_ in set(FEATS_M):
                     XS[fl_] = feature_matrix(fp, glv, np.full(len(g), np.nan), pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values, lib,
                                        g[f"lib_same_{vv}"].values, g[f"lib_nref_{vv}"].values, g.in_tier.values, g[f"in_train_{vv}"].values, g.in_coconut.values, g.ppm_err.values,
-                                       g.fp_rank_window.values, float(M.loc[mid, "n_query"]), float(M.loc[mid, "ce_known"]), n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=list(fl_), cmp=cmp_)
+                                       g.fp_rank_window.values, float(M.loc[mid, "n_query"]), float(M.loc[mid, "ce_known"]), n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=list(fl_), cmp=cmp_, analog=(dict(ap=feats['ap'], mean_tan=feats['mean_tan']) if any(f_.startswith('ana_') or f_ == 'z_ana_ap' for f_ in fl_) else None))
                 for mi_, bst in enumerate(BSTS):
                     if gl_ok: score = 2 * z(np.asarray(bst.predict(XS[FEATS_M[mi_]]), float)) + z(np.asarray(S, float))
                     else: score = np.asarray(ins, float)
-                    x_ = feats["ap"]; score = score + a.analog_w * (x_ - x_.mean()) / (x_.std() + 1e-9)
+                    x_ = feats["ap"]
+                    if not a.v7f: score = score + a.analog_w * (x_ - x_.mean()) / (x_.std() + 1e-9)
+                    elif not gl_ok:   # v7f fallback: insurance + 1 z(ap) + 1 z(MetFrag-lite); learned path: no outer analog term
+                        if "frag" not in mm:
+                            import b1_frag as BF
+                            mm["frag"] = {str(sm_): BF.score(BF.fragments(str(sm_)), [dict(mz=q_["mz"], it=q_["it"], prec=q_["prec"], mode=q_["mode"]) for q_ in mm["qspec"]]) for sm_ in set(F[F.molecule == mid].smiles.astype(str))}
+                        fr_ = np.array([mm["frag"][str(sm_)] for sm_ in g.smiles], float)
+                        score = score + 1.0 * (x_ - x_.mean()) / (x_.std() + 1e-9) + 1.0 * (fr_ - fr_.mean()) / (fr_.std() + 1e-9)
                     order = list(np.argsort(-score, kind="stable"))
                     tr = g.is_truth.values.astype(bool); okeys = g.official_key.astype(str).values
                     lst_db = [("db", int(i)) for i in order]
