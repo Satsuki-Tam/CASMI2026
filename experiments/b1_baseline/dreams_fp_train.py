@@ -17,12 +17,17 @@ ap.add_argument("--lr", type=float, default=1e-3); ap.add_argument("--wd", type=
 ap.add_argument("--w_bce", type=float, default=1.0); ap.add_argument("--seed", type=int, default=0); ap.add_argument("--eval_n", type=int, default=0, help="0 = every fold-k molecule"); ap.add_argument("--warmup", type=int, default=1000)
 ap.add_argument("--exclude_keys", default="", help="text file of scorer keys never used for training (e.g. dev2 hold / locked2 lock for a production head)")
 ap.add_argument("--fpnet_eval", type=int, default=1, help="also score the eval molecules with the fold-safe FPNet fold k")
+ap.add_argument("--exclude_rows", default="", help="JSON list of store rows never used (full_eval: panel query acquisitions + duplicates)")
+ap.add_argument("--exclude_groups", default="", help="comma-separated p2_molecules.csv files: their identity groups are never used (full_eval: dev2 hold, locked2 lock)")
+ap.add_argument("--keep_panel", action="store_true", help="keep the panel identities trainable (full_eval regime; only --exclude_rows removed)")
+ap.add_argument("--eval_groups", default="", help="with --holdout_fold -1: evaluate on the identity groups of this p2_molecules.csv")
+ap.add_argument("--fpnet_ckpt", default="", help="FPNet checkpoint for the comparison (default fold_safe_fpnet/fpnet_fold<k>.pt)")
 a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
 torch.manual_seed(a.seed); rng = np.random.default_rng(a.seed); dev = "cuda"
 def log(*x): print(time.strftime("%H:%M:%S"), *x, flush=True)
 HW = f"{ROOT}/data/external/harness_work"; ST = f"{ROOT}/data/processed/spectra_store"
 meta = pl.read_parquet(f"{ST}/spec_meta.parquet", columns=["row", "scorer_ik14", "ingest_lib", "adduct", "ionization_mode", "ce_mean", "precursor_mz"])
-folds = pl.read_parquet(f"{ROOT}/data/external/identity_folds/spectra_folds.parquet", columns=["row", "fold_identity"])
+folds = pl.read_parquet(f"{ROOT}/data/external/identity_folds/spectra_folds.parquet", columns=["row", "fold_identity", "identity_group"])
 meta = meta.join(folds, on="row", how="left").sort("row")
 pool = pl.read_parquet(f"{HW}/pool_meta.parquet", columns=["key", "mass", "src", "np_likeness"]); pmass = pool["mass"].to_numpy().astype(np.float64)
 psrc = pool["src"].to_numpy(); pnpl = pool["np_likeness"].to_numpy().astype(np.float64)
@@ -33,8 +38,19 @@ ok = np.load(f"{a.emb_dir}/ok.npy"); assert len(ok) == meta.height
 panel = set(meta.filter(pl.col("ingest_lib") == "enveda-np-examples")["scorer_ik14"].to_list())
 excl = set(open(a.exclude_keys).read().split()) if a.exclude_keys else set()
 is_panel = np.array([k in panel for k in key]); is_excl = np.array([k in excl for k in key]) if excl else np.zeros(len(key), bool)
-tr = np.where(ok & (pid >= 0) & (fold != a.holdout_fold) & ~is_panel & ~is_excl)[0]
-ev_rows = np.where(ok & (pid >= 0) & (fold == a.holdout_fold) & ~is_panel)[0]
+igrp = meta["identity_group"].fill_null(-1).to_numpy()
+drop_rows = np.zeros(len(key), bool)
+if a.exclude_rows: drop_rows[np.array(json.load(open(a.exclude_rows)), np.int64)] = True
+ex_groups = set()
+for f_ in [x for x in a.exclude_groups.split(",") if x]: ex_groups |= set(pl.read_csv(f_)["identity_group"].to_list())
+is_exg = np.isin(igrp, np.array(sorted(ex_groups), np.int64)) if ex_groups else np.zeros(len(key), bool)
+pan_ex = np.zeros(len(key), bool) if a.keep_panel else is_panel
+tr = np.where(ok & (pid >= 0) & (fold != a.holdout_fold) & ~pan_ex & ~is_excl & ~drop_rows & ~is_exg)[0]
+if a.holdout_fold >= 0: ev_rows = np.where(ok & (pid >= 0) & (fold == a.holdout_fold) & ~is_panel)[0]
+else:
+    evg = set(pl.read_csv(a.eval_groups)["identity_group"].to_list()) if a.eval_groups else set()
+    ev_rows = np.where(ok & (pid >= 0) & np.isin(igrp, np.array(sorted(evg), np.int64)) & ~is_panel)[0] if evg else np.zeros(0, np.int64)
+log(f"excluded: rows {int(drop_rows.sum())}, identity groups {len(ex_groups)} ({int(is_exg.sum())} rows), panel {'kept' if a.keep_panel else 'excluded'}")
 log(f"train spectra {len(tr):,} ({len(np.unique(pid[tr])):,} structures), eval-fold spectra {len(ev_rows):,}")
 # side inputs: adduct one-hot (10 test adducts + other), polarity, CE
 ADD = list(ADDUCT_SHIFT); add_ix = np.array([ADD.index(x) if x in ADD else len(ADD) for x in meta["adduct"].to_list()], np.int64)
@@ -98,10 +114,10 @@ for r in ev_rows: mol_rows.setdefault(int(pid[r]), []).append(int(r))
 mols = sorted(mol_rows); rng2 = np.random.default_rng(123)
 if a.eval_n > 0: mols = [mols[i] for i in np.sort(rng2.choice(len(mols), min(a.eval_n, len(mols)), replace=False))]
 fpnet = None
-if a.fpnet_eval:
+if a.fpnet_eval and len(mols):
     sys.path.insert(0, f"{ROOT}/data/external/v3_models/code")
     from casmi import fpnet as FPN, chem as CH
-    fpnet = FPN.load_model(f"{ROOT}/data/external/fold_safe_fpnet/fpnet_fold{a.holdout_fold}.pt", dev)
+    fpnet = FPN.load_model(a.fpnet_ckpt or f"{ROOT}/data/external/fold_safe_fpnet/fpnet_fold{a.holdout_fold}.pt", dev)
     MZ = np.load(f"{ST}/spec_mz.npy", mmap_mode="r"); IT = np.load(f"{ST}/spec_int.npy", mmap_mode="r"); OFF = np.load(f"{ST}/spec_off.npy")
     prec_all = meta["precursor_mz"].to_numpy(); add_all = meta["adduct"].to_list(); ce_all = meta["ce_mean"].to_numpy()
 def zs(x):

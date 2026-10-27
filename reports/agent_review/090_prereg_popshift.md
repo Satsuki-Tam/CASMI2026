@@ -1,0 +1,11 @@
+# 090 事前登録: 人気度への依存を下げる変種(開発の評価の前に固定;Codex 090 の回答が結果の前に届けば追記で調整)
+
+作成: 2026-10-27 18:44 JST(Claude Code)。背景と仮説: 090_request.md(E0 の engine 1 は人気度の特徴を持たない;開発の 053 NP は隠しより有名な正解に偏る)。
+- **変種(固定)**: 評価器 gen_eval2fd.py(主出力は gen_eval2m --v7f と同一;--pop_ws 0.15,0 で固定則・保険の prior 重みだけを替えた変種 pw<w>)。ranker は
+  rank_v7a_pc(対照、sha は 087 で記録)、**rank_v7a_np4**(v7a_pc と同じ学習で人気度 4 特徴 pop_public・lsid・lpmid・lsynonyms を除外、c577b2cf)、**rank_v7a_np7**(さらに np_bit・src_bit・lotus を除外、aa914dc2)。
+  R0 = v7a_pc の main(対照)、R1 = v7a_pc の pw0.15、R2 = np4 の main、R3 = np4 の pw0.15、R4 = np7 の pw0。
+- **集合**: f1dev / f2dev(C/D/E/F/G)、053 dev f1/f2(NP_H/X/N)、パネル、dev2(stress)。
+- **主指標(i)**: f1/f2 dev の NP 層(C/D/E/F をプール、fold を等重みの block)の C2 の Δ(Rk − R0)。**副指標(ii)**: 053 dev C2 を正解の prior 順位層(1 / 2〜3 / 4〜10 / 11+ / 未到達)で層別し、隠しに合わせた重み(到達分子で 1 位 9%・2〜3 位 18%・4〜10 位 30%・11+ 43%、未到達は除外)で再重み付けした Δ。層別の表も併記。
+- **保護(ε = 0.01、三状態)**: G C1(timsTOF のクラス 1)、053 NP C1。**パネル C1 clean** は「有名なクラス 1 への費用」として報告(prior を下げれば下がる見込み;判定には使わず Public で測る)。
+- **選択**: (i) が最大で、(ii) の点推定 ≥ 0、保護で害(U < −ε)が無い変種を一つ。(i) が τ = +0.005 に届かなければ Public 候補にしない。
+- **Public(条件付き)**: 選んだ一つを v7f(0.390)比の一変更として 1 枠(境界は既定 +0.008 / −0.015)。pipeline の parity・smoke を経てから。結果の前に読みを追記する。

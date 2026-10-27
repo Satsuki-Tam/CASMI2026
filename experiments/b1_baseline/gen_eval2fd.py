@@ -1,4 +1,4 @@
-"""[gen_eval2fd = gen_eval2m + --fpD (089 stage b): DreaMS-FP scores (dreams_fp_score.py parquet: set, molecule, smiles, fpD) as variants
+"""[gen_eval2fd = gen_eval2m + --pop_ws (090: fixed-rule prior weight variants pw<w>, same blend / fallback rules) + --fpD (089 stage b): DreaMS-FP scores (dreams_fp_score.py parquet: set, molecule, smiles, fpD) as variants
 fd_s<w> (w * term(fpD) added to the fixed rule S, i.e. inside z(S) on the GL path and inside the insurance S on the fallback path) and
 fd_o<w> (w * term(fpD) added to the final score); main is unchanged (must equal gen_eval2m).]
 [gen_eval2m = gen_eval2 scoring SEVERAL rankers in one pass: --model m1,m2,... --out o1,o2,... (analogs / generation shared;
@@ -32,7 +32,7 @@ ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", require
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
 ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--refcmp", action="store_true"); ap_.add_argument("--v7f", action="store_true", help="087: the v7f main (analog features into rankers that use them, no outer analog term on the GL path; GL fallback = insurance + 1 z(ap) + 1 z(MetFrag-lite))")
-ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_argument("--fpD", default="", help="dreams_fp_score.py parquet")
+ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_argument("--fpD", default="", help="dreams_fp_score.py parquet"); ap_.add_argument("--pop_ws", default="", help="090: comma-separated fixed-rule prior weights -> variants pw<w>")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet")
 ap_.add_argument("--v3", default="data/external/v3_models/code"); ap_.add_argument("--fold_safe", default="data/external/fpnet_fulleval_as_fold0")
@@ -148,7 +148,8 @@ if __name__ == "__main__":
     GROUP_KEYS = _idf.groupby("identity_group").scorer_key.apply(lambda x: set(x.astype(str))).to_dict(); KEY_GROUP = dict(zip(_idf.scorer_key.astype(str), _idf.identity_group))
     _winit(os.path.join(ROOT, a.v3), os.path.join(ROOT, a.fold_safe))
     RULES = ["gk2", "gk3", "gt3", "gk3all", "dv1"]
-    FDV = [f"fd_{k}{w}" for k in ("s", "o") for w in (0.5, 1.0)] if a.fpD else []
+    PWS = [float(x) for x in a.pop_ws.split(",") if x]
+    FDV = ([f"fd_{k}{w}" for k in ("s", "o") for w in (0.5, 1.0)] if a.fpD else []) + [f"pw{w}" for w in PWS]
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -282,6 +283,9 @@ if __name__ == "__main__":
                             if t_ == "gen" and i_ in mm["tokeys"]: return 1.0 / (k_ + 1)
                         return 0.0
                     out = dict(base, n_cand=len(g), main=rr_of(lst_db))
+                    for w_ in PWS:
+                        S3_ = z(fp) + (2 * zgl if zgl is not None else 0) + w_ * pop; ins3_ = np.where(lib >= a.tau, 100.0 + lib, S3_) if fire else S3_
+                        out[f'pw{w_}'] = rr_of([('db', int(i)) for i in np.argsort(-_final(S3_, ins3_), kind='stable')])
                     if fdv is not None:
                         for w_ in (0.5, 1.0):
                             S2_ = S + w_ * fdv; ins2_ = np.where(lib >= a.tau, 100.0 + lib, S2_) if fire else S2_
