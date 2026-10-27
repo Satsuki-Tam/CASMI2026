@@ -1,4 +1,8 @@
-"""042 v2 (after Codex 042): generated analog derivatives merged into the registered main output, evaluated in C1 / C2 / C3 views.
+"""[gen_eval2p = gen_eval2 + fixed diagnostic variants of the registered main (074): P2 Pc-only demotion pcd<w> (score - w * 1[tier-only,
+not COCONUT, not train-in-view]); explained-away demotion ea<theta>w<w> (score - w * 1[candidate has library references in the view and
+lib_sim < theta]); P5 rank-2 hedges h2_<alt> (the alternative score's top-1 inserted at rank 2 unless already at rank 1-2, main rank 1 kept,
+duplicates removed, top 25 rebuilt) with oracle o2_<alt> = max(main, h2); RRF(k=60) of main and an alternative rrf_<alt>.]
+042 v2 (after Codex 042): generated analog derivatives merged into the registered main output, evaluated in C1 / C2 / C3 views.
 
 Views (the shortlist frames come from b1_locked_eval.view_frame of the registered feature tables):
   c1, c2  : protection views; parents = the top-P analogs under the view's own mask (c1: truth references re-selected outside the query
@@ -240,6 +244,31 @@ if __name__ == "__main__":
                         if t_ == "gen" and i_ in mm["tokeys"]: return 1.0 / (k_ + 1)
                     return 0.0
                 out = dict(base, n_cand=len(g), main=rr_of(lst_db))
+                idx_main = [int(i) for i in order]
+                def rr_idx(lst_idx):
+                    for k_, i_ in enumerate(lst_idx[:25]):
+                        if tr[i_]: return 1.0 / (k_ + 1)
+                    return 0.0
+                pc_only = (g.in_tier.values.astype(bool) & ~g.in_coconut.values.astype(bool) & ~g[f"in_train_{vv}"].values.astype(bool))
+                for w_ in (0.5, 1.0, 2.0):
+                    out[f"pcd{w_:g}"] = rr_idx(list(np.argsort(-(score - w_ * pc_only), kind="stable")))
+                has_ref = g[f"lib_nref_{vv}"].values.astype(float) > 0
+                for th_ in (0.3, 0.5):
+                    for w_ in (1.0, 2.0):
+                        out[f"ea{th_:g}w{w_:g}"] = rr_idx(list(np.argsort(-(score - w_ * (has_ref & (lib < th_))), kind="stable")))
+                alts = dict(S=np.asarray(S if gl_ok else ins, float), prior=pop.astype(float), fp=fp.astype(float), lib=lib.astype(float), ap=np.asarray(feats["ap"], float))
+                rank_main = np.empty(len(g)); rank_main[np.array(idx_main)] = np.arange(1, len(g) + 1)
+                for nm, sc in alts.items():
+                    sc = np.where(np.isfinite(sc), sc, -np.inf)
+                    if nm == "lib" and not (lib > 0).any(): out[f"h2_{nm}"] = out["main"]; out[f"o2_{nm}"] = out["main"]
+                    else:
+                        j = int(np.argmax(sc))
+                        lst2 = idx_main if j in idx_main[:2] else [idx_main[0], j] + [i for i in idx_main[1:] if i != j]
+                        out[f"h2_{nm}"] = rr_idx(lst2); out[f"o2_{nm}"] = max(out["main"], out[f"h2_{nm}"])
+                    if nm in ("S", "prior"):
+                        ro = np.empty(len(g)); ro[np.argsort(-sc, kind="stable")] = np.arange(1, len(g) + 1)
+                        out[f"rrf_{nm}"] = rr_idx(list(np.argsort(-(1.0 / (60 + rank_main) + 1.0 / (60 + ro)), kind="stable")))
+                out["gl_ok"] = bool(gl_ok); out["pos"] = bool(tr.any()); out["truth_coco"] = bool((g.in_coconut.values.astype(bool) & tr).any())
                 nov = sorted([p_ for p_ in lst if p_[7] == "novel"], key=lambda p_: (-p_[2], -p_[3], p_[0]))
                 alln = sorted([p_ for p_ in lst if p_[7] in ("novel", "window")], key=lambda p_: (-p_[2], -p_[3], p_[0]))
                 if hit and hit[0][7] == "novel": out["truth_rank_novel_fz"] = 1 + [p_[0] for p_ in nov].index(hit[0][0])
@@ -253,7 +282,7 @@ if __name__ == "__main__":
                 out.update(n_derivable=int(der.sum()), truth_derivable=bool((der * tr).sum() > 0))
                 out["dv1"] = rr_of([("db", int(i)) for i in np.argsort(-(score + 1.0 * der), kind="stable")])
                 if a.dump_choice and v in ("c1", "c2"):
-                    choice.append(dict(set=s, view=v, molecule=mid, gen_okey=(nov[0][0] if nov else None), gen_smiles=(nov[0][1] if nov else None), gt3_insert=bool(nov and nov[0][2] >= fz3), derivable=";".join(sorted(der_keys & set(okeys)))))
+                    choice.append(dict(set=s, view=v, molecule=mid, gen_okey=(nov[0][0] if nov else None), gen_smiles=(nov[0][1] if nov else None), derivable=";".join(sorted(der_keys & set(okeys)))))
                 rows.append(out)
         log(f"{s}: evaluated")
     if a.dump_choice: pd.DataFrame(choice).to_parquet(os.path.join(HERE, a.dump_choice), index=False)
