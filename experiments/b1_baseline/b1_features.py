@@ -119,6 +119,8 @@ def main():
     ap.add_argument("--alias_perview", action="store_true", help="Codex 082: aggregate the view-specific columns (train membership, library similarity / counts) of an "
                     "official key over the aliases inside THAT view's shortlist (as the submission pipeline does per view), not over the C1+C2 union (default off = unchanged; "
                     "fp / in_tier / in_coconut / ppm stay union-aggregated)")
+    ap.add_argument("--fp_mode", default="merge", choices=["merge", "mean"], help="091: merge = production (spectra of a polarity merged into one FPNet input); "
+                    "mean = one FPNet input per query spectrum, logits averaged within the polarity (then the same size-weighted mean over polarities)")
     ap.add_argument("--max_ref", type=int, default=MAX_REF, help="references kept per candidate after the duplicate rule (default 24 = unchanged; 2026-10-26 reference-cap test)")
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True)
     MAX_REF = a.max_ref
@@ -225,11 +227,18 @@ def main():
                     prec = float(np.median([s["prec"] for s in grp])); ces = [s["ce"] for s in grp if s["ce"] is not None]
                     ad = Counter(s["adduct"] for s in grp).most_common(1)[0][0]
                     pm, pi = fpnet.prep_peaks(mz, it, prec)
-                    inp = fpnet.collate([dict(mz=pm, it=pi, prec=prec, adduct_ix=chem.adduct_index(ad), ce=float(np.mean(ces)) if ces else 0.0, ce_known=1.0 if ces else 0.0,
-                                              n_merged=min(len(grp), 8), mode=1.0 if mode == "positive" else -1.0)], "cuda")
+                    items_ = [dict(mz=pm, it=pi, prec=prec, adduct_ix=chem.adduct_index(ad), ce=float(np.mean(ces)) if ces else 0.0, ce_known=1.0 if ces else 0.0,
+                                   n_merged=min(len(grp), 8), mode=1.0 if mode == "positive" else -1.0)]
+                    if a.fp_mode == "mean":   # 091: one input per spectrum (n_merged 1, own precursor / adduct / CE), logits averaged below
+                        items_ = []
+                        for s1 in grp:
+                            pm1, pi1 = fpnet.prep_peaks(s1["mz"], s1["it"], s1["prec"])
+                            items_.append(dict(mz=pm1, it=pi1, prec=s1["prec"], adduct_ix=chem.adduct_index(s1["adduct"]), ce=float(s1["ce"]) if s1["ce"] is not None else 0.0,
+                                               ce_known=1.0 if s1["ce"] is not None else 0.0, n_merged=1, mode=1.0 if mode == "positive" else -1.0))
+                    inp = fpnet.collate(items_, "cuda")
                     with torch.autocast("cuda", dtype=dtype):
-                        if extra_models: z = torch.stack([m_(*inp)[0].float()[0] for m_ in [model] + extra_models]).mean(0).cpu().numpy().astype(np.float32)
-                        else: z = model(*inp)[0].float()[0].cpu().numpy().astype(np.float32)
+                        if extra_models: z = torch.stack([m_(*inp)[0].float().mean(0) for m_ in [model] + extra_models]).mean(0).cpu().numpy().astype(np.float32)
+                        else: z = model(*inp)[0].float().mean(0).cpu().numpy().astype(np.float32)   # merge: one row (= [0]); mean: rows averaged
                     zl = z * len(grp) if zl is None else zl + z * len(grp); wsum += len(grp)
                 zlog = (zl / wsum).astype(np.float32)
                 # ---- raw keys + FP for every window structure, merge on raw key
@@ -409,7 +418,7 @@ def main():
                 pd.DataFrame([(m_, k_) for m_, ks_ in zip(gen_dump["mol"], gen_dump["wkeys"]) for k_ in ks_], columns=["molecule", "key"]).to_parquet(f"{a.dump_gen}/gen_{set_name}_window.parquet", index=False)
             print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} shortlist rows ({time.time()-t0:.0f}s)", flush=True)
     import rdkit
-    json.dump(dict(alias_perview=bool(a.alias_perview), lib_conditions=bool(a.lib_conditions), sym_lib_mask=bool(a.sym_lib_mask), extra_ckpts=list(a.extra_ckpts), k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, k_pool=a.k_pool, adduct_proxy=bool(a.adduct_proxy), neg_proxy=bool(a.neg_proxy), shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=a.dup_sim, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
+    json.dump(dict(fp_mode=a.fp_mode, alias_perview=bool(a.alias_perview), lib_conditions=bool(a.lib_conditions), sym_lib_mask=bool(a.sym_lib_mask), extra_ckpts=list(a.extra_ckpts), k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, k_pool=a.k_pool, adduct_proxy=bool(a.adduct_proxy), neg_proxy=bool(a.neg_proxy), shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=a.dup_sim, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
                    rdkit=rdkit.__version__, seconds=round(time.time() - t0)), open(f"{a.out}/b1_features_manifest.json", "w"), indent=1)
     print(f"done {time.time()-t0:.0f}s")
 
