@@ -116,6 +116,9 @@ def main():
     ap.add_argument("--extra_ckpts", nargs="*", default=[], help="additional FPNet checkpoints; the query fingerprint logits are averaged over <fold_safe>/fpnet_fold0.pt and these "
                     "(same rule as b1_pipeline with several models); default none = single model, unchanged")
     ap.add_argument("--dump_gen", default="", help="042 (generation study): also write per molecule the averaged FPNet query logits, the neutral masses per adduct and the raw keys of every window structure to <dir>/gen_<set>.npz + gen_<set>_window.parquet; tables unchanged")
+    ap.add_argument("--alias_perview", action="store_true", help="Codex 082: aggregate the view-specific columns (train membership, library similarity / counts) of an "
+                    "official key over the aliases inside THAT view's shortlist (as the submission pipeline does per view), not over the C1+C2 union (default off = unchanged; "
+                    "fp / in_tier / in_coconut / ppm stay union-aggregated)")
     ap.add_argument("--max_ref", type=int, default=MAX_REF, help="references kept per candidate after the duplicate rule (default 24 = unchanged; 2026-10-26 reference-cap test)")
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True)
     MAX_REF = a.max_ref
@@ -350,16 +353,19 @@ def main():
                     if okeys[j] is not None: best.setdefault(okeys[j], []).append(i)
                 for ok, idxs in best.items():
                     i = max(idxs, key=lambda j: np.nan_to_num(fpu[j], nan=-1e18)); is_t = (ok == truth_key); si = set(idxs)
+                    if a.alias_perview:   # Codex 082: per-view alias sets for the view-specific columns (fall back to all aliases when the key is not in that view's shortlist)
+                        iv = {v: ([j for j in idxs if j in short_v[v]] or idxs) for v in ("c1", "c2")}
+                    else: iv = {"c1": idxs, "c2": idxs}
                     cand_out.append(dict(set=set_name, molecule=mid, smiles=smiles[rep[keys[i]]["i"]], official_key=ok, is_truth=is_t,
                                          in_short_c1=bool(si & short_v["c1"]), in_short_c2=bool(si & short_v["c2"]),
                                          in_tier=bool(any(in_tier[j] for j in idxs)), in_coconut=bool(any(in_coco[j] for j in idxs)),
-                                         in_train_c1=bool(any(train_flag_orig[j] for j in idxs)), in_train_c2=bool(any(in_train[j] for j in idxs)),
+                                         in_train_c1=bool(any(train_flag_orig[j] for j in iv['c1'])), in_train_c2=bool(any(in_train[j] for j in iv['c2'])),
                                          fp=float(fpu[i]) if np.isfinite(fpu[i]) else None, fp_rank_window=rank_of(fpu, i), ppm_err=float(np.nanmin([ppm_err[j] for j in idxs])),
-                                         lib_sim_c1=float(max(L["c1"][j] for j in idxs)), lib_sim_c2=float(max(L["c2"][j] for j in idxs)),
-                                         lib_sim_c1_keepdup=float(max(L["c1_keepdup"][j] for j in idxs)), lib_sim_c2_keepdup=float(max(L["c2_keepdup"][j] for j in idxs)),
-                                         lib_same_c1=float(max(L["same_c1"][j] for j in idxs)), lib_same_c2=float(max(L["same_c2"][j] for j in idxs)),
-                                         lib_nref_c1=int(max(nref["c1"][j] for j in idxs)), lib_nref_c2=int(max(nref["c2"][j] for j in idxs)),
-                                         lib_nsame_c1=int(max(nsame["c1"][j] for j in idxs)), lib_nsame_c2=int(max(nsame["c2"][j] for j in idxs)),
+                                         lib_sim_c1=float(max(L["c1"][j] for j in iv["c1"])), lib_sim_c2=float(max(L["c2"][j] for j in iv["c2"])),
+                                         lib_sim_c1_keepdup=float(max(L["c1_keepdup"][j] for j in iv["c1"])), lib_sim_c2_keepdup=float(max(L["c2_keepdup"][j] for j in iv["c2"])),
+                                         lib_same_c1=float(max(L["same_c1"][j] for j in iv["c1"])), lib_same_c2=float(max(L["same_c2"][j] for j in iv["c2"])),
+                                         lib_nref_c1=int(max(nref["c1"][j] for j in iv["c1"])), lib_nref_c2=int(max(nref["c2"][j] for j in iv["c2"])),
+                                         lib_nsame_c1=int(max(nsame["c1"][j] for j in iv["c1"])), lib_nsame_c2=int(max(nsame["c2"][j] for j in iv["c2"])),
                                          **({"lib_sup2_c1": float(np.nanmax([SUP2["c1"][j] for j in idxs])) if np.isfinite([SUP2["c1"][j] for j in idxs]).any() else np.nan,
                                              "lib_sup2_c2": float(np.nanmax([SUP2["c2"][j] for j in idxs])) if np.isfinite([SUP2["c2"][j] for j in idxs]).any() else np.nan,
                                              "lib_ncond_c1": int(max(NCOND["c1"][j] for j in idxs)), "lib_ncond_c2": int(max(NCOND["c2"][j] for j in idxs))} if a.lib_conditions else {}),
@@ -403,7 +409,7 @@ def main():
                 pd.DataFrame([(m_, k_) for m_, ks_ in zip(gen_dump["mol"], gen_dump["wkeys"]) for k_ in ks_], columns=["molecule", "key"]).to_parquet(f"{a.dump_gen}/gen_{set_name}_window.parquet", index=False)
             print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} shortlist rows ({time.time()-t0:.0f}s)", flush=True)
     import rdkit
-    json.dump(dict(lib_conditions=bool(a.lib_conditions), sym_lib_mask=bool(a.sym_lib_mask), extra_ckpts=list(a.extra_ckpts), k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, k_pool=a.k_pool, adduct_proxy=bool(a.adduct_proxy), neg_proxy=bool(a.neg_proxy), shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=a.dup_sim, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
+    json.dump(dict(alias_perview=bool(a.alias_perview), lib_conditions=bool(a.lib_conditions), sym_lib_mask=bool(a.sym_lib_mask), extra_ckpts=list(a.extra_ckpts), k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, k_pool=a.k_pool, adduct_proxy=bool(a.adduct_proxy), neg_proxy=bool(a.neg_proxy), shortlist_lam=SHORTLIST_LAM, ppm=PPM, max_spectra=a.max_spectra, max_ref=MAX_REF, dup_sim=a.dup_sim, fpnet=sha(f"{a.fold_safe}/fpnet_fold0.pt"), pool=sha(a.pool),
                    rdkit=rdkit.__version__, seconds=round(time.time() - t0)), open(f"{a.out}/b1_features_manifest.json", "w"), indent=1)
     print(f"done {time.time()-t0:.0f}s")
 

@@ -1,0 +1,2 @@
+set,group,molecule,scorer_key,raw_key,lib,identity_group,n_spectra_lib,window_external,db_present_external
+P_np250,diag,SQFSKOYWJBQGKQ,SQFSKOYWJBQGKQ,SQFSKOYWJBQGKQ,enveda-np-examples,183,2,true,true
