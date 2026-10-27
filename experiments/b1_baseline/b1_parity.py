@@ -22,6 +22,7 @@ ap.add_argument("--forward_from", default="evaluator", choices=["evaluator", "pi
 ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
 ap.add_argument("--analog_w", type=float, default=0.0, help="evaluator side adds analog_w * z(ap) to the main score (b1_pipeline --analog_w); ap from --analog_parquet (analog_probe.py)")
 ap.add_argument("--analog_parquet", default=None); ap.add_argument("--analog_feat", default="ap"); ap.add_argument("--analog_w_fallback", type=float, default=None)
+ap.add_argument("--ea_w", type=float, default=0.0, help="074/076 explained-away on the evaluator side: main - ea_w * 1[lib_nref > 0 and lib < ea_theta] (b1_v074 --ea_w)"); ap.add_argument("--ea_theta", type=float, default=0.3)
 ap.add_argument("--frag_w_fallback", type=float, default=0.0); ap.add_argument("--frag_parquet", default=None)
 ap.add_argument("--top25_set_min_share", type=float, default=0.95, help="top-25 identical as SETS (strict criterion)"); ap.add_argument("--top25_min_share", type=float, default=0.85, help="ordered top-25 identical (tail order is subject to forward-score run-to-run noise)")
 ap.add_argument("--pipe_work", default=None, help="pipeline output dir with gl_out.json / ice_out.json: measures forward-score differences vs the evaluator run"); a = ap.parse_args()
@@ -127,6 +128,9 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
             if a.frag_w_fallback and not gl_ok_:   # same formula as b1_pipeline (fallback path only)
                 frx = np.array([FRG.get(mid, {}).get(str(sm), np.nan) for sm in g.smiles], float); assert np.isfinite(frx).all(), (mid, "frag features missing")
                 main = np.asarray(main, float) + a.frag_w_fallback * (frx - frx.mean()) / (frx.std() + 1e-9)
+            if a.ea_w:   # same as b1_v074 b1_pipeline --ea_w / gen_eval2p ea<theta>w<w>, applied after the analog / frag terms
+                ea_ = ((g[f"lib_nref_{v}"].values.astype(float) > 0) & (lib < a.ea_theta)).astype(float)
+                main = np.asarray(main, float) - a.ea_w * ea_
             ev_main = [ident(str(g.smiles.values[i])) for i in np.argsort(-main, kind="stable")[:25]]; ev_ins = [ident(str(g.smiles.values[i])) for i in np.argsort(-ins, kind="stable")[:25]]
             pp_main = [ident(x) for x in pm_of[mid].split(";")]; pp_ins = [ident(x) for x in pf_of[mid].split(";")]
             t = truth_of[mid]

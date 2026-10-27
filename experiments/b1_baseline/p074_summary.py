@@ -54,9 +54,9 @@ for fam, vs in list(FAM.items()) + [("oracle", ORA)]:
         else: gc, cig = np.nan, (np.nan, np.nan)
         res.append(dict(family=fam, variant=v, primary=p, lo=ci[0], hi=ci[1], prot1=st(*cic) if np.isfinite(pc) else "n/a", prot2=st(*ciq) if np.isfinite(q) else "n/a",
                         prot3=st(*cig) if np.isfinite(gc) else "n/a", prot1_lo=cic[0], prot1_hi=cic[1], prot2_hi=ciq[1], prot3_lo=cig[0], prot3_hi=cig[1], g_c1=gc))
-        L[-1] = L[-1] + f" G C1 (prot3) {fmt(gc, cig)} ({st(*cig) if np.isfinite(gc) else 'n/a'}) |"
+        G3 = f" {fmt(gc, cig)} ({st(*cig) if np.isfinite(gc) else 'n/a'}) |"
         L.append(f"| {fam} | {v} | {fmt(p, ci)} | {' / '.join(f'{b:+.4f}' for b in bl)} | {px:+.4f} | {fmt(pc, cic)} ({st(*cic) if np.isfinite(pc) else 'n/a'}) | "
-                 f"{fmt(q, ciq)} ({st(*ciq) if np.isfinite(q) else 'n/a'}) | {p2:+.4f} | {g1:+.4f} / {g2:+.4f} | {d2:+.4f} | {c1:+.4f} |")
+                 f"{fmt(q, ciq)} ({st(*ciq) if np.isfinite(q) else 'n/a'}) | {p2:+.4f} | {g1:+.4f} / {g2:+.4f} | {d2:+.4f} | {c1:+.4f} |" + G3)
 R = pd.DataFrame(res)
 if len(R):
     STRENGTH = {"pcd0.5": 0.5, "pcd1": 1, "pcd2": 2, "ea0.3w1": 1.3, "ea0.3w2": 2.3, "ea0.5w1": 1.5, "ea0.5w2": 2.5}   # tie-break: weaker penalty first

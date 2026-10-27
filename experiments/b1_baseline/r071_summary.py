@@ -12,9 +12,19 @@ HERE = os.path.dirname(os.path.abspath(__file__)); rng = np.random.default_rng(2
 CLEAN = set(pd.read_csv(os.path.join(HERE, "..", "fpnet_full", "full_eval_audit", "panel_molecule_audit_groups.csv")).query("audit_group == 'clean_nearest_lt_0.90'").molecule)
 assert len(CLEAN) == 202
 RUN_OF = {"f1dev": "run_f1dev", "f2dev": "run_f2dev", "np053f1dev": "run_np053_f1dev", "np053f2dev": "run_np053_f2dev", "p2dev": "run_p2dev_fe", "panel": "run_panel_fe"}
+import pickle, polars as pl
+_POOL = pl.read_parquet(os.path.join(HERE, "..", "..", "data", "external", "v2_pool", "pool_meta.parquet"), columns=["key", "src"])
+POOL_COCO = set(_POOL.filter(pl.col("src").is_in([2, 3]))["key"].to_list())
+COCO_RAW = set(str(x) for x in pickle.load(open(os.path.join(HERE, "..", "..", "data", "external", "coconut", "coco_meta.pkl"), "rb"))["keys"])
+EVAL_CSV = {"f1dev": "eval_set_f1/p2_molecules.csv", "f2dev": "eval_set_f2/p2_molecules.csv", "np053f1dev": "np053_f1dev/p2_molecules.csv", "np053f2dev": "np053_f2dev/p2_molecules.csv",
+            "p2dev": "eval_set2/v2/p2_molecules.csv", "panel": "panel_np250/p1_molecules.csv"}
+def truth_coco(tag):
+    """Codex 075 Q3: the truth's COCONUT membership from its official / raw key (same rule as p3_select_np), independent of candidate reach."""
+    ev = pd.read_csv(os.path.join(HERE, EVAL_CSV[tag]))
+    return {str(m): (str(k) in POOL_COCO) or (str(r) in COCO_RAW) for m, k, r in zip(ev.molecule, ev.scorer_key, ev.raw_key if "raw_key" in ev.columns else ev.molecule)}
 def meta(tag):
     """(set, view, molecule) -> gl_ok (production GL path), pos (truth in the view shortlist), tcoco (truth COCONUT-listed)."""
-    run = os.path.join(HERE, RUN_OF[tag]); out = {}
+    run = os.path.join(HERE, RUN_OF[tag]); out = {}; TCO = truth_coco(tag)
     for f in sorted(os.listdir(run)):
         if not (f.startswith("b1_features_") and f.endswith(".parquet")): continue
         s = f[len("b1_features_"):-len(".parquet")]
@@ -25,7 +35,7 @@ def meta(tag):
         except Exception: ok = False
         gl = json.load(open(p)) if ok else {}
         for mid, g0 in F.groupby("molecule", sort=False):
-            tco = bool(g0[g0.is_truth].in_coconut.any())
+            tco = TCO.get(str(mid), False)
             for view in ("c2", "c1"):
                 if view == "c1" and (mid not in M.index or not bool(M.loc[mid, "c1_usable"])): continue
                 keep = g0[f"in_short_{view}"].values.astype(bool)
