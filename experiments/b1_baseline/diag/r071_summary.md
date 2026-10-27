@@ -2,14 +2,14 @@
 
 | role | comparison | primary NP_H C2 (f1,f2) | blocks | panel C1 clean (state) | f1/f2 NP C2 C-F (state) | non-COCO C2 (f1/f2 C+D) | NP_H C2 GL&pos | G C1 / G C2 | dev2 NP C2 | NP_H C1 | NP_X/N max abs |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| MAIN | rank_v9a - rank_v8w_pc | -0.0049 [-0.0138, +0.0036] | +0.0005 / -0.0104 | +0.0091 [-0.0021, +0.0219] (non-inferior) | +0.0011 [-0.0022, +0.0043] (non-inferior) | +0.0022 [-0.0056, +0.0107] | -0.0060 [-0.0173, +0.0050] | -0.0075 / +0.0060 | +nan [+nan, +nan] | -0.0038 | 0.0000 |
-| REPRO | rank_v8w_pc - rank_v8w | +0.0000 [+0.0000, +0.0000] | +0.0000 / +0.0000 | +0.0000 [+0.0000, +0.0000] (non-inferior) | +0.0000 [+0.0000, +0.0000] (non-inferior) | +0.0000 [+0.0000, +0.0000] | +0.0000 [+0.0000, +0.0000] | +0.0000 / +0.0000 | +nan [+nan, +nan] | +0.0000 | 0.0000 |
-| CURVE1 | rank_v9h - rank_v8w_pc | -0.0019 [-0.0099, +0.0061] | +0.0016 / -0.0054 | +0.0012 [-0.0068, +0.0099] (non-inferior) | -0.0003 [-0.0038, +0.0031] (non-inferior) | +0.0029 [-0.0037, +0.0102] | -0.0022 [-0.0119, +0.0076] | -0.0021 / +0.0018 | +nan [+nan, +nan] | -0.0010 | 0.0000 |
-| CURVE2 | rank_v9a - rank_v9h | -0.0030 [-0.0125, +0.0060] | -0.0011 / -0.0050 | +0.0080 [-0.0022, +0.0198] (non-inferior) | +0.0014 [-0.0022, +0.0052] (non-inferior) | -0.0007 [-0.0090, +0.0074] | -0.0037 [-0.0152, +0.0074] | -0.0054 / +0.0043 | +nan [+nan, +nan] | -0.0028 | 0.0000 |
-| COCO | rank_v9b - rank_v9a | +0.0163 [+0.0065, +0.0270] | +0.0196 / +0.0130 | -0.0112 [-0.0244, +0.0001] (undetermined) | -0.0031 [-0.0068, +0.0003] (non-inferior) | -0.0105 [-0.0197, -0.0028] | +0.0204 [+0.0083, +0.0335] | +0.0079 / +0.0009 | +nan [+nan, +nan] | +0.0073 | 0.0000 |
-| PUB | rank_v8w_pc - rank_v4b | +0.0301 [+0.0161, +0.0447] | +0.0184 / +0.0419 | +0.0056 [-0.0115, +0.0245] (undetermined) | +0.0130 [+0.0064, +0.0199] (non-inferior) | +0.0125 [+0.0003, +0.0244] | +0.0372 [+0.0197, +0.0556] | +0.0898 / -0.0110 | +nan [+nan, +nan] | +0.0172 | 0.0000 |
-| PUB | rank_v9a - rank_v4b | +0.0252 [+0.0118, +0.0396] | +0.0189 / +0.0315 | +0.0147 [-0.0018, +0.0325] (non-inferior) | +0.0140 [+0.0075, +0.0209] (non-inferior) | +0.0148 [+0.0039, +0.0268] | +0.0312 [+0.0137, +0.0484] | +0.0823 / -0.0050 | +nan [+nan, +nan] | +0.0134 | 0.0000 |
-| PUB | rank_v9b - rank_v4b | +0.0415 [+0.0280, +0.0560] | +0.0386 / +0.0445 | +0.0035 [-0.0115, +0.0183] (undetermined) | +0.0109 [+0.0046, +0.0177] (non-inferior) | +0.0042 [-0.0075, +0.0155] | +0.0515 [+0.0347, +0.0691] | +0.0902 / -0.0041 | +nan [+nan, +nan] | +0.0207 | 0.0000 |
+| MAIN | rank_v9a - rank_v8w_pc | -0.0049 [-0.0138, +0.0036] | +0.0005 / -0.0104 | +0.0091 [-0.0021, +0.0219] (non-inferior) | +0.0011 [-0.0022, +0.0043] (non-inferior) | +0.0022 [-0.0056, +0.0107] | -0.0060 [-0.0173, +0.0050] | -0.0075 / +0.0060 | +0.0047 [-0.0009, +0.0106] | -0.0038 | 0.0000 |
+| REPRO | rank_v8w_pc - rank_v8w | +0.0000 [+0.0000, +0.0000] | +0.0000 / +0.0000 | +0.0000 [+0.0000, +0.0000] (non-inferior) | +0.0000 [+0.0000, +0.0000] (non-inferior) | +0.0000 [+0.0000, +0.0000] | +0.0000 [+0.0000, +0.0000] | +0.0000 / +0.0000 | +0.0000 [+0.0000, +0.0000] | +0.0000 | 0.0000 |
+| CURVE1 | rank_v9h - rank_v8w_pc | -0.0019 [-0.0099, +0.0057] | +0.0016 / -0.0054 | +0.0012 [-0.0073, +0.0098] (non-inferior) | -0.0003 [-0.0037, +0.0030] (non-inferior) | +0.0029 [-0.0036, +0.0099] | -0.0022 [-0.0119, +0.0074] | -0.0021 / +0.0018 | -0.0001 [-0.0054, +0.0049] | -0.0010 | 0.0000 |
+| CURVE2 | rank_v9a - rank_v9h | -0.0030 [-0.0124, +0.0059] | -0.0011 / -0.0050 | +0.0080 [-0.0024, +0.0184] (non-inferior) | +0.0014 [-0.0022, +0.0052] (non-inferior) | -0.0007 [-0.0089, +0.0074] | -0.0037 [-0.0155, +0.0075] | -0.0054 / +0.0043 | +0.0048 [-0.0009, +0.0114] | -0.0028 | 0.0000 |
+| COCO | rank_v9b - rank_v9a | +0.0163 [+0.0062, +0.0262] | +0.0196 / +0.0130 | -0.0112 [-0.0246, +0.0001] (undetermined) | -0.0031 [-0.0068, +0.0003] (non-inferior) | -0.0105 [-0.0196, -0.0028] | +0.0204 [+0.0078, +0.0334] | +0.0079 / +0.0009 | +0.0013 [-0.0032, +0.0061] | +0.0073 | 0.0000 |
+| PUB | rank_v8w_pc - rank_v4b | +0.0301 [+0.0158, +0.0455] | +0.0184 / +0.0419 | +0.0056 [-0.0120, +0.0236] (undetermined) | +0.0130 [+0.0063, +0.0201] (non-inferior) | +0.0125 [+0.0007, +0.0247] | +0.0372 [+0.0194, +0.0556] | +0.0898 / -0.0110 | -0.0021 [-0.0125, +0.0085] | +0.0172 | 0.0000 |
+| PUB | rank_v9a - rank_v4b | +0.0252 [+0.0125, +0.0394] | +0.0189 / +0.0315 | +0.0147 [-0.0017, +0.0328] (non-inferior) | +0.0140 [+0.0080, +0.0209] (non-inferior) | +0.0148 [+0.0041, +0.0268] | +0.0312 [+0.0151, +0.0477] | +0.0823 / -0.0050 | +0.0026 [-0.0061, +0.0114] | +0.0134 | 0.0000 |
+| PUB | rank_v9b - rank_v4b | +0.0415 [+0.0278, +0.0558] | +0.0386 / +0.0445 | +0.0035 [-0.0115, +0.0189] (undetermined) | +0.0109 [+0.0042, +0.0180] (non-inferior) | +0.0042 [-0.0080, +0.0150] | +0.0515 [+0.0348, +0.0687] | +0.0902 / -0.0041 | +0.0039 [-0.0051, +0.0135] | +0.0207 | 0.0000 |
 
 ## per layer (stress / detail)
 
@@ -46,6 +46,15 @@
 | MAIN | rank_v9a-rank_v8w_pc | np053f2dev | NP_N | c2 | 60 | 0.0 | 0 | 0 |
 | MAIN | rank_v9a-rank_v8w_pc | np053f2dev | NP_X | c1 | 7 | 0.0 | 0 | 0 |
 | MAIN | rank_v9a-rank_v8w_pc | np053f2dev | NP_X | c2 | 60 | 0.0 | 0 | 0 |
+| MAIN | rank_v9a-rank_v8w_pc | p2dev | C_np_crosslib | c1 | 95 | 0.0109 | 2 | 1 |
+| MAIN | rank_v9a-rank_v8w_pc | p2dev | C_np_crosslib | c2 | 100 | 0.0181 | 10 | 4 |
+| MAIN | rank_v9a-rank_v8w_pc | p2dev | D_np_single | c2 | 100 | 0.0006 | 4 | 1 |
+| MAIN | rank_v9a-rank_v8w_pc | p2dev | E_np_negonly | c1 | 59 | 0.0 | 0 | 0 |
+| MAIN | rank_v9a-rank_v8w_pc | p2dev | E_np_negonly | c2 | 100 | 0.0 | 0 | 0 |
+| MAIN | rank_v9a-rank_v8w_pc | p2dev | F_np_uncovered | c1 | 38 | 0.0 | 0 | 0 |
+| MAIN | rank_v9a-rank_v8w_pc | p2dev | F_np_uncovered | c2 | 100 | 0.0 | 0 | 0 |
+| MAIN | rank_v9a-rank_v8w_pc | p2dev | G_tims_crosslib | c1 | 100 | 0.0383 | 8 | 1 |
+| MAIN | rank_v9a-rank_v8w_pc | p2dev | G_tims_crosslib | c2 | 100 | 0.019 | 7 | 2 |
 | MAIN | rank_v9a-rank_v8w_pc | panel | P_np250 | c1 | 250 | 0.0074 | 7 | 4 |
 | MAIN | rank_v9a-rank_v8w_pc | panel | P_np250 | c2 | 250 | 0.0016 | 6 | 2 |
 | REPRO | rank_v8w_pc-rank_v8w | f1dev | C_np_crosslib | c1 | 91 | 0.0 | 0 | 0 |
@@ -79,6 +88,15 @@
 | REPRO | rank_v8w_pc-rank_v8w | np053f2dev | NP_N | c2 | 60 | 0.0 | 0 | 0 |
 | REPRO | rank_v8w_pc-rank_v8w | np053f2dev | NP_X | c1 | 7 | 0.0 | 0 | 0 |
 | REPRO | rank_v8w_pc-rank_v8w | np053f2dev | NP_X | c2 | 60 | 0.0 | 0 | 0 |
+| REPRO | rank_v8w_pc-rank_v8w | p2dev | C_np_crosslib | c1 | 95 | 0.0 | 0 | 0 |
+| REPRO | rank_v8w_pc-rank_v8w | p2dev | C_np_crosslib | c2 | 100 | 0.0 | 0 | 0 |
+| REPRO | rank_v8w_pc-rank_v8w | p2dev | D_np_single | c2 | 100 | 0.0 | 0 | 0 |
+| REPRO | rank_v8w_pc-rank_v8w | p2dev | E_np_negonly | c1 | 59 | 0.0 | 0 | 0 |
+| REPRO | rank_v8w_pc-rank_v8w | p2dev | E_np_negonly | c2 | 100 | 0.0 | 0 | 0 |
+| REPRO | rank_v8w_pc-rank_v8w | p2dev | F_np_uncovered | c1 | 38 | 0.0 | 0 | 0 |
+| REPRO | rank_v8w_pc-rank_v8w | p2dev | F_np_uncovered | c2 | 100 | 0.0 | 0 | 0 |
+| REPRO | rank_v8w_pc-rank_v8w | p2dev | G_tims_crosslib | c1 | 100 | 0.0 | 0 | 0 |
+| REPRO | rank_v8w_pc-rank_v8w | p2dev | G_tims_crosslib | c2 | 100 | 0.0 | 0 | 0 |
 | REPRO | rank_v8w_pc-rank_v8w | panel | P_np250 | c1 | 250 | 0.0 | 0 | 0 |
 | REPRO | rank_v8w_pc-rank_v8w | panel | P_np250 | c2 | 250 | 0.0 | 0 | 0 |
 | CURVE1 | rank_v9h-rank_v8w_pc | f1dev | C_np_crosslib | c1 | 91 | 0.0051 | 1 | 1 |
@@ -112,6 +130,15 @@
 | CURVE1 | rank_v9h-rank_v8w_pc | np053f2dev | NP_N | c2 | 60 | 0.0 | 0 | 0 |
 | CURVE1 | rank_v9h-rank_v8w_pc | np053f2dev | NP_X | c1 | 7 | 0.0 | 0 | 0 |
 | CURVE1 | rank_v9h-rank_v8w_pc | np053f2dev | NP_X | c2 | 60 | 0.0 | 0 | 0 |
+| CURVE1 | rank_v9h-rank_v8w_pc | p2dev | C_np_crosslib | c1 | 95 | -0.0009 | 1 | 2 |
+| CURVE1 | rank_v9h-rank_v8w_pc | p2dev | C_np_crosslib | c2 | 100 | -0.0013 | 5 | 8 |
+| CURVE1 | rank_v9h-rank_v8w_pc | p2dev | D_np_single | c2 | 100 | 0.0008 | 5 | 2 |
+| CURVE1 | rank_v9h-rank_v8w_pc | p2dev | E_np_negonly | c1 | 59 | 0.0 | 0 | 0 |
+| CURVE1 | rank_v9h-rank_v8w_pc | p2dev | E_np_negonly | c2 | 100 | 0.0 | 0 | 0 |
+| CURVE1 | rank_v9h-rank_v8w_pc | p2dev | F_np_uncovered | c1 | 38 | 0.0 | 0 | 0 |
+| CURVE1 | rank_v9h-rank_v8w_pc | p2dev | F_np_uncovered | c2 | 100 | 0.0 | 0 | 0 |
+| CURVE1 | rank_v9h-rank_v8w_pc | p2dev | G_tims_crosslib | c1 | 100 | 0.0058 | 2 | 0 |
+| CURVE1 | rank_v9h-rank_v8w_pc | p2dev | G_tims_crosslib | c2 | 100 | 0.0185 | 8 | 0 |
 | CURVE1 | rank_v9h-rank_v8w_pc | panel | P_np250 | c1 | 250 | 0.0029 | 4 | 6 |
 | CURVE1 | rank_v9h-rank_v8w_pc | panel | P_np250 | c2 | 250 | 0.0 | 1 | 1 |
 | CURVE2 | rank_v9a-rank_v9h | f1dev | C_np_crosslib | c1 | 91 | 0.0009 | 1 | 0 |
@@ -145,6 +172,15 @@
 | CURVE2 | rank_v9a-rank_v9h | np053f2dev | NP_N | c2 | 60 | 0.0 | 0 | 0 |
 | CURVE2 | rank_v9a-rank_v9h | np053f2dev | NP_X | c1 | 7 | 0.0 | 0 | 0 |
 | CURVE2 | rank_v9a-rank_v9h | np053f2dev | NP_X | c2 | 60 | 0.0 | 0 | 0 |
+| CURVE2 | rank_v9a-rank_v9h | p2dev | C_np_crosslib | c1 | 95 | 0.0118 | 2 | 1 |
+| CURVE2 | rank_v9a-rank_v9h | p2dev | C_np_crosslib | c2 | 100 | 0.0194 | 9 | 1 |
+| CURVE2 | rank_v9a-rank_v9h | p2dev | D_np_single | c2 | 100 | -0.0002 | 5 | 2 |
+| CURVE2 | rank_v9a-rank_v9h | p2dev | E_np_negonly | c1 | 59 | 0.0 | 0 | 0 |
+| CURVE2 | rank_v9a-rank_v9h | p2dev | E_np_negonly | c2 | 100 | 0.0 | 0 | 0 |
+| CURVE2 | rank_v9a-rank_v9h | p2dev | F_np_uncovered | c1 | 38 | 0.0 | 0 | 0 |
+| CURVE2 | rank_v9a-rank_v9h | p2dev | F_np_uncovered | c2 | 100 | 0.0 | 0 | 0 |
+| CURVE2 | rank_v9a-rank_v9h | p2dev | G_tims_crosslib | c1 | 100 | 0.0325 | 7 | 2 |
+| CURVE2 | rank_v9a-rank_v9h | p2dev | G_tims_crosslib | c2 | 100 | 0.0005 | 2 | 3 |
 | CURVE2 | rank_v9a-rank_v9h | panel | P_np250 | c1 | 250 | 0.0044 | 9 | 4 |
 | CURVE2 | rank_v9a-rank_v9h | panel | P_np250 | c2 | 250 | 0.0016 | 5 | 1 |
 | COCO | rank_v9b-rank_v9a | f1dev | C_np_crosslib | c1 | 91 | -0.0055 | 0 | 1 |
@@ -178,6 +214,15 @@
 | COCO | rank_v9b-rank_v9a | np053f2dev | NP_N | c2 | 60 | 0.0 | 0 | 0 |
 | COCO | rank_v9b-rank_v9a | np053f2dev | NP_X | c1 | 7 | 0.0 | 0 | 0 |
 | COCO | rank_v9b-rank_v9a | np053f2dev | NP_X | c2 | 60 | 0.0 | 0 | 0 |
+| COCO | rank_v9b-rank_v9a | p2dev | C_np_crosslib | c1 | 95 | -0.0091 | 1 | 2 |
+| COCO | rank_v9b-rank_v9a | p2dev | C_np_crosslib | c2 | 100 | 0.0039 | 4 | 4 |
+| COCO | rank_v9b-rank_v9a | p2dev | D_np_single | c2 | 100 | 0.0015 | 5 | 5 |
+| COCO | rank_v9b-rank_v9a | p2dev | E_np_negonly | c1 | 59 | 0.0 | 0 | 0 |
+| COCO | rank_v9b-rank_v9a | p2dev | E_np_negonly | c2 | 100 | 0.0 | 0 | 0 |
+| COCO | rank_v9b-rank_v9a | p2dev | F_np_uncovered | c1 | 38 | 0.0 | 0 | 0 |
+| COCO | rank_v9b-rank_v9a | p2dev | F_np_uncovered | c2 | 100 | 0.0 | 0 | 0 |
+| COCO | rank_v9b-rank_v9a | p2dev | G_tims_crosslib | c1 | 100 | -0.02 | 0 | 4 |
+| COCO | rank_v9b-rank_v9a | p2dev | G_tims_crosslib | c2 | 100 | -0.0082 | 3 | 6 |
 | COCO | rank_v9b-rank_v9a | panel | P_np250 | c1 | 250 | -0.0091 | 3 | 8 |
 | COCO | rank_v9b-rank_v9a | panel | P_np250 | c2 | 250 | 0.0065 | 7 | 2 |
 | PUB | rank_v8w_pc-rank_v4b | f1dev | C_np_crosslib | c1 | 91 | 0.0059 | 3 | 1 |
@@ -211,6 +256,15 @@
 | PUB | rank_v8w_pc-rank_v4b | np053f2dev | NP_N | c2 | 60 | 0.0 | 0 | 0 |
 | PUB | rank_v8w_pc-rank_v4b | np053f2dev | NP_X | c1 | 7 | 0.0 | 0 | 0 |
 | PUB | rank_v8w_pc-rank_v4b | np053f2dev | NP_X | c2 | 60 | 0.0 | 0 | 0 |
+| PUB | rank_v8w_pc-rank_v4b | p2dev | C_np_crosslib | c1 | 95 | -0.0091 | 1 | 4 |
+| PUB | rank_v8w_pc-rank_v4b | p2dev | C_np_crosslib | c2 | 100 | -0.0105 | 11 | 10 |
+| PUB | rank_v8w_pc-rank_v4b | p2dev | D_np_single | c2 | 100 | 0.0022 | 4 | 7 |
+| PUB | rank_v8w_pc-rank_v4b | p2dev | E_np_negonly | c1 | 59 | 0.0 | 0 | 0 |
+| PUB | rank_v8w_pc-rank_v4b | p2dev | E_np_negonly | c2 | 100 | 0.0 | 0 | 0 |
+| PUB | rank_v8w_pc-rank_v4b | p2dev | F_np_uncovered | c1 | 38 | 0.0 | 0 | 0 |
+| PUB | rank_v8w_pc-rank_v4b | p2dev | F_np_uncovered | c2 | 100 | 0.0 | 0 | 0 |
+| PUB | rank_v8w_pc-rank_v4b | p2dev | G_tims_crosslib | c1 | 100 | 0.0874 | 24 | 3 |
+| PUB | rank_v8w_pc-rank_v4b | p2dev | G_tims_crosslib | c2 | 100 | -0.0383 | 14 | 14 |
 | PUB | rank_v8w_pc-rank_v4b | panel | P_np250 | c1 | 250 | 0.0045 | 10 | 6 |
 | PUB | rank_v8w_pc-rank_v4b | panel | P_np250 | c2 | 250 | 0.006 | 11 | 5 |
 | PUB | rank_v9a-rank_v4b | f1dev | C_np_crosslib | c1 | 91 | 0.012 | 4 | 0 |
@@ -244,6 +298,15 @@
 | PUB | rank_v9a-rank_v4b | np053f2dev | NP_N | c2 | 60 | 0.0 | 0 | 0 |
 | PUB | rank_v9a-rank_v4b | np053f2dev | NP_X | c1 | 7 | 0.0 | 0 | 0 |
 | PUB | rank_v9a-rank_v4b | np053f2dev | NP_X | c2 | 60 | 0.0 | 0 | 0 |
+| PUB | rank_v9a-rank_v4b | p2dev | C_np_crosslib | c1 | 95 | 0.0018 | 2 | 3 |
+| PUB | rank_v9a-rank_v4b | p2dev | C_np_crosslib | c2 | 100 | 0.0076 | 11 | 6 |
+| PUB | rank_v9a-rank_v4b | p2dev | D_np_single | c2 | 100 | 0.0028 | 7 | 7 |
+| PUB | rank_v9a-rank_v4b | p2dev | E_np_negonly | c1 | 59 | 0.0 | 0 | 0 |
+| PUB | rank_v9a-rank_v4b | p2dev | E_np_negonly | c2 | 100 | 0.0 | 0 | 0 |
+| PUB | rank_v9a-rank_v4b | p2dev | F_np_uncovered | c1 | 38 | 0.0 | 0 | 0 |
+| PUB | rank_v9a-rank_v4b | p2dev | F_np_uncovered | c2 | 100 | 0.0 | 0 | 0 |
+| PUB | rank_v9a-rank_v4b | p2dev | G_tims_crosslib | c1 | 100 | 0.1257 | 26 | 1 |
+| PUB | rank_v9a-rank_v4b | p2dev | G_tims_crosslib | c2 | 100 | -0.0193 | 14 | 10 |
 | PUB | rank_v9a-rank_v4b | panel | P_np250 | c1 | 250 | 0.0119 | 12 | 6 |
 | PUB | rank_v9a-rank_v4b | panel | P_np250 | c2 | 250 | 0.0076 | 11 | 6 |
 | PUB | rank_v9b-rank_v4b | f1dev | C_np_crosslib | c1 | 91 | 0.0065 | 4 | 1 |
@@ -277,5 +340,14 @@
 | PUB | rank_v9b-rank_v4b | np053f2dev | NP_N | c2 | 60 | 0.0 | 0 | 0 |
 | PUB | rank_v9b-rank_v4b | np053f2dev | NP_X | c1 | 7 | 0.0 | 0 | 0 |
 | PUB | rank_v9b-rank_v4b | np053f2dev | NP_X | c2 | 60 | 0.0 | 0 | 0 |
+| PUB | rank_v9b-rank_v4b | p2dev | C_np_crosslib | c1 | 95 | -0.0074 | 2 | 5 |
+| PUB | rank_v9b-rank_v4b | p2dev | C_np_crosslib | c2 | 100 | 0.0115 | 13 | 6 |
+| PUB | rank_v9b-rank_v4b | p2dev | D_np_single | c2 | 100 | 0.0043 | 8 | 7 |
+| PUB | rank_v9b-rank_v4b | p2dev | E_np_negonly | c1 | 59 | 0.0 | 0 | 0 |
+| PUB | rank_v9b-rank_v4b | p2dev | E_np_negonly | c2 | 100 | 0.0 | 0 | 0 |
+| PUB | rank_v9b-rank_v4b | p2dev | F_np_uncovered | c1 | 38 | 0.0 | 0 | 0 |
+| PUB | rank_v9b-rank_v4b | p2dev | F_np_uncovered | c2 | 100 | 0.0 | 0 | 0 |
+| PUB | rank_v9b-rank_v4b | p2dev | G_tims_crosslib | c1 | 100 | 0.1057 | 26 | 2 |
+| PUB | rank_v9b-rank_v4b | p2dev | G_tims_crosslib | c2 | 100 | -0.0275 | 13 | 12 |
 | PUB | rank_v9b-rank_v4b | panel | P_np250 | c1 | 250 | 0.0029 | 10 | 6 |
 | PUB | rank_v9b-rank_v4b | panel | P_np250 | c2 | 250 | 0.0141 | 12 | 2 |

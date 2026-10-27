@@ -1,6 +1,6 @@
 # 071 開発の結果(2026-10-27 11:14 JST、PC、gen_eval2m で 6 model を同じ一回の評価で採点)
 
-表: `experiments/b1_baseline/diag/r071_summary.md`(層ごとの差も)。dev2(stress)は計算中で、判定には使わない。
+表: `experiments/b1_baseline/diag/r071_summary.md`(層ごとの差も)。dev2(stress、full_eval の表)は 11:18 に完了: v9a − v8w_pc ほか全比較で害なし(v8w − v4b −0.002、v9a − v4b +0.003、v9b − v4b +0.004、いずれも区間は 0 を含む)。PC と Spark の一致は dev2 で 791/792。
 
 | 役割 | 比較 | 主指標 NP_H C2(f1, f2) | パネル C1 clean | f1/f2 NP C2 | 非収載 C2 | G C1 / C2 |
 |---|---|---|---|---|---|---|
