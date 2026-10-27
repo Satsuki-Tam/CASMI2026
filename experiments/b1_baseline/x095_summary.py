@@ -8,7 +8,10 @@ TAGS = ["np053f1dev", "np053f2dev", "f1dev", "f2dev", "panel", "p2dev"]
 D = {}
 for t in TAGS:
     p = os.path.join(HERE, f"diag/r095_{t}.csv")
-    if os.path.exists(p): x = pd.read_csv(p); x["d"] = x.bpp - x.main; D[t] = x
+    if os.path.exists(p):
+        x = pd.read_csv(p); x["d"] = x.bpp - x.main
+        x["truth_B"] = x.truth_B.astype(str).isin(["True", "1", "1.0"])   # empty-candidate rows store 0.0 -> object dtype; parse explicitly
+        D[t] = x
 miss = [t for t in TAGS if t not in D]
 if any(t in miss for t in ("np053f1dev", "np053f2dev", "f1dev", "f2dev")): sys.exit(f"missing: {miss}")
 def stat(frames):
