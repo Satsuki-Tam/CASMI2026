@@ -34,7 +34,7 @@ def meta(tag):
                 fin = sum((gl.get(mid) or {}).get(sm) is not None for sm in g.smiles)
                 out[(s, view, mid)] = (bool(len(g) and fin >= max(2, 0.5 * len(g))), bool(g.is_truth.any()), tco)
     return out
-META = {t: meta(t) for t in RUN_OF}
+META = {t: meta(t) for t in RUN_OF}   # p2dev may still be running (stress only)
 def pair(ma, mb, tag):
     a = pd.read_csv(os.path.join(HERE, f"diag/r071m_{ma}_{tag}.csv")); b = pd.read_csv(os.path.join(HERE, f"diag/r071m_{mb}_{tag}.csv"))
     x = a.merge(b, on=["set", "view", "molecule"], suffixes=("_a", "_b")); assert len(x) == len(a) == len(b), (ma, mb, tag, len(x), len(a), len(b))
@@ -59,8 +59,11 @@ L = ["# 071 development (P1 stage 1), registered reading (Codex 070 amendment)",
      "|---|---|---|---|---|---|---|---|---|---|---|---|"]
 DET = []
 for role, ma, mb in CMPS:
-    try: X = {t: pair(ma, mb, t) for t in RUN_OF}
-    except FileNotFoundError as e: L.append(f"| {role} | {mb} - {ma} | missing {e.filename} |"); continue
+    X = {}
+    for t in RUN_OF:
+        try: X[t] = pair(ma, mb, t)
+        except FileNotFoundError: pass
+    if not all(t in X for t in ("np053f1dev", "np053f2dev", "f1dev", "f2dev", "panel")): L.append(f"| {role} | {mb} - {ma} | missing decision tables |"); continue
     nph = [X[t][(X[t].view == "c2") & (X[t].set == "NP_H")] for t in ("np053f1dev", "np053f2dev")]
     p, ci, bl = stat([(f, None) for f in nph])
     pn = X["panel"][X["panel"].view == "c1"]; pc, cic, _ = stat([(pn[pn.molecule.isin(CLEAN)], None)])
@@ -69,12 +72,12 @@ for role, ma, mb in CMPS:
     gp, cigp, _ = stat([(f[f.gl_ok & f.pos], None) for f in nph])
     g1 = np.mean([X[t][(X[t].view == "c1") & (X[t].set == "G_tims_crosslib")].d.mean() for t in ("f1dev", "f2dev")])
     g2 = np.mean([X[t][(X[t].view == "c2") & (X[t].set == "G_tims_crosslib")].d.mean() for t in ("f1dev", "f2dev")])
-    d2, ci2, _ = stat([(X["p2dev"][X["p2dev"].view == "c2"], NP)])
+    d2, ci2, _ = stat([(X["p2dev"][X["p2dev"].view == "c2"], NP)]) if "p2dev" in X else (float("nan"), (float("nan"), float("nan")), [])
     h1 = np.mean([X[t][(X[t].view == "c1") & (X[t].set == "NP_H")].d.mean() for t in ("np053f1dev", "np053f2dev")])
     zz = max(float(X[t][X[t].set.isin(["NP_X", "NP_N"])].d.abs().max()) for t in ("np053f1dev", "np053f2dev"))
     L.append(f"| {role} | {mb} - {ma} | {fmt(p, ci)} | {' / '.join(f'{b:+.4f}' for b in bl)} | {fmt(pc, cic)} ({st(*cic)}) | {fmt(q, ciq)} ({st(*ciq)}) | {fmt(nc, cinc)} | "
              f"{fmt(gp, cigp)} | {g1:+.4f} / {g2:+.4f} | {fmt(d2, ci2)} | {h1:+.4f} | {zz:.4f} |")
-    for t in RUN_OF:
+    for t in X:
         for (s, v), g in X[t].groupby(["set", "view"]):
             DET.append(dict(role=role, cmp=f"{mb}-{ma}", block=t, set=s, view=v, n=len(g), d=round(g.d.mean(), 4), up=int((g.d > 0).sum()), down=int((g.d < 0).sum())))
 D = pd.DataFrame(DET); L += ["", "## per layer (stress / detail)", "", "| " + " | ".join(D.columns) + " |", "|" + "---|" * len(D.columns)]
