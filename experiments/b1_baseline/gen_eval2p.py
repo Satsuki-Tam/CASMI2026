@@ -30,7 +30,7 @@ ap_.add_argument("--run", required=True); ap_.add_argument("--gen", required=Tru
 ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", required=True)
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
-ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--dump_rank", default="")
+ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--dump_rank", default=""); ap_.add_argument("--refcmp", action="store_true")
 ap_.add_argument("--store", default="data/processed/spectra_store")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet")
@@ -144,6 +144,11 @@ if __name__ == "__main__":
         UNION |= raw | {tk} | set(GROUP_KEYS.get(KEY_GROUP.get(tk), set()))
     log(f"union mask: {len(UNION):,} keys over {len(allm)} molecules")
     rows, parity, choice = [], [], []; RANKS = []
+    CMPX = {}
+    if a.refcmp:   # 086: exact reference comparability (refcmp_exact.py) of this run -> EAc variant (EA restricted to candidates with a same-polarity reference)
+        _d = pd.read_parquet(os.path.join(HERE, "diag", f"refcmpx_{os.path.basename(a.run)}.parquet"))
+        for r_ in _d.itertuples(index=False): CMPX[(str(r_.set), str(r_.molecule), str(r_.official_key))] = (int(r_.n_cmp_pol_c1), int(r_.n_cmp_pol_c2))
+        log(f"refcmp entries {len(CMPX)}")
     for s in a.sets:
         F = pd.read_parquet(os.path.join(HERE, a.run, f"b1_features_{s}.parquet")); F["molecule"] = F["molecule"].astype(str)
         M = pd.read_csv(os.path.join(HERE, a.run, f"b1_molecules_{s}.csv")).set_index("molecule"); M.index = M.index.astype(str)
@@ -219,7 +224,7 @@ if __name__ == "__main__":
                 base = dict(set=s, view=v, molecule=mid, n_prod=len(lst), n_novel=sum(p_[7] == "novel" for p_ in lst), n_window=sum(p_[7] == "window" for p_ in lst),
                             truth_generated=bool(hit), truth_loc=(hit[0][7] if hit else ""), truth_n_parents=(hit[0][4] if hit else 0), truth_combo=(hit[0][6] if hit else ""))
                 if len(g) == 0:
-                    rows.append(dict(base, n_cand=0, main=0.0, n_derivable=0, truth_derivable=False, gl_ok=False, pos=False, truth_coco=False, **{k: 0.0 for k in RULES + PVARS})); continue
+                    rows.append(dict(base, n_cand=0, main=0.0, n_derivable=0, truth_derivable=False, gl_ok=False, pos=False, truth_coco=False, **({'eac0.5w1': 0.0} if CMPX else {}), **{k: 0.0 for k in RULES + PVARS})); continue
                 fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float); lib = g[f"lib_sim_{vv}"].values.astype(float)
                 glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
                 zgl = term(glv, True)
@@ -257,6 +262,9 @@ if __name__ == "__main__":
                 for th_ in (0.3, 0.5):
                     for w_ in (1.0, 2.0):
                         out[f"ea{th_:g}w{w_:g}"] = rr_idx(list(np.argsort(-(score - w_ * (has_ref & (lib < th_))), kind="stable")))
+                if CMPX:   # 086 EAc: theta 0.5, w 1, only candidates whose references include one of the query polarity (compared)
+                    cmp_ = np.array([CMPX.get((s, mid, str(k_)), (0, 0))[0 if vv == "c1" else 1] > 0 for k_ in g.official_key], bool)
+                    out["eac0.5w1"] = rr_idx(list(np.argsort(-(score - 1.0 * (has_ref & cmp_ & (lib < 0.5))), kind="stable")))
                 alts = dict(S=np.asarray(S if gl_ok else ins, float), prior=pop.astype(float), fp=fp.astype(float), lib=lib.astype(float), ap=np.asarray(feats["ap"], float))
                 rank_main = np.empty(len(g)); rank_main[np.array(idx_main)] = np.arange(1, len(g) + 1)
                 for nm, sc in alts.items():
