@@ -316,7 +316,9 @@ if __name__ == "__main__":
                                                 float(M.loc[mid, 'ce_known']), n_window=float(M.loc[mid, 'n_unique']) if 'n_unique' in M.columns else np.nan, feats=fb_, cmp=cmp_b,
                                                 analog=(dict(ap=sub(feats['ap']), mean_tan=sub(feats['mean_tan'])) if any(f_.startswith('ana_') or f_ == 'z_ana_ap' for f_ in fb_) else None))
                             sb = np.asarray(BMOD.predict(XB), float)
-                            b_sorted = [int(bi[j]) for j in np.argsort(-sb, kind='stable')]
+                            mp_ = np.array([pos_[int(i)] for i in bi])
+                            if not np.isfinite(sb).all() or np.ptp(sb) == 0: b_sorted = [int(bi[j]) for j in np.argsort(mp_, kind='stable')]   # degenerate -> keep the main order
+                            else: b_sorted = [int(bi[j]) for j in np.lexsort((mp_, -sb))]   # ties broken by the main order
                             slots = sorted(pos_[int(i)] for i in bi); new_order = ord_main.copy()
                             for k_, i_ in zip(slots, b_sorted): new_order[k_] = i_
                             out['rB_spec'] = next((k + 1 for k, i in enumerate(b_sorted) if tr[i]), 0)
