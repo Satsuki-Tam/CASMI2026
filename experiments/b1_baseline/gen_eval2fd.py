@@ -32,7 +32,8 @@ ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", require
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
 ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--refcmp", action="store_true"); ap_.add_argument("--v7f", action="store_true", help="087: the v7f main (analog features into rankers that use them, no outer analog term on the GL path; GL fallback = insurance + 1 z(ap) + 1 z(MetFrag-lite))")
-ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_argument("--fpD", default="", help="dreams_fp_score.py parquet"); ap_.add_argument("--fp_col", default="fp_s", choices=["fp_s", "fp_m"], help="091: which fp_mean_score column overrides fp (fp_m = PC-recomputed merge input = platform control)")
+ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_argument("--fpD", default="", help="dreams_fp_score.py parquet"); ap_.add_argument("--bmodel", default="", help="095: B-group specialist ranker (b1_rank_train --restrict B); variant bpp = the main order with the B candidates re-ordered by it inside the positions B already holds (GL path only; non-B positions unchanged)")
+ap_.add_argument("--fp_col", default="fp_s", choices=["fp_s", "fp_m"], help="091: which fp_mean_score column overrides fp (fp_m = PC-recomputed merge input = platform control)")
 ap_.add_argument("--fp_override", default="", help="091: fp_mean_score.py parquet; fp <- fp_s and fp_rank_window <- fprw_s for every candidate row (main and variants)")
 ap_.add_argument("--pop_ws", default="", help="090: comma-separated fixed-rule prior weights -> variants pw<w>")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
@@ -111,7 +112,8 @@ if __name__ == "__main__":
     set_num_threads(min(16, int(_ncfg.NUMBA_NUM_THREADS)))
     MODELS = a.model.split(","); OUTS = a.out.split(","); assert len(MODELS) == len(OUTS), (MODELS, OUTS)
     BSTS = [lgb.Booster(model_file=os.path.join(HERE, m_)) for m_ in MODELS]; FEATS = BSTS[0].feature_name()
-    FEATS_M = [tuple(b_.feature_name()) for b_ in BSTS]   # 078: models may use different feature lists (one matrix per distinct list)
+    FEATS_M = [tuple(b_.feature_name()) for b_ in BSTS]
+    BMOD = lgb.Booster(model_file=os.path.join(HERE, a.bmodel)) if a.bmodel else None   # 078: models may use different feature lists (one matrix per distinct list)
     FPO = {}
     if a.fp_override:
         _fo = pd.read_parquet(os.path.join(HERE, a.fp_override) if not os.path.isabs(a.fp_override) else a.fp_override)
@@ -157,7 +159,7 @@ if __name__ == "__main__":
     _winit(os.path.join(ROOT, a.v3), os.path.join(ROOT, a.fold_safe))
     RULES = ["gk2", "gk3", "gt3", "gk3all", "dv1"]
     PWS = [float(x) for x in a.pop_ws.split(",") if x]
-    FDV = ([f"fd_{k}{w}" for k in ("s", "o") for w in (0.5, 1.0)] if a.fpD else []) + [f"pw{w}" for w in PWS]
+    FDV = ([f"fd_{k}{w}" for k in ("s", "o") for w in (0.5, 1.0)] if a.fpD else []) + [f"pw{w}" for w in PWS] + (["bpp", "rB_main", "rB_spec", "truth_B", "nB"] if a.bmodel else [])
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -297,6 +299,29 @@ if __name__ == "__main__":
                     for w_ in PWS:
                         S3_ = z(fp) + (2 * zgl if zgl is not None else 0) + w_ * pop; ins3_ = np.where(lib >= a.tau, 100.0 + lib, S3_) if fire else S3_
                         out[f'pw{w_}'] = rr_of([('db', int(i)) for i in np.argsort(-_final(S3_, ins3_), kind='stable')])
+                    if BMOD is not None:
+                        isB = (g.in_coconut.values.astype(bool) & ~g[f'in_train_{vv}'].values.astype(bool))
+                        bi = np.flatnonzero(isB); out['nB'] = int(len(bi)); out['truth_B'] = bool(tr[bi].any()) if len(bi) else False
+                        ord_main = np.argsort(-score, kind='stable'); pos_ = {int(i): k for k, i in enumerate(ord_main)}
+                        rb_m = [i for i in ord_main if isB[i]]
+                        out['rB_main'] = next((k + 1 for k, i in enumerate(rb_m) if tr[i]), 0)
+                        new_order = ord_main
+                        if gl_ok and len(bi) >= 2:
+                            sub = lambda arr: np.asarray(arr)[bi]
+                            cmp_b = None if not CMPX else dict(n_cmp_pol=list(np.asarray(cmp_['n_cmp_pol'])[bi]), n_cmp_add=list(np.asarray(cmp_['n_cmp_add'])[bi]))
+                            fb_ = list(BMOD.feature_name())
+                            XB = feature_matrix(sub(fp), sub(glv), np.full(len(bi), np.nan), sub(pop), sub(g.lsid.values), sub(g.lpmid.values), sub(g.lsynonyms.values), sub(g['np'].values),
+                                                sub(g.src_mask.values), sub(g.lotus_refs.values), sub(lib), sub(g[f'lib_same_{vv}'].values), sub(g[f'lib_nref_{vv}'].values), sub(g.in_tier.values),
+                                                sub(g[f'in_train_{vv}'].values), sub(g.in_coconut.values), sub(g.ppm_err.values), sub(g.fp_rank_window.values), float(M.loc[mid, 'n_query']),
+                                                float(M.loc[mid, 'ce_known']), n_window=float(M.loc[mid, 'n_unique']) if 'n_unique' in M.columns else np.nan, feats=fb_, cmp=cmp_b,
+                                                analog=(dict(ap=sub(feats['ap']), mean_tan=sub(feats['mean_tan'])) if any(f_.startswith('ana_') or f_ == 'z_ana_ap' for f_ in fb_) else None))
+                            sb = np.asarray(BMOD.predict(XB), float)
+                            b_sorted = [int(bi[j]) for j in np.argsort(-sb, kind='stable')]
+                            slots = sorted(pos_[int(i)] for i in bi); new_order = ord_main.copy()
+                            for k_, i_ in zip(slots, b_sorted): new_order[k_] = i_
+                            out['rB_spec'] = next((k + 1 for k, i in enumerate(b_sorted) if tr[i]), 0)
+                        else: out['rB_spec'] = out['rB_main']
+                        out['bpp'] = rr_of([('db', int(i)) for i in new_order])
                     if fdv is not None:
                         for w_ in (0.5, 1.0):
                             S2_ = S + w_ * fdv; ins2_ = np.where(lib >= a.tau, 100.0 + lib, S2_) if fire else S2_

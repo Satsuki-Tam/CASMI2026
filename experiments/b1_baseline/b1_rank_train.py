@@ -27,6 +27,9 @@ def exposure_of(keys):
     return dict(fp_pos=fp_, negpool=ng_)
 
 
+RESTRICT = ""   # 095: '' = full view list (default), 'B' = B-group candidates only
+
+
 def load_run(run, eval_csv, group_override=None, feats=FEATS):
     ev = pd.read_csv(eval_csv).set_index("molecule")
     out = []
@@ -54,6 +57,8 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                 keep = g0[f"in_short_{view}"].values.astype(bool) if f"in_short_{view}" in g0.columns else np.ones(len(g0), bool)
                 if view == "c2": keep &= (g0.in_tier.values | g0.in_coconut.values | g0[f"in_train_{view}"].values).astype(bool)
                 g = g0[keep].reset_index(drop=True)
+                if RESTRICT == "B":   # 095: B-group specialist = COCONUT and not a training structure in this view (T-priority, exclusive); features recomputed within B
+                    g = g[g.in_coconut.values.astype(bool) & ~g[f"in_train_{view}"].values.astype(bool)].reset_index(drop=True)
                 if len(g) == 0: continue
                 fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float)
                 glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
@@ -124,6 +129,7 @@ def main():
     ap.add_argument("--params_from", default="", help="Codex 019: reuse the SELECTED params + rounds of an earlier rank_results.json (no search) so that a pair "
                     "comparison changes only the training rows")
     ap.add_argument("--refcmp", action="store_true", help="078: load diag/refcmpx_<run>.parquet (exact reference comparability) for every run; needed by the v2_noice_cmp feature set")
+    ap.add_argument("--restrict", default="", choices=["", "B"], help="095: B = train the ranker on the B-group candidates of each view only (COCONUT and not train; groups whose truth is not B drop out)")
     ap.add_argument("--prior_iw", default="", help="090: target shares of the C2 truths' prior-rank strata (rank by pop_public, fp tie-break: 1 / 2-3 / 4-10 / 11+), e.g. "
                     "0.09,0.18,0.30,0.43 -> every C2 fit group gets weight target/observed of its stratum (C1 groups 1), mean group weight renormalised to 1")
     ap.add_argument("--c1_weight", type=float, default=1.0, help="Codex 075 (b): relative weight of every CLASS-1-view fit group vs class-2 groups (row weights, the mean group "
@@ -150,6 +156,7 @@ def main():
             d_ = pd.read_parquet(p_)
             for r_ in d_.itertuples(index=False): CMPX[(os.path.basename(run_), str(r_.set), str(r_.molecule), str(r_.official_key))] = (int(r_.n_cmp_pol_c1), int(r_.n_cmp_add_c1), int(r_.n_cmp_pol_c2), int(r_.n_cmp_add_c2))
         print('refcmp entries:', len(CMPX), flush=True)
+    global RESTRICT; RESTRICT = a.restrict
     if a.analog_parquet:
         A_ = pd.read_parquet(a.analog_parquet); A_["molecule"] = A_["molecule"].astype(str)
         for k_, h_ in A_.groupby(["set", "view", "molecule"]): ANA[k_] = dict(zip(h_.smiles.astype(str), zip(h_.ap.astype(float), h_.mean_tan.astype(float))))
@@ -237,7 +244,7 @@ def main():
     ev = ev.copy(); ev["pred"] = bst.predict(ev[FE].values)
     out = dict(selected=best, tune_fixed=base_tune, eval_lambdarank=mrr_of(ev, "pred"), eval_fixed=mrr_of(ev, "S_fixed"), eval_fixed15=mrr_of(ev, "S_fixed15"),
                importance=dict(zip(FE, [int(x) for x in bst.feature_importance("gain").round().astype(int)])), n_fit_rows=len(fit_t), n_fit_groups=int(fit_t.groupby(["molecule", "view"]).ngroups),
-               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat), c1_weight=float(a.c1_weight), prior_iw=a.prior_iw, c1_only_runs=list(a.c1_only_runs), c2_drop_exposure=a.c2_drop_exposure, c1_seen_only=a.c1_seen_only, exposure_ledger=a.exposure_ledger)
+               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat), c1_weight=float(a.c1_weight), prior_iw=a.prior_iw, restrict=a.restrict, c1_only_runs=list(a.c1_only_runs), c2_drop_exposure=a.c2_drop_exposure, c1_seen_only=a.c1_seen_only, exposure_ledger=a.exposure_ledger)
     # paired bootstrap on eval (per molecule-view)
     rows = []
     for (mid, view), g in ev.groupby(["molecule", "view"], sort=False):
