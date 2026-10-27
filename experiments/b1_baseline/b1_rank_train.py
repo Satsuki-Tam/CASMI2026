@@ -124,6 +124,8 @@ def main():
     ap.add_argument("--params_from", default="", help="Codex 019: reuse the SELECTED params + rounds of an earlier rank_results.json (no search) so that a pair "
                     "comparison changes only the training rows")
     ap.add_argument("--refcmp", action="store_true", help="078: load diag/refcmpx_<run>.parquet (exact reference comparability) for every run; needed by the v2_noice_cmp feature set")
+    ap.add_argument("--prior_iw", default="", help="090: target shares of the C2 truths' prior-rank strata (rank by pop_public, fp tie-break: 1 / 2-3 / 4-10 / 11+), e.g. "
+                    "0.09,0.18,0.30,0.43 -> every C2 fit group gets weight target/observed of its stratum (C1 groups 1), mean group weight renormalised to 1")
     ap.add_argument("--c1_weight", type=float, default=1.0, help="Codex 075 (b): relative weight of every CLASS-1-view fit group vs class-2 groups (row weights, the mean group "
                     "weight is renormalised to 1); 1.0 = no weights passed = unchanged")
     ap.add_argument("--c1_repeat_run", nargs="*", default=[], help="Codex 019: per-run C1 replication RUN_BASENAME=K overriding --c1_repeat for that run's C1 fit groups "
@@ -197,9 +199,19 @@ def main():
     def to_ds(d):
         d = d.sort_values(["molecule", "view"], kind="stable")
         sizes = d.groupby(["molecule", "view"], sort=False).size().values
-        if a.c1_weight != 1.0:   # query-level weight carried by every row of the group; mean GROUP weight renormalised to 1
+        if a.c1_weight != 1.0 or a.prior_iw:   # query-level weight carried by every row of the group; mean GROUP weight renormalised to 1
             gview = d.groupby(["molecule", "view"], sort=False).view.first().values
-            gw = np.where(gview == "c1", a.c1_weight, 1.0); gw = gw / gw.mean()
+            gw = np.where(gview == "c1", a.c1_weight, 1.0)
+            if a.prior_iw:
+                tgt = np.array([float(x) for x in a.prior_iw.split(",")]); assert len(tgt) == 4
+                def _prank(g):
+                    o = np.lexsort((-np.nan_to_num(g.fp.values.astype(float), nan=-1e9), -g.pop_public.values.astype(float))); t = np.flatnonzero(g.is_truth.values[o]); return t[0] + 1 if len(t) else 0
+                pr = d.groupby(["molecule", "view"], sort=False).apply(_prank).values
+                st = np.digitize(pr, [1.5, 3.5, 10.5])   # 0: rank 1, 1: 2-3, 2: 4-10, 3: 11+
+                c2m = gview == "c2"; obs = np.array([(st[c2m] == k).mean() for k in range(4)])
+                wk = tgt / np.maximum(obs, 1e-9); gw = np.where(c2m, gw * wk[st], gw)
+                print(f"prior_iw: C2 strata observed {np.round(obs, 3).tolist()} -> target {tgt.tolist()} weights {np.round(wk, 3).tolist()}", flush=True)
+            gw = gw / gw.mean()
             w_rows = np.repeat(gw, sizes)
             print(f"c1_weight {a.c1_weight}: group weights c1 {gw[gview == 'c1'][0] if (gview == 'c1').any() else float('nan'):.4f} / c2 {gw[gview == 'c2'][0] if (gview == 'c2').any() else float('nan'):.4f} | "
                   f"effective c1 share {float(gw[gview == 'c1'].sum() / gw.sum()):.4f}", flush=True)
@@ -225,7 +237,7 @@ def main():
     ev = ev.copy(); ev["pred"] = bst.predict(ev[FE].values)
     out = dict(selected=best, tune_fixed=base_tune, eval_lambdarank=mrr_of(ev, "pred"), eval_fixed=mrr_of(ev, "S_fixed"), eval_fixed15=mrr_of(ev, "S_fixed15"),
                importance=dict(zip(FE, [int(x) for x in bst.feature_importance("gain").round().astype(int)])), n_fit_rows=len(fit_t), n_fit_groups=int(fit_t.groupby(["molecule", "view"]).ngroups),
-               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat), c1_weight=float(a.c1_weight), c1_only_runs=list(a.c1_only_runs), c2_drop_exposure=a.c2_drop_exposure, c1_seen_only=a.c1_seen_only, exposure_ledger=a.exposure_ledger)
+               feats=a.feats, feature_names=list(FE), monotone=bool(a.monotone), drop=list(a.drop), c1_repeat=int(a.c1_repeat), c1_weight=float(a.c1_weight), prior_iw=a.prior_iw, c1_only_runs=list(a.c1_only_runs), c2_drop_exposure=a.c2_drop_exposure, c1_seen_only=a.c1_seen_only, exposure_ledger=a.exposure_ledger)
     # paired bootstrap on eval (per molecule-view)
     rows = []
     for (mid, view), g in ev.groupby(["molecule", "view"], sort=False):
