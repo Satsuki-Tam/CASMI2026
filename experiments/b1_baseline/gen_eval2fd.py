@@ -32,7 +32,10 @@ ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", require
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
 ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--refcmp", action="store_true"); ap_.add_argument("--v7f", action="store_true", help="087: the v7f main (analog features into rankers that use them, no outer analog term on the GL path; GL fallback = insurance + 1 z(ap) + 1 z(MetFrag-lite))")
-ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_argument("--fpD", default="", help="dreams_fp_score.py parquet"); ap_.add_argument("--bmodel", default="", help="095: B-group specialist ranker (b1_rank_train --restrict B); variant bpp = the main order with the B candidates re-ordered by it inside the positions B already holds (GL path only; non-B positions unchanged)")
+ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_argument("--fpD", default="", help="dreams_fp_score.py parquet"); ap_.add_argument("--tparents", default="", help="099: --dump_top parquet; the c2-view rank-1 structure of every OTHER molecule of the same set becomes a generation parent (label-free test-side parents)")
+ap_.add_argument("--tparents_mode", default="only", choices=["only", "add"], help="only = test-side parents replace the train-analog parents; add = appended to them")
+ap_.add_argument("--dump_top", default="", help="099: parquet of the first model's main order, top 25 per (set, view, molecule): smiles, official key, fp (f.z), score")
+ap_.add_argument("--bmodel", default="", help="095: B-group specialist ranker (b1_rank_train --restrict B); variant bpp = the main order with the B candidates re-ordered by it inside the positions B already holds (GL path only; non-B positions unchanged)")
 ap_.add_argument("--fp_col", default="fp_s", choices=["fp_s", "fp_m"], help="091: which fp_mean_score column overrides fp (fp_m = PC-recomputed merge input = platform control)")
 ap_.add_argument("--fp_override", default="", help="091: fp_mean_score.py parquet; fp <- fp_s and fp_rank_window <- fprw_s for every candidate row (main and variants)")
 ap_.add_argument("--pop_ws", default="", help="090: comma-separated fixed-rule prior weights -> variants pw<w>")
@@ -114,6 +117,13 @@ if __name__ == "__main__":
     BSTS = [lgb.Booster(model_file=os.path.join(HERE, m_)) for m_ in MODELS]; FEATS = BSTS[0].feature_name()
     FEATS_M = [tuple(b_.feature_name()) for b_ in BSTS]
     BMOD = lgb.Booster(model_file=os.path.join(HERE, a.bmodel)) if a.bmodel else None   # 078: models may use different feature lists (one matrix per distinct list)
+    TOPD = []   # 099 dump
+    TPAR = {}
+    if a.tparents:
+        _tp = pd.read_parquet(os.path.join(HERE, a.tparents) if not os.path.isabs(a.tparents) else a.tparents)
+        _tp = _tp[(_tp.view == 'c2') & (_tp['rank'] == 1)]
+        for s_, m_, sm_ in zip(_tp['set'], _tp.molecule.astype(str), _tp.smiles.astype(str)): TPAR.setdefault(str(s_), {})[m_] = sm_
+        log(f'test-side parents: {sum(len(v) for v in TPAR.values())} molecules from {a.tparents} (mode {a.tparents_mode})')
     FPO = {}
     if a.fp_override:
         _fo = pd.read_parquet(os.path.join(HERE, a.fp_override) if not os.path.isabs(a.fp_override) else a.fp_override)
@@ -216,6 +226,9 @@ if __name__ == "__main__":
             if "c3" in VIEWS: vpar["c3"] = par(an["u"])
             if "c3m" in VIEWS: vpar["c3m"] = par(an["c2"])
             if "c3n" in VIEWS: vpar["c3n"] = par(an["u"], near=True)
+            if TPAR:
+                tps = [(sm_, 1.0) for m_, sm_ in sorted(TPAR.get(s, {}).items()) if m_ != str(mid)]
+                for v in list(vpar): vpar[v] = tps if a.tparents_mode == 'only' else vpar[v] + tps
             wk = WK.get(mid, set()); vwin, vshort = {}, {}
             for v in vpar:
                 vv = "c1" if v == "c1" else "c2"
@@ -296,6 +309,10 @@ if __name__ == "__main__":
                             if t_ == "gen" and i_ in mm["tokeys"]: return 1.0 / (k_ + 1)
                         return 0.0
                     out = dict(base, n_cand=len(g), main=rr_of(lst_db))
+                    if a.dump_top and mi_ == 0:
+                        for k_, i_ in enumerate(order[:25]):
+                            TOPD.append(dict(set=s, view=v, molecule=mid, rank=k_ + 1, smiles=str(g.smiles.values[i_]), okey=str(g.official_key.values[i_]), fp=float(fp[i_]) if np.isfinite(fp[i_]) else np.nan,
+                                             score=float(score[i_]), is_truth=bool(tr[i_]), gl_ok=bool(gl_ok)))
                     for w_ in PWS:
                         S3_ = z(fp) + (2 * zgl if zgl is not None else 0) + w_ * pop; ins3_ = np.where(lib >= a.tau, 100.0 + lib, S3_) if fire else S3_
                         out[f'pw{w_}'] = rr_of([('db', int(i)) for i in np.argsort(-_final(S3_, ins3_), kind='stable')])
@@ -346,6 +363,7 @@ if __name__ == "__main__":
                     ROWS[mi_].append(out)
         log(f"{s}: evaluated")
     if a.dump_choice: pd.DataFrame(choice).to_parquet(os.path.join(HERE, a.dump_choice), index=False)
+    if a.dump_top: pd.DataFrame(TOPD).to_parquet(os.path.join(HERE, a.dump_top), index=False); log(f'top-25 dump: {len(TOPD):,} rows -> {a.dump_top}')
     for rows, OUT_ in zip(ROWS, OUTS):
         R = pd.DataFrame(rows); os.makedirs(os.path.dirname(os.path.join(HERE, OUT_)), exist_ok=True); R.to_csv(os.path.join(HERE, OUT_ + ".csv"), index=False)
         L = [f"# 042 v2 generation merge ({time.strftime('%Y-%m-%d %H:%M')}; f.z parity max {max(parity) if parity else float('nan'):.4f}; b1_gen v2)", "",
