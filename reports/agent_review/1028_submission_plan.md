@@ -22,3 +22,4 @@
 - **枠 3(空き)→ EA(ea0.5w1、0.379 + EA、casmi26-b1-fpnet-ea05w1)**: 076 合格(073 で +0.0246)。前提 = 同一環境の parity 合格(076b)、kernel の smoke。読み: 0.379 比 ≥ +0.008 暫定採用の候補 / −0.015〜+0.008 保留 / ≤ −0.015 点検。
 - **枠 4 → v7f + EA**(080): 前提 = 080 の開発の関門 → 053 NP_H/NP_N conf の一回確認に合格 → v7f の pipeline + EA の parity → smoke。読みは v7f(0.390)比で同じ境界。前提が揃わなければ出さない。
 - 枠 5: 保留(gt3・E0_B の結果と Codex の判断で;例えば T 群の一対 probe)。
+- (14:58) 枠 3 = EA: kernel casmi26-b1-fpnet-ea05w1 v1(b1_v074 sha 73412bf4、rank_v4b、--ea_w 1 --ea_theta 0.5、smoke COMPLETE)。parity は「C2 PASS、C1 全出力一致、既知の 1 件の例外」(Codex 082b で提出可)。読み: 0.379 比 ≥ +0.008 暫定採用の候補 / −0.015〜+0.008 保留 / ≤ −0.015 点検。v7f(0.390)比の差も併記する。
