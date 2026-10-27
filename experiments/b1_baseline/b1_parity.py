@@ -59,9 +59,17 @@ for _, s in S.iterrows():
                    tier_equal=float(np.mean(fm.in_tier.astype(bool).values == pm.in_tier.astype(bool).values)), coco_equal=float(np.mean(fm.in_coconut.astype(bool).values == pm.in_coconut.astype(bool).values)),
                    train_equal=float(np.mean(fm[f"in_train_{v}"].astype(bool).values == pm.in_train.astype(bool).values)),
                    ppm_absdiff_max=float(np.nanmax(np.abs(fm.ppm_err.astype(float).values - pm.ppm_err.astype(float).values))))
+        if a.ea_w:   # Codex 076: the EA flag itself (reference presence and lib < theta) must agree for EVERY shared candidate, not only where it moved the top 25
+            fe_ = (fm[f"lib_nref_{v}"].astype(float).values > 0) & (fm[f"lib_sim_{v}"].astype(float).values < a.ea_theta)
+            pe_ = (pm.lib_nref.astype(float).values > 0) & (pm.lib.astype(float).values < a.ea_theta)
+            rec.update(ea_flag_mismatch=int((fe_ != pe_).sum()), nref_presence_mismatch=int(((fm[f"lib_nref_{v}"].astype(float).values > 0) != (pm.lib_nref.astype(float).values > 0)).sum()), ea_flags=int(fe_.sum()))
     rows.append(rec)
 R = pd.DataFrame(rows)
 if int((R.truth_in_f != R.truth_in_p).sum()): fails.append(f"truth membership differs for {int((R.truth_in_f != R.truth_in_p).sum())} molecules")
+if a.ea_w and "ea_flag_mismatch" in R.columns:
+    n_mm = int(R.ea_flag_mismatch.fillna(0).sum()); n_np = int(R.nref_presence_mismatch.fillna(0).sum())
+    print(f"EA flag parity: flags {int(R.ea_flags.fillna(0).sum())} | mismatching flags {n_mm} | reference-presence mismatches {n_np}", flush=True)
+    if n_mm: fails.append(f"EA flag differs for {n_mm} shared candidates")
 md = [f"# W7 parity: {a.dump} vs {a.features_run} (view {v})", "", f"molecules {len(S)}; query selection differs: {len(q_bad)}" + (" (stage stats not given)" if not a.stage_stats else ""), "",
       "| metric | value |", "|---|---:|", f"| identical candidate sets | {(R.jaccard == 1).mean():.3f} |", f"| Jaccard median / mean / min | {R.jaccard.median():.3f} / {R.jaccard.mean():.3f} / {R.jaccard.min():.3f} |",
       f"| candidates only in evaluator / only in pipeline (mean) | {R.only_f.mean():.2f} / {R.only_p.mean():.2f} |",

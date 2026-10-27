@@ -31,3 +31,8 @@ kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/
 | 3 | casmi26-b1-fpnet-gt3 v1 | 57681941 |
 | 4 | casmi26-e0-probe-b v1 | 57682008 |
 | 5 | casmi26-b1-probe-b379 v1 | 57682054 |
+
+## 結果(固定した読みで記録)
+| 枠 | ref | Public | 読み |
+|---|---|---:|---|
+| 2 prior-only probe | 57681864 | **0.135** | 039 の読みで中間(0.10〜0.25)→ 数値を診断として残すだけ。参考: 全体の 0.379 に対し prior だけの順位は 36%。パネル(prior だけで 7 割が 1 位)より隠しの正解は有名でない側(開発の NP 集合に近い)と整合 — 有名さの比率の推定には使わない(11:37 記録) |
