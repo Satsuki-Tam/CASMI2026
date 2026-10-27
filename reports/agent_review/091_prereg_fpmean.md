@@ -7,3 +7,7 @@
 - **保護(非劣性の確認 L ≥ −0.01)**: G C1(f1/f2)、053 NP C1、パネル C1 clean。
 - **本番実装へ進む条件**: 主指標 ≥ **+0.003**(変更の費用がほぼ無く原理的な修正のため、通常の +0.005 より低い;理由をここに固定)、fold 1・2 とも > 0、結合の 95% 下限 > 0、保護すべて非劣性。満たせば b1_pipeline に --fp_mode mean を足し、評価器との parity → kernel → Public の一変更比較(対照 v7f 0.390)の候補にする。満たさなければ記録のみ。
 - 一つの checkpoint 対応: run_np053_f1dev / run_f1dev ← fpnet_fold1(1739d568)、run_np053_f2dev / run_f2dev ← fpnet_fold2(257062cb)、run_panel_fe / run_p2dev_fe ← full_eval(5b8d1c31)。fp_mean_score の merge 再計算は表の fp と照合する(parity)。
+
+## 追記(19:39、結果未読): 環境差の対照を主比較にする
+- fp_mean_score の merge 再計算と表の fp の一致(np053 f1dev): 分子の 314/319 で相対差の中央値 < 0.05(全体の中央値 0.003)、5 分子で 0.05〜0.26(bf16 と Spark/PC の FPNet の数値差;値の絶対差は 1 前後)。表の fp(Spark で作った表を含む)を対照にすると環境差が混ざる。
+- **主比較を「同じ PC で再計算した merge 入力(fp_m、窓内順位も同じ近似で移す)」対「Fs(fp_s)」に変更**(pc_fpmean091m.sh で fp_m の override の pass を追加;評価器・ranker・候補行は同一)。判定の指標・閾値・保護は登録どおりで、Δ = (fp_s の main) − (fp_m の main)。表の main(override 無し)との差は環境差を含む参考として併記。

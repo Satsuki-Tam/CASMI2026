@@ -32,7 +32,8 @@ ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", require
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
 ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--refcmp", action="store_true"); ap_.add_argument("--v7f", action="store_true", help="087: the v7f main (analog features into rankers that use them, no outer analog term on the GL path; GL fallback = insurance + 1 z(ap) + 1 z(MetFrag-lite))")
-ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_argument("--fpD", default="", help="dreams_fp_score.py parquet"); ap_.add_argument("--fp_override", default="", help="091: fp_mean_score.py parquet; fp <- fp_s and fp_rank_window <- fprw_s for every candidate row (main and variants)")
+ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_argument("--fpD", default="", help="dreams_fp_score.py parquet"); ap_.add_argument("--fp_col", default="fp_s", choices=["fp_s", "fp_m"], help="091: which fp_mean_score column overrides fp (fp_m = PC-recomputed merge input = platform control)")
+ap_.add_argument("--fp_override", default="", help="091: fp_mean_score.py parquet; fp <- fp_s and fp_rank_window <- fprw_s for every candidate row (main and variants)")
 ap_.add_argument("--pop_ws", default="", help="090: comma-separated fixed-rule prior weights -> variants pw<w>")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet")
@@ -114,7 +115,8 @@ if __name__ == "__main__":
     FPO = {}
     if a.fp_override:
         _fo = pd.read_parquet(os.path.join(HERE, a.fp_override) if not os.path.isabs(a.fp_override) else a.fp_override)
-        FPO = {(str(s_), str(m_), str(sm_)): (float(v_), float(r_)) for s_, m_, sm_, v_, r_ in zip(_fo['set'], _fo['molecule'], _fo['smiles'], _fo['fp_s'], _fo['fprw_s'])}
+        _rc = 'fprw_s' if a.fp_col == 'fp_s' else 'fprw_m'
+        FPO = {(str(s_), str(m_), str(sm_)): (float(v_), float(r_)) for s_, m_, sm_, v_, r_ in zip(_fo['set'], _fo['molecule'], _fo['smiles'], _fo[a.fp_col], _fo[_rc])}
         log(f'fp override: {len(FPO):,} candidate rows from {a.fp_override}')
     FPD = {}
     if a.fpD:
