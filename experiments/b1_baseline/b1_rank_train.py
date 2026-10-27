@@ -18,6 +18,7 @@ from b1_rankfeats import FEATS, FEATSETS, MONO, MONO_LIB, feature_matrix
 
 FRG = {}    # (set, molecule) -> {smiles: frag} from --frag_parquet (039)
 ANA = {}    # (set, view, molecule) -> {smiles: (ap, mean_tan)} from --analog_parquet (analog_probe.py); used only when the feature list asks for the analog block
+CMPX = {}   # 078: (run basename, set, molecule, official key) -> (n_cmp_pol_c1, n_cmp_add_c1, n_cmp_pol_c2, n_cmp_add_c2) from diag/refcmpx_<run>.parquet (refcmp_exact.py)
 EXPO = {}   # official key -> (fp_pos, negpool) from --exposure_ledger (Codex 028); used only when the feature list asks for the exposure block
 
 
@@ -68,6 +69,8 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                                    exposure=exposure_of(g.official_key.values) if EXPO else None,
                                    libcond=(dict(sup2=g[f"lib_sup2_{view}"].values, ncond=g[f"lib_ncond_{view}"].values) if f"lib_sup2_{view}" in g.columns else None),
                                    frag=([FRG.get((s, mid), {}).get(str(sm), 0.0) for sm in g.smiles] if FRG else None),
+                                   cmp=(dict(n_cmp_pol=[CMPX.get((os.path.basename(run), s, str(mid), str(k_)), (0, 0, 0, 0))[0 if view == "c1" else 2] for k_ in g.official_key],
+                                             n_cmp_add=[CMPX.get((os.path.basename(run), s, str(mid), str(k_)), (0, 0, 0, 0))[1 if view == "c1" else 3] for k_ in g.official_key]) if CMPX else None),
                                    analog=(dict(ap=[ANA.get((s, view, mid), {}).get(str(sm), (0.0, 0.0))[0] for sm in g.smiles], mean_tan=[ANA.get((s, view, mid), {}).get(str(sm), (0.0, 0.0))[1] for sm in g.smiles]) if ANA else None))
                 d = pd.DataFrame(X, columns=feats)
                 d.insert(0, "is_truth", g.is_truth.values.astype(int)); d.insert(0, "identity", mid); d.insert(0, "group", group_override or m.group); d.insert(0, "view", view)
@@ -120,6 +123,7 @@ def main():
                     "seen by the FPNet that built the table, so a hidden-reference C2 row only measures memory residue)")
     ap.add_argument("--params_from", default="", help="Codex 019: reuse the SELECTED params + rounds of an earlier rank_results.json (no search) so that a pair "
                     "comparison changes only the training rows")
+    ap.add_argument("--refcmp", action="store_true", help="078: load diag/refcmpx_<run>.parquet (exact reference comparability) for every run; needed by the v2_noice_cmp feature set")
     ap.add_argument("--c1_weight", type=float, default=1.0, help="Codex 075 (b): relative weight of every CLASS-1-view fit group vs class-2 groups (row weights, the mean group "
                     "weight is renormalised to 1); 1.0 = no weights passed = unchanged")
     ap.add_argument("--c1_repeat_run", nargs="*", default=[], help="Codex 019: per-run C1 replication RUN_BASENAME=K overriding --c1_repeat for that run's C1 fit groups "
@@ -137,6 +141,13 @@ def main():
         F_ = pd.read_parquet(a.frag_parquet); F_ = F_[F_.view == "c1"]; F_["molecule"] = F_["molecule"].astype(str)
         for k_, h_ in F_.groupby(["set", "molecule"]): FRG[k_] = dict(zip(h_.smiles.astype(str), h_.frag.astype(float)))
         print(f"frag features {a.frag_parquet}: {len(FRG):,} (set, molecule) groups", flush=True)
+    if a.refcmp:   # 078: exact reference comparability per run (refcmp_exact.py output, verified against the tables)
+        for spec_ in a.runs:
+            run_ = spec_.split(':')[0]; p_ = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'diag', f'refcmpx_{os.path.basename(run_)}.parquet')
+            if not os.path.exists(p_): raise FileNotFoundError(p_)
+            d_ = pd.read_parquet(p_)
+            for r_ in d_.itertuples(index=False): CMPX[(os.path.basename(run_), str(r_.set), str(r_.molecule), str(r_.official_key))] = (int(r_.n_cmp_pol_c1), int(r_.n_cmp_add_c1), int(r_.n_cmp_pol_c2), int(r_.n_cmp_add_c2))
+        print('refcmp entries:', len(CMPX), flush=True)
     if a.analog_parquet:
         A_ = pd.read_parquet(a.analog_parquet); A_["molecule"] = A_["molecule"].astype(str)
         for k_, h_ in A_.groupby(["set", "view", "molecule"]): ANA[k_] = dict(zip(h_.smiles.astype(str), zip(h_.ap.astype(float), h_.mean_tan.astype(float))))

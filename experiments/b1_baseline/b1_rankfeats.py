@@ -29,6 +29,8 @@ EXTRA_ANA = ["ana_ap", "z_ana_ap", "ana_mt", "ana_gap"]
 FEATSETS["v2_noice_ana"] = FEATSETS["v2_noice"] + EXTRA_ANA
 EXTRA_FRAG = ["frag", "z_frag"]   # 039: MetFrag-lite (b1_frag) as ranker inputs, opt-in
 FEATSETS["v2_noice_ana_frag"] = FEATSETS["v2_noice_ana"] + EXTRA_FRAG
+EXTRA_CMP = ["lib_has_cmp", "lib_ncmp", "lib_has_add", "lib_sim_cmp"]   # 078 (Codex 075 (a)): reference comparability, exact definition (refcmp_exact.py / pipeline)
+FEATSETS["v2_noice_cmp"] = FEATSETS["v2_noice"] + EXTRA_CMP
 # monotone directions for the constrained variant (0 = unconstrained): only the model scores (up) and the mass error (down), Codex 008
 MONO = dict(z_fp=1, z_gl=1, z_ice=1, fp=1, gl=1, ice=1, ppm_err=-1)
 # 2026-10-25 (panel probe): reference evidence may only raise a candidate -- in the C2 training view the truth has no references by construction,
@@ -59,7 +61,7 @@ def term(vals):
 
 
 def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src_mask, lotus_refs, lib_sim, lib_same, lib_nref, in_tier, in_train, in_coconut,
-                   ppm_err, fp_rank_window, n_query, ce_known, n_window=np.nan, feats=None, exposure=None, libcond=None, analog=None, frag=None):
+                   ppm_err, fp_rank_window, n_query, ce_known, n_window=np.nan, feats=None, exposure=None, libcond=None, analog=None, frag=None, cmp=None):
     """arrays of equal length (one molecule's candidates) -> (n, len(FEATS)) float matrix in FEATS order."""
     fp = np.asarray(fp, float); gl = np.asarray(gl, float); ice = np.asarray(ice, float); lib = np.asarray(lib_sim, float)
     top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
@@ -85,6 +87,10 @@ def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src
     if any(c in EXTRA_FRAG for c in feats):
         if frag is None: raise ValueError("feature list needs the fragmentation block (frag / z_frag) but no frag array was given")
         fr_ = np.asarray(frag, float); cols.update(frag=fr_, z_frag=(fr_ - fr_.mean()) / (fr_.std() + 1e-9))
+    if any(c in EXTRA_CMP for c in feats):
+        if cmp is None: raise ValueError("feature list needs the reference-comparability block (n_cmp_pol / n_cmp_add) but no arrays were given")
+        npol_ = np.asarray(cmp["n_cmp_pol"], float); nadd_ = np.asarray(cmp["n_cmp_add"], float)
+        cols.update(lib_has_cmp=(npol_ > 0).astype(float), lib_ncmp=np.log1p(npol_), lib_has_add=(nadd_ > 0).astype(float), lib_sim_cmp=np.where(npol_ > 0, lib, np.nan))
     if any(c in EXTRA_V3 for c in feats):
         def gap(zv): return (float(np.max(zv)) - zv) if len(zv) else zv
         def margin(zv):

@@ -28,7 +28,7 @@ ap_.add_argument("--run", required=True); ap_.add_argument("--gen", required=Tru
 ap_.add_argument("--eval_csv", required=True); ap_.add_argument("--out", required=True)
 ap_.add_argument("--model", default="rank_v4b/lambdarank.txt"); ap_.add_argument("--analog_w", type=float, default=0.5)
 ap_.add_argument("--parents", type=int, default=10); ap_.add_argument("--workers", type=int, default=16); ap_.add_argument("--limit", type=int, default=0)
-ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default="")
+ap_.add_argument("--views", default="c1,c2,c3,c3m,c3n"); ap_.add_argument("--dump_choice", default=""); ap_.add_argument("--refcmp", action="store_true")
 ap_.add_argument("--store", default="data/processed/spectra_store")
 ap_.add_argument("--structs", default="data/external_kaggle/casmi26-attributed-v4g-reproduction-assets/casmi26-v2-pool/casmi26-v2-pool/train_structs.parquet")
 ap_.add_argument("--folds", default="data/external/identity_folds/structures.parquet")
@@ -106,7 +106,12 @@ if __name__ == "__main__":
     set_num_threads(min(16, int(_ncfg.NUMBA_NUM_THREADS)))
     MODELS = a.model.split(","); OUTS = a.out.split(","); assert len(MODELS) == len(OUTS), (MODELS, OUTS)
     BSTS = [lgb.Booster(model_file=os.path.join(HERE, m_)) for m_ in MODELS]; FEATS = BSTS[0].feature_name()
-    assert all(b_.feature_name() == FEATS for b_ in BSTS), "all models must use the same feature list"
+    FEATS_M = [tuple(b_.feature_name()) for b_ in BSTS]   # 078: models may use different feature lists (one matrix per distinct list)
+    CMPX = {}
+    if a.refcmp:
+        _p = os.path.join(HERE, "diag", f"refcmpx_{os.path.basename(a.run)}.parquet"); _d = pd.read_parquet(_p)
+        for r_ in _d.itertuples(index=False): CMPX[(str(r_.set), str(r_.molecule), str(r_.official_key))] = (int(r_.n_cmp_pol_c1), int(r_.n_cmp_add_c1), int(r_.n_cmp_pol_c2), int(r_.n_cmp_add_c2))
+        log(f"refcmp entries {len(CMPX)} from {_p}")
     ev = pd.read_csv(os.path.join(HERE, a.eval_csv)); ev["molecule"] = ev["molecule"].astype(str)
     S_MZ = np.load(f"{ROOT}/{a.store}/spec_mz.npy", mmap_mode="r"); S_IT = np.load(f"{ROOT}/{a.store}/spec_int.npy", mmap_mode="r"); S_OFF = np.load(f"{ROOT}/{a.store}/spec_off.npy")
     meta = pl.read_parquet(f"{ROOT}/{a.store}/spec_meta.parquet", columns=["row", "inchikey14", "ingest_lib", "adduct", "ionization_mode", "precursor_mz", "ce_mean", "scorer_ik14"])
@@ -229,12 +234,18 @@ if __name__ == "__main__":
                 gl_ok = np.isfinite(glv).sum() >= max(2, a.min_gl_cover * len(g))
                 afp = [(fp_of(KEY_SMI.get(k)), sv) for k, sv in mm["an"][vv]]; afp = [(f_, sv) for f_, sv in afp if f_ is not None]
                 feats = BA.features([fp_of(str(sm)) for sm in g.smiles], [f_ for f_, _ in afp], [sv for _, sv in afp])
+                XS = {}
                 if gl_ok:
-                    X = feature_matrix(fp, glv, np.full(len(g), np.nan), pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values, lib,
+                  cmp_ = None
+                  if CMPX:
+                    _t = [CMPX.get((s, mid, str(k_)), (0, 0, 0, 0)) for k_ in g.official_key]
+                    cmp_ = dict(n_cmp_pol=[t_[0 if vv == 'c1' else 2] for t_ in _t], n_cmp_add=[t_[1 if vv == 'c1' else 3] for t_ in _t])
+                  for fl_ in set(FEATS_M):
+                    XS[fl_] = feature_matrix(fp, glv, np.full(len(g), np.nan), pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values, lib,
                                        g[f"lib_same_{vv}"].values, g[f"lib_nref_{vv}"].values, g.in_tier.values, g[f"in_train_{vv}"].values, g.in_coconut.values, g.ppm_err.values,
-                                       g.fp_rank_window.values, float(M.loc[mid, "n_query"]), float(M.loc[mid, "ce_known"]), n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=FEATS)
+                                       g.fp_rank_window.values, float(M.loc[mid, "n_query"]), float(M.loc[mid, "ce_known"]), n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=list(fl_), cmp=cmp_)
                 for mi_, bst in enumerate(BSTS):
-                    if gl_ok: score = 2 * z(np.asarray(bst.predict(X), float)) + z(np.asarray(S, float))
+                    if gl_ok: score = 2 * z(np.asarray(bst.predict(XS[FEATS_M[mi_]]), float)) + z(np.asarray(S, float))
                     else: score = np.asarray(ins, float)
                     x_ = feats["ap"]; score = score + a.analog_w * (x_ - x_.mean()) / (x_.std() + 1e-9)
                     order = list(np.argsort(-score, kind="stable"))
