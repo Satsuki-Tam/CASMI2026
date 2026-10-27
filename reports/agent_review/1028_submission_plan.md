@@ -53,3 +53,4 @@
 - 他の枠の対照は不変(ggt3t・EA = 0.379、v7f + EA = 0.390、BASE_B = E0 final_B 0.259)。組合せ(v7f + v8w7a + EA)は 4 構成の局所比較 → 新しい確認集合 → parity の後(Codex 092)。
 - (21:52) v8w7a kernel v1 の smoke(commit run)は COMPLETE。パネル parity(c2 → c1 → 縮小版モデル)は実行中。
 - (22:09) **利用者が 10/28 の提出を許可**(「提出するのはいいけど」)。09:00 以降に 1028_submit.sh(枠 1 は v8w7a の条件付き、枠 5 は BASE_B probe)で提出する。
+- (23:04) **枠 1 = v8w7a の条件がすべて成立**: パネル parity c2 / c1 PASS(元のモデル)、縮小版モデルでも c2 / c1 PASS(実際の特徴行で順位一致)、smoke COMPLETE → 明朝は 1028_submit.sh のとおり v8w7a を枠 1 で提出。
