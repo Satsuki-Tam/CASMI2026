@@ -21,6 +21,7 @@ ap.add_argument("--exclude_rows", default="", help="JSON list of store rows neve
 ap.add_argument("--exclude_groups", default="", help="comma-separated p2_molecules.csv files: their identity groups are never used (full_eval: dev2 hold, locked2 lock)")
 ap.add_argument("--keep_panel", action="store_true", help="keep the panel identities trainable (full_eval regime; only --exclude_rows removed)")
 ap.add_argument("--eval_groups", default="", help="with --holdout_fold -1: evaluate on the identity groups of this p2_molecules.csv")
+ap.add_argument("--eval", type=int, default=1, help="0 = train and save only (089 stage (a) uses dreams_fp_eval.py, Codex 088)")
 ap.add_argument("--fpnet_ckpt", default="", help="FPNet checkpoint for the comparison (default fold_safe_fpnet/fpnet_fold<k>.pt)")
 a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
 torch.manual_seed(a.seed); rng = np.random.default_rng(a.seed); dev = "cuda"
@@ -107,6 +108,7 @@ for step in range(a.steps):
         log(f"step {step} lr {lr:.2e} " + " ".join(f"{k_} {x:.4f}" for k_, x in ema.items()) + f" {(step + 1) / (time.time() - t0):.1f} it/s")
 torch.save(dict(state=model.state_dict(), din=1024 + SIDE.shape[1], hidden=a.hidden, nbits=nbits, drop=a.drop, adducts=ADD, holdout_fold=a.holdout_fold,
                 n_train=int(len(tr)), steps=a.steps), f"{a.out}/head.pt")
+if not a.eval: log("saved head (no built-in evaluation)"); sys.exit(0)
 # ---- evaluation on fold-k molecules: up to 8 spectra per molecule (logits averaged), full +-10 ppm pool window
 model.eval()
 mol_rows = {}
