@@ -1,8 +1,8 @@
 #!/bin/bash
-# 079: gen_eval2p with rank_v8w_pc (EA variants) on the 6 development tables; starts after the 076 parity (CPU slot).
+# 079: gen_eval2p with rank_v8w_pc (EA variants) on the 6 development tables; starts after the same-platform 076 parity (CPU slot).
 set -u
 cd /c/kaggle/CASMI || exit 1
-until grep -q "PARITY076_DONE" logs/pc_parity076.log 2>/dev/null; do sleep 60; done
+until grep -q "PARITY076B_DONE" logs/pc_parity076b.log 2>/dev/null; do sleep 60; done
 export OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=6 PYTHONUTF8=1
 PY=/c/kaggle/CASMI/.venv/Scripts/python.exe; cd experiments/b1_baseline
 S5="C_np_crosslib D_np_single E_np_negonly F_np_uncovered G_tims_crosslib"; FS=data/external/fold_safe_fpnet; FE=data/external/fpnet_fulleval_as_fold0
