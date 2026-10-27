@@ -37,24 +37,25 @@ def job(args):
     return [(s, mid, smi, BF.score(BF.fragments(smi), spec)) for smi in smiles]
 
 
-tasks = []
-for spec_ in a.runs:
-    run, eval_csv, sets = spec_.split(":")
-    ev = pd.read_csv(os.path.join(HERE, eval_csv)); ev["molecule"] = ev["molecule"].astype(str)
-    for s in sets.split(","):
-        F = pd.read_parquet(os.path.join(HERE, run, f"b1_features_{s}.parquet"), columns=["molecule", "smiles", "in_short_c1", "in_short_c2"]); F["molecule"] = F["molecule"].astype(str)
-        F = F[F.in_short_c1 | F.in_short_c2]
-        mols = ev[ev.set == s]
-        if a.limit: mols = mols.head(a.limit)
-        lib_of = dict(zip(mols.molecule, mols.lib))
-        for mid, g in F[F.molecule.isin(set(mols.molecule))].groupby("molecule"):
-            tasks.append((s, mid, lib_of[mid], sorted(set(g.smiles.astype(str)))))
-print(f"[frag] {len(tasks)} molecules, {sum(len(t[3]) for t in tasks):,} candidates", flush=True)
-rows = []
-with Pool(a.workers, initializer=_init) as p:
-    for n_, res in enumerate(p.imap_unordered(job, tasks, chunksize=2)):
-        rows += res
-        if n_ % 100 == 0: print(f"[frag {time.time() - T0:5.0f}s] {n_ + 1}/{len(tasks)}", flush=True)
-out = pd.DataFrame(rows, columns=["set", "molecule", "smiles", "frag"])
-out = pd.concat([out.assign(view="c1"), out.assign(view="c2")], ignore_index=True)
-out.to_parquet(os.path.join(HERE, a.out), index=False); print(f"[frag {time.time() - T0:5.0f}s] saved {a.out}: {len(out):,} rows", flush=True)
+if __name__ == "__main__":   # Windows (spawn): the pool must be created only in the main process
+    tasks = []
+    for spec_ in a.runs:
+        run, eval_csv, sets = spec_.split(":")
+        ev = pd.read_csv(os.path.join(HERE, eval_csv)); ev["molecule"] = ev["molecule"].astype(str)
+        for s in sets.split(","):
+            F = pd.read_parquet(os.path.join(HERE, run, f"b1_features_{s}.parquet"), columns=["molecule", "smiles", "in_short_c1", "in_short_c2"]); F["molecule"] = F["molecule"].astype(str)
+            F = F[F.in_short_c1 | F.in_short_c2]
+            mols = ev[ev.set == s]
+            if a.limit: mols = mols.head(a.limit)
+            lib_of = dict(zip(mols.molecule, mols.lib))
+            for mid, g in F[F.molecule.isin(set(mols.molecule))].groupby("molecule"):
+                tasks.append((s, mid, lib_of[mid], sorted(set(g.smiles.astype(str)))))
+    print(f"[frag] {len(tasks)} molecules, {sum(len(t[3]) for t in tasks):,} candidates", flush=True)
+    rows = []
+    with Pool(a.workers, initializer=_init) as p:
+        for n_, res in enumerate(p.imap_unordered(job, tasks, chunksize=2)):
+            rows += res
+            if n_ % 100 == 0: print(f"[frag {time.time() - T0:5.0f}s] {n_ + 1}/{len(tasks)}", flush=True)
+    out = pd.DataFrame(rows, columns=["set", "molecule", "smiles", "frag"])
+    out = pd.concat([out.assign(view="c1"), out.assign(view="c2")], ignore_index=True)
+    out.to_parquet(os.path.join(HERE, a.out), index=False); print(f"[frag {time.time() - T0:5.0f}s] saved {a.out}: {len(out):,} rows", flush=True)
