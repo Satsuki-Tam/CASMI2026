@@ -52,7 +52,7 @@ for tag, run in RUN_OF.items():
                 fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float); lib = g[f"lib_sim_{view}"].values.astype(float)
                 glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
                 S = zl(fp) + 2 * zl(glv) + 0.5 * pop
-                rows.append(dict(tag=tag, set=s, view=view, molecule=mid, n=len(g), rP=int(r.rP), r_e1b=int(r.r_rank_e1b), r_e1r=int(r.r_rank_e1r),
+                rows.append(dict(tag=tag, set=s, view=view, molecule=mid, n=len(g), rP=int(np.nan_to_num(r.rP)), r_e1b=int(np.nan_to_num(r.r_rank_e1b)), r_e1r=int(np.nan_to_num(r.r_rank_e1r)),
                                  r_fp=trank(fp, tr), r_gl=trank(glv, tr, fp) if np.isfinite(glv).any() else 0, r_pop=trank(pop, tr, fp), r_lib=trank(lib, tr, fp), r_S=trank(S, tr, fp)))
 A = pd.DataFrame(rows); A.to_csv(os.path.join(HERE, "diag/fam_audit.csv"), index=False)
 rr = lambda r: np.where((r >= 1) & (r <= 25), 1.0 / np.maximum(r, 1), 0.0)
