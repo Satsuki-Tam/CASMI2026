@@ -1,0 +1,106 @@
+{
+ "seed": 113,
+ "fold": 2,
+ "max_spectra": 8,
+ "ref_many": 10,
+ "counts": {
+  "census_raw_keys": 269846,
+  "fold_raw_keys": 53965,
+  "fold_groups": 53638,
+  "after_used_and_panel": 51248,
+  "after_msg_any": 45513
+ },
+ "strata": {
+  "pos_few": {
+   "groups": 626,
+   "c1dev": 313,
+   "c1conf": 313
+  },
+  "pos_many": {
+   "groups": 3,
+   "c1dev": 2,
+   "c1conf": 1
+  },
+  "neg_few": {
+   "groups": 183,
+   "c1dev": 92,
+   "c1conf": 91
+  },
+  "neg_many": {
+   "groups": 49,
+   "c1dev": 25,
+   "c1conf": 24
+  }
+ },
+ "checks": {
+  "one_per_group": 1,
+  "vs_used": 0,
+  "vs_msg": 0,
+  "halves_disjoint": 0,
+  "fold_ok": 1
+ },
+ "used_groups": 18785,
+ "panel_groups": 250,
+ "msg_groups": 28801,
+ "selection_files": {
+  "experiments/b1_baseline/c1bank_f1/c1conf/p2_molecules.csv": 429,
+  "experiments/b1_baseline/c1bank_f1/c1dev/p2_molecules.csv": 432,
+  "experiments/b1_baseline/c1cost098/p2_molecules.csv": 100,
+  "experiments/b1_baseline/c1cost098_raw/p2_molecules.csv": 561,
+  "experiments/b1_baseline/c1cost098_unused/p2_molecules.csv": 400,
+  "experiments/b1_baseline/conf_g_f1a/p2_molecules.csv": 474,
+  "experiments/b1_baseline/conf_g_f1b/p2_molecules.csv": 313,
+  "experiments/b1_baseline/eval_c1/p1_molecules.csv": 300,
+  "experiments/b1_baseline/eval_conf_fit/p2_molecules.csv": 256,
+  "experiments/b1_baseline/eval_conf_fit2/p2_molecules.csv": 350,
+  "experiments/b1_baseline/eval_set/p1_molecules.csv": 600,
+  "experiments/b1_baseline/eval_set2/fit_pool/p2_molecules.csv": 956,
+  "experiments/b1_baseline/eval_set2/fit_pool_overflow/p2_molecules.csv": 632,
+  "experiments/b1_baseline/eval_set2/p2_dev_molecules.csv": 500,
+  "experiments/b1_baseline/eval_set2/v2/p2_molecules.csv": 500,
+  "experiments/b1_baseline/eval_set3/p2_molecules.csv": 80,
+  "experiments/b1_baseline/eval_set_f1/p2_molecules.csv": 500,
+  "experiments/b1_baseline/eval_set_f2/p2_molecules.csv": 500,
+  "experiments/b1_baseline/locked_eval/p1_molecules.csv": 600,
+  "experiments/b1_baseline/locked_eval2/v2/p2_molecules.csv": 500,
+  "experiments/b1_baseline/locked_eval3/p2_molecules.csv": 80,
+  "experiments/b1_baseline/locked_eval_f1/p2_molecules.csv": 500,
+  "experiments/b1_baseline/locked_eval_f2/p2_molecules.csv": 500,
+  "experiments/b1_baseline/np053_f1conf/p2_molecules.csv": 320,
+  "experiments/b1_baseline/np053_f1dev/p2_molecules.csv": 320,
+  "experiments/b1_baseline/np053_f2conf/p2_molecules.csv": 320,
+  "experiments/b1_baseline/np053_f2dev/p2_molecules.csv": 320,
+  "experiments/b1_baseline/np061_f3pool/p2_molecules.csv": 1000,
+  "experiments/b1_baseline/np061_f3unused/p2_molecules.csv": 366,
+  "experiments/b1_baseline/np061_f4pool/p2_molecules.csv": 1000,
+  "experiments/b1_baseline/np061_f4unused/p2_molecules.csv": 381,
+  "experiments/b1_baseline/np096_conf093/p2_molecules.csv": 400,
+  "experiments/b1_baseline/np096_conf095/p2_molecules.csv": 400,
+  "experiments/b1_baseline/np096_f0conf/p2_molecules.csv": 800,
+  "experiments/b1_baseline/np096_f0spare/p2_molecules.csv": 90,
+  "experiments/b1_baseline/np102_d0conf/p2_molecules.csv": 286,
+  "experiments/b1_baseline/np102_raw/p2_molecules.csv": 286,
+  "experiments/b1_baseline/np102_unused/p2_molecules.csv": 0,
+  "experiments/b1_baseline/panel_np250/p1_molecules.csv": 250,
+  "experiments/b1_baseline/pxconf_f1/p2_molecules.csv": 200,
+  "experiments/b1_baseline/pxconf_f1a/p2_molecules.csv": 200,
+  "experiments/b1_baseline/pxconf_f1b/p2_molecules.csv": 200,
+  "experiments/b1_baseline/pxconf_f2/p2_molecules.csv": 244,
+  "experiments/b1_baseline/pxconf_f2a/p2_molecules.csv": 444,
+  "experiments/b1_baseline/pxconf_f2b/p2_molecules.csv": 254,
+  "experiments/b1_baseline/train_pool_f3a/p2_molecules.csv": 1000,
+  "experiments/b1_baseline/train_pool_f3a_np/p2_molecules.csv": 800,
+  "experiments/b1_baseline/train_pool_f3b/p2_molecules.csv": 802,
+  "experiments/b1_baseline/train_pool_f4a/p2_molecules.csv": 1000,
+  "experiments/b1_baseline/train_pool_f4a_np/p2_molecules.csv": 800,
+  "experiments/b1_baseline/train_pool_f4b/p2_molecules.csv": 807,
+  "experiments/p1_baseline/run1/p1_molecules.csv": 600
+ },
+ "reference_count_definition": "metadata screen: same-polarity other-library spectra minus cross-library copies of a query (adduct, precursor 3 dp, CE 1 dp, n_peaks); the evaluator's spectral duplicate rule decides c1_usable",
+ "inputs_sha256": {
+  "census": "813f7ef84a77164f8a344003eab8191d6b37f3150ef5f55921b86b5a00eb34aa",
+  "structures": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
+  "selector": "6652cb02f2ea96cf85ace9c2d5888776e686b08ff9f3d98eb05d9d6630876fcc",
+  "b1_common": "fa9bb9eb3a8e489aab85f861939b0db0101f60eb78462eb947b09a7105476c8e"
+ }
+}
