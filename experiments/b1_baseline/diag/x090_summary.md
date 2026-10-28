@@ -1,6 +1,6 @@
 # 090 development reading (amended registration)
 
-tables missing (stress only): ['p2dev']
+tables missing (stress only): []
 
 ## Implementation check (fallback rows must satisfy R0 == R2 and R1 == R3)
 - f1dev: fallback rows 331, max |R2-R0| 0.000000, max |R3-R1| 0.000000
@@ -52,3 +52,4 @@ R4 - R3 on (i): -0.0347 [-0.0455, -0.0240] (folds -0.0321 / -0.0373)
 - S2 15/20/30/35: R1-R0 -0.0217, R2-R0 +0.0042, R3-R0 -0.0282, R4-R0 -0.0913
 - S3 5/15/30/50: R1-R0 -0.0131, R2-R0 +0.0115, R3-R0 -0.0123, R4-R0 -0.0657
 - plain 053 C2 (all molecules): R1-R0 -0.0244, R2-R0 -0.0003, R3-R0 -0.0343, R4-R0 -0.0945
+- dev2 NP C2 (stress): R1-R0 -0.0072 [-0.0201, +0.0061], R2-R0 -0.0072 [-0.0188, +0.0047], R3-R0 -0.0145 [-0.0320, +0.0034], R4-R0 -0.0459 [-0.0682, -0.0239]

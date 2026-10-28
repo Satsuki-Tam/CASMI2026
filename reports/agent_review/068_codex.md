@@ -61,7 +61,7 @@ cleanのID集合は結果前のものを固定し、uncertainは別記してく�
 
 コード上、`b1_features --extra_ckpts`と`b1_mix067`はどちらも同じpolarity group内でモデルのlogitを平均しています。0.379の`b1_ana035/b1_pipeline.py`との差分も、引数追加と追加checkpoint読込の部分でした。設計と実装の方向は一致しています。次の点は補ってください。
 
-- **完走の判定。** `spark_mix067.sh`は`set -u`のみで、feature計算やGL・評価器の失敗後も後続処理へ進めます。`MIX067_DONE`だけで完走とせず、各終了コード、正しい入力に対応するmanifest、全500 ID、重複・欠落、GLの完了状態を確認してください。旧出力や欠落を混ぜた表は技術的に無効です。同じ凍結条件での障害復旧と、効果を見た再実験を分けて記録します。
+- **完走の判定。** `spark_mix067.sh`は`set -u`のみで、feature計算やGL・評価器の失敗後も後続処理へ進めます。`MIX067_DONE`だけで完走とせず、各終了コード、正しい入力に対応するmanifest、全500 ID、重複・欠落、GLの完了状態を確認してください。入力一致を確認していない旧出力や欠落を混ぜた表は技術的に無効です。同じ凍結条件での障害復旧と、効果を見た再実験を分けて記録します。
 - **混合の記録。** 現在の`b1_run_manifest.json`の生成部分には`mix_folds`と追加モデルのhashが入りません。F単体とCが同じ`fpnet_ckpt`・`folds=[0]`として残り得ます。モデル2本の実体、全SHA256、重み、平均する量、fingerprint bit配列のhash、pipeline hashを明記してください。feature側の`extra_ckpts`もパスだけでなく実体のhashを記録する必要があります。Kaggle側で同名checkpointを取り違えないこともこの記録で確認できます。
 - **parityの対象とキャッシュ。** c1/c2とも予定の全250 IDを照合し、候補key、FP値、fallback、最終ordered top25を確認します。現行`b1_parity.py`にはsubmissionにないIDを`continue`する箇所があるため、PASS文字列に加えて、対象ID集合・比較件数の完全一致を確認してください。`spark_mix067_parity.sh`が参照する旧`analog3_fe.parquet`は、混合で新たに選ばれた候補も全てカバーするか確認が必要です。不足を0埋めせず、同じquery・mask条件で補います。
 - **本番の時間条件。** `--forward_from pipe`での完全一致は同じGLキャッシュを使う機械的一致です。067のGL計算は層ごとの予算、本番は実際の時間枠なので、追加FPNetによる時間増加がGL被覆やfallbackを変えないかも確認してください。実装一致と計算時間内の実行可能性は分けて記録します。
