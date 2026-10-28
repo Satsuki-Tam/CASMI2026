@@ -360,6 +360,9 @@ if __name__ == "__main__":
                                     e_sorted_ = [int(i) for i in er_[np.lexsort((pos_m[er_], -sc_[er_]))]]
                                     for k_, i_ in zip(sorted(int(x) for x in pos_m[er_]), e_sorted_): new_[k_] = i_
                                 assert int(new_[0]) == top_
+                                assert sorted(int(i) for i in new_) == sorted(int(i) for i in order), "104: t1E changed the candidate set"   # Codex 104 (3)
+                                em_set_ = set(int(i) for i in ei_)
+                                assert all(int(new_[k]) == int(order[k]) for k in range(len(order)) if int(order[k]) not in em_set_), "104: a non-E candidate moved"
                                 out[f"t1E_{t_}_0.5"] = rr_of([("db", int(i)) for i in new_])
                             else: out[f"t1E_{t_}_0.5"] = out["main"]
                     if a.dump_top and mi_ == 0:

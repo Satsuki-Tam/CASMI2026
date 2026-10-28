@@ -1,7 +1,7 @@
 """104 confirmation reading (104_prereg_t1E.md section 4), written before the development result was read; run ONCE, only if the development gate passed.
 Inputs: diag/c104_np096c.csv (np096_conf093: NP_H 200 / NP_N 200, C2), diag/c104_np102d.csv (np102_d0conf: D_np_single 286, C2), diag/c104_c1cost.csv
 (c1cost098, C1 view of its usable molecules). d = t1E_rank_e1r_0.5 - main (v8w7a), strict.
-Primary = 1/2 A + 1/2 B_D: A = np096c NP_H and NP_N (each 1/4), B_D = np102d D (1/2). Gate: primary >= +0.005 and lower > 0; A and B_D lower >= -0.01;
+Primary = H/4 + N/4 + D/2 (A = np096c NP_H and NP_N, each 1/4; B_D = np102d D, 1/2; not a pooled row mean). Gate: primary >= +0.005 and lower > 0; A and B_D lower >= -0.01;
 c1cost C1 lower >= -0.01. Checks first (stop on failure): rows complete vs the selection CSV / c1_usable, values finite in [0, 1], t1E = main where the
 truth is not in the E subset, main rank-1 never lost, t1E = main where E is empty."""
 import os, sys
@@ -31,7 +31,7 @@ for t, (csv, run) in SRC.items():
         v = x[c].values.astype(float)
         if not (np.isfinite(v).all() and (v >= 0).all() and (v <= 1).all()): stop(f"{t}: {c} not finite in [0, 1]")
     er = x.e_reach.astype(str).isin(["True", "1", "1.0"])
-    if int(((x[V] - x.main).abs() > TOL)[~er].sum()) or int(((x.main == 1) & (x[V] < 1)).sum()) or int(((x[V] - x.main).abs() > TOL)[x.nE.fillna(0) == 0].sum()):
+    if int(((x[V] - x.main).abs() > TOL)[~er].sum()) or int(((x.main == 1) != (x[V] == 1)).sum()) or int(((x[V] - x.main).abs() > TOL)[x.nE.fillna(0) == 0].sum()):
         stop(f"{t}: t1E structural check failed")
     D[t] = x
 
@@ -51,7 +51,7 @@ pa, ba = boot([("np096c", "NP_H", "c2"), ("np096c", "NP_N", "c2")], 104); pb, bb
 p, bs = 0.5 * pa + 0.5 * pb, 0.5 * ba + 0.5 * bb
 c1 = D["c1cost"][D["c1cost"].view == "c1"]
 pc, bc = boot([("c1cost", "E_np_negonly", "c1")], 106) if len(c1) else (float("nan"), np.array([np.nan]))
-gate = p >= 0.005 and ci(bs)[0] > 0 and ci(ba)[0] >= -0.01 and ci(bb)[0] >= -0.01 and (not len(c1) or ci(bc)[0] >= -0.01)
+gate = p >= 0.005 and ci(bs)[0] > 0 and ci(ba)[0] >= -0.01 and ci(bb)[0] >= -0.01 and len(c1) > 0 and bool(np.isfinite(bc).all()) and ci(bc)[0] >= -0.01   # Codex 104 (2): C1 usable 0 / missing / undetermined = not passed
 L = ["# 104 confirmation (t1E_rank_e1r_0.5 - v8w7a)", "", f"- **primary 1/2 A + 1/2 B_D: {fmt(p, bs)}**", f"- A np096_conf093 C2 (H/N): {fmt(pa, ba)}", f"- B_D np102_d0conf C2 (D 286): {fmt(pb, bb)}",
      f"- C1 cost c1cost098 (E, usable {len(c1)}): {fmt(pc, bc) if len(c1) else 'n/a'}", f"- **gate: {'PASS' if gate else 'NO'}**"]
 open(os.path.join(HERE, "diag/x104c_summary.md"), "w", encoding="utf-8").write(chr(10).join(L) + chr(10)); print(chr(10).join(L))

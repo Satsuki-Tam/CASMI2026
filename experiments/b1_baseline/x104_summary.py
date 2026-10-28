@@ -1,7 +1,7 @@
 """104 reading (104_prereg_t1E.md), written before any result was read; derived from x102_summary.py (same cells, protections, completeness checks).
 One candidate: t1E_rank_e1r_0.5 (main rank-1 fixed, remaining E slots re-ordered by the 102 RRF score). Extra checks: t1E = main where the truth is
 not in the E subset, where main RR = 1, where E is empty; main = the 102 main. Sensitivity (descriptive): truth prior-rank strata, panel C1 clean
-re-weighted to prior-rank-1 shares 0.66 / 0.30 / 0.10.
+re-weighted to FIXED assumed prior-rank-1 shares 0.66 / 0.30 / 0.10 (assumptions, not estimates; descriptive only).
 (original 102 docstring follows)
 102 reading (102_prereg_elite.md, amendment after Codex 102), written before any result was read.
 Inputs: diag/r102_<tag>.csv (gen_eval2fd --v7f --emodel rank_e1b,rank_e1r, main = rank_v8w7a, E keys v2), the selection CSVs, the molecule ledgers,
@@ -100,13 +100,17 @@ for t in TAGS:
         n3 = int(((z.main - z.main_087).abs() > TOL).sum()); i3 = f"{n3}/{len(z)}"
     CHK.append(f"| {t} | {len(x)} | {i1a} | {i1b} | {i2} | {i5} | {i3} |")
     if i1a or i1b or i2 or i5: stop(f"{t}: invariant violated I1a {i1a} I1b {i1b} I2 {i2} I5 {i5}")
-    t1 = x["t1E_rank_e1r_0.5"]; c_out = int(((t1 - x.main).abs() > TOL)[~x.e_reach].sum()); c_top = int(((x.main == 1) & (t1 < 1)).sum()); c_emp = int(((t1 - x.main).abs() > TOL)[x.nE == 0].sum())
-    p102 = os.path.join(HERE, f"diag/r102_{t}.csv"); c_m = "n/a"
-    if os.path.exists(p102):
-        y2 = pd.read_csv(p102, usecols=["set", "view", "molecule", "main"]); y2["molecule"] = y2.molecule.astype(str); z2 = x.merge(y2, on=["set", "view", "molecule"], suffixes=("", "_102"))
-        c_m = int(((z2.main - z2.main_102).abs() > TOL).sum())
-    CHK.append(f"| {t} | t1E checks | truth outside E changed {c_out} | main rank-1 lost {c_top} | empty E changed {c_emp} | main vs 102 diff {c_m} |")
-    if c_out or c_top or c_emp or (c_m not in ("n/a", 0)): stop(f"{t}: t1E structural check failed: outside {c_out} top1 {c_top} empty {c_emp} main-vs-102 {c_m}")
+    t1 = x["t1E_rank_e1r_0.5"]; c_out = int(((t1 - x.main).abs() > TOL)[~x.e_reach].sum()); c_top = int(((x.main == 1) != (t1 == 1)).sum());   # Codex 104 (3): the rank-1-correct row sets must be identical c_emp = int(((t1 - x.main).abs() > TOL)[x.nE == 0].sum())
+    p102 = os.path.join(HERE, f"diag/r102_{t}.csv")   # Codex 104 (1): mandatory, complete one-to-one comparison with the 102 main (same Spark tables)
+    if not os.path.exists(p102): stop(f"{t}: the 102 output needed for the main comparison is missing")
+    y2 = pd.read_csv(p102, usecols=["set", "view", "molecule", "main"]); y2["molecule"] = y2.molecule.astype(str)
+    k1 = list(zip(x.set, x.view, x.molecule)); k2 = list(zip(y2.set, y2.view, y2.molecule))
+    if len(k2) != len(set(k2)) or set(k1) != set(k2): stop(f"{t}: 102 rows differ from 104 rows (dup {len(k2) - len(set(k2))}, sym diff {len(set(k1) ^ set(k2))})")
+    z2 = x.merge(y2, on=["set", "view", "molecule"], suffixes=("", "_102"), validate="one_to_one")
+    if len(z2) != len(x): stop(f"{t}: joined {len(z2)} != {len(x)} rows")
+    c_m = int(((z2.main - z2.main_102).abs() > TOL).sum())
+    CHK.append(f"| {t} | t1E checks | truth outside E changed {c_out} | rank-1 row sets differ {c_top} | empty E changed {c_emp} | main vs 102 diff {c_m} |")
+    if c_out or c_top or c_emp or c_m: stop(f"{t}: t1E structural check failed: outside {c_out} top1 {c_top} empty {c_emp} main-vs-102 {c_m}")
     if False and n3: stop(f"{t}: main differs from the 087 main on {i3} rows (investigate and record before reading; then rerun with --allow_i3)")
     D[t] = x
 
@@ -208,6 +212,9 @@ for lab, cells, vw, ex in LAY:
         q = r[r.pstr == st_]; cell.append(f"{(q[v] - q.main).mean():+.4f} ({len(q)})" if len(q) else "-")
     L.append(f"| {lab} | " + " | ".join(cell) + " |")
 r = rows([("panel", "P_np250")], "c1", lambda r: r.molecule.isin(CLEAN)); d1 = (r[v] - r.main)[r.pstr == "1"]; d0 = (r[v] - r.main)[r.pstr != "1"]
-L += ["", "- panel C1 clean re-weighted (fixed prior-rank-1 shares; observed " + f"{(r.pstr == '1').mean():.2f}" + "): " + ", ".join(f"share {w:.2f}: {w * d1.mean() + (1 - w) * d0.mean():+.4f}" for w in (0.66, 0.30, 0.10))]
+ess = lambda w, n1, n0: (1.0 / ((w * w) / n1 + ((1 - w) * (1 - w)) / n0)) if (n1 and n0) else float("nan")   # effective sample size of the 2-group re-weighting
+L += ["", f"- panel C1 clean (prior strata = pop desc, ties fp desc, then fixed row order; not a pure popularity rank): measured prior-rank-1 share {(r.pstr == '1').mean():.2f} "
+      f"(n1 {len(d1)}, n0 {len(d0)}), unweighted d {(r[v] - r.main).mean():+.4f}; re-weighted to FIXED assumed shares: " +
+      ", ".join((f"share {w:.2f}: {w * d1.mean() + (1 - w) * d0.mean():+.4f} (ESS {ess(w, len(d1), len(d0)):.0f})" if len(d1) and len(d0) else f"share {w:.2f}: n/a") for w in (0.66, 0.30, 0.10))]
 NL = chr(10)
 open(os.path.join(HERE, "diag/x104_summary.md"), "w", encoding="utf-8").write(NL.join(L) + NL); print(NL.join(L))
