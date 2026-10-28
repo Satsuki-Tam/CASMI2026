@@ -100,7 +100,9 @@ for t in TAGS:
         n3 = int(((z.main - z.main_087).abs() > TOL).sum()); i3 = f"{n3}/{len(z)}"
     CHK.append(f"| {t} | {len(x)} | {i1a} | {i1b} | {i2} | {i5} | {i3} |")
     if i1a or i1b or i2 or i5: stop(f"{t}: invariant violated I1a {i1a} I1b {i1b} I2 {i2} I5 {i5}")
-    t1 = x["t1E_rank_e1r_0.5"]; c_out = int(((t1 - x.main).abs() > TOL)[~x.e_reach].sum()); c_top = int(((x.main == 1) != (t1 == 1)).sum());   # Codex 104 (3): the rank-1-correct row sets must be identical c_emp = int(((t1 - x.main).abs() > TOL)[x.nE == 0].sum())
+    t1 = x["t1E_rank_e1r_0.5"]; c_out = int(((t1 - x.main).abs() > TOL)[~x.e_reach].sum())
+    c_top = int(((x.main == 1) != (t1 == 1)).sum())   # Codex 104 (3): the rank-1-correct row sets must be identical
+    c_emp = int(((t1 - x.main).abs() > TOL)[x.nE.fillna(0) == 0].sum())
     p102 = os.path.join(HERE, f"diag/r102_{t}.csv")   # Codex 104 (1): mandatory, complete one-to-one comparison with the 102 main (same Spark tables)
     if not os.path.exists(p102): stop(f"{t}: the 102 output needed for the main comparison is missing")
     y2 = pd.read_csv(p102, usecols=["set", "view", "molecule", "main"]); y2["molecule"] = y2.molecule.astype(str)
