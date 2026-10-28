@@ -61,7 +61,7 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                 if RESTRICT == "B":   # 095: B-group specialist = COCONUT and not a training structure in this view (T-priority, exclusive); features recomputed within B
                     g = g[g.in_coconut.values.astype(bool) & ~g[f"in_train_{view}"].values.astype(bool)].reset_index(drop=True)
                 if RESTRICT == "E":   # 102: second engine E-lite = E window (COCONUT | train in this view | PubChemLite | BIO); features recomputed within the window
-                    g = g[g.in_coconut.values.astype(bool) | g[f"in_train_{view}"].values.astype(bool) | g.official_key.astype(str).isin(EKEYS).values].reset_index(drop=True)
+                    g = g[g.in_coconut.values.astype(bool) | g[f"in_train_{view}"].values.astype(bool) | np.fromiter((k_ in EKEYS for k_ in g.official_key.astype(str).values), bool, len(g))].reset_index(drop=True)   # set lookup (Series.isin of a 456k set costs ~1.5 s per call)
                 if len(g) == 0: continue
                 fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float)
                 glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)

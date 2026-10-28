@@ -119,8 +119,8 @@ if __name__ == "__main__":
     BSTS = [lgb.Booster(model_file=os.path.join(HERE, m_)) for m_ in MODELS]; FEATS = BSTS[0].feature_name()
     FEATS_M = [tuple(b_.feature_name()) for b_ in BSTS]
     EMODS = [(os.path.basename(os.path.dirname(m_)) or m_, lgb.Booster(model_file=os.path.join(HERE, m_))) for m_ in a.emodel.split(",") if m_]   # 102
-    EKA = np.array(sorted(set(pd.read_parquet(os.path.join(HERE, a.ekeys)).key.astype(str)))) if EMODS else np.array([], str)
-    if EMODS: log(f"E-lite models {[t_ for t_, _ in EMODS]}, E-window extra keys {len(EKA):,}, RRF K {a.rrf_k}")
+    EKS = set(pd.read_parquet(os.path.join(HERE, a.ekeys)).key.astype(str)) if EMODS else set()   # set lookup (np.isin over 456k strings costs ~1.4 s per call)
+    if EMODS: log(f"E-lite models {[t_ for t_, _ in EMODS]}, E-window extra keys {len(EKS):,}, RRF K {a.rrf_k}")
     BMOD = lgb.Booster(model_file=os.path.join(HERE, a.bmodel)) if a.bmodel else None   # 078: models may use different feature lists (one matrix per distinct list)
     TOPD = []   # 099 dump
     TPAR = {}
@@ -316,7 +316,7 @@ if __name__ == "__main__":
                         return 0.0
                     out = dict(base, n_cand=len(g), main=rr_of(lst_db))
                     if EMODS and mi_ == 0:   # 102: second engine E-lite on the E window + identity RRF with the main order (rows = unique official keys)
-                        em_ = g.in_coconut.values.astype(bool) | g[f"in_train_{vv}"].values.astype(bool) | np.isin(okeys, EKA); ei_ = np.flatnonzero(em_)
+                        em_ = g.in_coconut.values.astype(bool) | g[f"in_train_{vv}"].values.astype(bool) | np.fromiter((k_ in EKS for k_ in okeys), bool, len(okeys)); ei_ = np.flatnonzero(em_)
                         pos_m = np.empty(len(g), int); pos_m[np.asarray(order, int)] = np.arange(len(g))   # 0-based main position
                         out.update(nE=int(len(ei_)), e_reach=bool(tr[ei_].any()) if len(ei_) else False, rP=int(pos_m[tr].min() + 1) if tr.any() else 0)
                         def _rrf(second_, al_):
