@@ -38,6 +38,7 @@ ap_.add_argument("--dump_top", default="", help="099: parquet of the first model
 ap_.add_argument("--bmodel", default="", help="095: B-group specialist ranker (b1_rank_train --restrict B); variant bpp = the main order with the B candidates re-ordered by it inside the positions B already holds (GL path only; non-B positions unchanged)")
 ap_.add_argument("--emodel", default="", help="102: comma-separated second-engine E-lite models (b1_rank_train --restrict E), scored on the E-window rows of each view (COCONUT | train in that view | PubChemLite / BIO keys of --ekeys), features recomputed within the window; variants <tag>_only (E list alone), p_e (main order restricted to the E window), rrf_<tag>_<a> / rrf_pe_<a> (identity RRF of the main order with E / with p_e, K = --rrf_k, weight a on the second list), orc_<tag> (max(main, E alone)); diagnostics e_reach, nE, rP, r_<tag>; tag = model directory name")
 ap_.add_argument("--ekeys", default="diag/e_window_keys_v2.parquet"); ap_.add_argument("--rrf_k", type=float, default=10.0)
+ap_.add_argument("--nscore", default="", help="111: dir with n111_<ntag>_<set>.parquet (n111_score.py: N, Fs per candidate); adds t1N_0.5 / t1Fs_0.5 (main rank-1 fixed, every other candidate of the view list ordered by 1/(10 + r_main) + 0.5/(10 + r_X), ties -> main order, then top 25), N_only / Fs_only and diagnostics rN, rFs, miss_N, miss_Fs, rP_n; main unchanged"); ap_.add_argument("--ntag", default="")
 ap_.add_argument("--fp_col", default="fp_s", choices=["fp_s", "fp_m"], help="091: which fp_mean_score column overrides fp (fp_m = PC-recomputed merge input = platform control)")
 ap_.add_argument("--fp_override", default="", help="091: fp_mean_score.py parquet; fp <- fp_s and fp_rank_window <- fprw_s for every candidate row (main and variants)")
 ap_.add_argument("--pop_ws", default="", help="090: comma-separated fixed-rule prior weights -> variants pw<w>")
@@ -176,6 +177,12 @@ if __name__ == "__main__":
     PWS = [float(x) for x in a.pop_ws.split(",") if x]
     FDV = ([f"fd_{k}{w}" for k in ("s", "o") for w in (0.5, 1.0)] if a.fpD else []) + [f"pw{w}" for w in PWS] + (["bpp", "rB_main", "rB_spec", "truth_B", "nB"] if a.bmodel else [])
     FDV += (["p_e"] + [f"rrf_pe_{al_}" for al_ in (0.5, 1.0)] + [v_ for t_, _ in EMODS for v_ in [f"{t_}_only", f"orc_{t_}"] + [f"rrf_{t_}_{al_}" for al_ in (0.5, 1.0)] + [f"pp_{t_}_{al_}" for al_ in (0.5, 1.0)] + [f"t1E_{t_}_0.5"]]) if a.emodel else []
+    NSC, NDIAG = {}, []
+    if a.nscore:   # 111: N / Fs per (set, molecule, smiles) from n111_score.py
+        NDIAG = ["t1N_0.5", "t1Fs_0.5", "N_only", "Fs_only", "rN", "rFs", "miss_N", "miss_Fs", "rP_n"]   # kept OUT of FDV: the run summary (md / log) never shows them; read only by the registered reader
+        for s_ in a.sets:
+            X_ = pd.read_parquet(os.path.join(HERE, a.nscore, f"n111_{a.ntag}_{s_}.parquet"))
+            for m_, sm_, n_, f_ in zip(X_.molecule.astype(str), X_.smiles.astype(str), X_.N.values, X_.Fs.values): NSC[(s_, m_, sm_)] = {"N": float(n_), "Fs": float(f_)}
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -265,7 +272,7 @@ if __name__ == "__main__":
                 base = dict(set=s, view=v, molecule=mid, n_prod=len(lst), n_novel=sum(p_[7] == "novel" for p_ in lst), n_window=sum(p_[7] == "window" for p_ in lst),
                             truth_generated=bool(hit), truth_loc=(hit[0][7] if hit else ""), truth_n_parents=(hit[0][4] if hit else 0), truth_combo=(hit[0][6] if hit else ""))
                 if len(g) == 0:
-                    for R_ in ROWS: R_.append(dict(base, n_cand=0, main=0.0, n_derivable=0, truth_derivable=False, **{k: 0.0 for k in RULES + FDV}))
+                    for R_ in ROWS: R_.append(dict(base, n_cand=0, main=0.0, n_derivable=0, truth_derivable=False, **{k: 0.0 for k in RULES + FDV + NDIAG}))
                     continue
                 fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float); lib = g[f"lib_sim_{vv}"].values.astype(float)
                 glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
@@ -365,6 +372,24 @@ if __name__ == "__main__":
                                 assert all(int(new_[k]) == int(order[k]) for k in range(len(order)) if int(order[k]) not in em_set_), "104: a non-E candidate moved"
                                 out[f"t1E_{t_}_0.5"] = rr_of([("db", int(i)) for i in new_])
                             else: out[f"t1E_{t_}_0.5"] = out["main"]
+                    if a.nscore and mi_ == 0:   # 111 (Codex 111): fixed connection over the WHOLE view list; main rank-1 kept
+                        pos_n = np.empty(len(g), int); pos_n[np.asarray(order, int)] = np.arange(len(g)); top_ = int(order[0])
+                        out["rP_n"] = int(pos_n[tr].min() + 1) if tr.any() else 0
+                        for t_ in ("N", "Fs"):
+                            xv_ = np.array([NSC.get((s, mid, str(sm_)), {}).get(t_, np.nan) for sm_ in g.smiles], float)
+                            miss_ = ~np.isfinite(xv_); out[f"miss_{t_}"] = int(miss_.sum())
+                            ox_ = np.lexsort((pos_n, -np.where(miss_, -np.inf, xv_)))   # missing -> last, ties -> main order
+                            rx_ = np.empty(len(g), int); rx_[ox_] = np.arange(1, len(g) + 1)
+                            out[f"r{t_}"] = int(rx_[tr].min()) if tr.any() else 0
+                            out[f"{t_}_only"] = rr_of([("db", int(i)) for i in ox_])
+                            sc_ = 1.0 / (10 + pos_n + 1) + 0.5 / (10 + rx_)
+                            rest_ = np.array([i for i in range(len(g)) if i != top_], int)
+                            rest_ = rest_[np.lexsort((pos_n[rest_], -sc_[rest_]))] if len(rest_) else rest_
+                            new_ = np.concatenate([[top_], rest_]).astype(int)
+                            assert sorted(new_.tolist()) == sorted(int(i) for i in order), "111: candidate set changed"
+                            assert int(new_[0]) == top_, "111: rank-1 changed"
+                            out[f"t1{t_}_0.5"] = rr_of([("db", int(i)) for i in new_])
+                            assert out["main"] != 1.0 or out[f"t1{t_}_0.5"] == 1.0, "111: a rank-1-correct row changed"
                     if a.dump_top and mi_ == 0:
                         for k_, i_ in enumerate(order[:25]):
                             TOPD.append(dict(set=s, view=v, molecule=mid, rank=k_ + 1, smiles=str(g.smiles.values[i_]), okey=str(g.official_key.values[i_]), fp=float(fp[i_]) if np.isfinite(fp[i_]) else np.nan,
