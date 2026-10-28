@@ -28,6 +28,7 @@ def exposure_of(keys):
 
 
 RESTRICT = ""   # 095: '' = full view list (default), 'B' = B-group candidates only; 102: 'E' = E-window candidates only
+FILTER_TO_CSV = False   # 107: --filter_to_csv
 EKEYS = set()   # 102: official keys of the extra E-window layers (PubChemLite / BIO, diag/e_window_keys_v2.parquet)
 ECOUNT = {}     # 102: (run, set, view) -> [groups, groups with the truth in the view list, groups with a non-empty E subset, groups with the truth in the E subset]
 
@@ -42,6 +43,9 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
     for s in sets_here:
         fp_ = f"{run}/b1_features_{s}.parquet"
         F = pd.read_parquet(fp_); M = pd.read_csv(f"{run}/b1_molecules_{s}.csv").set_index("molecule")
+        if FILTER_TO_CSV:   # 107: keep only the molecules listed in this eval CSV (a subset CSV = a cross-fitting fold of a used development table)
+            keep_ = set(ev[ev["set"].astype(str) == s].index.astype(str)); n0_ = F.molecule.nunique()
+            F = F[F.molecule.astype(str).isin(keep_)]; print(f"FILTER {os.path.basename(run)} {s}: {F.molecule.nunique()} of {n0_} molecules kept (csv {eval_csv})", flush=True)
         if RESTRICT == "E":   # Codex 102 Q5(2): the table, the molecule ledger and the selection CSV must describe the same molecules
             extra_ = set(F.molecule.astype(str)) - set(ev.index.astype(str))
             assert not extra_, f"102: {run} {s}: {len(extra_)} table molecules not in {eval_csv}"
@@ -143,6 +147,7 @@ def main():
     ap.add_argument("--restrict", default="", choices=["", "B", "E"], help="095: B = train the ranker on the B-group candidates of each view only (COCONUT and not train; groups whose truth is not B drop out); "
                     "102: E = the E window (COCONUT | train in this view | PubChemLite | BIO keys of --ekeys)")
     ap.add_argument("--ekeys", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "diag", "e_window_keys_v2.parquet"), help="102: e_keys.py output (key, in_pcl, in_bio)")
+    ap.add_argument("--filter_to_csv", action="store_true", help="107: restrict every run's table rows to the molecules of its eval CSV (per set); default off = unchanged")
     ap.add_argument("--pointwise", action="store_true", help="102: row weights = group weight / group size, rescaled to mean 1 (every (molecule, view) group carries its group weight in total) "
                     "for a pointwise objective given by --params_from (e.g. binary)")
     ap.add_argument("--prior_iw", default="", help="090: target shares of the C2 truths' prior-rank strata (rank by pop_public, fp tie-break: 1 / 2-3 / 4-10 / 11+), e.g. "
@@ -172,6 +177,7 @@ def main():
             for r_ in d_.itertuples(index=False): CMPX[(os.path.basename(run_), str(r_.set), str(r_.molecule), str(r_.official_key))] = (int(r_.n_cmp_pol_c1), int(r_.n_cmp_add_c1), int(r_.n_cmp_pol_c2), int(r_.n_cmp_add_c2))
         print('refcmp entries:', len(CMPX), flush=True)
     global RESTRICT; RESTRICT = a.restrict
+    global FILTER_TO_CSV; FILTER_TO_CSV = bool(a.filter_to_csv)
     if RESTRICT == "E":
         EKEYS.update(pd.read_parquet(a.ekeys).key.astype(str)); print(f"E window: {len(EKEYS):,} PubChemLite / BIO keys from {a.ekeys}", flush=True)
     if a.analog_parquet:
