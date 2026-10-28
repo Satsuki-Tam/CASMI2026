@@ -13,7 +13,7 @@ equal to ckpt_check.json; same fold-2 slot sha 257062cb...; every other setting 
 Gate (registered, Codex 110 (4)): dFP = 1/4 dMRR(np053f2dev NP_H) + 1/4 dMRR(np053f2dev NP_N) + 1/2 dMRR(f2dev D_np_single) must be strictly > 0,
 else stop the seed line. Diagnostics only: top-1, mean log-rank difference over rows reached in both (with count), other strata, rows where the
 v8w7a main misses rank 1 (diag/r102), and the reproduction of the existing tables (run_f2dev / run_np053_f2dev) by the rebuilt control.
-Usage (on the Spark, repo root experiments/b1_baseline): python -X utf8 x110_stage1.py"""
+Usage (on the Spark, repo root experiments/b1_baseline): python -X utf8 x110f2_stage1.py"""
 import hashlib, json, os, sys
 import numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))

@@ -1,0 +1,25 @@
+{
+ "generator_sha256": "1d848d089be3bc8622b9c12040df4064b053544f17ac71996abcb373f60946f2",
+ "files": {
+  "experiments/b1_baseline/x110f2_stage1.py": {
+   "source": "experiments/b1_baseline/x110_stage1.py",
+   "source_sha256": "b57db05f74ac7c5b27b3250a5b1ec6466817e5c5a0461b9f3fb485ce9df35519",
+   "sha256": "41abce873de8f98b134758fb2ab172e95c9e410ca0401b61113f4a82b719bb25"
+  },
+  "experiments/b1_baseline/x110f2_stage3.py": {
+   "source": "experiments/b1_baseline/x110_stage3.py",
+   "source_sha256": "4984259ea04ecf0883b59636a093e775f6c04072cd84411d6e65f19a849b70f5",
+   "sha256": "74a8357a2687c6a39f64ba49923fc922eb8e01853516a04b1ccd54216ae1ddee"
+  },
+  "spark/jobs/spark_x110f2.sh": {
+   "source": "spark/jobs/spark_x110.sh",
+   "source_sha256": "ce3622a02eb73d1df8da9f8749861e420ec6638f6a61d5b26838ab32050429fd",
+   "sha256": "367d0db599fff5d036dff18871cd238c4102adefd72ae53f4eab9af724819d5d"
+  },
+  "spark/jobs/x110f2_stage3_resume.sh": {
+   "source": "spark/jobs/x110_stage3_resume.sh",
+   "source_sha256": "94bfe0e2b7fad6c487ac84e46473d51e72b1ccc57bc32bb538e5705944d45491",
+   "sha256": "e59bf619903fb58aa5576f2d8fe4b5ccd72a8b5aca65d3ac375db08382961d25"
+  }
+ }
+}

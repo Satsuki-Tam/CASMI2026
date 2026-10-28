@@ -5,8 +5,9 @@
 # implementation instead. On success the status becomes X110_DONE (resumed, audit sha recorded); the audit path and sha go to the manifest.
 # Usage: bash spark/jobs/x110_stage3_resume.sh experiments/b1_baseline/diag/x110_repro_audit.md
 set -u
+[ -n "${1:-}" ] && [ -s "$1" ] || { echo "missing audit file argument"; exit 1; }
+AUD=$(realpath "$1"); PY=$HOME/CASMI2026/.venv/bin/python   # absolute BEFORE cd (Codex 117: a repo-relative argument was resolved after cd)
 cd ~/CASMI2026/experiments/b1_baseline || exit 1
-AUD=$(realpath "$1"); PY=$HOME/CASMI2026/.venv/bin/python
 grep -q "^X110_FAIL_REPRO" diag/x110_status.txt || { echo "status is not X110_FAIL_REPRO: $(cat diag/x110_status.txt)"; exit 1; }
 [ -s "$AUD" ] || { echo "missing audit file"; exit 1; }
 h=$(sha256sum "$AUD" | cut -c1-64); echo "$h $AUD (allow_repro audit)" >> diag/x110_manifest.txt

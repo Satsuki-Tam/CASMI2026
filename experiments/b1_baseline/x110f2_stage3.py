@@ -21,7 +21,7 @@ An empty cell or an undetermined protection (lower < -0.01) is a failure. A pass
 same gate on its own (two fold-2-held-out models), with no pooling across folds; neither is an unopened confirmation or a submission decision.
 Diagnostics (view-specific, Codex 112): C2 window reach = reach_external_b1, C2 list reach = reach_external_b1 & truth_in_short_c2, C1 list
 reach = truth_in_short_c1; main MRR among rows reached in the list; rescued / lost rows; the difference to the existing main is also shown.
-Usage (Spark, experiments/b1_baseline): python -X utf8 x110_stage3.py [--allow_repro AUDIT.md]"""
+Usage (Spark, experiments/b1_baseline): python -X utf8 x110f2_stage3.py [--allow_repro AUDIT.md]"""
 import json, os, sys
 import numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); NB = 4000; TOL = 1e-12
