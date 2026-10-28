@@ -10,7 +10,7 @@ set -u
 cd ~/CASMI2026 || exit 1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=1 PYTHONUTF8=1
 H=$HOME/CASMI2026; B=experiments/b1_baseline; PY=$H/.venv/bin/python; R=$H/experiments/n111/r1; F1=data/external/fpnet_fold1_as_fold0
-MAN=$B/diag/x111_manifest.txt; ST=$B/diag/x111_status.txt
+MAN=$H/$B/diag/x111_manifest.txt; ST=$H/$B/diag/x111_status.txt   # absolute: fail() is also called after cd $B
 EXPECT_EVAL_SHA=__EXPECT_EVAL_SHA__   # sha256 of the reviewed gen_eval2fd.py (PC), written at deploy time
 rm -f $ST
 fail() { echo "N111_FAIL $* $(date '+%F %T')" | tee $ST; exit 1; }
@@ -64,7 +64,7 @@ for S in 2000 8000 20000; do
   ev s$S c1bankdev --run run_c1bankdev_f1 --gen run_c1bankdev_f1/gen --sets $BSETS --eval_csv c1bank_f1/c1dev/p2_molecules.csv --nscore ../n111/scores/s$S --ntag c1bankdev & PIDS+=($!)
   FAIL=0; for p in "${PIDS[@]}"; do wait $p || FAIL=1; done; [ $FAIL -eq 0 ] || fail "evaluation s$S"
 done
-for f in diag/r111_*.csv; do h=$(sha256sum $f | cut -c1-64); echo "$h $f" >> diag/x111_manifest.txt; done
+for f in diag/r111_*.csv; do h=$(sha256sum $f | cut -c1-64); echo "$h $f" >> $MAN; done
 $PY -X utf8 x111_summary.py > diag/x111_summary.log 2>&1; rc=$?
 [ $rc -eq 0 ] || fail "reader rc=$rc ($(tail -1 diag/x111_summary.log | cut -c1-200))"
-echo "N111_DONE $(date '+%F %T')" | tee diag/x111_status.txt
+echo "N111_DONE $(date '+%F %T')" | tee $ST

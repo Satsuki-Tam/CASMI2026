@@ -12,7 +12,7 @@ set -u
 cd ~/CASMI2026 || exit 1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=1 PYTHONUTF8=1
 B=experiments/b1_baseline; PY=$HOME/CASMI2026/.venv/bin/python; PYI=$HOME/CASMI2026/.venv-ice/bin/python; R=experiments/fpnet_seed/f1s1; CK=$R/fpnet_f1s1_final.pt
-F1=data/external/fpnet_fold1_as_fold0; FS=data/external/fold_safe_fpnet; MAN=$B/diag/x110_manifest.txt; ST=$B/diag/x110_status.txt
+F1=data/external/fpnet_fold1_as_fold0; FS=data/external/fold_safe_fpnet; MAN=$HOME/CASMI2026/$B/diag/x110_manifest.txt; ST=$HOME/CASMI2026/$B/diag/x110_status.txt   # absolute: fail() is also called after cd $B
 rm -f $ST
 fail() { echo "X110_FAIL $* $(date '+%F %T')" | tee $ST; exit 1; }
 while pgrep -f "[s]park_fpnet_f1s1.sh" >/dev/null || pgrep -f "[t]rain_fivefold.py.*--tag fpnet_f1s1" >/dev/null; do sleep 300; done
@@ -80,8 +80,8 @@ for A in s0rep fpavg; do
   ev $A np053f1dev --sets $S3 --eval_csv np053_f1dev/p2_molecules.csv & PIDS+=($!)
 done
 FAIL=0; for p in "${PIDS[@]}"; do wait $p || FAIL=1; done; [ $FAIL -eq 0 ] || fail "main evaluation"
-for f in diag/r110_*.csv; do echo "$(sha256sum $f | cut -c1-64) $f" >> diag/x110_manifest.txt; done
+for f in diag/r110_*.csv; do echo "$(sha256sum $f | cut -c1-64) $f" >> $MAN; done
 $PY -X utf8 x110_stage3.py > diag/x110_stage3.log 2>&1; rc=$?
-if [ $rc -eq 2 ]; then echo "X110_FAIL_REPRO control does not reproduce the existing main; diag/x110_stage3_repro.md; resume: spark/jobs/x110_stage3_resume.sh AUDIT.md $(date '+%F %T')" | tee diag/x110_status.txt; exit 1; fi
+if [ $rc -eq 2 ]; then echo "X110_FAIL_REPRO control does not reproduce the existing main; diag/x110_stage3_repro.md; resume: spark/jobs/x110_stage3_resume.sh AUDIT.md $(date '+%F %T')" | tee $ST; exit 1; fi
 [ $rc -eq 0 ] || fail "stage-3 reader rc=$rc ($(tail -1 diag/x110_stage3.log | cut -c1-200))"
-echo "X110_DONE $(date '+%F %T')" | tee diag/x110_status.txt
+echo "X110_DONE $(date '+%F %T')" | tee $ST
