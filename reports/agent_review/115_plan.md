@@ -56,3 +56,8 @@
 - 段階 1: experiments/b1_baseline/x115_stage1.py(P0 / R / A の表を同じコード・同じ系で作り直す;ck115 の PASS と final の sha、manifest の一致、窓・到達・query の一致を検査;関門 = dFP(A − R) > 0 かつ dFP(A − P0) > 0;真の M_all 所属と A での模擬露出は記述のみ)。
 - 段階 3: experiments/b1_baseline/x115_stage3.py(GLACIER の監査・共有値の一致、行の完全性、P0 が既存の main(r102 / r111_base_c1bankdev)を全行再現しなければ exit 2;A − R と A − P0 の両方が主指標 ≥ +0.005・下限 > 0、ブロック・保護(旧 B、G C1、NP C1、c1dev pooled)の下限 ≥ −0.01;bootstrap は同じ再標本で二つの比較を対応させる、seed 1151 / 1152 / 1157 / 1158)。
 - 表は run_<tag>_{p0,r,a}e115(slot の fpnet_fold0.pt を各 arm の checkpoint に)、main は diag/r115_<arm>_<tag>.csv、tag は f1dev / np053f1dev / c1bankdev。実行ジョブは学習の後に作り、Codex の点検を受ける。
+
+## 結果の前の記述: 開発の真の M_all 所属(2026-10-29 05:10 JST、R / A の学習前、性能は読んでいない)
+- scorer_key → pool pid → M_all の catalog で数えた(x115_stage1 の診断列と同じ対応)。pool 所属はすべて 1.0。
+- **M_all 所属の割合**: np053f1dev NP_H 0.955、NP_N 0.967、NP_X 1.000。f1dev D_np_single **0.16**、C 0.32、E 0.41、F 0.48、G 0.00。c1bankdev C1_pos_few 0.134、C1_neg_few 0.231、C1_neg_many 0.154。
+- 読み方(判定は変えない): 主指標の重みの半分を占める D では、A が真の模擬を見ているのは約 16% だけ。D の A − R は主に「模擬を学習データに足す一般の効果」を測り、「隠しの B 群と同じく、真を模擬で見ている」効果は主に NP_H / NP_N に現れる。段階 1 の診断列(truth_sim_exposure)で、この二つを分けて記述する(判定には使わない)。
