@@ -1,0 +1,14 @@
+{
+  "topic": {
+    "id": 753525,
+    "title": "What is 0.005 MRR worth? Public LB noise with ~125 molecules",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/753525",
+    "postDate": "2026-10-28T12:49:27.757Z",
+    "authorName": "Harshit Kumar",
+    "authorUrl": "https://www.kaggle.com/harshitsama",
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>With about 125 public molecules, moving one answer from rank 2 to rank 1 is worth 0.5/125 = 0.004 MRR. So the gap between the 0.472 pile and a 0.477 notebook is about one molecule.</p>\n<p>Notebook with the leaderboard shape and a small simulation: <a href=\"https://www.kaggle.com/code/harshitsama/casmi-2026-leaderboard-noise-check\" target=\"_blank\">https://www.kaggle.com/code/harshitsama/casmi-2026-leaderboard-noise-check</a></p>\n<p>Measured from the public leaderboard (4,235 teams, 2026-10-28): 273 teams sit at exactly 0.472, 176 at 0.464, 619 teams are within 0.466-0.4725, and only 16 are above 0.48.</p>\n<p>Modelled (assumption, labelled in the notebook; swap in your own out-of-fold ranks): with a per-molecule rank distribution whose mean is about 0.46, the standard error of mean MRR is about 0.04 on 125 molecules and 0.023 on 400. For two pipelines that agree on 85% of molecules, a change with ZERO true gain looks 0.005 better by luck about 40% of the time.</p>\n<p>What I take from it: do not trust knob sweeps (w_mid 0.70 vs 0.75) judged only on public; prefer changes you can check offline (candidate recall, rank of the true answer); and keep one diverse final submission, since the other ~275 molecules decide the private board.</p>\n<p>If you have out-of-fold rank distributions I would like to compare against my assumed one.</p>"
+  },
+  "comments": []
+}
