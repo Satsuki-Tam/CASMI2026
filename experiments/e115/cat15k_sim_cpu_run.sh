@@ -3,7 +3,7 @@
 # the 150-molecule stage-1 run finished technically. One process, explicit --device cpu, thread caps, nice; chunks of 5,000 jobs. Completion = the
 # meta file (gl_simulate.py writes it at the end); chunk files without the meta are not a finished product. Hashes of every input in manifest.txt.
 cd ~/CASMI2026 || exit 1
-export OMP_NUM_THREADS=6 MKL_NUM_THREADS=6 OPENBLAS_NUM_THREADS=6 CUDA_VISIBLE_DEVICES=""
+export OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 CUDA_VISIBLE_DEVICES=""
 O=experiments/e115/cat15k_sim_cpu; C=experiments/e115/cat15k
 grep -q "^STAGE1_CPU rc=0" experiments/e115/stage1_cpu/status.txt || { echo "stage 1 not finished technically" > $O/status.txt; exit 1; }
 .venv/bin/python -c "import json,sys; r=json.load(open(\"experiments/e115/stage1_cpu/simtest/simtest_result.json\")); sys.exit(0 if r[\"passed\"] and r[\"molecules\"]==150 else 1)" || { echo "stage 1 result not passed / not 150 molecules" > $O/status.txt; exit 1; }
