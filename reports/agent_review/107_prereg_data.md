@@ -16,3 +16,12 @@
 ## 3. 確認(関門を通った場合だけ、一回)
 - cfall を np096_conf093(H200 / N200)+ np102_d0conf(D 286)で読む(H/4 + N/4 + D/2)。C1: c1cost098(E、usable の実数)。条件は 104 §4・§6 と同じ(平均 ≥ +0.005 かつ下限 > 0、各ブロックと C1 の下限 ≥ −0.01、usable 0 や未判定は不合格)。
 - これらの集合は 102 / 104 では開いていない。
+
+## 4. 確定版(Codex 107 を受けて、19:03、性能結果は未読)
+- v1(18:41〜19:00 の学習・評価)の出力は未読のまま隔離(diag/cf107_v1_unread、rank_cfA / cfB / cfall_v1unread)。**検査だけ実施: cf0(同じ run・同じレシピ・--filter_to_csv・統合 analog)は v8w7a を 6 表の全行で再現(差 0)** → 主比較は登録どおり CF − v8w7a(同時に CF − cf0 とも同じ)。
+1. **保護集合の identity group を全ての追加 fit から除外**(Codex が見つけたパネル C1 clean との重複 3 group:188 / 235 / 57 を含む)。保護集合 = パネル、dev2 / locked2(eval_set2 / locked_eval2 v2)、未開封の確認集合(np096_conf093、np102_d0conf、c1cost098)。評価の分母(4 表 1,640 分子)はそのまま。分割表に cf(A / B)と fit_ok を持たせ、cfall も除外済みの全件 CSV で学習。
+2. **実 fit 名簿の照合**: trainer が正例あり群への限定・C1 反復の後の (run, set, molecule, view, identity_group) を rank_<M>/fit_roster.csv に保存;読みで「各評価行の group が、その行を採点したモデルの名簿に無い」「パネル・dev2 の group が cfall の名簿に無い」を assert。group の欠測禁止、group が一つの表・一つの fold にだけ属することを分割で assert。
+3. **--filter_to_csv は分子台帳(M / LEDGER)も CSV に揃え**、CSV の分子に台帳行が無ければ停止。**analog cache の被覆**を run × set ごとに記録し、開発 4 表は欠損 0 を必須(--analog_strict)。
+4. A 側 / B 側の主指標と実 fit の group 数を別に記録。開発表での cfall の値(自分を学習)は判定用の表に出さない。行 bootstrap の区間は固定した一つの分割・学習結果に条件付いた記述区間。**不通過後に seed や分割を替えて合格を探さない**。
+5. これは ranker 層の交差 fit であり、特徴生成(FP・GL 等)の全段を含む外側 holdout ではない(別 fold の学習行の FP モデルは評価側の同一性を学習済みの場合がある)。得られるのは「この追加レシピ一式の効果」(C1 / C2・COCO・G・GL 経路の比率も動く)。
+6. ジョブ: 失敗時は非ゼロ終了、全出力の新規生成を確認、manifest に分割表・fit 用 CSV・実 fit 名簿・コードの hash。確認(§3)の読みに使う集合の不重複も分割で assert 済み。

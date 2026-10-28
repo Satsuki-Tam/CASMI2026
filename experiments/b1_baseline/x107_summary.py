@@ -1,4 +1,8 @@
-"""107 reading (107_prereg_data.md), written before any result was read. Inputs: diag/cf107/r107_<model>_<tag>.csv for model in v8w7a, cf0, cfA, cfB,
+"""107 reading v2 (107_prereg_data.md + section 4 after Codex 107), written before any result was read.
+v2 additions: fit-roster checks (each scored row's identity group is absent from the actual fit roster of the model that scored it; panel /
+dev2 groups absent from the cfall roster), A-side / B-side primaries with fit-group counts, 102 key checks; cfall values of the development
+tables (in-fit) are not shown.
+Original docstring: Inputs: diag/cf107/r107_<model>_<tag>.csv for model in v8w7a, cf0, cfA, cfB,
 cfall; diag/cf107/split.csv; diag/r102_<tag>.csv (main comparison). CF = cross-fitted main RR (development tables: fold A molecules scored by cfB,
 fold B by cfA; panel and dev2 scored by cfall). d = CF - v8w7a.
 Checks first (stop on failure): identical row sets across models and complete vs the selection CSVs / c1_usable; values finite in [0, 1];
@@ -15,7 +19,10 @@ EVAL_CSV = {"f1dev": "eval_set_f1/p2_molecules.csv", "f2dev": "eval_set_f2/p2_mo
 RUN_OF = {"f1dev": "run_f1dev", "f2dev": "run_f2dev", "np053f1dev": "run_np053_f1dev", "np053f2dev": "run_np053_f2dev", "p2dev": "run_p2dev_fe", "panel": "run_panel_fe"}
 NP = ["C_np_crosslib", "D_np_single", "E_np_negonly", "F_np_uncovered"]
 CLEAN = set(pd.read_csv(os.path.join(HERE, "..", "fpnet_full", "full_eval_audit", "panel_molecule_audit_groups.csv")).query("audit_group == 'clean_nearest_lt_0.90'").molecule.astype(str))
-SPLIT = pd.read_csv(os.path.join(C, "split.csv")); SPLIT["molecule"] = SPLIT.molecule.astype(str); FOLD = {(t, m): f for t, m, f in zip(SPLIT.tag, SPLIT.molecule, SPLIT.cf)}
+SPLIT = pd.read_csv(os.path.join(C, "split.csv")); SPLIT["molecule"] = SPLIT.molecule.astype(str)
+assert not SPLIT.duplicated(["tag", "molecule"]).any() and SPLIT.identity_group.notna().all()
+FOLD = {(t, m): f for t, m, f in zip(SPLIT.tag, SPLIT.molecule, SPLIT.cf)}; GRP = {(t, m): int(g) for t, m, g in zip(SPLIT.tag, SPLIT.molecule, SPLIT.identity_group)}
+ROS = {m: set(pd.read_csv(os.path.join(HERE, f"rank_{m}", "fit_roster.csv")).identity_group.astype(int)) for m in ("cfA", "cfB", "cfall")}
 
 
 def stop(m): sys.exit(f"STOP (107 check): {m}")
@@ -40,6 +47,7 @@ for t in TAGS:
     F = pd.DataFrame({m: v for m, v in X.items()}).reset_index()
     if not np.isfinite(F[["v8w7a", "cf0", "cfA", "cfB", "cfall"]].values).all() or (F[["v8w7a", "cf0", "cfA", "cfB", "cfall"]].values < 0).any() or (F[["v8w7a", "cf0", "cfA", "cfB", "cfall"]].values > 1).any(): stop(f"{t}: values")
     r102 = pd.read_csv(os.path.join(HERE, f"diag/r102_{t}.csv")); r102["molecule"] = r102.molecule.astype(str); r102 = r102.set_index(["set", "view", "molecule"]).main
+    if r102.index.duplicated().any() or not np.isfinite(r102.values).all(): stop(f"{t}: 102 keys / values")
     if set(r102.index) != keys: stop(f"{t}: 102 rows differ")
     n102 = int((np.abs(X["v8w7a"].reindex(r102.index) - r102) > TOL).sum()); n0 = int((np.abs(X["cf0"] - X["v8w7a"]) > TOL).sum())
     CHK.append(f"| {t} | {len(F)} | {n102} | {n0} |")
@@ -48,8 +56,13 @@ for t in TAGS:
     if t in DEV:
         fl = [FOLD.get((t, mm)) for mm in F.molecule]
         if any(f not in ("A", "B") for f in fl): stop(f"{t}: molecule without a fold label")
-        F["CF"] = np.where(np.array(fl) == "A", F.cfB, F.cfA)
-    else: F["CF"] = F.cfall
+        F["CF"] = np.where(np.array(fl) == "A", F.cfB, F.cfA); F["side"] = fl
+        bad = sum(1 for mm, f in zip(F.molecule, fl) if GRP[(t, mm)] in ROS["cfB" if f == "A" else "cfA"])
+        if bad: stop(f"{t}: {bad} rows scored by a model whose fit roster contains their identity group")
+    else:
+        F["CF"] = F.cfall; F["side"] = "all"; gmap = dict(zip(ev.molecule, ev.identity_group.astype(int)))
+        bad = sum(1 for mm in F.molecule if gmap[mm] in ROS["cfall"])
+        if bad: stop(f"{t}: {bad} rows whose identity group is in the cfall fit roster")
     F["d"] = F.CF - F.v8w7a; D[t] = F
 
 
@@ -68,16 +81,18 @@ ci = lambda bs: np.percentile(bs, [2.5, 97.5]); fmt = lambda p, bs: f"{p:+.4f} [
 st = lambda bs, e=0.01: "harm" if ci(bs)[1] < -e else ("non-inferior" if ci(bs)[0] >= -e else "undetermined")
 CA = [("np053f1dev", "NP_H"), ("np053f1dev", "NP_N"), ("np053f2dev", "NP_H"), ("np053f2dev", "NP_N")]; CBD = [("f1dev", "D_np_single"), ("f2dev", "D_np_single")]
 pa, ba = boot(CA, "c2", 102); pb, bb = boot(CBD, "c2", 103); p, bs = 0.5 * pa + 0.5 * pb, 0.5 * ba + 0.5 * bb
+SIDES = {sd: (0.5 * boot(CA, "c2", 102, lambda r, sd=sd: r.side == sd)[0] + 0.5 * boot(CBD, "c2", 103, lambda r, sd=sd: r.side == sd)[0]) for sd in ("A", "B")}
 PROT = {"old B f1/f2 NP C2 (C-F)": ([(t, s) for t in ("f1dev", "f2dev") for s in NP], "c2", None), "G C1 (f1/f2)": ([("f1dev", "G_tims_crosslib"), ("f2dev", "G_tims_crosslib")], "c1", None),
         "panel C1 clean (cfall)": ([("panel", "P_np250")], "c1", lambda r: r.molecule.isin(CLEAN)), "053 NP C1 (4 cells)": (CA, "c1", None)}
 pr = {k: boot(c_, v_, 7, e_) for k, (c_, v_, e_) in PROT.items()}
 gate = p >= 0.005 and ci(bs)[0] > 0 and ci(ba)[0] >= -0.01 and ci(bb)[0] >= -0.01 and all(ci(b_)[0] >= -0.01 for _, b_ in pr.values())
 L = ["# 107 reading: ranker data scaling with cross-fitting (CF - v8w7a)", "", "## Checks", "", "| tag | rows | v8w7a vs 102 diff | cf0 vs v8w7a diff |", "|---|---:|---:|---:|"] + CHK
-L += ["", "## Decision", "", f"- **primary 1/2 A + 1/2 B_D: {fmt(p, bs)}**", f"- A 053 NP C2: {fmt(pa, ba)}", f"- B_D f1/f2 D C2: {fmt(pb, bb)}"]
+L += ["", "## Decision", "", f"- **primary 1/2 A + 1/2 B_D: {fmt(p, bs)}**", f"- A 053 NP C2: {fmt(pa, ba)}", f"- B_D f1/f2 D C2: {fmt(pb, bb)}",
+      f"- by side (point estimates; fold-A rows scored by cfB, fold-B rows by cfA): A-side {SIDES['A']:+.4f}, B-side {SIDES['B']:+.4f}; fit identity groups cfA {len(ROS['cfA'])}, cfB {len(ROS['cfB'])}, cfall {len(ROS['cfall'])}"]
 L += [f"- {k}: {fmt(*pr[k])} ({st(pr[k][1])})" for k in PROT]
 L += [f"- dev2 NP C2 (cfall, stress): {fmt(*boot([('p2dev', s) for s in NP], 'c2', 21))}", f"- **gate: {'PASS -> confirmation (107 section 3)' if gate else 'NO'}**", "",
-      "## Diagnostics (row means)", "", "| layer | n | v8w7a | CF | cfall | rescued / lost (CF vs v8w7a) |", "|---|---:|---:|---:|---:|---|"]
+      "## Diagnostics (row means; cfall on the development tables is in-fit and not shown)", "", "| layer | n | v8w7a | CF | rescued / lost (CF vs v8w7a) |", "|---|---:|---:|---:|---|"]
 for lab, cells, vw, ex in [("A 053 NP C2", CA, "c2", None), ("B_D f1/f2 D C2", CBD, "c2", None)] + [(k, c_, v_, e_) for k, (c_, v_, e_) in PROT.items()]:
     r = pd.concat([D[t][(D[t].set == s) & (D[t].view == vw)] for t, s in cells]); r = r[ex(r)] if ex is not None else r
-    L.append(f"| {lab} | {len(r)} | {r.v8w7a.mean():.4f} | {r.CF.mean():.4f} | {r.cfall.mean():.4f} | {int((r.d > TOL).sum())} / {int((r.d < -TOL).sum())} |")
+    L.append(f"| {lab} | {len(r)} | {r.v8w7a.mean():.4f} | {r.CF.mean():.4f} | {int((r.d > TOL).sum())} / {int((r.d < -TOL).sum())} |")
 open(os.path.join(C, "x107_summary.md"), "w", encoding="utf-8").write(chr(10).join(L) + chr(10)); print(chr(10).join(L))

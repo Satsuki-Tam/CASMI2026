@@ -29,6 +29,7 @@ def exposure_of(keys):
 
 RESTRICT = ""   # 095: '' = full view list (default), 'B' = B-group candidates only; 102: 'E' = E-window candidates only
 FILTER_TO_CSV = False   # 107: --filter_to_csv
+ACOV = {}   # 107: (run, set) -> [groups, groups missing in the analog cache, candidate rows, candidate rows missing]
 EKEYS = set()   # 102: official keys of the extra E-window layers (PubChemLite / BIO, diag/e_window_keys_v2.parquet)
 ECOUNT = {}     # 102: (run, set, view) -> [groups, groups with the truth in the view list, groups with a non-empty E subset, groups with the truth in the E subset]
 
@@ -46,6 +47,9 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
         if FILTER_TO_CSV:   # 107: keep only the molecules listed in this eval CSV (a subset CSV = a cross-fitting fold of a used development table)
             keep_ = set(ev[ev["set"].astype(str) == s].index.astype(str)); n0_ = F.molecule.nunique()
             F = F[F.molecule.astype(str).isin(keep_)]; print(f"FILTER {os.path.basename(run)} {s}: {F.molecule.nunique()} of {n0_} molecules kept (csv {eval_csv})", flush=True)
+            miss_ = keep_ - set(M.index.astype(str))
+            assert not miss_, f"107: {len(miss_)} CSV molecules of {run} {s} have no ledger row"   # Codex 107 (3): stop, do not continue
+            M = M[M.index.astype(str).isin(keep_)]   # the ledger (strict denominators) follows the CSV subset too
         if RESTRICT == "E":   # Codex 102 Q5(2): the table, the molecule ledger and the selection CSV must describe the same molecules
             extra_ = set(F.molecule.astype(str)) - set(ev.index.astype(str))
             assert not extra_, f"102: {run} {s}: {len(extra_)} table molecules not in {eval_csv}"
@@ -90,6 +94,9 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                                    cmp=(dict(n_cmp_pol=[CMPX.get((os.path.basename(run), s, str(mid), str(k_)), (0, 0, 0, 0))[0 if view == "c1" else 2] for k_ in g.official_key],
                                              n_cmp_add=[CMPX.get((os.path.basename(run), s, str(mid), str(k_)), (0, 0, 0, 0))[1 if view == "c1" else 3] for k_ in g.official_key]) if CMPX else None),
                                    analog=(dict(ap=[ANA.get((s, view, mid), {}).get(str(sm), (0.0, 0.0))[0] for sm in g.smiles], mean_tan=[ANA.get((s, view, mid), {}).get(str(sm), (0.0, 0.0))[1] for sm in g.smiles]) if ANA else None))
+                if ANA:   # 107 (Codex 107 (3)): analog cache coverage; a missing entry is filled with 0.0 by the lookup above
+                    ak_ = ANA.get((s, view, mid)); c_ = ACOV.setdefault((os.path.basename(run), s), [0, 0, 0, 0]); c_[0] += 1; c_[1] += int(ak_ is None)
+                    c_[2] += len(g); c_[3] += int(len(g) if ak_ is None else sum(1 for sm_ in g.smiles if str(sm_) not in ak_))
                 d = pd.DataFrame(X, columns=feats)
                 d.insert(0, "is_truth", g.is_truth.values.astype(int)); d.insert(0, "identity", mid); d.insert(0, "group", group_override or m.group); d.insert(0, "view", view)
                 d.insert(0, "molecule", mid); d.insert(0, "set", s); d.insert(0, "run", run)
@@ -147,6 +154,7 @@ def main():
     ap.add_argument("--restrict", default="", choices=["", "B", "E"], help="095: B = train the ranker on the B-group candidates of each view only (COCONUT and not train; groups whose truth is not B drop out); "
                     "102: E = the E window (COCONUT | train in this view | PubChemLite | BIO keys of --ekeys)")
     ap.add_argument("--ekeys", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "diag", "e_window_keys_v2.parquet"), help="102: e_keys.py output (key, in_pcl, in_bio)")
+    ap.add_argument("--analog_strict", nargs="*", default=[], help="107: run basenames whose analog cache must cover every view row (else stop)")
     ap.add_argument("--filter_to_csv", action="store_true", help="107: restrict every run's table rows to the molecules of its eval CSV (per set); default off = unchanged")
     ap.add_argument("--pointwise", action="store_true", help="102: row weights = group weight / group size, rescaled to mean 1 (every (molecule, view) group carries its group weight in total) "
                     "for a pointwise objective given by --params_from (e.g. binary)")
@@ -191,6 +199,9 @@ def main():
     MONO_USED = MONO_LIB if a.monotone_lib else MONO
     print("features:", len(FE), "| dropped:", a.drop, "| c1_repeat:", a.c1_repeat, "| c2_nolib:", a.c2_nolib, "| monotone:", a.monotone, "lib" if a.monotone_lib else "")
     data = pd.concat([load_run(*r.split(":"), feats=FE) for r in a.runs], ignore_index=True)   # RUN:eval_csv[:group_override]
+    for k_, c_ in sorted(ACOV.items()):
+        print(f"ANALOG-COVER {k_[0]} {k_[1]}: groups missing {c_[1]}/{c_[0]}, candidate rows missing {c_[3]}/{c_[2]}", flush=True)
+        if k_[0] in set(a.analog_strict) and (c_[1] or c_[3]): raise SystemExit(f"107: analog cache incomplete for strict run {k_[0]} {k_[1]}")
     if a.c1_only_runs:
         drop_ = data.run.map(lambda r: os.path.basename(str(r)) in set(a.c1_only_runs)) & (data.view == "c2")
         print(f"c1-only runs {a.c1_only_runs}: dropping {int(drop_.sum()):,} C2 rows ({data[drop_].groupby(['molecule']).ngroups} groups)", flush=True)
@@ -250,6 +261,9 @@ def main():
                   f"effective c1 share {float(gw[gview == 'c1'].sum() / gw.sum()):.4f}", flush=True)
             return lgb.Dataset(d[FE].values, label=d.is_truth.values, group=sizes, weight=w_rows, free_raw_data=False, feature_name=list(FE)), d
         return lgb.Dataset(d[FE].values, label=d.is_truth.values, group=sizes, free_raw_data=False, feature_name=list(FE)), d
+    ros_ = fit_t[["run", "set", "molecule", "view", "identity_group"]].copy(); ros_["molecule"] = ros_.molecule.astype(str).str.replace(r"#r\d+$", "", regex=True)
+    ros_ = ros_.drop_duplicates(); ros_["run"] = ros_.run.map(lambda r: os.path.basename(str(r))); os.makedirs(a.out, exist_ok=True); ros_.to_csv(f"{a.out}/fit_roster.csv", index=False)
+    print(f"FIT-ROSTER {len(ros_)} (molecule, view) groups, {ros_.identity_group.nunique()} identity groups -> {a.out}/fit_roster.csv", flush=True)
     ds_fit, fit_s = to_ds(fit_t)
     FIXED = json.load(open(a.params_from))["selected"] if a.params_from else None
     if FIXED: print("params fixed from", a.params_from, ":", {k: FIXED["params"][k] for k in ("num_leaves", "learning_rate")}, "rounds", FIXED["rounds"], "(no search)")
