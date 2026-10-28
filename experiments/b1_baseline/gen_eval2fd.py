@@ -175,7 +175,7 @@ if __name__ == "__main__":
     RULES = ["gk2", "gk3", "gt3", "gk3all", "dv1"]
     PWS = [float(x) for x in a.pop_ws.split(",") if x]
     FDV = ([f"fd_{k}{w}" for k in ("s", "o") for w in (0.5, 1.0)] if a.fpD else []) + [f"pw{w}" for w in PWS] + (["bpp", "rB_main", "rB_spec", "truth_B", "nB"] if a.bmodel else [])
-    FDV += (["p_e"] + [f"rrf_pe_{al_}" for al_ in (0.5, 1.0)] + [v_ for t_, _ in EMODS for v_ in [f"{t_}_only", f"orc_{t_}"] + [f"rrf_{t_}_{al_}" for al_ in (0.5, 1.0)] + [f"pp_{t_}_{al_}" for al_ in (0.5, 1.0)]]) if a.emodel else []
+    FDV += (["p_e"] + [f"rrf_pe_{al_}" for al_ in (0.5, 1.0)] + [v_ for t_, _ in EMODS for v_ in [f"{t_}_only", f"orc_{t_}"] + [f"rrf_{t_}_{al_}" for al_ in (0.5, 1.0)] + [f"pp_{t_}_{al_}" for al_ in (0.5, 1.0)] + [f"t1E_{t_}_0.5"]]) if a.emodel else []
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -349,6 +349,19 @@ if __name__ == "__main__":
                                     for k_, i_ in zip(sorted(int(x) for x in pos_m[ei_]), e_sorted_): new_[k_] = i_
                                     out[f"pp_{t_}_{al_}"] = rr_of([("db", int(i)) for i in new_])
                                 else: out[f"pp_{t_}_{al_}"] = out["main"]
+                            # 104 candidate (Codex 103 Q5): the main rank-1 is fixed for every query; the remaining E members are re-ordered by the 102 RRF score
+                            # 1/(K + r_main) + 0.5/(K + r_E) (r_main = full main rank, r_E = E rank) and put back into the remaining E slots; non-E positions unchanged
+                            if len(es_):
+                                r2_ = np.full(len(g), np.inf); r2_[np.asarray(es_, int)] = np.arange(1, len(es_) + 1)
+                                sc_ = 1.0 / (a.rrf_k + pos_m + 1) + 0.5 * np.where(np.isfinite(r2_), 1.0 / (a.rrf_k + r2_), 0.0)
+                                top_ = int(order[0]); er_ = np.array([i for i in ei_ if int(i) != top_], int)
+                                new_ = np.asarray(order, int).copy()
+                                if len(er_):
+                                    e_sorted_ = [int(i) for i in er_[np.lexsort((pos_m[er_], -sc_[er_]))]]
+                                    for k_, i_ in zip(sorted(int(x) for x in pos_m[er_]), e_sorted_): new_[k_] = i_
+                                assert int(new_[0]) == top_
+                                out[f"t1E_{t_}_0.5"] = rr_of([("db", int(i)) for i in new_])
+                            else: out[f"t1E_{t_}_0.5"] = out["main"]
                     if a.dump_top and mi_ == 0:
                         for k_, i_ in enumerate(order[:25]):
                             TOPD.append(dict(set=s, view=v, molecule=mid, rank=k_ + 1, smiles=str(g.smiles.values[i_]), okey=str(g.official_key.values[i_]), fp=float(fp[i_]) if np.isfinite(fp[i_]) else np.nan,
