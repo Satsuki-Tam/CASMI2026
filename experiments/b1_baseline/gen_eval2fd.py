@@ -36,6 +36,8 @@ ap_.add_argument("--store", default="data/processed/spectra_store"); ap_.add_arg
 ap_.add_argument("--tparents_mode", default="only", choices=["only", "add"], help="only = test-side parents replace the train-analog parents; add = appended to them")
 ap_.add_argument("--dump_top", default="", help="099: parquet of the first model's main order, top 25 per (set, view, molecule): smiles, official key, fp (f.z), score")
 ap_.add_argument("--bmodel", default="", help="095: B-group specialist ranker (b1_rank_train --restrict B); variant bpp = the main order with the B candidates re-ordered by it inside the positions B already holds (GL path only; non-B positions unchanged)")
+ap_.add_argument("--emodel", default="", help="102: comma-separated second-engine E-lite models (b1_rank_train --restrict E), scored on the E-window rows of each view (COCONUT | train in that view | PubChemLite / BIO keys of --ekeys), features recomputed within the window; variants <tag>_only (E list alone), p_e (main order restricted to the E window), rrf_<tag>_<a> / rrf_pe_<a> (identity RRF of the main order with E / with p_e, K = --rrf_k, weight a on the second list), orc_<tag> (max(main, E alone)); diagnostics e_reach, nE, rP, r_<tag>; tag = model directory name")
+ap_.add_argument("--ekeys", default="diag/e_window_keys.parquet"); ap_.add_argument("--rrf_k", type=float, default=10.0)
 ap_.add_argument("--fp_col", default="fp_s", choices=["fp_s", "fp_m"], help="091: which fp_mean_score column overrides fp (fp_m = PC-recomputed merge input = platform control)")
 ap_.add_argument("--fp_override", default="", help="091: fp_mean_score.py parquet; fp <- fp_s and fp_rank_window <- fprw_s for every candidate row (main and variants)")
 ap_.add_argument("--pop_ws", default="", help="090: comma-separated fixed-rule prior weights -> variants pw<w>")
@@ -116,6 +118,9 @@ if __name__ == "__main__":
     MODELS = a.model.split(","); OUTS = a.out.split(","); assert len(MODELS) == len(OUTS), (MODELS, OUTS)
     BSTS = [lgb.Booster(model_file=os.path.join(HERE, m_)) for m_ in MODELS]; FEATS = BSTS[0].feature_name()
     FEATS_M = [tuple(b_.feature_name()) for b_ in BSTS]
+    EMODS = [(os.path.basename(os.path.dirname(m_)) or m_, lgb.Booster(model_file=os.path.join(HERE, m_))) for m_ in a.emodel.split(",") if m_]   # 102
+    EKA = np.array(sorted(set(pd.read_parquet(os.path.join(HERE, a.ekeys)).key.astype(str)))) if EMODS else np.array([], str)
+    if EMODS: log(f"E-lite models {[t_ for t_, _ in EMODS]}, E-window extra keys {len(EKA):,}, RRF K {a.rrf_k}")
     BMOD = lgb.Booster(model_file=os.path.join(HERE, a.bmodel)) if a.bmodel else None   # 078: models may use different feature lists (one matrix per distinct list)
     TOPD = []   # 099 dump
     TPAR = {}
@@ -170,6 +175,7 @@ if __name__ == "__main__":
     RULES = ["gk2", "gk3", "gt3", "gk3all", "dv1"]
     PWS = [float(x) for x in a.pop_ws.split(",") if x]
     FDV = ([f"fd_{k}{w}" for k in ("s", "o") for w in (0.5, 1.0)] if a.fpD else []) + [f"pw{w}" for w in PWS] + (["bpp", "rB_main", "rB_spec", "truth_B", "nB"] if a.bmodel else [])
+    FDV += (["p_e"] + [f"rrf_pe_{al_}" for al_ in (0.5, 1.0)] + [v_ for t_, _ in EMODS for v_ in [f"{t_}_only", f"orc_{t_}"] + [f"rrf_{t_}_{al_}" for al_ in (0.5, 1.0)]]) if a.emodel else []
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -309,6 +315,31 @@ if __name__ == "__main__":
                             if t_ == "gen" and i_ in mm["tokeys"]: return 1.0 / (k_ + 1)
                         return 0.0
                     out = dict(base, n_cand=len(g), main=rr_of(lst_db))
+                    if EMODS and mi_ == 0:   # 102: second engine E-lite on the E window + identity RRF with the main order (rows = unique official keys)
+                        em_ = g.in_coconut.values.astype(bool) | g[f"in_train_{vv}"].values.astype(bool) | np.isin(okeys, EKA); ei_ = np.flatnonzero(em_)
+                        pos_m = np.empty(len(g), int); pos_m[np.asarray(order, int)] = np.arange(len(g))   # 0-based main position
+                        out.update(nE=int(len(ei_)), e_reach=bool(tr[ei_].any()) if len(ei_) else False, rP=int(pos_m[tr].min() + 1) if tr.any() else 0)
+                        def _rrf(second_, al_):
+                            r2_ = np.full(len(g), np.inf)
+                            if len(second_): r2_[np.asarray(second_, int)] = np.arange(1, len(second_) + 1)
+                            sc_ = 1.0 / (a.rrf_k + pos_m + 1) + al_ * np.where(np.isfinite(r2_), 1.0 / (a.rrf_k + r2_), 0.0)
+                            return [("db", int(i)) for i in np.lexsort((pos_m, -sc_))]   # ties -> main order
+                        pe_ = [int(i) for i in order if em_[i]]; out["p_e"] = rr_of([("db", i) for i in pe_])
+                        for al_ in (0.5, 1.0): out[f"rrf_pe_{al_}"] = rr_of(_rrf(pe_, al_))
+                        for t_, emod_ in EMODS:
+                            es_ = []
+                            if len(ei_):
+                                sub = lambda arr: np.asarray(arr)[ei_]; fe_ = list(emod_.feature_name())
+                                XE = feature_matrix(sub(fp), sub(glv), np.full(len(ei_), np.nan), sub(pop), sub(g.lsid.values), sub(g.lpmid.values), sub(g.lsynonyms.values), sub(g["np"].values),
+                                                    sub(g.src_mask.values), sub(g.lotus_refs.values), sub(lib), sub(g[f"lib_same_{vv}"].values), sub(g[f"lib_nref_{vv}"].values), sub(g.in_tier.values),
+                                                    sub(g[f"in_train_{vv}"].values), sub(g.in_coconut.values), sub(g.ppm_err.values), sub(g.fp_rank_window.values), float(M.loc[mid, "n_query"]),
+                                                    float(M.loc[mid, "ce_known"]), n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=fe_,
+                                                    analog=(dict(ap=sub(feats["ap"]), mean_tan=sub(feats["mean_tan"])) if any(f_.startswith("ana_") or f_ == "z_ana_ap" for f_ in fe_) else None))
+                                se_ = np.nan_to_num(np.asarray(emod_.predict(XE), float), nan=-1e18)
+                                es_ = [int(ei_[j]) for j in np.lexsort((pos_m[ei_], -se_))]   # ties -> main order
+                            out[f"r_{t_}"] = next((k + 1 for k, i in enumerate(es_) if tr[i]), 0)
+                            out[f"{t_}_only"] = rr_of([("db", i) for i in es_]); out[f"orc_{t_}"] = max(out["main"], out[f"{t_}_only"])
+                            for al_ in (0.5, 1.0): out[f"rrf_{t_}_{al_}"] = rr_of(_rrf(es_, al_))
                     if a.dump_top and mi_ == 0:
                         for k_, i_ in enumerate(order[:25]):
                             TOPD.append(dict(set=s, view=v, molecule=mid, rank=k_ + 1, smiles=str(g.smiles.values[i_]), okey=str(g.official_key.values[i_]), fp=float(fp[i_]) if np.isfinite(fp[i_]) else np.nan,

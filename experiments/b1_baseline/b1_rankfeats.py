@@ -31,6 +31,10 @@ EXTRA_FRAG = ["frag", "z_frag"]   # 039: MetFrag-lite (b1_frag) as ranker inputs
 FEATSETS["v2_noice_ana_frag"] = FEATSETS["v2_noice_ana"] + EXTRA_FRAG
 EXTRA_CMP = ["lib_has_cmp", "lib_ncmp", "lib_has_add", "lib_sim_cmp"]   # 078 (Codex 075 (a)): reference comparability, exact definition (refcmp_exact.py / pipeline)
 FEATSETS["v2_noice_cmp"] = FEATSETS["v2_noice"] + EXTRA_CMP
+# 102 (second engine E-lite): popularity-free and source-free evidence only (FPNet, GLACIER, library similarity, analog channel, mass error,
+# list context), with per-model rank / gap / margin within the list; no prior, no in_tier / in_train / in_coconut, no lib_nref, no fp_rank_window
+FEATSETS["e1"] = ["z_fp", "fp", "rank_fp", "gap_fp", "margin_fp_mol", "z_gl", "gl", "rank_gl", "gap_gl", "margin_gl_mol", "gl_missing", "lib_sim", "lib_same", "lib_margin",
+                  "lib_max_mol", "lib_rank", "ppm_err", "n_cands", "n_query", "ce_known", "ana_ap", "z_ana_ap", "ana_mt", "ana_gap"]
 # monotone directions for the constrained variant (0 = unconstrained): only the model scores (up) and the mass error (down), Codex 008
 MONO = dict(z_fp=1, z_gl=1, z_ice=1, fp=1, gl=1, ice=1, ppm_err=-1)
 # 2026-10-25 (panel probe): reference evidence may only raise a candidate -- in the C2 training view the truth has no references by construction,

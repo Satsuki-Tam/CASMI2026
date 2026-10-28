@@ -1,0 +1,3 @@
+{"note": "102 (E-lite pointwise, fixed a priori, no search): LightGBM binary log-loss with depth / leaf / iteration settings of the same order as E0's engine-2 HistGB (depth 6, 500 iterations, lr 0.03, min leaf 80); generic values, not tuned on our data",
+ "selected": {"params": {"objective": "binary", "metric": "binary_logloss", "num_leaves": 31, "max_depth": 6, "learning_rate": 0.03, "min_data_in_leaf": 80, "feature_fraction": 0.8,
+                         "bagging_fraction": 0.8, "bagging_freq": 1, "lambda_l2": 1.0, "verbose": -1, "seed": 0}, "rounds": 500}}
