@@ -23,6 +23,8 @@ SPLIT = pd.read_csv(os.path.join(C, "split.csv")); SPLIT["molecule"] = SPLIT.mol
 assert not SPLIT.duplicated(["tag", "molecule"]).any() and SPLIT.identity_group.notna().all()
 FOLD = {(t, m): f for t, m, f in zip(SPLIT.tag, SPLIT.molecule, SPLIT.cf)}; GRP = {(t, m): int(g) for t, m, g in zip(SPLIT.tag, SPLIT.molecule, SPLIT.identity_group)}
 ROS = {m: set(pd.read_csv(os.path.join(HERE, f"rank_{m}", "fit_roster.csv")).identity_group.astype(int)) for m in ("cfA", "cfB", "cfall")}
+_ST = pd.read_parquet(os.path.join(HERE, "..", "..", "data", "external", "identity_folds", "structures.parquet"), columns=["inchikey14", "scorer_key", "identity_group"])
+K2G = dict(zip(_ST.scorer_key.astype(str), _ST.identity_group.astype(int))); R2G = dict(zip(_ST.inchikey14.astype(str), _ST.identity_group.astype(int)))
 
 
 def stop(m): sys.exit(f"STOP (107 check): {m}")
@@ -60,7 +62,9 @@ for t in TAGS:
         bad = sum(1 for mm, f in zip(F.molecule, fl) if GRP[(t, mm)] in ROS["cfB" if f == "A" else "cfA"])
         if bad: stop(f"{t}: {bad} rows scored by a model whose fit roster contains their identity group")
     else:
-        F["CF"] = F.cfall; F["side"] = "all"; gmap = dict(zip(ev.molecule, ev.identity_group.astype(int)))
+        F["CF"] = F.cfall; F["side"] = "all"   # GLOBAL identity groups (the panel CSV's identity_group column is a local 0..249 index, not the global id)
+        gmap = {mm: (K2G.get(str(k), R2G.get(mm))) for mm, k in zip(ev.molecule, ev.scorer_key)}
+        if any(v is None for v in gmap.values()): stop(f"{t}: molecule without a global identity group")
         bad = sum(1 for mm in F.molecule if gmap[mm] in ROS["cfall"])
         if bad: stop(f"{t}: {bad} rows whose identity group is in the cfall fit roster")
     F["d"] = F.CF - F.v8w7a; D[t] = F
