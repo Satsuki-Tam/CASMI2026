@@ -56,3 +56,7 @@ v1(キー = 同梱の candidate_key)の学習・評価は中止し、出力は�
 ## 7. 実装の記録(14:41、結果は未読)
 - **E 源の key v2**(diag/e_window_keys_v2_manifest.json、出力 sha f572682b): PubChemLite 385,760 行のうち SMILES あり 334,244(tier 332,883 + pool 1,361)、SMILES 無しで除外 51,516、解析失敗 0、tier の対応の点検(SMILES の raw key と注釈の ik14 の不一致)28、**同梱の candidate_key と公式 key の不一致 12,149**(Codex 102 Q5(1) の指摘どおり)。BIO 98,433 行、解析失敗 0、公式 key と raw の不一致 4,475。key 数: PubChemLite 333,751、BIO 98,182、重複 27,446、計 404,487(v1 は 456,336)。RDKit 2026.03.3。
 - **確認の B_D 集合 = np102_d0conf 286 identity**(seed 1020、fold 0、既存の全選択 CSV 45 ファイルとパネルを除外;sha d246cdf0)。**fold 0 の D 型はこれで全部**(登録の目安 400 には届かない;余りは無い)。件数は登録後に確認の結果を見て変えない。表は Spark で作成中(b1_features + GLACIER)、評価はしない。
+
+## 8. 開封前の検査の記録(15:03)
+- ジョブ: 学習 2 本・評価 6 本すべて exit 0(E102_DONE fail=0)。hash は diag/r102_manifest.txt(評価 CSV の hash はジョブ内の追記がパス誤りで失敗したため、開封前に手で追記)。
+- x102_summary.py の検査: 完全性(期待される行との一致)・値域・I1 / I2 / I5 は np053f1dev まで通過、**I3(main = 087 の main)で停止: 053 f1dev 2 / 372 行**。調査(変種の値は見ていない): 087 の main は PC(x86)の gen_eval2m、102 は Spark(ARM)。同じ v8w7a の main を Spark で E なしに計算した 093s(gen_eval2pv)と比べると **5 表すべて差 0**(np053f1dev 372、np053f2dev 389、f1dev 794、f2dev 795、panel 500;p2dev は 093s が無い)。087 との差(各表 0〜4 行、候補数は同じで ±1 順位)は計算環境の差(analog 類似度の浮動小数点・同点の崩れ)であり、E の追加による main の変化ではない → 登録どおり --allow_i3 で読む。
