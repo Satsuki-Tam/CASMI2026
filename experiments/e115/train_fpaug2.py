@@ -12,7 +12,7 @@ silent R. (4) Separate RNG streams keyed by (seed, purpose, worker, batch, slot)
 Simulated item: GLACIER peaks -> the public augmentation (peak dropout, intensity / ppm jitter, CE dropped with p 0.1) -> fpnet.prep_peaks with the
 THEORETICAL precursor m/z = pool mass - ADDUCT_SHIFT[adduct]; CE known (the job's), n_merged 1, mode +1; positive = the plan job's canonical pool row.
 No evaluation inside training; only the final checkpoint is saved (plus a smoke checkpoint in smoke mode).
-Usage: python train_fpaug2.py --code C --run R --init CK --folds F --tag T --steps S [--sim_dir PLAN_DIR --sim_out GEN_PREFIX --sim_frac 0.25]
+Usage: python train_fpaug2.py --code C --run R --init CK --folds F --tag T --steps S [--sim_dir PLAN_DIR --sim_out GEN_PREFIX[,GEN_PREFIX2..] --sim_frac 0.25]
        [--device cuda] [--smoke_steps n] [--bs 256] [--workers 6]"""
 import argparse, glob, hashlib, json, math, os, sys, time, signal, pathlib
 os.environ['OMP_NUM_THREADS'] = '1'; os.environ['NUMBA_NUM_THREADS'] = '1'; os.environ['OPENBLAS_NUM_THREADS'] = '1'; os.environ['MKL_NUM_THREADS'] = '1'
@@ -136,11 +136,16 @@ def load_sim():
         if fsha(os.path.join(SIMD, f)) != h: sys.exit(f'STOP: plan file {f} changed since make_simplan')
     jobs = json.load(open(os.path.join(SIMD, 'jobs.json'))); jpid = np.load(os.path.join(SIMD, 'jobs_pid.npy'), allow_pickle=False)
     plan = np.load(os.path.join(SIMD, 'plan.npy'), allow_pickle=False); nj = len(jobs)
-    meta = json.load(open(SIMO + '_meta.json'))
-    if meta.get('n_jobs') != nj or meta['n_ok'] + meta['n_fail'] + sum(meta.get('rejected', {}).values()) != nj:
-        sys.exit(f"STOP: generation meta does not cover the job list ({meta.get('n_jobs')} / {nj})")
+    prefixes = [p_ for p_ in SIMO.split(',') if p_]; metas = []; cover = np.zeros(nj, np.int32)
+    for pf in prefixes:   # one or several generation processes; each meta covers jobs[start:stop] (global indices)
+        m_ = json.load(open(pf + '_meta.json')); s_, e_ = int(m_.get('start', 0)), int(m_.get('stop', m_.get('n_jobs', -1)))
+        if e_ - s_ != m_.get('n_jobs') or m_['n_ok'] + m_['n_fail'] + sum(m_.get('rejected', {}).values()) != m_['n_jobs']:
+            sys.exit(f'STOP: generation meta {pf} is incomplete or inconsistent')
+        cover[s_:e_] += 1; metas.append(dict(m_, prefix=pf))
+    if not (cover == 1).all(): sys.exit(f'STOP: generation ranges do not cover the job list exactly once (missing {(cover == 0).sum()}, overlapping {(cover > 1).sum()})')
+    meta = dict(n_ok=sum(m_['n_ok'] for m_ in metas), n_fail=sum(m_['n_fail'] for m_ in metas), parts=metas)
     start = np.full(nj, -1, np.int64); ln = np.zeros(nj, np.int32); MZ, IT = [], []; base = 0
-    for f in sorted(glob.glob(SIMO + '_[0-9]*.npz')):
+    for f in [f'{m_["prefix"]}_{k:04d}.npz' for m_ in metas for k in range(int(m_['chunks']))]:   # only the shards a meta accounts for
         with np.load(f, allow_pickle=False) as Z:
             idx = Z['idx']; off = Z['off']; mz = Z['mz']; it = Z['it']   # each array read ONCE
         if len(idx) and (idx.min() < 0 or idx.max() >= nj): sys.exit(f'STOP: job index out of range in {f}')

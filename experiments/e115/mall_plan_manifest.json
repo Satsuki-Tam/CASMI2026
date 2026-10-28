@@ -1,0 +1,52 @@
+{
+ "mode": "all",
+ "cycles": 2,
+ "salt": "e115v2",
+ "conditions": [
+  [
+   "[M+H]+",
+   20.0
+  ],
+  [
+   "[M+H]+",
+   40.0
+  ],
+  [
+   "[M+H]+",
+   60.0
+  ],
+  [
+   "[M+Na]+",
+   20.0
+  ],
+  [
+   "[M+Na]+",
+   40.0
+  ],
+  [
+   "[M+Na]+",
+   60.0
+  ]
+ ],
+ "inputs": {
+  "data/external/v2_pool/pool_meta.parquet": "82b8c40315611289b9a4004b3af18d6d3402b3cd5baa4ee5723da07b7e2f6bb0",
+  "data/external/identity_folds/structures.parquet": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
+  "experiments/fpnet_seed/f1s1/work/train_structs.parquet": "f20aa1cac23af42e430a6633707fda34e48dea97114bdc3e443897f692df3656"
+ },
+ "coconut_rows": 462261,
+ "alias_rows_mapped": 24,
+ "alias_rows_without_canonical": 0,
+ "identities": 462240,
+ "canonical_rows": 462240,
+ "in_mass_range": 447346,
+ "rejected_by_runner_rules": 101,
+ "catalog": 447245,
+ "jobs": 894490,
+ "plan": 894490,
+ "outputs": {
+  "catalog.parquet": "1954cd0d45d0fc97039a0de5b57b327754d02ab84d4e829c3e4a957f423c7f06",
+  "jobs.json": "6dab9855b7403046089629f24887a9f7c95752ab91c582e3e4e5dc673b71249e",
+  "jobs_pid.npy": "e03ccf123a0e2ec9b5431166d150f6e629093dad769033f637413138146875e5",
+  "plan.npy": "1fdaac2276caeaaec72cc55ec3bc0aed1045305fbc7bc0a89492d1d1179dbcba"
+ }
+}
