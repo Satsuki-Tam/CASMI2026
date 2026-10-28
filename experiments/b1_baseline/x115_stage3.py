@@ -98,7 +98,9 @@ for t, csv in EVAL_CSV.items():   # (2) rows, (3) reproduction
             if set(M.index) != set(g.molecule) or M.index.duplicated().any(): stop(f"{arm} {t} {s}: ledger molecules differ from the selection")
             for m in g.molecule:
                 if int(M.loc[m, "identity_group"]) != ig[m]: stop(f"{arm} {t} {s} {m}: ledger identity_group differs from the selection")
-                exp.add((s, "c2", m)); c1u[(s, m)] = bool(M.loc[m, "c1_usable"])
+                cu = str(M.loc[m, "c1_usable"])   # Codex 121: explicit boolean only
+                if cu not in ("True", "False"): stop(f"{arm} {t} {s} {m}: c1_usable is not a boolean ({cu})")
+                exp.add((s, "c2", m)); c1u[(s, m)] = cu == "True"
                 if c1u[(s, m)]: exp.add((s, "c1", m))
         got = list(zip(x.set, x.view, x.molecule))
         if len(got) != len(set(got)): stop(f"{arm} {t}: duplicate rows")

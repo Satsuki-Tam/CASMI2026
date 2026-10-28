@@ -101,7 +101,11 @@ for tag, (old, sets) in TAGS.items():
         for c_ in ("n_unique", "reach_external_b1", "truth_in_window", "n_query"):
             for arm in ("r", "a"):
                 if (z[f"{c_}_p0"].astype(str) != z[f"{c_}_{arm}"].astype(str)).any(): stop(f"{tag} {s}: {c_} differs between p0 and {arm}")
-        emp = pd.to_numeric(z.n_unique_p0, errors="coerce").eq(0).values & z.truth_in_window_p0.astype(str).str.lower().isin(["false", "0"]).values
+        nu = pd.to_numeric(z.n_unique_p0, errors="coerce").astype(float)   # Codex 121: finite non-negative integer; an empty window must say truth not in it, not reached
+        if not (np.isfinite(nu).all() and (nu >= 0).all() and (nu == np.round(nu)).all()): stop(f"{tag} {s}: n_unique not a finite non-negative integer")
+        fls = lambda c: z[c].astype(str).str.lower().isin(["false", "0"]).values
+        emp = (nu == 0).values
+        if (emp & ~(fls("truth_in_window_p0") & fls("reach_external_b1_p0"))).any(): stop(f"{tag} {s}: an empty window with truth_in_window / reach_external_b1 not False")
         for arm in ARMS:   # an EMPTY window (n_unique 0, truth not in it) carries NaN in b1_features = not in the window = -1 (same fix as x110_stage1, 2026-10-29)
             v_ = pd.to_numeric(z[f"truth_fp_rank_{arm}"], errors="coerce").astype(float); n_ = pd.to_numeric(z[f"n_unique_{arm}"], errors="coerce").astype(float)
             ok_ = (np.isfinite(v_) & (v_ == np.round(v_)) & ((v_ == -1) | ((v_ >= 1) & (v_ <= n_)))) | (emp & v_.isna().values)

@@ -82,15 +82,20 @@ def load(ck):
             for m in g.molecule:
                 if m not in M.index: stop(f"{ck} {t} {s} {m}: selected molecule without a ledger row")
                 exp.add((s, "c2", m))
-                if bool(M.loc[m, "c1_usable"]): exp.add((s, "c1", m))
+                cu = str(M.loc[m, "c1_usable"])   # Codex 121: a flag must be an explicit boolean (bool(NaN) would be True)
+                if cu not in ("True", "False"): stop(f"{ck} {t} {s} {m}: c1_usable is not a boolean ({cu})")
+                if cu == "True": exp.add((s, "c1", m))
         got = list(zip(x.set, x.view, x.molecule))
         if len(got) != len(set(got)): stop(f"{ck} {t}: duplicate rows")
         if set(got) != exp: stop(f"{ck} {t}: rows missing {len(exp - set(got))} / extra {len(set(got) - exp)}")
         for c in ["main"] + VARS + ["N_only", "Fs_only", "Fm_only"]:
             v = x[c].values.astype(float)
             if not (np.isfinite(v).all() and (v >= 0).all() and (v <= 1).all()): stop(f"{ck} {t}: {c} not finite in [0, 1]")
+        for c in ("n_cand", "miss_N", "miss_Fs", "miss_Fm"):   # Codex 121: finite non-negative integers (no fillna), misses <= candidates, and no miss at all
+            v = pd.to_numeric(x[c], errors="coerce").astype(float).values
+            if not (np.isfinite(v).all() and (v >= 0).all() and (v == np.round(v)).all()): stop(f"{ck} {t}: {c} not a finite non-negative integer")
         for c in ("miss_N", "miss_Fs", "miss_Fm"):
-            if (x[c].fillna(0) > 0).any(): stop(f"{ck} {t}: missing values {c} = {int(x[c].fillna(0).sum())}")
+            if (x[c].astype(float) > x.n_cand.astype(float)).any() or (x[c].astype(float) != 0).any(): stop(f"{ck} {t}: missing values {c} = {int(x[c].astype(float).sum())}")
         if ((x.main == 1) & (x[VARS] != 1).any(axis=1)).any(): stop(f"{ck} {t}: a rank-1-correct row changed")
         y = pd.read_csv(os.path.join(HERE, BASE_OF[t]), usecols=["set", "view", "molecule", "main"]); y["molecule"] = y.molecule.astype(str)
         z = x.merge(y, on=["set", "view", "molecule"], how="left", suffixes=("", "_base"), validate="one_to_one")
