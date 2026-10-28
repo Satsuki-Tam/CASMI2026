@@ -1,0 +1,17 @@
+102 v2 2026-10-28 14:41:31
+542e9f3766959a00 experiments/b1_baseline/b1_rank_train.py
+0ff1c63207988ad6 experiments/b1_baseline/b1_rankfeats.py
+b218df39d161b064 experiments/b1_baseline/gen_eval2fd.py
+4aa99a0a3d69c66b experiments/b1_baseline/e_keys.py
+f572682b47a882de experiments/b1_baseline/diag/e_window_keys_v2.parquet
+8734827b0fc0d26d experiments/b1_baseline/rank_params_e1b/rank_results.json
+3702f5b8f22ec50f experiments/b1_baseline/rank_params_v7a/rank_results.json
+fe61dc429bd27223 experiments/b1_baseline/rank_v8w7a/lambdarank.txt
+50c92efd528f9a8f experiments/b1_baseline/rank_e1b/lambdarank.txt
+8f4a81b5f8ba7f58 experiments/b1_baseline/rank_e1r/lambdarank.txt
+634384e41072a229 diag/r102_f1dev.csv
+5ab63bdf080ad7ec diag/r102_f2dev.csv
+f845f61b700dbf20 diag/r102_np053f1dev.csv
+e27b116517a76cd0 diag/r102_np053f2dev.csv
+6857eacc47fbfb9c diag/r102_p2dev.csv
+0046ef2e2741b1a8 diag/r102_panel.csv
