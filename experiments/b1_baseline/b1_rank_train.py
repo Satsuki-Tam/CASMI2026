@@ -154,6 +154,7 @@ def main():
     ap.add_argument("--restrict", default="", choices=["", "B", "E"], help="095: B = train the ranker on the B-group candidates of each view only (COCONUT and not train; groups whose truth is not B drop out); "
                     "102: E = the E window (COCONUT | train in this view | PubChemLite | BIO keys of --ekeys)")
     ap.add_argument("--ekeys", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "diag", "e_window_keys_v2.parquet"), help="102: e_keys.py output (key, in_pcl, in_bio)")
+    ap.add_argument("--c1_share_target", type=float, default=None, help="108: set --c1_weight from the actual fit composition so that the nominal C1 group-weight share equals this value")
     ap.add_argument("--analog_strict", nargs="*", default=[], help="107: run basenames whose analog cache must cover every view row (else stop)")
     ap.add_argument("--filter_to_csv", action="store_true", help="107: restrict every run's table rows to the molecules of its eval CSV (per set); default off = unchanged")
     ap.add_argument("--pointwise", action="store_true", help="102: row weights = group weight / group size, rescaled to mean 1 (every (molecule, view) group carries its group weight in total) "
@@ -261,6 +262,10 @@ def main():
                   f"effective c1 share {float(gw[gview == 'c1'].sum() / gw.sum()):.4f}", flush=True)
             return lgb.Dataset(d[FE].values, label=d.is_truth.values, group=sizes, weight=w_rows, free_raw_data=False, feature_name=list(FE)), d
         return lgb.Dataset(d[FE].values, label=d.is_truth.values, group=sizes, free_raw_data=False, feature_name=list(FE)), d
+    gv_ = fit_t.groupby(["molecule", "view"], sort=False).view.first(); n1_ = int((gv_ == "c1").sum()); n2_ = int((gv_ == "c2").sum()); q_ = n1_ / max(n1_ + n2_, 1)   # 108: actual ranking groups after the positive restriction and the C1 replication
+    if a.c1_share_target is not None:   # 108: C1 relative group weight w = q0 (1 - q) / (q (1 - q0)) so that the nominal C1 weight share equals q0
+        q0_ = float(a.c1_share_target); a.c1_weight = q0_ * (1.0 - q_) / (q_ * (1.0 - q0_)); print(f"C1-SHARE target {q0_:.6f}, actual {q_:.6f} ({n1_} c1 / {n2_} c2 groups) -> c1_weight {a.c1_weight:.6f}", flush=True)
+    os.makedirs(a.out, exist_ok=True); json.dump(dict(n_c1_groups=n1_, n_c2_groups=n2_, c1_share=q_, c1_weight=float(a.c1_weight), c1_share_target=a.c1_share_target), open(f"{a.out}/fit_composition.json", "w"), indent=1)
     ros_ = fit_t[["run", "set", "molecule", "view", "identity_group"]].copy(); ros_["molecule"] = ros_.molecule.astype(str).str.replace(r"#r\d+$", "", regex=True)
     ros_ = ros_.drop_duplicates(); ros_["run"] = ros_.run.map(lambda r: os.path.basename(str(r))); os.makedirs(a.out, exist_ok=True); ros_.to_csv(f"{a.out}/fit_roster.csv", index=False)
     print(f"FIT-ROSTER {len(ros_)} (molecule, view) groups, {ros_.identity_group.nunique()} identity groups -> {a.out}/fit_roster.csv", flush=True)
