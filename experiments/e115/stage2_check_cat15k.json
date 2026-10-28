@@ -1,0 +1,41 @@
+{
+ "catalog source pool == training pool (sha256)": {
+  "ok": true,
+  "detail": "82b8c40315611289"
+ },
+ "pid == row index": {
+  "ok": true,
+  "detail": "rows 710701"
+ },
+ "catalog rows equal their pool rows (key, smiles, mass, formula)": {
+  "ok": true,
+  "detail": "15000/15000"
+ },
+ "catalog rows are COCONUT-only (src == 2)": {
+  "ok": true,
+  "detail": "15000/15000"
+ },
+ "pool FP target == recomputed raw_fingerprint[fp_bits]": {
+  "ok": true,
+  "detail": "checked 2000, mismatched 0, unparsable 0"
+ },
+ "no catalog key is a known identity key / alias": {
+  "ok": true,
+  "detail": "0 of 15000"
+ },
+ "overlap_with_selection_csvs (recorded only)": {
+  "experiments/b1_baseline/eval_set_f1/p2_molecules.csv": 0,
+  "experiments/b1_baseline/eval_set_f2/p2_molecules.csv": 0,
+  "experiments/b1_baseline/np053_f2dev/p2_molecules.csv": 0,
+  "experiments/b1_baseline/np053_f1dev/p2_molecules.csv": 0,
+  "experiments/b1_baseline/np053_f2conf/p2_molecules.csv": 0,
+  "experiments/b1_baseline/np053_f1conf/p2_molecules.csv": 0,
+  "experiments/b1_baseline/c1bank_f1/c1dev/p2_molecules.csv": 0,
+  "experiments/b1_baseline/c1bank_f1/c1conf/p2_molecules.csv": 0,
+  "experiments/b1_baseline/c1bank_f2/c1dev/p2_molecules.csv": 0,
+  "experiments/b1_baseline/c1bank_f2/c1conf/p2_molecules.csv": 0,
+  "experiments/b1_baseline/locked_eval_f1/p2_molecules.csv": 0,
+  "experiments/b1_baseline/locked_eval_f2/p2_molecules.csv": 0
+ },
+ "passed": true
+}

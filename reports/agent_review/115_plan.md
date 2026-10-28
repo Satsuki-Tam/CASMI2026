@@ -17,3 +17,8 @@
 2. **pool との対応**: 模擬構造の FP bit 順・中性質量・分子式 / 元素の目標・pool pid・global identity を揃え、Data が sid2pid の無い正例を黙って落とさないことを確認。稼働中の harness_work は変更せず別版の入力を作る。
 3. **模擬と実測の対応**(学習側の NP 群、最終確認とは別): 付加体・CE・装置を合わせた真の模擬スペクトルと実測の類似度、同分子式 decoy との差、質量帯別の失敗・ピーク数・強度分布。teacher の実学習露出で分ける。
 4. **小さな R / A**: 1〜2 万構造を固定して生成 → 混合 batch → 実 query での FP 採点まで。実 query で FP 順位に増分が無く、P の残る誤りも改善しなければ 40 万へは拡大しない(小さな結果から全カタログを外挿しない)。
+
+## 技術段階の記録(2026-10-29 01:12 JST、CPU のみ;GPU は 110 / 111 の鎖が使用中、性能は読んでいない)
+- 段階 1 の小試験(CPU、4 分子・40 候補・150 予測): 書き出し → 読み戻しで runner の採点が全組一致(最大差 0.0、None の不一致 0)、予測失敗 0、CPU で 0.076 秒 / 予測(6 スレッド未満)。gl_simulate.py も 12 ジョブで失敗 0。登録どおりの 150 分子版を CPU で実行中(experiments/e115/stage1_cpu)。
+- **段階 2(pool との対応、experiments/e115/stage2_check.py)**: 初回は 1 件 FAIL — カタログの 1 構造(QJCAHUHGEGJAFK、bilirubin の互変異性の別表記 = fold 3 の identity の alias)が既知 identity の key に一致(Codex 112 の alias 行と同種)。sim_jobs.py に「既知 identity の key / alias を除く」規則を足して作り直し(該当 14 行を除外、カタログは hash 順の次の 1 構造と入れ替わっただけ;旧版は cat15k_v1_alias に保存)。再検査は全項目 PASS: 学習側 pool と同一(sha 82b8c403…)、pid = 行番号、カタログ 15,000 行が pool 行と一致・すべて COCONUT のみ、FP の正解 bit が再計算と一致(2,000 構造、不一致 0)、既知 identity との一致 0、開発・確認の選択 CSV との重なり 0(記録のみ)。
+- CPU での生成速度から、9 万ジョブは CPU だけで約 2 時間の見込み(GPU を使わずに段階 3 以降の生成を前倒しできる)。生成の開始は Codex の判断を待つ。
