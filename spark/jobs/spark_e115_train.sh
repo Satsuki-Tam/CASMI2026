@@ -11,8 +11,10 @@
 # CUDA_VISIBLE_DEVICES="" and is allowed); (3) the legacy chain by name (110 / 111 / fold-2 / c1-bank jobs, x115, b1_features, GLACIER scoring,
 # main evaluations, other trainers, and any gl_simulate not on --device cpu).
 # Inputs (Codex 120 Q6.1): the code manifest (casmi package, b1_common, trainer, completion check) and the input manifest (every work/ file of
-# runR AND runA: identical R / A inputs) must verify; the split audit must be passed, held_out_fold 1, its split sha256 = the current work/split.parquet
-# = the registered f1s1 split 93b6a595...; check_inputs passed with held_out_fold 1.
+# runR AND runA: identical R / A inputs, plus the --folds identity table) must verify; the split audit must be passed, held_out_fold 1, its split
+# sha256 = the current work/split.parquet = the registered f1s1 split 93b6a595..., its structures sha256 = the current --folds table; check_inputs
+# passed with held_out_fold 1. Both manifests are copied into the run (<tag>_code_manifest.txt / <tag>_input_manifest.txt); A refuses to start
+# unless R's saved copies are identical to the manifests A uses (same code and inputs for both arms; Codex 122).
 # Status line in <run>/status.txt: E115_<ARM>_DONE / E115_<ARM>_FAIL <reason>. Usage: bash spark/jobs/spark_e115_train.sh R
 #                                                                                      bash spark/jobs/spark_e115_train.sh A <prefix>[,<prefix>...]
 set -u
@@ -43,11 +45,16 @@ import hashlib, json, sys
 run, want = sys.argv[1], sys.argv[2]
 a = json.load(open(f"{run}/split_audit.json")); c = json.load(open(f"{run}/check_inputs.json"))
 h = hashlib.sha256(open(f"{run}/work/split.parquet", "rb").read()).hexdigest()
-ok = a.get("passed") is True and a.get("held_out_fold") == 1 and a["sha256"]["split"] == h == want and c.get("passed") is True and c.get("held_out_fold") == 1
+hs = hashlib.sha256(open("data/external/identity_folds/structures.parquet", "rb").read()).hexdigest()
+ok = a.get("passed") is True and a.get("held_out_fold") == 1 and a["sha256"]["split"] == h == want and a["sha256"].get("structures") == hs and c.get("passed") is True and c.get("held_out_fold") == 1
 print("audit binding", "OK" if ok else f"FAIL passed={a.get('passed')} fold={a.get('held_out_fold')} split={h[:16]} audit={a['sha256']['split'][:16]} inputs={c.get('passed')}/{c.get('held_out_fold')}")
 sys.exit(0 if ok else 1)
 PYEOF
 { [ -e $RUN/${TAG}_final.pt ] || [ -e $RUN/${TAG}_receipt.json ]; } && { echo "refused: $RUN already holds $TAG (fresh output only)"; exit 1; }
+if [ "$ARM" = "A" ]; then   # the same code and inputs as R (Codex 122)
+  { cmp -s $E/runR/e115R_code_manifest.txt $E/e115_code_manifest.txt && cmp -s $E/runR/e115R_input_manifest.txt $E/e115_input_manifest.txt; } || { echo "refused: R's saved manifests differ from the ones A would use (or R has not run)"; exit 1; }
+fi
+cp $E/e115_code_manifest.txt $RUN/${TAG}_code_manifest.txt && cp $E/e115_input_manifest.txt $RUN/${TAG}_input_manifest.txt || { echo "refused: cannot save the manifests in the run"; exit 1; }
 ST=$H/$RUN/status.txt; rm -f $ST
 fail() { echo "E115_${ARM}_FAIL $* $(date '+%F %T')" | tee $ST; exit 1; }
 { echo "== $(date '+%F %T') 115 arm $ARM, tag $TAG, S $S, sim ${SIM[*]:-none}, pid $$ (GPU lock held)"; nvidia-smi --query-gpu=name,utilization.gpu --format=csv,noheader

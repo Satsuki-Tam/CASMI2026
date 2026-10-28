@@ -44,8 +44,10 @@ def sha(p):
 SETS = {t: sorted(pd.read_csv(os.path.join(HERE, c)).set.unique()) for t, c in EVAL_CSV.items()}
 S1 = json.load(open(os.path.join(HERE, "diag/x115_stage1_decision.json")))   # (0) bound to the stage-1 decision
 if S1.get("gate") != "PASS": stop("stage 1 did not pass")
-for k, f in (("stage1_csv", "diag/x115_stage1.csv"),) + tuple((f"{t}_{a}_manifest", f"run_{t}_{a}e115/b1_features_manifest.json") for t in ("f1dev", "np053f1dev") for a in ARMS):
-    if S1["sha256"].get(k) != sha(os.path.join(HERE, f)): stop(f"{f} changed after stage 1")
+BIND = [("stage1_csv", "diag/x115_stage1.csv")] + [(f"{t}_{a}_manifest", f"run_{t}_{a}e115/b1_features_manifest.json") for t in EVAL_CSV for a in ARMS]
+BIND += [(f"{t}_{a}_{f}", f"run_{t}_{a}e115/{f}") for t in EVAL_CSV for a in ARMS for s in SETS[t] for f in (f"b1_molecules_{s}.csv", f"b1_runner_{s}_in.json", f"b1_features_{s}.parquet")]
+for k, f in BIND:   # every table of the nine runs is the one stage 1 read (Codex 122)
+    if S1["sha256"].get(k) is None or S1["sha256"][k] != sha(os.path.join(HERE, f)): stop(f"{f} not bound to the stage-1 decision or changed after it")
 WANT = {"p0": "1739d5683fa94fd73fe3b37db98ac364cb5dfdc22ad5bea9789be9c48d7cadc4", "r": S1["sha256"]["r_final"], "a": S1["sha256"]["a_final"]}
 for t in EVAL_CSV:
     for arm in ARMS:

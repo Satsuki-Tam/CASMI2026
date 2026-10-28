@@ -141,6 +141,9 @@ for (tag, s), d in Z.groupby(["tag", "set"], sort=False):
 open(os.path.join(HERE, "diag/x115_stage1.md"), "w", encoding="utf-8").write(chr(10).join(L) + chr(10)); print(chr(10).join(L))
 HS = {"reader": sha(os.path.abspath(__file__)), "r_final": CK["r"], "a_final": CK["a"], "consumed_jobs": led.get("consumed_jobs_sha256"),
       "stage1_csv": sha(os.path.join(HERE, "diag/x115_stage1.csv"))}
-for tag in TAGS:
-    for arm in ARMS: HS[f"{tag}_{arm}_manifest"] = sha(os.path.join(HERE, f"run_{tag}_{arm}e115", "b1_features_manifest.json"))
+for tag in EVAL_CSV:   # all three tags, nine tables (Codex 122): manifests, ledgers, runner inputs and feature tables bound to this decision
+    for arm in ARMS:
+        run = os.path.join(HERE, f"run_{tag}_{arm}e115"); HS[f"{tag}_{arm}_manifest"] = sha(os.path.join(run, "b1_features_manifest.json"))
+        for s in sorted(SEL[tag].set.unique()):
+            for f in (f"b1_molecules_{s}.csv", f"b1_runner_{s}_in.json", f"b1_features_{s}.parquet"): HS[f"{tag}_{arm}_{f}"] = sha(os.path.join(run, f))
 json.dump(dict(stage=1, gate="PASS" if gate else "NO", dFP_A_R=d_ar, dFP_A_P0=d_ap, sha256=HS), open(os.path.join(HERE, "diag/x115_stage1_decision.json"), "w"), indent=1)

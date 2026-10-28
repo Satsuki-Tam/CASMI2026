@@ -25,6 +25,7 @@ cd ~/CASMI2026 || exit 1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=1 PYTHONUTF8=1
 H=$HOME/CASMI2026; B=experiments/b1_baseline; E=experiments/e115; PY=$H/.venv/bin/python; PYI=$H/.venv-ice/bin/python; FEAT_PAR=${FEAT_PAR:-3}
 F1=data/external/fpnet_fold1_as_fold0; FS=data/external/fold_safe_fpnet; MAN=$H/$B/diag/x115_manifest.txt; ST=$H/$B/diag/x115_status.txt   # absolute: fail() is also called after cd $B
+case "$FEAT_PAR" in 1|3) ;; *) echo "FEAT_PAR must be 1 or 3"; exit 1;; esac
 exec 9>$H/spark/gpu.lock
 flock -n 9 || { echo "refused: the GPU lock is held by another job ($(date '+%F %T'))"; exit 1; }
 GPU_APPS=$(nvidia-smi --query-compute-apps=pid,process_name --format=csv,noheader 2>&1); rc=$?
@@ -32,7 +33,8 @@ GPU_APPS=$(nvidia-smi --query-compute-apps=pid,process_name --format=csv,noheade
 for p in "[s]park_x110" "[s]park_n111" "[t]rain_n111.py" "[t]rain_fivefold.py" "[s]park_fpnet_f2s1" "[s]park_c1bank" "[g]l_runner.py" "[g]en_eval2fd" "[t]rain_fpaug2.py" "[s]park_e115_train" "[b]1_features.py"; do
   if pgrep -f "$p" >/dev/null; then echo "refused: '$p' is running ($(date '+%F %T'))"; exit 1; fi; done
 if pgrep -af "[g]l_simulate.py" | grep -v -- "--device cpu" | grep -q .; then echo "refused: a gl_simulate process is not on --device cpu"; exit 1; fi
-RUNS=$(for t in f1dev np053f1dev c1bankdev; do for a in p0 r a; do [ -e $B/run_${t}_${a}e115 ] && echo $B/run_${t}_${a}e115; done; done)
+RUNS=$(for t in f1dev np053f1dev c1bankdev; do for a in p0 r a; do [ -e $B/run_${t}_${a}e115 ] && echo $B/run_${t}_${a}e115; done; done
+  [ -e $B/x115_glunion ] && echo $B/x115_glunion; ls -d $B/diag/x115_* $B/diag/r115_* 2>/dev/null)   # the whole evaluation unit (Codex 122): runs, GL union outputs, readings
 if [ -n "$RUNS" ]; then
   [ "${REBUILD:-0}" = "1" ] || { echo "refused: evaluation runs already exist (REBUILD=1 moves them aside): $RUNS"; exit 1; }
   OLDD=$B/x115_old_$(date +%Y%m%d_%H%M%S); mkdir -p $OLDD && mv $RUNS $OLDD/ || { echo "refused: could not move the old runs aside"; exit 1; }
@@ -113,7 +115,9 @@ for new, old, sets in (("run_f1dev_p0e115", "run_f1dev", ["C_np_crosslib", "D_np
 EOF
 rc=$?; [ $rc -eq 0 ] || fail "table identity comparison rc=$rc"
 ( cd $B && $PY -X utf8 x115_stage1.py > diag/x115_stage1.log 2>&1 ); rc=$?; [ $rc -eq 0 ] || fail "stage-1 reader rc=$rc ($(tail -1 $B/diag/x115_stage1.log | cut -c1-200))"
-G1=$($PY -c "import json; print(json.load(open('$B/diag/x115_stage1_decision.json'))['gate'])"); echo "$(sha256sum $B/diag/x115_stage1_decision.json | cut -c1-64) $B/diag/x115_stage1_decision.json" >> $MAN
+G1=$($PY -c "import json, sys; d = json.load(open('$B/diag/x115_stage1_decision.json')); sys.exit(3) if d.get('stage') != 1 or d.get('gate') not in ('PASS', 'NO') else print(d['gate'])"); rc=$?
+[ $rc -eq 0 ] || fail "stage-1 decision unreadable or invalid (rc=$rc)"
+echo "$(sha256sum $B/diag/x115_stage1_decision.json | cut -c1-64) $B/diag/x115_stage1_decision.json" >> $MAN
 [ "$G1" = "PASS" ] || { echo "X115_STAGE1_NO $(date '+%F %T')" | tee $ST; exit 0; }
 echo "== $(date +%T) stage 1 PASS -> GLACIER (frozen existing cache + one union run per set) + audit + main for the three arms"
 for T in f1dev np053f1dev c1bankdev; do
@@ -152,5 +156,7 @@ for f in diag/r115_*.csv; do echo "$(sha256sum $f | cut -c1-64) $f" >> $MAN; don
 $PY -X utf8 x115_stage3.py > diag/x115_stage3.log 2>&1; rc=$?
 if [ $rc -eq 2 ]; then echo "X115_FAIL_REPRO P0 does not reproduce the existing main; diag/x115_stage3_repro.md $(date '+%F %T')" | tee $ST; exit 1; fi
 [ $rc -eq 0 ] || fail "stage-3 reader rc=$rc ($(tail -1 diag/x115_stage3.log | cut -c1-200))"
-G3=$($PY -c "import json; print(json.load(open('diag/x115_stage3_decision.json'))['gate'])"); echo "$(sha256sum diag/x115_stage3_decision.json | cut -c1-64) diag/x115_stage3_decision.json" >> $MAN
+G3=$($PY -c "import json, sys; d = json.load(open('diag/x115_stage3_decision.json')); sys.exit(3) if d.get('stage') != 3 or d.get('gate') not in ('PASS', 'NO') else print(d['gate'])"); rc=$?
+[ $rc -eq 0 ] || fail "stage-3 decision unreadable or invalid (rc=$rc)"
+echo "$(sha256sum diag/x115_stage3_decision.json | cut -c1-64) diag/x115_stage3_decision.json" >> $MAN
 echo "X115_DONE_$G3 $(date '+%F %T')" | tee $ST
