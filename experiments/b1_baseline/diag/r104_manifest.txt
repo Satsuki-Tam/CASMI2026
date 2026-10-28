@@ -1,0 +1,12 @@
+104 dev (t1E; models of 102 reused) 2026-10-28 15:54:24
+5f3cded6917b3fc9 experiments/b1_baseline/gen_eval2fd.py
+f572682b47a882de experiments/b1_baseline/diag/e_window_keys_v2.parquet
+50c92efd528f9a8f experiments/b1_baseline/rank_e1b/lambdarank.txt
+8f4a81b5f8ba7f58 experiments/b1_baseline/rank_e1r/lambdarank.txt
+fe61dc429bd27223 experiments/b1_baseline/rank_v8w7a/lambdarank.txt
+918fab61935a517f diag/r104_f1dev.csv
+bcf28148ff98388f diag/r104_f2dev.csv
+64d22d162364154b diag/r104_np053f1dev.csv
+38fc27df25063489 diag/r104_np053f2dev.csv
+e0810320986e67b9 diag/r104_p2dev.csv
+3741a5b02e22ae7d diag/r104_panel.csv
