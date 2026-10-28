@@ -51,3 +51,8 @@
 - **gl_simulate.py / mall_gen.sh**: 最後の meta も原子的、範囲の検査、既存 prefix の上書き拒否、jobs / teacher / runner / コードの sha と失敗・除外 index を meta に記録;生成は 2 プロセス × 2 スレッド(計 4)で、計画ファイルの一致と jobs = plan = 2N を確認してから開始(cat15k の生成の後に自動開始)。
 - **技術試験(CPU、小さな計画 300 identity / 600 予測を 2 つの prefix で生成)**: R と A の 4 batch の比較で、実測 ID が全 batch で一致、未置換枠の正例・負例が一致、置換枠の正例 = 計画の pid、模擬の消費 = 計画の先頭から順番どおり(19 件 = 予定 19 件)、台帳の露出 19 構造 × 1 回、alias 監査 25 行が identity 一致。停止条件: 範囲の欠落、重複、同じ tag の再利用、初期値 sha の不一致はいずれも STOP。
 - 観察(記述、判定に使わない): 初期の fold-1 FPNet は模擬スペクトルの正例を窓の 64 候補中 1 位に置く割合が約 36%、rank 損失は 1 件あたり約 20(実測の学習構造は 0.08)。模擬と実測の分布差、または未学習の COCONUT 構造であることの両方を含む値で、A の学習がこれを実測 query へどこまで移せるかは主比較で読む。
+
+## 読み取りの固定(2026-10-29 02:54 JST、R / A の学習・性能の前)
+- 段階 1: experiments/b1_baseline/x115_stage1.py(P0 / R / A の表を同じコード・同じ系で作り直す;ck115 の PASS と final の sha、manifest の一致、窓・到達・query の一致を検査;関門 = dFP(A − R) > 0 かつ dFP(A − P0) > 0;真の M_all 所属と A での模擬露出は記述のみ)。
+- 段階 3: experiments/b1_baseline/x115_stage3.py(GLACIER の監査・共有値の一致、行の完全性、P0 が既存の main(r102 / r111_base_c1bankdev)を全行再現しなければ exit 2;A − R と A − P0 の両方が主指標 ≥ +0.005・下限 > 0、ブロック・保護(旧 B、G C1、NP C1、c1dev pooled)の下限 ≥ −0.01;bootstrap は同じ再標本で二つの比較を対応させる、seed 1151 / 1152 / 1157 / 1158)。
+- 表は run_<tag>_{p0,r,a}e115(slot の fpnet_fold0.pt を各 arm の checkpoint に)、main は diag/r115_<arm>_<tag>.csv、tag は f1dev / np053f1dev / c1bankdev。実行ジョブは学習の後に作り、Codex の点検を受ける。
