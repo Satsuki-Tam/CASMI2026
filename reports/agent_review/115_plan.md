@@ -61,3 +61,25 @@
 - scorer_key → pool pid → M_all の catalog で数えた(x115_stage1 の診断列と同じ対応)。pool 所属はすべて 1.0。
 - **M_all 所属の割合**: np053f1dev NP_H 0.955、NP_N 0.967、NP_X 1.000。f1dev D_np_single **0.16**、C 0.32、E 0.41、F 0.48、G 0.00。c1bankdev C1_pos_few 0.134、C1_neg_few 0.231、C1_neg_many 0.154。
 - 読み方(判定は変えない): 主指標の重みの半分を占める D では、A が真の模擬を見ているのは約 16% だけ。D の A − R は主に「模擬を学習データに足す一般の効果」を測り、「隠しの B 群と同じく、真を模擬で見ている」効果は主に NP_H / NP_N に現れる。段階 1 の診断列(truth_sim_exposure)で、この二つを分けて記述する(判定には使わない)。
+
+## Codex 120 を受けた修正(2026-10-29 05:32 JST、R / A の学習前、性能は読んでいない;commit 3318925、9b63f16)
+- **学習ジョブ**(spark_e115_train.sh): 共有の GPU 排他ロック(spark/gpu.lock、flock をジョブ全体で保持。wrapper の同時通過を防ぐ)を追加した。起動条件に次を加えた:
+  - GPU の compute process が一つもないこと(nvidia-smi --query-compute-apps。CPU だけの M_all 生成は対象外)。
+  - 名前の拒否に x115、b1_features、--device cpu 以外の gl_simulate を追加。
+  - コード manifest(casmi パッケージ・b1_common・trainer・完了検査)と入力 manifest(runR / runA の work 全ファイル。R / A の入力が同一であることも兼ねる)の照合。
+  - split 監査の結び付け: passed、held_out_fold 1、監査の split sha = 現在の work/split.parquet = 登録済みの 93b6a595…。
+- **評価ジョブ**(spark_x115.sh):
+  - 同じロックと GPU process の検査を行う。run は新規のものだけ作る(既存の run があれば拒否する。REBUILD=1 のときは退避し、削除はしない)。
+  - 開始時に、R / A の現在の final の hash が完了検査と同じことを確かめる。3 slot の bits も検査する。環境(workers・版・GPU)を manifest に記録する。凍結した既存の GL cache の入出力も hash で固定する。表の一致比較の失敗でもジョブを止める。
+  - **GL は和集合で一回だけ採点する**: 既存の run の値を凍結した cache とし、3 群の未計算の候補を gl_union.py で和集合にする(query の一致が必要。分子と SMILES はソートし、群の名前は順序に入らない)。これを一回だけ採点し、各群は「既存の cache + 和集合の結果」から merge する(残りがあれば停止)。表の並列数は FEAT_PAR(既定 3。110 の作り直しのメモリ実測で決める)。状態は X115_DONE_PASS / X115_DONE_NO。
+- **段階 1 の読み取り**:
+  - R / A の final の現在の hash を確かめる。3 tag すべての manifest と slot の bits を検査する。選択 CSV に対する完全性(欠け・余り・重複)も検査する。
+  - **露出は identity 単位**で数える(make_simplan と同じ規則: 評価の identity_group → train_structs の公式 key の pool 行の最小 pid → catalog)。状態は「解決・catalog 内」「解決・catalog 外」「未解決(NA、別に数える)」の 3 つ。計画の入出力の hash と、A の receipt の台帳 hash に結び付ける。
+  - 判定 JSON(diag/x115_stage1_decision.json)を書く。
+- **段階 3 の読み取り**:
+  - 段階 1 の判定 JSON(PASS、hash が現在のファイルと一致)に結び付ける。
+  - 3 tag の表が各群の checkpoint から作られたことを検査する。GL は 3 群すべてについて、分子の query が一致することを確かめたうえで、(分子, SMILES) ごとに値が一つであることを検査する(有限 / null の食い違いも停止)。
+  - ledger の identity_group が選択 CSV と一致することを検査する。
+  - 基準(r102 / r111_base)は hash を記録し、有限で [0, 1] に入ることを検査する。行 key の不一致は exit 2(再現の失敗)とする。
+  - **--allow_repro は廃止**した。pooled の bank では identity が一意であることを検査する。判定 JSON を書く。
+- 空試験: 段階 1 は、既存の表を全群に当て、偽の台帳と receipt を使って最後まで動いた(露出の状態は全分子が「解決」、catalog 所属は前節の値と同じ)。段階 3 の空試験は、c1 群の GL と r111_base ができる 111 の鎖の後に行う。gl_union.py は合成入力で、ソート・和集合・query 不一致での停止を確認した。両ジョブとも、GPU process がある間は起動を拒否することを Spark で確認した。
