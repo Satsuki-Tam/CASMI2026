@@ -2,9 +2,9 @@
 # 115 plan, M_all re-split stop condition (c) (Codex 122): the 111 training speed with the M_all CPU generators PAUSED (SIGSTOP) for W seconds vs
 # RUNNING for the next W seconds. Speed = (step_last - step_first) / (t_last - t_first) over the training log lines inside each window (the logged
 # "it/s" is cumulative from the start and is not used). Also records MemAvailable and swap in/out (vmstat) of each window. Reads no model result.
-# Usage: bash experiments/e115/gen_speed_ab.sh <111 training log> [W=300]  -> appends one line to experiments/e115/mall_sim/speed_ab.log
+# Usage: bash experiments/e115/gen_speed_ab.sh <111 training log> [W=300] ["pid pid ..." = only these generators]  -> appends to experiments/e115/mall_sim/speed_ab.log
 LOG=${1:?training log}; W=${2:-300}; OUT=~/CASMI2026/experiments/e115/mall_sim/speed_ab.log
-G=$(pgrep -f "[g]l_simulate.py data/external/glacier experiments/e115/mall/jobs.json" | tr '\n' ' ')
+G=${3:-$(pgrep -f "^[.]venv-ice/bin/python experiments/e115/gl_simulate.py data/external/glacier experiments/e115/mall/jobs.json" | tr '\n' ' ')}   # anchored on the interpreter (a shell whose command line merely contains the pattern is not matched); optional explicit PID list
 [ -n "$G" ] || { echo "no M_all generator running"; exit 1; }
 cont() { kill -CONT $G 2>/dev/null; }
 trap cont EXIT INT TERM
