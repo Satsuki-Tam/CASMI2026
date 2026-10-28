@@ -25,3 +25,8 @@
 - **GLACIER の監査(判定前の停止条件)**: runner と同じ規則・同じ RDKit(.venv-ice、2025.03.6)で分類、入力・出力・meta・分類コード・runner の sha256 を監査票に記録、読み取りは監査票の hash が現在のファイルと一致し、評価器の読み込み関数(b1_locked_eval.runner)が受理して監査と同じ有限値の数を読むこと、両群の共有候補の値が完全に一致することを確認してから数値を出す。合成入力で「有限キャッシュ + 設計上 null → 受理」「全件未対応 → 空として受理」「計算可能な候補の未計算 null → 停止」「inf は再利用しない」を確認済み。既存の fold-1 表の GL 出力は全て合格。
 - **実行順序(Codex 113)**: 111 の学習と並行で学習し、評価は 111 の学習プロセス(wrapper と trainer)が残っていないことを確認してから(111 の完了状態は記録)。最終状態は X110_DONE / X110_STAGE1_NO / X110_FAIL_REPRO(再現停止)/ X110_FAIL(技術的失敗)。
 - 23:13 段階 3 の読み取りの空試験(作業用ディレクトリ、両群とも既存の run_f1dev / run_np053_f1dev と r102 を指す = 既存の P 同士、新しい情報なし): GLACIER 監査の hash 照合・評価器の読み込み関数の受理と有限値の数・両群の共有値の一致・行の key 集合の一致・全行の再現が通り、表と関門(差 0 → NO)まで最後まで動くことを確認。
+
+## 5. 追記(fold 2 の再現の準備、2026-10-29 00:57 JST、fold 1 の段階 1 の結果の前)
+- §2 の「通った場合は fold 2 で同じ手順を一回」を、fold 1 の結果を見る前にファイルで固定した。登録済みの fold 1 の読み取り・ジョブから、**パス・hash・表示だけを文字列置換で変えた** fold 2 版を生成する `experiments/b1_baseline/make_x110f2.py`(置換後に fold 1 の名残が一つでもあれば停止)→ `x110f2_stage1.py` / `x110f2_stage3.py` / `spark/jobs/spark_x110f2.sh` / `spark/jobs/x110f2_stage3_resume.sh`。fold 1 のファイルは変更していない。
+- 学習: `spark/jobs/spark_fpnet_f2s1.sh`(公開レシピ、fold 2 + NP 例 group を保留、seed 1、82,855 更新;共有の harness_work に split.parquet があれば停止、run 固有の split を make_split で作成 → fold_check → split_audit → 学習)。公開 fpnet_fold2(seed 0、sha 257062cb…)と 1:1 平均。表 f2dev / np053f2dev(既存、fold-2 スロット)、基準の主出力 diag/r102_f2dev / r102_np053f2dev。
+- 起動は fold 1 の段階 3 が関門を通った場合だけ、Codex 116 に従い現在の 110 / 111 の鎖が終わってから。関門・保護・停止条件は fold 1 と同一(fold 間で合算しない)。
