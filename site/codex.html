@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-28 18:38 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-28 19:55 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -15297,4 +15297,206 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <li>監査コードの補修: GL の有効比較数(両方有限 / 片方 / 両方欠測)を表示、GL 全欠測の行は純 GL の順位を 0(証拠なし)。</li>
 <li>Public での E-lite の一回測定: 限定的な価値。E0 の二枠(ENG_B、pre-rank2_B)を優先し、今夜は行わない。102 / 104 の不採用は変えない。</li>
 <li>GLACIER 適応(105): 利用者の許可後に段階 0a〜1c(固定 commit・隔離環境、必須経路の確認に 60〜90 分の時間枠、16〜32 identity の往復、C0'(更新なし)と Cstep(一回更新)を別に)。</li>
-</ul></details></article><article><h1>107: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul></details></article><article><h1>107: 107への回答（2026-10-28、107の性能結果は未読）</h1><details><summary>回答(Codex)</summary><p>107への回答（2026-10-28、107の性能結果は未読）</p>
+<p><strong>ranker層で交差fitして追加データを評価する方針は支持します。ただし、追加データとパネルC1 cleanに実際のidentity group重複が3件あります。このままcfallのパネル値を独立な保護として開くことは勧めません。以下を確定してから読み進めてください。</strong></p>
+<p>登録、splitter、--filter_to_csv、Sparkジョブ、集計コードと106のpilot報告を確認しました。小さな選択CSV・パネル監査のID名簿だけを読み取り専用で照合し、107のモデル、学習ログ、性能出力は開いていません。</p>
+<p><strong>1. 追加fitからパネル保護と重なるgroupを除く。優先度は最も高いです。</strong></p>
+<p>手元の名簿では追加4表は1,640分子・1,640別groupで、表間重複は0でした。既存RUNS0の3名簿、pool f3a/f4a、p2devとのgroup重複も0です。一方、次の3groupはパネルC1 cleanに入っています。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">identity_group</th>
+<th>追加表の分子 / query library</th>
+<th>パネルの分子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">188</td>
+<td>f1dev: BQOIJSIMMIDHMO / msdial</td>
+<td>TWDKBDSVUUKABK</td>
+</tr>
+<tr>
+<td style="text-align: right;">235</td>
+<td>np053f1dev: CDOZDBSBBXSXLB / massbank</td>
+<td>YKPUWZUDDOIDPM</td>
+</tr>
+<tr>
+<td style="text-align: right;">57</td>
+<td>np053f2dev: ANJQEDFWRSLVBR / gnps</td>
+<td>GFNANZIMVAIWHM</td>
+</tr>
+</tbody>
+</table>
+<p>「パネルのfull_eval表をfitへ渡していない」だけでは、別表記・別libraryの同じgroupを学習へ入れることは防げません。C1で既知identityの学習が一般に禁止されるという意味ではありませんが、今回のranker追加に対する、学習groupを分けたパネル保護としての意味が変わります。</p>
+<p><strong>推奨修正は、この3groupをcfA・cfB・cfallの追加fitから除き、パネルclean202の保護は維持することです。</strong> 追加対象は名簿上1,637groupになります。実際のfit群数は正例到達・C1 usable等でさらに減るため別に記録します。</p>
+<p>元の4開発表の評価分母は1,640のまま維持できます。split表には各評価groupのA/Bと追加fit可否を別に持たせ、保護対象の3groupはどちらのfitにも入れません。特にジョブのcfallは現在、元の4CSVを直接渡しています。A/BのCSVだけ直してcfallを直し忘れないよう、除外済みの全件用CSVも作って使います。</p>
+<p>np096_conf093の400groupは、手元の既存/追加候補名簿との重複0を確認しました。np102_d0confとc1cost098の名簿は手元には無かったので、同じ照合をSpark上で行ってください。これらの性能は読む必要がありません。panel/p2dev/確認の除外条件を機械的なassertとして残します。</p>
+<p><strong>2. splitラベルの存在だけでなく、モデルの実際のfit名簿との非重複を検査する。</strong></p>
+<p>Aの分子をcfB、BをcfAで採点するx107_summary.pyの選択は正しいです。ただし現在はA/Bラベルがあることしか検査していません。誤ったCSVでモデルを学習しても、そのラベルだけでは検出できません。</p>
+<p>splitter/trainer/summaryの間に、次の照合を追加してください。</p>
+<ul>
+<li>identity_groupの欠測・不明値を禁止し、全4表を通じて同一groupのA/Bが一意であることを検査する。現名簿は表間非重複なので、現在の表別分割でも成立します。perm[i]の偶奇を使う方法も均衡したランダム二分であり、それ自体を直す必要はありません。</li>
+<li>split表と元の評価名簿の(tag,set,molecule,identity_group)が完全一致することを確認する。辞書化の前に重複を検査し、同じキーの後勝ちで隠さない。</li>
+<li>trainerから、filter後・正例あり群への限定後の実fit identity_groupをモデル別に保存する。C1反復の#rは元groupへ戻して照合する。</li>
+<li>各CF評価行のgroupが、その行を採点したモデルの実fit名簿に無いこと、panel/p2dev/確認についてはcfallの実fitと保護契約どおりに分離されていることを、結果表示前にassertする。</li>
+</ul>
+<p>これはmoleculeの文字列だけでなくgroupで照合します。今回の3件は、分子の文字列が違うためmolecule一致だけでは見逃します。</p>
+<p><strong>3. --filter_to_csvの対象と、特徴cacheの完全性を揃える。</strong></p>
+<p>Fを先にCSVへ絞る実装なので、指定外の候補行をそのままfitへ入れる経路は改善されています。一方、MとLEDGERは全runのままです。trainer内の未到達補完・集計の分母がsubsetの契約とずれる場合があるので、<strong>M/LEDGERも対象CSVに揃え、CSVとMのidentity_group・set・query条件を照合</strong>してください。</p>
+<p>CSVに指定された分子のMがない場合や、必要な特徴表のsetがない場合は、continue/警告で処理を進めず停止します。Fに行がないことは正常な候補0件の場合もあるので、正常な未到達と生成不備を区別して記録します。全指定分子にF行があることを一律に要求する、という意味ではありません。</p>
+<p>analog mergeはbaseとdevのキー衝突を検査していますが、dev各部分間の衝突や欠損も検査してください。trainerは未収録のanalogを0.0へ埋めるため、各fit候補の(set,view,molecule,smiles)がcacheに存在し、実測0と未計算を混同しないことが必要です。PC由来baseとSpark由来追加部分の環境差は記録した上で、学習時のraw analogと評価器の同一定義の値を少数行で照合します。</p>
+<p><strong>4. cf0の再現検査は維持し、不一致時の扱いを固定する。</strong></p>
+<p>同一run・同一レシピでcf0を作る対照は適切です。cf0≠v8w7aなら、追加データ以外にfilter、入力順、cache、LightGBM環境等の変更が入っています。<strong>候補CFの値を開く前に止めて原因を調べる</strong>現在の設計を維持してください。r102の比較元にもキーの一意性・有限値検査を加えるとよいです。</p>
+<p>環境差等で完全再現できないと判明した場合は、CFの結果を見てから都合のよい基準を選ばず、別版の登録で、CF−cf0を同環境での追加レシピの効果、CF−v8w7aを運用上の現基準との差として分けます。単に再現assertを無効にして「データ追加だけの効果」と読まないでください。</p>
+<p><strong>5. CFで推定する対象とcfallの確認対象を区別する。</strong></p>
+<p>開発のCFは、おおむね追加データの半分を使ったcfA/cfBの未学習queryへの差です。最終候補cfallは追加全件を使います。したがって、CFの差をcfallの未見性能の直接推定や下限とみなしたり、データ量に比例して利得を倍にしたりしません。cfallを未開封集合で一回確認する今の順序は、この差を扱うためにも必要です。</p>
+<p>x107_summary.pyは4開発表についてcfallの値も診断表へ表示します。そこは自分のgroupをfitへ入れた値なので、<strong>「追加fit内の参考値」と明記するか、判定用レポートから外してください。</strong> panel/p2devのcfallと同じ未学習評価であるように並べず、cfA/cfB/cfallから成績のよいモデルを後選択しません。</p>
+<p>また、二分割で学習したモデルに依存するOOF差の行bootstrapは、一つの固定分割・学習結果に条件付いた記述区間です。分割やモデル学習の変動全体を含む区間ではありません。現在の名簿は各viewで1group1行なので行単位の集計は対応しますが、groupを結合してその前提を検査し、<strong>A側/B側それぞれの差と実fit群数</strong>も出してください。不通過後にseedや分割を替えて合格を探さないことを登録に加えます。</p>
+<p>「選択の楽観は確認で吸収する」も範囲を狭めます。未開封の確認は、選択済みcfallの指定されたC2/H/N/Dと、usableなE型C1での性能を検証します。過去の開発閲覧履歴や、独立なtimsTOF C1確認がないことまで解消するものではありません。</p>
+<p><strong>6. 今回はranker層のCFであり、全学習段階を含む外側holdoutではないと記す。</strong></p>
+<p>各追加行のFPがその行のfoldを除いたモデルで作られているのは適切です。しかし別foldの学習行を作ったFPモデルは、評価側identityを学習済みの場合があります。既存GLやその他の固定資産にも固有の露出があります。現在の設計は、これらを固定した特徴生成系の上で、rankerのquery/groupを交差fitする比較です。</p>
+<p>これを理由に全資産を作り直す必要はありませんが、「パイプライン全体で未見identityを厳密に外側保留した評価」とは呼びません。完全な外側評価を主張する場合は、その外側groupを含まない特徴学習資産でfit/tune/evalの表を作り直す必要があります。</p>
+<p>同様に、追加でC1/C2、COCO、G型、GL経路の実効比率も動くので、得られるのは<strong>この追加レシピ一式の効果</strong>です。純粋な標本数だけの効果ではありません。正例あり群への限定とC1反復後の群数・比率を残せば、今から別の重み調整候補を増やす必要はありません。</p>
+<p><strong>7. 実行の凍結と終了状態を修正する。</strong></p>
+<p>Sparkジョブは個別PIDの失敗を集約している点はよいです。ただし評価後にfail=1と表示しても、最後のechoでshell自体が成功終了し得ます。最後に非ゼロ終了を返し、対象runの全出力が正常に新規生成されたことを確認してからsummaryを許可してください。</p>
+<p>manifestへsplit.csv、A/Bと除外済み全件用CSV、元名簿、特徴定義、params、summary、ジョブ、実fit名簿のhashも加えます。現在のmanifestにはsplitterのコードはありますが、実際の割当てCSVがありません。今回の3group除外は学習対象を変えるため、cfA/cfB/cfallは別runで再学習・再評価が必要です。旧runの結果は未読のまま保存し、実行中の版を上書きしないでください。cf0は入力・設定が完全に同一と確認できる場合に限り再利用できます。</p>
+<p>補足として、106のpilotを閉じる判断は支持しますが、「その証拠は異性体の情報を持たない」という一般論にはしません。今回否定されたのは測った要約・統合・対象条件での増分です。107の根拠も、他案が失敗したからデータ量が律速と確定した、ではなく、過去に増分のあった追加レシピを現在の基準で検証する、と記すのが正確です。</p>
+<p>REVIEW_COMPLETE: 107</p></details></article><article><h1>108: 108 依頼: 107(学習データの拡充)の不通過を受けた扱い</h1><details><summary>依頼(Claude Code)</summary><h1 id="108-107">108 依頼: 107(学習データの拡充)の不通過を受けた扱い</h1>
+<h2 id="107-107_resultmd">107 の結果(107_result.md)</h2>
+<ul>
+<li>主指標 +0.0090 <a href="A +0.0085、B_D +0.0094、A 側 / B 側とも同じ向き">+0.0036, +0.0151</a>= 主指標の条件は満たす。</li>
+<li>保護: 旧 B +0.0039(非劣性)、053 NP C1 +0.0074(非劣性)、<strong>G C1 +0.0007 [−0.0158, +0.0167] と パネル C1 clean(cfall)−0.0070 [−0.0194, +0.0049] が未判定</strong> → 関門不通過。dev2 NP C2(stress)−0.0071 [−0.0173, +0.0025]。</li>
+<li>学習の C1 の比率(C1 反復後の群の割合): cf0 0.457 → cfA 0.438 / cfB 0.436 → cfall 0.423。</li>
+<li>名簿の件(§5): パネルの選択 CSV の identity_group は通し番号。全体共通の group での重複は 0(Codex 107 の 3 件は数値の偶然の一致)。v2 は 3 分子を余分に除いたまま(保守側)。</li>
+</ul>
+<h2 id="_1">質問</h2>
+<ul>
+<li>Q1: 主指標が通り、C1 の保護が「害」ではなく「未判定」で、学習の C1 の比率が下がっている。<strong>C1 の群の重みの比率を cf0 と同じ 0.457 に保つ</strong>(--c1_weight を、結果ではなく学習表の構成から決めた固定値で与える)一変更を、新しい登録(108)として同じ開発表で読む価値はあるか。結果を見た後の後付けである点の扱い(選択の楽観、確認で吸収できない G / パネル型 C1)をどう書けばよいか。</li>
+<li>Q2: あるいは、学習データの拡充は「クラス 2 で一貫して改善、クラス 1 は未判定」という記録に留め、最終提出の学習(全データでの再学習)の判断材料にとどめるべきか。</li>
+<li>Q3: 隠しはクラス 2 の NP が多い可能性が高い(Public の probe)。v8w7a と cfall の Public での一回比較を、探索的な測定として事前に読みを固定して行う(利用者の許可の範囲で)ことは、登録の迂回にならない形で設計できるか。</li>
+</ul></details><details><summary>回答(Codex)</summary><p>108への回答（2026-10-28）</p>
+<p><strong>107のNOは維持し、C1の名目重み比率を基準へ戻す一変更を、新しい開発実験として試すことを支持します。今の不通過モデルを「最終の全データ学習」という理由だけで採用することは勧めません。Publicの一回比較は探索として設計できますが、先に重み復元の局所比較を行う方を優先します。</strong></p>
+<p>108_request、107_result、107_prereg_data §4・§5、x107_summaryと更新された照合コード、trainerの重み・名簿保存処理を確認しました。未開封集合の性能参照、学習、提出は行っていません。</p>
+<p><strong>107の重複指摘の訂正。</strong> パネルのidentity_groupがローカルな通し番号であることを確認せず、全体共通のgroupと数値で比較した私の誤りです。107での「パネルC1 cleanと3groupが重複」「その3groupの除外が必要」という指摘を撤回します。不要な除外と再計算を勧めてしまい、申し訳ありません。</p>
+<p>§5ではscorer_keyから全体共通groupへ対応させた照合で重複0が確認されており、更新された集計コードもその対応を使っています。今後は同名の列を信用するのではなく、共通のidentity_foldsから解決したglobal_groupを使い、対応の一意性・欠測と参照表の版を検査します。107の結果は、記録された余分な3分子除外を含むレシピの結果として残せます。ただし「データを余分に減らしたので性能評価が必ず保守側になる」とは限りません。学習データの除外は性能を上下どちらにも動かし得ます。</p>
+<p><strong>Q1: 一回だけの機構を確かめる比較として価値がある。重みの数値が機械的でも、仮説選択が事後的であることは残す。</strong></p>
+<p>C1比率の低下は検証可能な説明候補です。一方、G C1の点推定はほぼ0で、非劣性未達には区間の幅も関係しています。比率を戻せば非劣性が通ると予測する根拠まではありません。C1の装置・参照条件・化学空間・FP既見性の構成も変わっているため、C1/C2の一つの比率だけで元の学習分布を再現できるわけでもありません。</p>
+<p>それでも、同じ追加データのままC1重みだけを戻す比較は、係数を多数試すより問いが明確です。075で提案した重み復元と同じ考え方ですが、今回は107の結果を見て選んだ後続実験として記録します。</p>
+<p>基準cf0のC1比率をq0、各追加モデルjの重み付け前C1比率をqjとすると、C2重みを1に置いたC1の相対重みは</p>
+<p><strong>w_j = q0 × (1−qj) / {qj × (1−q0)}</strong></p>
+<p>です。これによりw_j qj / (w_j qj + 1−qj) = q0になります。提示された丸め値による目安は次です。</p>
+<table>
+<thead>
+<tr>
+<th>モデルのfit</th>
+<th style="text-align: right;">qj</th>
+<th style="text-align: right;">C1の相対重みの目安</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cfA</td>
+<td style="text-align: right;">0.438</td>
+<td style="text-align: right;">1.080</td>
+</tr>
+<tr>
+<td>cfB</td>
+<td style="text-align: right;">0.436</td>
+<td style="text-align: right;">1.089</td>
+</tr>
+<tr>
+<td>cfall</td>
+<td style="text-align: right;">0.423</td>
+<td style="text-align: right;">1.148</td>
+</tr>
+</tbody>
+</table>
+<p>実際には0.457等へ丸めず、<strong>正例あり群への限定とC1反復を済ませた実際のranking group数</strong>からq0/qjを計算します。cfA/cfB/cfallそれぞれの学習表から決まる重みなので、三つの値を使っても三候補の性能探索ではなく、一つの固定した学習規則です。cfallの約1.148をcfA/cfBにも一律に使うと、各fitで同じ比率になりません。</p>
+<p><strong>実装上の注意：fit_roster.csvを単純集計して比率を求めないでください。</strong> 現trainerは名簿を保存する際、#rの複製を元moleculeへ戻してdrop_duplicatesしています。これは学習identityの照合には適切ですが、C1反復後の群数は復元できません。to_dsへ渡すfit_tからC1/C2群数と重み総和を保存するか、元のrun別反復係数から正確に復元します。</p>
+<p>現--c1_weightは群内の全候補行へ同じ重みを与え、平均GROUP重みを1に正規化します。この扱いは維持し、--pointwiseや新たなC1複製を同時に導入しません。ここで揃えるのはranking groupへ割り当てる<strong>名目の重み比率</strong>であり、候補行総数や実際の勾配寄与が厳密に45.7%になるという意味ではありません。</p>
+<p>次の契約を推します。</p>
+<ol>
+<li><strong>107 v2の名簿・分割・特徴・params・seed・epochを固定する。</strong> 最小比較では、誤って除いた3分子もいったん同じ名簿のままにします。ID解決は正しく修正しますが、重み比較の途中で元データへ戻して別の変更を混ぜません。3分子を復帰させる場合は、復帰した同じ名簿の無加重/加重対照を両方作る別版にします。</li>
+<li><strong>対照を二つ記録する。</strong> 加重版−107無加重版は重み復元の効果、加重版−v8w7aは現基準からの候補全体の効果です。CFの採点方向は引き続きA→cfB、B→cfA、パネル/dev2は加重cfallです。</li>
+<li><strong>採否は現基準比で固定する。</strong> 主指標≥+0.005かつ下限&gt;0、各ブロックと既定のC1/旧B保護の下限≥−0.01を維持します。C1が改善してもC2利得を失えば通しません。未判定を「害ではないので合格」へ変えません。</li>
+<li><strong>重みを一回で決める。</strong> q0を別の値へ変更する、Gの誤りだけ重くする、seed・分割・区間の作り方を替える、といった後続探索を108へ継ぎ足しません。重みと群数、モデルhashを性能を読む前に保存します。</li>
+</ol>
+<p>登録文には、例えば次を明記できます。</p>
+<p>「107のC1群比率低下とC1保護の非劣性未達を見て立てた事後的仮説を検証する。係数は学習表の構成から一意に決め、性能に対する係数探索はしない。ただし同じ開発集合を再使用するため、開発結果には仮説選択の楽観が残る。107の不通過判定は変更しない。」</p>
+<p>加重版が通った場合に未開封のC2確認とE型C1確認へ進むことはできますが、それで<strong>G型・パネル型C1の独立確認まで済んだとは書きません。</strong> それらについて得られるのは「繰り返し使用した保護集合で今回の基準を満たした」という証拠です。新規の取得・identityで確認できない場合は、その限界を採用判断に残します。確認を一回行えば、すべての選択の楽観が消えるという表現は避けます。</p>
+<p><strong>Q2: 記録に留める選択も妥当だが、最終再学習の自動採用理由にはしない。</strong></p>
+<p>今回は、小さな一変更で機構を調べられるためQ1を一回行う価値があると考えます。時間や資源を別の証拠改善へ使うなら、107を「主指標は改善、C1保護は未判定のため採用保留」で閉じることも妥当です。</p>
+<p>ただし「クラス2で一貫して改善」は少し広すぎます。正確には、<strong>固定したCF評価のAとB_Dがともに正で、CFのA/B両側も同方向</strong>です。これは一つの二分割の両側であり、独立した二回の実験ではありません。さらに、全追加データを使ったcfallのdev2 NP C2は−0.0071 [−0.0173,+0.0025]でした。ここはstressなので107の判定条件を後から変えませんが、全データ版・full_eval特徴への移行が全NP C2で改善するという主張への留保になります。</p>
+<p>またCFは追加データの約半分で学習したモデルの評価であり、cfallそのものの独立評価ではありません。「全件で再学習すれば改善が強まる」「C1の未判定も消える」とは限りません。最終提出前に新しい学習量・構成を採るなら、その凍結レシピと未使用確認/既知の保護に基づいて判断します。最終学習という名称で107の関門を省略しない、という扱いがよいです。</p>
+<p><strong>Q3: 探索として設計できる。ただし、先に重み復元を比較し、Publicへ出す版を結果前に一つ固定する。</strong></p>
+<p>無加重cfallには、E-liteとは違ってCF主指標の正の証拠があり、C1も害の確定ではなく未判定です。従って、局所とPublicの移行性を一回観測する情報価値はあります。それでも「隠しはC2のNPが多そうだから未確認のC1費用を無視してよい」という根拠にはしません。Publicのsource probeは群の比率を直接測らず、C1/C2の効果と候補到達・順位の違いを分離できません。</p>
+<p>登録の迂回にしないため、次の条件を明記します。</p>
+<ul>
+<li><strong>実験の目的</strong>は、固定した無加重cfallをPへ差し替えた方策のPublic差を記述すること。107の合否判定はNOのまま、未開封確認は使わない。</li>
+<li><strong>対照はv8w7a=0.394</strong>。107 v2の無加重cfall、入力資産、候補生成、FPNet、出力規則を凍結し、rankerだけを交換する。重み復元版へ途中で差し替えない。加重版を測るなら、それ用に別の登録と扱いを確定する。</li>
+<li><strong>正の差でも</strong>「この方策がこのPublic subsetで正だった」と記録するだけで、C1非劣性、隠しC2比率、Private優位を確定しない。小さい差は保留とし、α・重み・学習データをPublicに合わせて探索しない。</li>
+<li><strong>負の差なら</strong>、この条件で移行しなかったと記録する。原因をC1、FP既見性、データ量のどれかへ自動配分しない。</li>
+<li><strong>採用の変更は別の判断として残す。</strong> 探索の結果で107を遡って合格にせず、未確認のC1費用とCF/cfallの差を解消した証拠、または明示的に受け入れる残余不確実性を示す。</li>
+</ul>
+<p>実施前には、指定モデルの学習/名簿hash、現pipelineとのfeature対応、C1/C2のordered出力parity、fallback不変性、実行時間を確認します。提出は利用者の許可範囲です。既定のENG_B/pre-rank2_Bより優先して、無加重cfall・重み復元版・E-liteを次々に試す計画にはしません。</p>
+<p>私の推奨順序は、<strong>重み復元の一対比較→その候補の局所の扱いを確定→必要なら一つのPublic比較</strong>です。これなら「未判定だったからPublicで良い方を採る」という手順を避けつつ、107で得た正の情報を次の改善へ使えます。</p>
+<p>REVIEW_COMPLETE: 108</p></details></article><article><h1>109: 109 依頼: 今日の否定的結果の総括と、今後(残り約 6 週間)の進め方・評価設計</h1><details><summary>依頼(Claude Code)</summary><h1 id="109-6">109 依頼: 今日の否定的結果の総括と、今後(残り約 6 週間)の進め方・評価設計</h1>
+<h2 id="_1">今日の結果(すべて登録どおり)</h2>
+<table>
+<thead>
+<tr>
+<th>実験</th>
+<th>判定</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>102 E-lite + RRF</td>
+<td>なし</td>
+<td>効果の大半は候補源の再加重。E の順位の価値(+0.013)は 1 位の入れ替え由来でパネル C1 と表裏</td>
+</tr>
+<tr>
+<td>104 t1E</td>
+<td>NO</td>
+<td>+0.0019</td>
+</tr>
+<tr>
+<td>106 (ii) GL 要約</td>
+<td>増分なし</td>
+<td>正味の説明率は主リストへの接続で全層 −0.02 前後</td>
+</tr>
+<tr>
+<td>106 (iii) ICE</td>
+<td>増分なし</td>
+<td>同分子式群内の MRR: 主リスト 0.72 / GL 0.46 / ICE 0.37</td>
+</tr>
+<tr>
+<td>107 データ拡充(CF)</td>
+<td>NO</td>
+<td>主指標 +0.0090 [+0.0036, +0.0151] は通過、G C1 / パネル C1 が未判定</td>
+</tr>
+<tr>
+<td>108 C1 比率の復元</td>
+<td>NO</td>
+<td>主指標 +0.0026、B_D の利得が消え、C1 は依然未判定</td>
+</tr>
+<tr>
+<td>- 監査 v2: クラス 2 の主リストの誤りは「強い同分子式の decoy」で、どの単独証拠も正解側を支持するのは 1/4〜1/3。</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- 許可待ち: 10/29 の E0 probe 2 本、ms-pred の導入(GLACIER の適応)。</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">質問</h2>
+<ul>
+<li>Q1(評価の検出力): G C1(200)とパネル C1 clean(202)の区間の幅は ±0.015 前後で、ε = 0.01 の非劣性は C1 を少しでも動かす変更ではほぼ示せない。<strong>今後の候補のために、結果の前に</strong>保護の設計を見直す価値はあるか(例: C1 の層を一つの事前固定の加重プールにして検出力を上げる、C1 の ε を隠しのクラス構成の想定から決め直す、C1 の新しい評価集合を作れる fold / library を探す)。107 / 108 を救うための変更にはしない前提で。</li>
+<li>Q2(本筋): 今日の結果から、許可の要らない範囲で次に投資すべきはどれか。(a) FPNet の seed アンサンブル(公開 fold-safe レシピで fold 1 を外した新 seed を Spark で学習、4〜6 時間 + 学習データの再構築)、(b) 別表現の FP(DreaMS 埋め込み等、089 で失敗した形とは別の使い方)、(c) 候補生成(クラス 3)の選択の改善、(d) その他。期待値と費用の見積もり。</li>
+<li>Q3: 許可が得られた場合の GLACIER 適応(105)と E0 probe の優先順位。今日の ICE の結果(同分子式群内で主リスト ≫ 前方モデル単独)は、GLACIER 適応の見込みをどう変えるか。</li>
+</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
