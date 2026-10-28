@@ -13,14 +13,17 @@ protections (lower bound >= -0.01): old B = f1dev C/D/E/F C2 (equal), G C1 = f1d
 C1 bank = c1dev C1 rows POOLED (one identity one vote). Bootstrap 4,000 identity resamples per cell, the SAME resampled rows for both comparisons
 (paired across the three arms), fixed seeds. An empty cell or an undetermined protection is a failure. A pass is a fold-1 development result:
 fold 2 must pass the same gate on its own (fold-2 initial weights, the same recipe); not an unopened confirmation or a submission decision.
-Usage (Spark, experiments/b1_baseline): python -X utf8 x115_stage3.py [--allow_repro AUDIT.md]"""
+Revised after Codex 120 (before any R / A model): stage 3 is bound to the stage-1 decision (gate PASS, its hashes = the current files); GLACIER
+values are checked across ALL three arms per (query, SMILES) after checking that each molecule's query input is identical in every arm (finite
+values equal; finite / null disagreement = STOP); baselines (r102 / r111_base) are hashed, must be finite in [0, 1], and a row-key mismatch is a
+reproduction failure (exit 2 with the audit); no --allow_repro path (a reproduction failure needs a new registered procedure); the pooled bank set
+asserts one row per identity; the ledgers' identity_group equals the selection's. Writes diag/x115_stage3_decision.json (PASS / NO + hashes).
+Usage (Spark, experiments/b1_baseline): python -X utf8 x115_stage3.py"""
 import hashlib, json, os, sys
 import numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); NB = 4000; TOL = 1e-12
 sys.path.insert(0, HERE)
 import b1_locked_eval as LE
-ALLOW = sys.argv[sys.argv.index("--allow_repro") + 1] if "--allow_repro" in sys.argv else None
-if ALLOW and (not os.path.isfile(ALLOW) or os.path.getsize(ALLOW) < 200): sys.exit(f"STOP (115 stage 3): --allow_repro needs an existing, non-trivial audit file, got {ALLOW}")
 ARMS = ("p0", "r", "a")
 EVAL_CSV = {"f1dev": "eval_set_f1/p2_molecules.csv", "np053f1dev": "np053_f1dev/p2_molecules.csv", "c1bankdev": "c1bank_f1/c1dev/p2_molecules.csv"}
 BASE = {"f1dev": "diag/r102_f1dev.csv", "np053f1dev": "diag/r102_np053f1dev.csv", "c1bankdev": "diag/r111_base_c1bankdev.csv"}
@@ -39,6 +42,15 @@ def sha(p):
 
 
 SETS = {t: sorted(pd.read_csv(os.path.join(HERE, c)).set.unique()) for t, c in EVAL_CSV.items()}
+S1 = json.load(open(os.path.join(HERE, "diag/x115_stage1_decision.json")))   # (0) bound to the stage-1 decision
+if S1.get("gate") != "PASS": stop("stage 1 did not pass")
+for k, f in (("stage1_csv", "diag/x115_stage1.csv"),) + tuple((f"{t}_{a}_manifest", f"run_{t}_{a}e115/b1_features_manifest.json") for t in ("f1dev", "np053f1dev") for a in ARMS):
+    if S1["sha256"].get(k) != sha(os.path.join(HERE, f)): stop(f"{f} changed after stage 1")
+WANT = {"p0": "1739d5683fa94fd73fe3b37db98ac364cb5dfdc22ad5bea9789be9c48d7cadc4", "r": S1["sha256"]["r_final"], "a": S1["sha256"]["a_final"]}
+for t in EVAL_CSV:
+    for arm in ARMS:
+        m_ = json.load(open(os.path.join(HERE, f"run_{t}_{arm}e115", "b1_features_manifest.json")))
+        if m_.get("fpnet") != WANT[arm] or m_.get("extra_ckpts") != []: stop(f"{t} {arm}: table not built from the {arm} checkpoint")
 GLV = {}
 for arm in ARMS:   # (1) GLACIER audit gate
     for t in EVAL_CSV:
@@ -55,15 +67,24 @@ for arm in ARMS:   # (1) GLACIER audit gate
             nfin = sum(1 for dd in d.values() for v in (dd or {}).values() if v is not None and np.isfinite(float(v)))
             if nfin != au.get("finite"): stop(f"{g}: loader sees {nfin} finite values, audit {au.get('finite')}")
             GLV[(arm, t, s)] = d
-for t in EVAL_CSV:
+nshared = 0
+for t in EVAL_CSV:   # all three arms (Codex 120 Q3): identical query inputs per molecule, then one value per (molecule, SMILES)
     for s in SETS[t]:
-        for arm in ("r", "a"):
-            a0, a1 = GLV[("p0", t, s)], GLV[(arm, t, s)]
-            for m in set(a0) & set(a1):
-                for smi in set(a0[m] or {}) & set(a1[m] or {}):
-                    v0, v1 = a0[m][smi], a1[m][smi]
-                    if v0 is not None and v1 is not None and float(v0) != float(v1): stop(f"{t} {s} {m}: shared candidate with different GLACIER values (p0 / {arm})")
-D, CHK, LED = {}, [], {}
+        Q = {}
+        for arm in ARMS:
+            for q in json.load(open(os.path.join(HERE, f"run_{t}_{arm}e115", f"b1_runner_{s}_in.json"))):
+                k_ = json.dumps({x: y for x, y in q.items() if x != "cands"}, sort_keys=True)
+                if Q.setdefault(str(q["mid"]), k_) != k_: stop(f"{t} {s} {q['mid']}: the query input differs between arms")
+        U = {}
+        for arm in ARMS:
+            for m, dd in GLV[(arm, t, s)].items():
+                for smi, v in (dd or {}).items():
+                    fin = v is not None and bool(np.isfinite(float(v))); key = (str(m), smi)
+                    if key in U:
+                        f0, v0 = U[key]; nshared += 1
+                        if f0 != fin or (fin and float(v) != v0): stop(f"{t} {s} {m}: GLACIER value of a shared candidate differs between arms (finite {f0} / {fin})")
+                    else: U[key] = (fin, float(v) if fin else None)
+D, CHK, LED, BSHA, KEYFAIL = {}, [], {}, {}, []
 for t, csv in EVAL_CSV.items():   # (2) rows, (3) reproduction
     ev = pd.read_csv(os.path.join(HERE, csv)); ev["molecule"] = ev.molecule.astype(str); ig = dict(zip(ev.molecule, ev.identity_group.astype(int)))
     X = {}
@@ -74,8 +95,9 @@ for t, csv in EVAL_CSV.items():   # (2) rows, (3) reproduction
         exp, c1u = set(), {}
         for s, g in ev.groupby("set"):
             M = pd.read_csv(os.path.join(HERE, f"run_{t}_{arm}e115", f"b1_molecules_{s}.csv")); M["molecule"] = M.molecule.astype(str); M = M.set_index("molecule"); LED[(arm, t, s)] = M
+            if set(M.index) != set(g.molecule) or M.index.duplicated().any(): stop(f"{arm} {t} {s}: ledger molecules differ from the selection")
             for m in g.molecule:
-                if m not in M.index: stop(f"{arm} {t} {s} {m}: selected molecule without a ledger row")
+                if int(M.loc[m, "identity_group"]) != ig[m]: stop(f"{arm} {t} {s} {m}: ledger identity_group differs from the selection")
                 exp.add((s, "c2", m)); c1u[(s, m)] = bool(M.loc[m, "c1_usable"])
                 if c1u[(s, m)]: exp.add((s, "c1", m))
         got = list(zip(x.set, x.view, x.molecule))
@@ -88,16 +110,19 @@ for t, csv in EVAL_CSV.items():   # (2) rows, (3) reproduction
     z = X["p0"][0].merge(X["r"][0], on=["set", "view", "molecule"], validate="one_to_one").merge(X["a"][0], on=["set", "view", "molecule"], validate="one_to_one")
     z["ig"] = z.molecule.map(ig)
     if z.ig.isna().any() or z.duplicated(["set", "view", "ig"]).any(): stop(f"{t}: identity group missing or repeated within a cell")
-    y = pd.read_csv(os.path.join(HERE, BASE[t]), usecols=["set", "view", "molecule", "main"]); y["molecule"] = y.molecule.astype(str)
+    y = pd.read_csv(os.path.join(HERE, BASE[t]), usecols=["set", "view", "molecule", "main"]); y["molecule"] = y.molecule.astype(str); BSHA[t] = sha(os.path.join(HERE, BASE[t]))
+    yv = y.main.values.astype(float)
+    if not (np.isfinite(yv).all() and (yv >= 0).all() and (yv <= 1).all()) or y.duplicated(["set", "view", "molecule"]).any(): stop(f"{t}: baseline {BASE[t]} not finite in [0, 1] or duplicated")
     k_new, k_old = set(zip(z.set, z.view, z.molecule)), set(zip(y.set, y.view, y.molecule))
-    if k_new != k_old: stop(f"{t}: row keys differ from the existing main (new only {len(k_new - k_old)}, old only {len(k_old - k_new)})")
+    if k_new != k_old:
+        KEYFAIL.append(f"- {t}: row keys differ from the existing main: new only {len(k_new - k_old)}, old only {len(k_old - k_new)}"); z["tag"] = t; D[t] = z; continue
     q = z.merge(y, on=["set", "view", "molecule"], how="left", validate="one_to_one"); q["dr"] = q.main_p0 - q.main
     for (s, vw), r in q.groupby(["set", "view"], sort=True):
         CHK.append(f"| {t} {s} {vw} | {len(r)} | {int((r.dr.abs() > TOL).sum())} | {r.dr.mean():+.5f} | {r.dr.abs().mean():.5f} | {r.dr.abs().max():.4f} |")
     z["tag"] = t; D[t] = z
 HDR = ["## Reproduction of the existing main by P0 (P0 - existing)", "", "| cell | rows | rows differing | signed mean | mean abs | max abs |", "|---|---:|---:|---:|---:|---:|"]
-if any(int(c.split("|")[3]) > 0 for c in CHK) and not ALLOW:
-    open(os.path.join(HERE, "diag/x115_stage3_repro.md"), "w", encoding="utf-8").write(chr(10).join(HDR + CHK) + chr(10))
+if KEYFAIL or any(int(c.split("|")[3]) > 0 for c in CHK):
+    open(os.path.join(HERE, "diag/x115_stage3_repro.md"), "w", encoding="utf-8").write(chr(10).join(HDR + CHK + [""] + KEYFAIL) + chr(10))
     print("STOP (115 stage 3): P0 does not reproduce the existing main on every row; see diag/x115_stage3_repro.md (no candidate difference computed)")
     sys.exit(2)
 
@@ -123,6 +148,7 @@ def boot2(cells, view, seed):
 def pooled2(t, view, seed):
     r = D[t]; r = r[r.view == view]
     if not len(r): stop(f"empty pooled set {t} {view}")
+    if r.ig.duplicated().any(): stop(f"pooled set {t} {view}: an identity appears more than once (one identity one vote)")
     rng = np.random.default_rng(seed); dar = r.main_a.values - r.main_r.values; dap = r.main_a.values - r.main_p0.values
     bs = np.empty((NB, 2))
     for i in range(NB):
@@ -140,7 +166,7 @@ for k, name in ((0, "A - R"), (1, "A - P0")):
     ok = prim >= 0.005 and ci(bp)[0] > 0 and ci(ba[:, k])[0] >= -0.01 and ci(bd[:, k])[0] >= -0.01 and all(ci(b[:, k])[0] >= -0.01 for _, b in PROT.values())
     res[name] = (prim, bp, ok)
 gate = all(v[2] for v in res.values())
-L = ["# 115 stage 3: v8w7a main on P0 / R / A tables (fold 1)", ""] + HDR + CHK + (["", f"- continued with --allow_repro {ALLOW} (sha256 {sha(ALLOW)})"] if ALLOW else [])
+L = ["# 115 stage 3: v8w7a main on P0 / R / A tables (fold 1)", "", f"- GLACIER: shared (molecule, SMILES) values checked across the three arms: {nshared}", ""] + HDR + CHK
 L += ["", "## Decision (both comparisons must pass)", "", "| comparison | primary | block A | block D | " + " | ".join(PROT) + " | pass |", "|---|---|---|---|" + "---|" * len(PROT) + "---|"]
 for k, name in ((0, "A - R"), (1, "A - P0")):
     prim, bp, ok = res[name]
@@ -153,3 +179,7 @@ for t, z in D.items():
         L.append(f"| {t} {s} {view} | {len(r)} | {r.main_p0.mean():.4f} | {r.main_r.mean():.4f} | {r.main_a.mean():.4f} | {int((d1 > TOL).sum())} / {int((d1 < -TOL).sum())} | {int((d2 > TOL).sum())} / {int((d2 < -TOL).sum())} |")
 pd.concat(D.values(), ignore_index=True).to_csv(os.path.join(HERE, "diag/x115_stage3.csv"), index=False)
 open(os.path.join(HERE, "diag/x115_stage3.md"), "w", encoding="utf-8").write(chr(10).join(L) + chr(10)); print(chr(10).join(L))
+HS = {"reader": sha(os.path.abspath(__file__)), "stage1_decision": sha(os.path.join(HERE, "diag/x115_stage1_decision.json")), "stage3_csv": sha(os.path.join(HERE, "diag/x115_stage3.csv"))}
+HS.update({f"baseline_{t}": h for t, h in BSHA.items()}); HS.update({f"r115_{a}_{t}": sha(os.path.join(HERE, f"diag/r115_{a}_{t}.csv")) for a in ARMS for t in EVAL_CSV})
+json.dump(dict(stage=3, gate="PASS" if gate else "NO", comparisons={n: dict(primary=v[0], lower=float(ci(v[1])[0]), passed=bool(v[2])) for n, v in res.items()}, sha256=HS),
+          open(os.path.join(HERE, "diag/x115_stage3_decision.json"), "w"), indent=1)
