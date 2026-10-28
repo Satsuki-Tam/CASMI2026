@@ -64,6 +64,7 @@ for tag, run in RUN_OF.items():
                   gl=np.array([np.nan if glm.get(sm) is None else float(glm.get(sm)) for sm in g.smiles], float))
         sc["S"] = zl(sc["fp"]) + 2 * zl(sc["gl"]) + 0.5 * sc["pop"]
         out = dict(base, n=len(g), gl_cov=float(np.isfinite(sc["gl"]).mean()), **{f"r_{k}": trank_neutral(sc[k], tr, keys) for k in EV})
+        if not np.isfinite(sc["gl"]).any(): out["r_gl"] = 0   # Codex 106: no GL evidence at all -> no pure-GL rank (not an official-key order)
         out["r_glfp"] = trank_neutral(np.where(np.isfinite(sc["gl"]), sc["gl"], -np.inf) * 1.0 + 1e-6 * zl(sc["fp"]), tr, keys) if np.isfinite(sc["gl"]).any() else 0
         tp = TOP.get((s, v, mid))
         if tp is not None and len(tp) and tr.any():
@@ -73,8 +74,10 @@ for tag, run in RUN_OF.items():
             if out["main"] < 1 and top1 is not None and top1 != ti:   # main wrong at rank 1, truth in the list: does x prefer the truth over the main rank-1 decoy?
                 out["same_formula_top1"] = formula_of(str(g.smiles.values[top1])) == ftruth
                 for k in EV: out[f"rescue_{k}"] = (np.isfinite(sc[k][ti]) and (not np.isfinite(sc[k][top1]) or sc[k][ti] > sc[k][top1])) if np.isfinite(sc[k][ti]) or np.isfinite(sc[k][top1]) else np.nan
+                for k in EV: out[f"rvalid_{k}"] = int(np.isfinite(sc[k][ti])) + int(np.isfinite(sc[k][top1]))   # 2 both finite, 1 one, 0 none
             if out["main"] == 1 and top2 is not None:   # main right at rank 1: does x prefer the main rank-2 candidate over the truth?
                 for k in EV: out[f"damage_{k}"] = (np.isfinite(sc[k][top2]) and (not np.isfinite(sc[k][ti]) or sc[k][top2] > sc[k][ti])) if np.isfinite(sc[k][ti]) or np.isfinite(sc[k][top2]) else np.nan
+                for k in EV: out[f"dvalid_{k}"] = int(np.isfinite(sc[k][ti])) + int(np.isfinite(sc[k][top2]))
         rows.append(out)
 A = pd.DataFrame(rows); A.to_csv(os.path.join(HERE, "diag/fam_audit2.csv"), index=False)
 rr = lambda r: np.where((r >= 1) & (r <= 25), 1.0 / np.maximum(r, 1), 0.0)
@@ -98,4 +101,13 @@ for lab, f in LAY.items():
     rgt = d[d[d.columns[d.columns.str.startswith("damage_")]].notna().any(axis=1)] if any(d.columns.str.startswith("damage_")) else d.iloc[:0]
     dmg = [f"{rgt[f'damage_{k}'].mean():.2f}" if f"damage_{k}" in rgt and len(rgt) else "-" for k in EV]
     L.append(f"| {lab} | {len(dw)} ({int(sf.sum())}) | " + " | ".join(cells) + f" | {len(rgt)} | " + " | ".join(dmg) + " |")
+L += ["", "Both-finite comparisons only (Codex 106): rescue / damage share with the counts both / one / none finite", "", "| layer | " + " | ".join(f"rescue {k}" for k in EV) + " | " + " | ".join(f"damage {k}" for k in EV) + " |", "|---|" + "---|" * (2 * len(EV))]
+for lab, f in LAY.items():
+    d = A[f(A)]; cells = []
+    for kind, vk in (("rescue", "rvalid"), ("damage", "dvalid")):
+        for k in EV:
+            if f"{vk}_{k}" not in d: cells.append("-"); continue
+            v = d[f"{vk}_{k}"]; b = d[v == 2]
+            cells.append(f"{b[f'{kind}_{k}'].mean():.2f} ({int((v == 2).sum())}/{int((v == 1).sum())}/{int((v == 0).sum())})" if (v == 2).any() else f"- (0/{int((v == 1).sum())}/{int((v == 0).sum())})")
+    L.append(f"| {lab} | " + " | ".join(cells) + " |")
 open(os.path.join(HERE, "diag/fam_audit2.md"), "w", encoding="utf-8").write(chr(10).join(L) + chr(10)); print(chr(10).join(L))
