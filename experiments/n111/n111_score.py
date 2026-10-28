@@ -7,8 +7,10 @@ enveda-180 positive spectra); each spectrum is one FPNet input (n_merged 1, own 
        the SAME representative SMILES (Codex 112: separates the single-spectrum input from the table's spelling aggregation)
   Ft = f_candidate . mean over the query spectra of the 111 model's OWN FP head (fine-tuned with the same-formula-concentrated negatives as an
        auxiliary loss; diagnostic of the hard-negative fine-tuning itself, never a candidate)
-  Np = m_candidate . s_global, s_global = mean over the set's molecules of their mean unit spectrum embedding (a CONSTANT spectrum for every
-       query = the spectrum-masked score; literature audit: how much N ranks candidates without the query's spectrum; diagnostic only)
+  Np = m_candidate . s_loo, s_loo = mean over the OTHER molecules of the set of their mean unit spectrum embedding (leave-one-out, Codex 114;
+       NaN when the set has one molecule) = the evaluation-set mean representation in place of the query's own spectra; the candidate window /
+       shortlist still depend on the query, so this is not a 'spectrum-free' model, only how much N orders candidates without this query's
+       spectrum (literature audit); diagnostic only
 Candidates = every row of b1_features_<set>.parquet (one row per official key; its representative SMILES; bits = casmi.chem.raw_fingerprint[fp_bits]).
 fph = 64-bit hash of the candidate's bit vector (FP-collision diagnostics). Missing values are kept as NaN and counted (never dropped).
 Writes <out>/n111_<tag>_<set>.parquet (set, molecule, smiles, official_key, N, Fs, Fm, Ft, Np, fph, n_query) and <out>/n111_<tag>_manifest.json.
@@ -121,18 +123,18 @@ def main():
                     with torch.autocast(dev, dtype=dtype, enabled=dev == "cuda"):
                         mv = model.molecule(fb)
                     Nv[ok] = (mv.float() @ sbar).cpu().numpy(); Fv[ok] = (fb @ zbar).cpu().numpy(); Mv[ok] = (fb @ zmerged).cpu().numpy(); Tv[ok] = (fb @ ztbar).cpu().numpy()
-                    MV.append((len(rows), np.flatnonzero(ok), mv.float().cpu().numpy()))
+                    MV.append((len(rows), np.flatnonzero(ok), mv.float().cpu().numpy(), len(SB) - 1))
                     H[ok] = [int.from_bytes(hashlib.blake2b(p.tobytes(), digest_size=8).digest(), "little", signed=True) for p in pk if p is not None]
                 for c, nv, fv, mv_, tv, h in zip(cand.itertuples(index=False), Nv, Fv, Mv, Tv, H):
                     rows.append(dict(set=s, molecule=mid, smiles=c.smiles, official_key=c.official_key, N=float(nv), Fs=float(fv), Fm=float(mv_), Ft=float(tv), fph=int(h), n_query=len(q)))
             O = pd.DataFrame(rows); O["Np"] = np.nan
-            if SB:
-                sg = np.mean(np.stack(SB), 0)
-                for start, okidx, mvv in MV: O.loc[start + okidx, "Np"] = mvv @ sg
+            if len(SB) >= 2:   # leave-one-out mean of the other molecules' mean unit spectrum embeddings
+                SS = np.stack(SB); ssum = SS.sum(0)
+                for start, okidx, mvv, sbi in MV: O.loc[start + okidx, "Np"] = mvv @ ((ssum - SS[sbi]) / (len(SB) - 1))
             if len(O) != len(T) or O.duplicated(["molecule", "official_key"]).any(): raise RuntimeError(f"{s}: scored rows {len(O)} != table rows {len(T)} or duplicates")
             fin = np.isfinite(O.N.values) & np.isfinite(O.Fs.values) & np.isfinite(O.Fm.values)
             O.to_parquet(os.path.join(a.out, f"n111_{a.tag}_{s}.parquet"), index=False)
-            man["sets"][s] = dict(rows=len(O), molecules=int(ms.molecule.nunique()), no_query=n_noq, nonfinite=int((~fin).sum()), sha256=sha(os.path.join(a.out, f"n111_{a.tag}_{s}.parquet")))
+            man["sets"][s] = dict(rows=len(O), molecules=int(ms.molecule.nunique()), no_query=n_noq, nonfinite=int((~fin).sum()), nonfinite_Ft=int((~np.isfinite(O.Ft.values)).sum()), nonfinite_Np=int((~np.isfinite(O.Np.values.astype(float))).sum()), sha256=sha(os.path.join(a.out, f"n111_{a.tag}_{s}.parquet")))
             print(f"{s}: {len(O)} rows, {ms.molecule.nunique()} molecules, no query {n_noq}, non-finite {int((~fin).sum())} ({time.time() - t0:.0f}s)", flush=True)
     json.dump(man, open(os.path.join(a.out, f"n111_{a.tag}_manifest.json"), "w"), indent=2); print("DONE", json.dumps(man)[:400])
 

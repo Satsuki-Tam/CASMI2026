@@ -2,7 +2,8 @@
 diag/r111_<ck>_<tag>.csv = gen_eval2fd --v7f --parents 0 --nscore (main = rank_v8w7a on the EXISTING fold-1 tables with their stored GLACIER;
 N from the 111 checkpoint <ck>; Fs / Fm from the base fold-1 FPNet), tag in {f1dev, np053f1dev, c1bankdev}; plus diag/r111_base_c1bankdev.csv
 (the same evaluator WITHOUT --nscore on the c1dev bank = its frozen P, since the bank has no r102 baseline).
-Checks before any number (STOP): completeness (expected (set, view, molecule) from the selection CSV and c1_usable; no missing / extra /
+Checks before any number (STOP): GLACIER audits of every table bound to the current files and accepted by the evaluator's loader with the
+audited finite count; the score manifests' model sha256 / step equal to the budget's trained checkpoint; completeness (expected (set, view, molecule) from the selection CSV and c1_usable; no missing / extra /
 duplicate); main, t1N_0.5, t1Fs_0.5, t1Fm_0.5 finite in [0, 1]; main equal to diag/r102_<tag>.csv (f1dev, np053f1dev) or to
 diag/r111_base_c1bankdev.csv (bank) on every row; no missing N / Fs / Fm (miss_* = 0); every row with main = 1 keeps 1 in every connection;
 t1Fs_0.5 and t1Fm_0.5 identical on every row across the budgets (they do not depend on the 111 model); one identity group per row within a cell.
@@ -36,8 +37,35 @@ VARS = ["t1N_0.5", "t1Fs_0.5", "t1Fm_0.5"]
 def stop(msg): sys.exit(f"STOP (111 check): {msg}")
 
 
+import hashlib, json
+import b1_locked_eval as LE
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+
+
+def sha(p):
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for b in iter(lambda: f.read(1 << 22), b""): h.update(b)
+    return h.hexdigest()
+
+
+for t, csv in EVAL_CSV.items():   # Codex 114: GLACIER audit of every table used (bound to the current files) and the evaluator's loader acceptance
+    for s in sorted(pd.read_csv(os.path.join(HERE, csv)).set.unique()):
+        g = os.path.join(HERE, RUN_OF[t], "work", f"gl_{s}.json"); ap_ = g + ".audit.json"; inp = os.path.join(HERE, RUN_OF[t], f"b1_runner_{s}_in.json")
+        if not os.path.isfile(ap_): stop(f"missing GLACIER audit {ap_}")
+        au = json.load(open(ap_)); hs = au.get("sha256", {})
+        if au.get("failure", 1) != 0 or hs.get("output") != sha(g) or hs.get("input") != sha(inp) or hs.get("meta") != sha(g + ".meta.json"): stop(f"GLACIER audit {ap_} failed or not about the current files")
+        d, meta, _ = LE.runner(os.path.join(HERE, RUN_OF[t]), s, "gl")
+        if d is None: stop(f"the evaluator's loader rejects {g}")
+        if sum(1 for dd in d.values() for v in (dd or {}).values() if v is not None and np.isfinite(float(v))) != au.get("finite"): stop(f"{g}: loader finite count differs from the audit")
+
+
 def load(ck):
-    D = {}
+    D = {}; S_ = ck[1:]
+    ckp = os.path.join(ROOT, "experiments", "n111", "r1", f"n111_s{S_}_s{S_}.pt"); ck_sha = sha(ckp)
+    for t in EVAL_CSV:   # Codex 114: the scores were made with this budget's trained checkpoint
+        mf = json.load(open(os.path.join(ROOT, "experiments", "n111", "scores", ck, f"n111_{t}_manifest.json")))
+        if mf.get("model_sha256") != ck_sha or int(mf.get("model_step", -1)) != int(S_): stop(f"{ck} {t}: scores not made with the trained checkpoint {ckp}")
     for t, csv in EVAL_CSV.items():
         p = os.path.join(HERE, f"diag/r111_{ck}_{t}.csv")
         if not os.path.exists(p): stop(f"missing {p}")

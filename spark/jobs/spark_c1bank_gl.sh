@@ -6,8 +6,9 @@
 set -u
 cd ~/CASMI2026 || exit 1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=1 PYTHONUTF8=1
-B=experiments/b1_baseline; PY=$HOME/CASMI2026/.venv/bin/python; RUN=$B/run_c1bankdev_f1; OUT=spark/jobs/spark_c1bank.out
-fail() { echo "C1BANK_FAIL $* $(date '+%F %T')" | tee -a $OUT; exit 1; }
+B=experiments/b1_baseline; PY=$HOME/CASMI2026/.venv/bin/python; PYI=$HOME/CASMI2026/.venv-ice/bin/python; RUN=$B/run_c1bankdev_f1; OUT=spark/jobs/spark_c1bank.out
+STF=$RUN/c1bank_status.txt; RID="c1bank_gl $(date '+%F %T') pid $$"; rm -f $STF
+fail() { echo "C1BANK_FAIL $* $(date '+%F %T') [$RID]" | tee -a $OUT | tee $STF; exit 1; }
 while pgrep -f "[t]rain_fivefold.py.*--tag fpnet_f1s1" >/dev/null || pgrep -f "[s]park_n111_train.sh" >/dev/null; do sleep 120; done
 while [ ! -s $B/diag/x110_status.txt ]; do pgrep -f "[s]park_x110.sh" >/dev/null || break; sleep 120; done
 echo "== $(date '+%F %T') bank GLACIER start (110 status: $(cat $B/diag/x110_status.txt 2>/dev/null))" | tee -a $OUT
@@ -19,5 +20,5 @@ for S in $SETS; do
   echo "== $(date +%T) gl $S rc=$rc $(grep -a '\[resume\] done' $RUN/work/gl_${S}_resume.log | cut -c1-90)" | tee -a $OUT; [ $rc -eq 0 ] || fail "gl $S rc=$rc"
   A="$A $RUN/b1_runner_${S}_in.json $RUN/work/gl_${S}.json"
 done
-$PY -X utf8 $B/gl_audit.py $A > $RUN/gl_audit.log 2>&1; rc=$?; cat $RUN/gl_audit.log >> $OUT; [ $rc -eq 0 ] || fail "bank GLACIER audit"
-echo "C1BANK_DONE $(date '+%F %T')" | tee -a $OUT
+$PYI -X utf8 $B/gl_audit.py $A > $RUN/gl_audit.log 2>&1; rc=$?; cat $RUN/gl_audit.log >> $OUT; [ $rc -eq 0 ] || fail "bank GLACIER audit"
+echo "C1BANK_DONE $(date '+%F %T') [$RID]" | tee -a $OUT | tee $STF

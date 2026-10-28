@@ -4,10 +4,12 @@ stage 1 passed. End-to-end, fold 1 only: the v8w7a main (gen_eval2fd --v7f, rank
   FPavg   = run_f1dev_fpavg / run_np053f1dev_fpavg (1:1 logit average with the checked seed-1 final)   -> diag/r110_fpavg_<tag>.csv
 GLACIER comes from ONE candidate-level cache (gl_share.py: existing run -> control -> FPavg), so a (molecule, SMILES) pair has the same value in
 both arms and only uncovered candidates were computed. d = main(FPavg) - main(control) per (set, view, molecule).
-Checks before any number (STOP): (1) GLACIER audit of every arm / set (gl_audit.py: no missing key, non-finite value or unscheduled null);
+Checks before any number (STOP): (1) GLACIER audit of every arm / set (gl_audit.py: no missing key, non-finite value or unscheduled null; the
+audit's sha256 of input / output / meta equal to the current files; the evaluator's loader accepts the file and sees the audited finite count;
+shared candidates carry identical values in both arms);
 (2) completeness of both arms (expected rows from the selection CSV and c1_usable; c1_usable equal in both arms; values finite in [0, 1]);
 (3) one identity group per row within a cell (so the row bootstrap is the identity-level paired bootstrap); (4) the control reproduces the
-existing main (diag/r102_<tag>.csv) on EVERY row; otherwise STOP and report per cell the rows that differ, the signed mean, the mean absolute
+existing main (diag/r102_<tag>.csv) on EVERY row with the same row keys on both sides; otherwise STOP (exit 2) and report per cell the rows that differ, the signed mean, the mean absolute
 and the maximum difference -- continuing requires --allow_repro <audit.md> (an existing file that records the cause, the rows and the meaning
 of the changed control; Codex 112: no automatic tolerance).
 Primary = 1/4 dMRR(np053f1dev NP_H C2) + 1/4 dMRR(np053f1dev NP_N C2) + 1/2 dMRR(f1dev D_np_single C2).
@@ -23,7 +25,7 @@ import json, os, sys
 import numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); NB = 4000; TOL = 1e-12
 ALLOW = sys.argv[sys.argv.index("--allow_repro") + 1] if "--allow_repro" in sys.argv else None
-if ALLOW and not os.path.isfile(ALLOW): sys.exit(f"STOP (110 stage 3): --allow_repro needs an existing audit file, got {ALLOW}")
+if ALLOW and (not os.path.isfile(ALLOW) or os.path.getsize(ALLOW) < 200): sys.exit(f"STOP (110 stage 3): --allow_repro needs an existing, non-trivial audit file, got {ALLOW}")
 EVAL_CSV = {"f1dev": "eval_set_f1/p2_molecules.csv", "np053f1dev": "np053_f1dev/p2_molecules.csv"}
 SETS = {"f1dev": ["C_np_crosslib", "D_np_single", "E_np_negonly", "F_np_uncovered", "G_tims_crosslib"], "np053f1dev": ["NP_H", "NP_X", "NP_N"]}
 RUN = {(arm, t): f"run_{t}_{arm}" for arm in ("s0rep", "fpavg") for t in EVAL_CSV}
@@ -34,12 +36,40 @@ CELLS_A = [("np053f1dev", "NP_H"), ("np053f1dev", "NP_N")]; CELLS_D = [("f1dev",
 def stop(msg): sys.exit(f"STOP (110 stage 3): {msg}")
 
 
-for (arm, t), run in RUN.items():   # (1) GLACIER audit gate
+import hashlib
+import b1_locked_eval as LE
+
+
+def sha(p):
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for b in iter(lambda: f.read(1 << 22), b""): h.update(b)
+    return h.hexdigest()
+
+
+GLV = {}
+for (arm, t), run in RUN.items():   # (1) GLACIER audit gate (Codex 114): audit bound to the current files, loader acceptance, finite counts
     for s in SETS[t]:
-        p = os.path.join(HERE, run, "work", f"gl_{s}.json.audit.json")
+        g = os.path.join(HERE, run, "work", f"gl_{s}.json"); p = g + ".audit.json"; inp = os.path.join(HERE, run, f"b1_runner_{s}_in.json")
         if not os.path.isfile(p): stop(f"missing GLACIER audit {p}")
         au = json.load(open(p))
         if au.get("failure", 1) != 0: stop(f"GLACIER audit failures {au.get('failure')} in {p}")
+        hs = au.get("sha256", {})
+        if hs.get("output") != sha(g) or hs.get("input") != sha(inp) or hs.get("meta") != sha(g + ".meta.json"): stop(f"GLACIER audit {p} is not about the current files")
+        d, meta, _ = LE.runner(os.path.join(HERE, run), s, "gl")
+        if d is None: stop(f"the evaluator's loader rejects {g} (status {(meta or {}).get('status')})")
+        nfin = sum(1 for dd in d.values() for v in (dd or {}).values() if v is not None and np.isfinite(float(v)))
+        if nfin != au.get("finite"): stop(f"{g}: loader sees {nfin} finite values, audit {au.get('finite')}")
+        GLV[(arm, t, s)] = d
+for t in SETS:   # shared candidates carry the same GLACIER value in both arms (one cache)
+    for s in SETS[t]:
+        a0, a1 = GLV[("s0rep", t, s)], GLV[("fpavg", t, s)]; nsh = 0
+        for m in set(a0) & set(a1):
+            for smi in set(a0[m] or {}) & set(a1[m] or {}):
+                v0, v1 = a0[m][smi], a1[m][smi]
+                if v0 is None or v1 is None: continue
+                nsh += 1
+                if float(v0) != float(v1): stop(f"{t} {s} {m}: shared candidate with different GLACIER values ({v0} vs {v1})")
 D, CHK, LED = {}, [], {}
 for t, csv in EVAL_CSV.items():
     ev = pd.read_csv(os.path.join(HERE, csv)); ev["molecule"] = ev.molecule.astype(str); ig = dict(zip(ev.molecule, ev.identity_group.astype(int)))
@@ -66,17 +96,21 @@ for t, csv in EVAL_CSV.items():
     z["ig"] = z.molecule.map(ig)
     if z.ig.isna().any() or z.duplicated(["set", "view", "ig"]).any(): stop(f"{t}: identity group missing or repeated within a cell")
     y = pd.read_csv(os.path.join(HERE, f"diag/r102_{t}.csv"), usecols=["set", "view", "molecule", "main"]); y["molecule"] = y.molecule.astype(str)
+    k_new, k_old = set(zip(z.set, z.view, z.molecule)), set(zip(y.set, y.view, y.molecule))
+    if k_new != k_old: stop(f"{t}: row keys differ from the existing main (new only {len(k_new - k_old)}, old only {len(k_old - k_new)})")
     q = z.merge(y, on=["set", "view", "molecule"], how="left", validate="one_to_one")
     if q.main.isna().any(): stop(f"{t}: rows without an existing main")
     q["dr"] = q.main_0 - q.main
     for (s, vw), r in q.groupby(["set", "view"], sort=True):
         nd = int((r.dr.abs() > TOL).sum())
         CHK.append(f"| {t} {s} {vw} | {len(r)} | {nd} | {r.dr.mean():+.5f} | {r.dr.abs().mean():.5f} | {r.dr.abs().max():.4f} |")
-    z["tag"] = t; z["d"] = z.main_1 - z.main_0; z["d_old"] = z.main_1 - q.main.values; D[t] = z
+    z["tag"] = t; z["main_old"] = q.main.values; D[t] = z
 HDR = ["## Reproduction of the existing main by the control (control - r102)", "", "| cell | rows | rows differing | signed mean | mean abs | max abs |", "|---|---:|---:|---:|---:|---:|"]
 if any(int(c.split("|")[3]) > 0 for c in CHK) and not ALLOW:
     open(os.path.join(HERE, "diag/x110_stage3_repro.md"), "w", encoding="utf-8").write(chr(10).join(HDR + CHK) + chr(10))
-    stop("the control does not reproduce the existing main on every row; see diag/x110_stage3_repro.md (no candidate difference was computed)")
+    print("STOP (110 stage 3): the control does not reproduce the existing main on every row; see diag/x110_stage3_repro.md (no candidate difference computed)")
+    sys.exit(2)   # exit 2 = reproduction stop (the job writes X110_FAIL_REPRO); every other STOP exits 1
+for t, z in D.items(): z["d"] = z.main_1 - z.main_0; z["d_old"] = z.main_1 - z.main_old   # candidate differences only after the reproduction check
 
 
 def cell(t, s, view):
@@ -96,7 +130,7 @@ PROT = {"old B f1dev C-F C2": ([("f1dev", s) for s in NPS], "c2"), "G C1 f1dev":
 pr = {k: boot(c, v, 1107) for k, (c, v) in PROT.items()}
 gate = prim >= 0.005 and ci(bp)[0] > 0 and ci(ba)[0] >= -0.01 and ci(bd)[0] >= -0.01 and all(ci(b)[0] >= -0.01 for _, b in pr.values())
 po, bo = boot(CELLS_A, "c2", 1101, "d_old"); qo, bqo = boot(CELLS_D, "c2", 1102, "d_old")
-L = ["# 110 stage 3: v8w7a main on FPavg tables vs the rebuilt seed-0 control (fold 1)", ""] + HDR + CHK + (["", f"- continued with --allow_repro {ALLOW}"] if ALLOW else [])
+L = ["# 110 stage 3: v8w7a main on FPavg tables vs the rebuilt seed-0 control (fold 1)", ""] + HDR + CHK + (["", f"- continued with --allow_repro {ALLOW} (sha256 {sha(ALLOW)})"] if ALLOW else [])
 L += ["", "## Decision", "", f"| primary | block A | block D | " + " | ".join(PROT) + " | gate |", "|---|---|---|" + "---|" * len(PROT) + "---|",
       f"| **{fmt(prim, bp)}** | {fmt(pa, ba)} | {fmt(pd_, bd)} | " + " | ".join(fmt(*pr[k]) for k in PROT) + f" | {'PASS (fold 1) -> fold 2 replication' if gate else 'NO'} |", "",
       f"- FPavg vs the EXISTING main (r102, stored GLACIER; descriptive): primary {fmt(0.5 * po + 0.5 * qo, 0.5 * bo + 0.5 * bqo)}", ""]

@@ -8,7 +8,7 @@ Same molecules (fold 1: f1dev C-G, np053f1dev NP_H/NP_X/NP_N). C2 eligibility: a
 (reach_external_b1 False) counts as unreached in both tables (no train-only truth revived in the C2 view).
 Checks before any number (STOP on failure): manifests (control: no extra checkpoint; FPavg: exactly one extra = the checked seed-1 final, sha256
 equal to ckpt_check.json; same fold-1 slot sha 1739d568...; every other setting equal); per molecule, both arms have the same window size
-(n_unique), truth_in_window, reach_external_b1 and n_query; ranks are integers >= -1.
+(n_unique), truth_in_window, reach_external_b1 and n_query; ranks are finite integers, -1 or 1..n_unique.
 Gate (registered, Codex 110 (4)): dFP = 1/4 dMRR(np053f1dev NP_H) + 1/4 dMRR(np053f1dev NP_N) + 1/2 dMRR(f1dev D_np_single) must be strictly > 0,
 else stop the seed line. Diagnostics only: top-1, mean log-rank difference over rows reached in both (with count), other strata, rows where the
 v8w7a main misses rank 1 (diag/r102), and the reproduction of the existing tables (run_f1dev / run_np053_f1dev) by the rebuilt control.
@@ -46,9 +46,10 @@ for tag, (c0, c1, old, sets) in PAIRS.items():
         z = a[cols].merge(b[cols], on="molecule", suffixes=("_0", "_avg"), validate="one_to_one")
         for c_ in ("n_unique", "reach_external_b1", "truth_in_window", "n_query"):   # Codex 112: same windows / queries / reach in both arms
             if (z[c_ + "_0"].astype(str) != z[c_ + "_avg"].astype(str)).any(): sys.exit(f"STOP: {tag} {s} {c_} differs between the arms")
-        for c_ in ("truth_fp_rank_0", "truth_fp_rank_avg"):
-            v_ = pd.to_numeric(z[c_], errors="coerce")
-            if v_.isna().any() or (v_ < -1).any() or (v_ != v_.round()).any(): sys.exit(f"STOP: {tag} {s} {c_} not an integer >= -1")
+        for c_, nu_ in (("truth_fp_rank_0", "n_unique_0"), ("truth_fp_rank_avg", "n_unique_avg")):   # Codex 114: finite, -1 or 1..n_unique
+            v_ = pd.to_numeric(z[c_], errors="coerce").astype(float); n_ = pd.to_numeric(z[nu_], errors="coerce").astype(float)
+            ok_ = np.isfinite(v_) & (v_ == np.round(v_)) & ((v_ == -1) | ((v_ >= 1) & (v_ <= n_)))
+            if not ok_.all(): sys.exit(f"STOP: {tag} {s} {c_} outside -1 / 1..n_unique ({int((~ok_).sum())} rows)")
         q = a[cols].merge(o[cols], on="molecule", suffixes=("", "_old"), validate="one_to_one")
         rep.append(f"| {tag} {s} | {len(q)} | {int((q.truth_fp_rank != q.truth_fp_rank_old).sum())} | {int((q.n_unique != q.n_unique_old).sum())} | {int((q.reach_external_b1.astype(bool) != q.reach_external_b1_old.astype(bool)).sum())} |")
         ok = z.reach_external_b1_0.astype(bool).values

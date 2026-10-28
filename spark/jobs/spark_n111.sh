@@ -18,7 +18,7 @@ fail() { echo "N111_FAIL $* $(date '+%F %T')" | tee $ST; exit 1; }
 while [ ! -s $R/train_status.txt ]; do pgrep -f "[s]park_n111_train.sh" >/dev/null || fail "111 training job not running and no status"; sleep 120; done
 grep -q "^N111_TRAIN_DONE" $R/train_status.txt || fail "111 training: $(cat $R/train_status.txt)"
 while true; do
-  if [ -s $B/diag/x110_status.txt ]; then grep -q -E "^X110_(DONE|STAGE1_NO)" $B/diag/x110_status.txt && break; fail "110 ended with: $(cat $B/diag/x110_status.txt)"; fi
+  if [ -s $B/diag/x110_status.txt ]; then grep -q -E "^X110_(DONE|STAGE1_NO|FAIL_REPRO)" $B/diag/x110_status.txt && break; fail "110 ended with a technical failure: $(cat $B/diag/x110_status.txt)"; fi
   pgrep -f "[s]park_x110.sh" >/dev/null || fail "110 job not running and no status file"
   sleep 120
 done
@@ -26,18 +26,20 @@ echo "== $(date +%T) start (111 training done, 110 evaluation done)"
 [ "$(sha256sum $F1/fpnet_fold0.pt | cut -c1-64)" = "1739d5683fa94fd73fe3b37db98ac364cb5dfdc22ad5bea9789be9c48d7cadc4" ] || fail "fold-1 slot sha"
 $PY -I experiments/fpnet_seed/split_audit.py $R data/external/identity_folds/structures.parquet data/external/fold_safe_fpnet 1 > $R/split_audit.log 2>&1; rc=$?; [ $rc -eq 0 ] || fail "split audit rc=$rc"
 : > $MAN || fail "manifest"
-for f in experiments/n111/train_n111.py experiments/n111/n111_model.py experiments/n111/n111_score.py $R/train_manifest.txt $B/gen_eval2fd_n111.py $B/x111_summary.py $B/gl_audit.py $B/rank_v8w7a/lambdarank.txt \
+for f in experiments/n111/train_n111.py experiments/n111/n111_model.py experiments/n111/n111_score.py experiments/n111/ck111_check.py $R/train_manifest.txt $B/gl_classify.py $B/gen_eval2fd_n111.py $B/x111_summary.py $B/gl_audit.py $B/rank_v8w7a/lambdarank.txt \
   $F1/fpnet_fold0.pt $F1/fp_bits.npy $R/work/split.parquet $B/c1bank_f1/c1dev/p2_molecules.csv spark/jobs/spark_n111.sh; do
   h=$(sha256sum $f | cut -c1-64); [ -n "$h" ] || fail "hash $f"; echo "$h $f" >> $MAN; done
 for S in 2000 8000 20000; do
   T=n111_s$S
-  $PY -c "import json,sys; r=json.load(open('$R/${T}_receipt.json')); sys.exit(0 if r['complete'] and r['step']==$S and r['args']['workers']==6 else 1)" || fail "receipt $T"
+  $PY -X utf8 experiments/n111/ck111_check.py $R $T $S $H/$F1/fpnet_fold0.pt $R/work/split.parquet $R/train_manifest.txt >> $R/ck111_check.log 2>&1 || fail "checkpoint check $T"
   h=$(sha256sum $R/${T}_s$S.pt | cut -c1-64); [ -n "$h" ] || fail "hash ckpt $T"; echo "$h $R/${T}_s$S.pt" >> $MAN
 done
-until grep -q "^C1BANK_DONE" spark/jobs/spark_c1bank.out 2>/dev/null; do grep -q "^C1BANK_FAIL" spark/jobs/spark_c1bank.out 2>/dev/null && fail "c1 bank tables"; sleep 120; done
+BST=$B/run_c1bankdev_f1/c1bank_status.txt
+while [ ! -s $BST ]; do pgrep -f "[s]park_c1bank_gl.sh" >/dev/null || fail "bank GLACIER job not running and no status file"; sleep 120; done
+grep -q "^C1BANK_DONE" $BST || fail "bank: $(cat $BST)"
 BK=$B/run_c1bankdev_f1; BSETS=$($PY -c "import pandas as pd; print(' '.join(sorted(pd.read_csv('$B/c1bank_f1/c1dev/p2_molecules.csv').set.unique())))")
 A=""; for S in $BSETS; do A="$A $BK/b1_runner_${S}_in.json $BK/work/gl_${S}.json"; done
-$PY -X utf8 $B/gl_audit.py $A > $BK/gl_audit.log 2>&1; rc=$?; [ $rc -eq 0 ] || fail "bank GLACIER audit rc=$rc"
+$H/.venv-ice/bin/python -X utf8 $B/gl_audit.py $A > $BK/gl_audit_n111.log 2>&1; rc=$?; [ $rc -eq 0 ] || fail "bank GLACIER audit rc=$rc"
 SC=$H/experiments/n111/scores; mkdir -p $SC
 S5="C_np_crosslib D_np_single E_np_negonly F_np_uncovered G_tims_crosslib"; S3="NP_H NP_X NP_N"
 for S in 2000 8000 20000; do

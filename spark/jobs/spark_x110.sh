@@ -11,21 +11,21 @@
 set -u
 cd ~/CASMI2026 || exit 1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=1 PYTHONUTF8=1
-B=experiments/b1_baseline; PY=$HOME/CASMI2026/.venv/bin/python; R=experiments/fpnet_seed/f1s1; CK=$R/fpnet_f1s1_final.pt
+B=experiments/b1_baseline; PY=$HOME/CASMI2026/.venv/bin/python; PYI=$HOME/CASMI2026/.venv-ice/bin/python; R=experiments/fpnet_seed/f1s1; CK=$R/fpnet_f1s1_final.pt
 F1=data/external/fpnet_fold1_as_fold0; FS=data/external/fold_safe_fpnet; MAN=$B/diag/x110_manifest.txt; ST=$B/diag/x110_status.txt
 rm -f $ST
 fail() { echo "X110_FAIL $* $(date '+%F %T')" | tee $ST; exit 1; }
 while pgrep -f "[s]park_fpnet_f1s1.sh" >/dev/null || pgrep -f "[t]rain_fivefold.py.*--tag fpnet_f1s1" >/dev/null; do sleep 300; done
 echo "== $(date +%T) training job ended"
-while pgrep -f "[s]park_n111_train.sh" >/dev/null; do sleep 120; done   # Codex 113: evaluations run after BOTH training series
-echo "== $(date +%T) 111 training phase not running"
+while pgrep -f "[s]park_n111_train.sh" >/dev/null || pgrep -f "[t]rain_n111.py" >/dev/null; do sleep 120; done   # Codex 113 / 114: no 111 wrapper and no trainer left
+echo "== $(date +%T) 111 training processes gone; 111 status: $(cat experiments/n111/r1/train_status.txt 2>/dev/null || echo missing)"
 $PY -I experiments/fpnet_seed/ckpt_check.py $R fpnet_f1s1 82855 1 > $R/ckpt_check.log 2>&1; rc=$?; grep -a -E "^(PASS|FAIL)" $R/ckpt_check.log; [ $rc -eq 0 ] || fail "completion check rc=$rc"
 $PY -I experiments/fpnet_seed/split_audit.py $R data/external/identity_folds/structures.parquet $FS 1 > $R/split_audit.log 2>&1; rc=$?; [ $rc -eq 0 ] || fail "split audit rc=$rc"
 [ "$(realpath $F1/fpnet_fold0.pt)" = "$(realpath $FS/fpnet_fold1.pt)" ] || fail "fold-1 slot does not point to the public fpnet_fold1"
 [ "$(sha256sum $F1/fpnet_fold0.pt | cut -c1-64)" = "1739d5683fa94fd73fe3b37db98ac364cb5dfdc22ad5bea9789be9c48d7cadc4" ] || fail "fold-1 slot sha"
 [ "$(sha256sum $F1/fp_bits.npy | cut -c1-64)" = "c3869e86449d6fed6e79e9655f8a7d35bd55c3138ecddfc1dae5072627e78677" ] || fail "fp_bits sha"
 : > $MAN || fail "manifest"
-for f in $CK $F1/fpnet_fold0.pt $F1/fp_bits.npy $B/b1_features.py $B/gen_eval2fd.py $B/x110_stage1.py $B/x110_stage3.py $B/gl_share.py $B/gl_audit.py $B/rank_v8w7a/lambdarank.txt \
+for f in $CK $F1/fpnet_fold0.pt $F1/fp_bits.npy $B/b1_features.py $B/gen_eval2fd.py $B/x110_stage1.py $B/x110_stage3.py $B/gl_share.py $B/gl_audit.py $B/gl_classify.py data/external/glacier/gl_runner.py data/external/glacier/ckpt/glacier.pt $B/rank_v8w7a/lambdarank.txt \
   $B/eval_set_f1/p2_molecules.csv $B/np053_f1dev/p2_molecules.csv experiments/fpnet_seed/ckpt_check.py experiments/fpnet_seed/split_audit.py spark/jobs/spark_x110.sh; do
   h=$(sha256sum $f | cut -c1-64); [ -n "$h" ] || fail "hash $f"; echo "$h $f" >> $MAN; done
 S5="C_np_crosslib D_np_single E_np_negonly F_np_uncovered G_tims_crosslib"; S3="NP_H NP_X NP_N"
@@ -56,12 +56,12 @@ grep -q "gate PASS" $B/diag/x110_stage1.md || { echo "X110_STAGE1_NO $(date '+%F
 echo "== $(date +%T) stage 1 PASS -> GLACIER (shared cache) + audit + main for both arms"
 gl() { local arm=$1 tag=$2 S=$3; shift 3   # remaining args: cache IN:OUT pairs
   local run=$B/run_${tag}_$arm w=$B/run_${tag}_$arm/work
-  $PY -X utf8 $B/gl_share.py prepare --inp $run/b1_runner_${S}_in.json --cache "$@" --todo $w/gl_${S}_todo_in.json --plan $w/gl_${S}_plan.json > $w/gl_${S}_share.log 2>&1 || return 1
+  $PYI -X utf8 $B/gl_share.py prepare --inp $run/b1_runner_${S}_in.json --cache "$@" --todo $w/gl_${S}_todo_in.json --plan $w/gl_${S}_plan.json > $w/gl_${S}_share.log 2>&1 || return 1
   if [ "$($PY -c "import json; print(len(json.load(open('$w/gl_${S}_todo_in.json'))))")" != "0" ]; then
     .venv-ice/bin/python spark/jobs/ice_resume.py --python .venv-ice/bin/python data/external/glacier/gl_runner.py data/external/glacier $w/gl_${S}_todo_in.json $w/gl_${S}_todo_out.json -- --device cuda --site none --budget 7200 > $w/gl_${S}_resume.log 2>&1 || return 1
   fi
-  $PY -X utf8 $B/gl_share.py merge --inp $run/b1_runner_${S}_in.json --plan $w/gl_${S}_plan.json --todo_out $w/gl_${S}_todo_out.json --out $w/gl_${S}.json >> $w/gl_${S}_share.log 2>&1 || return 1
-  $PY -X utf8 $B/gl_audit.py $run/b1_runner_${S}_in.json $w/gl_${S}.json >> $w/gl_${S}_share.log 2>&1; }
+  $PYI -X utf8 $B/gl_share.py merge --inp $run/b1_runner_${S}_in.json --plan $w/gl_${S}_plan.json --todo_out $w/gl_${S}_todo_out.json --out $w/gl_${S}.json >> $w/gl_${S}_share.log 2>&1 || return 1
+  $PYI -X utf8 $B/gl_audit.py $run/b1_runner_${S}_in.json $w/gl_${S}.json >> $w/gl_${S}_share.log 2>&1; }
 for T in f1dev np053f1dev; do
   if [ $T = f1dev ]; then SETS=$S5; OLD=$B/run_f1dev; else SETS=$S3; OLD=$B/run_np053_f1dev; fi
   for S in $SETS; do
@@ -82,5 +82,6 @@ done
 FAIL=0; for p in "${PIDS[@]}"; do wait $p || FAIL=1; done; [ $FAIL -eq 0 ] || fail "main evaluation"
 for f in diag/r110_*.csv; do echo "$(sha256sum $f | cut -c1-64) $f" >> diag/x110_manifest.txt; done
 $PY -X utf8 x110_stage3.py > diag/x110_stage3.log 2>&1; rc=$?
+if [ $rc -eq 2 ]; then echo "X110_FAIL_REPRO control does not reproduce the existing main; diag/x110_stage3_repro.md; resume: spark/jobs/x110_stage3_resume.sh AUDIT.md $(date '+%F %T')" | tee diag/x110_status.txt; exit 1; fi
 [ $rc -eq 0 ] || fail "stage-3 reader rc=$rc ($(tail -1 diag/x110_stage3.log | cut -c1-200))"
 echo "X110_DONE $(date '+%F %T')" | tee diag/x110_status.txt

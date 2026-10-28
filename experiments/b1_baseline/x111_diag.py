@@ -5,7 +5,7 @@ tables, with N / Fs from experiments/n111/scores/s<ck>/ and the merged-logit FP 
       SMILES); MRR of the truth inside its formula group under N, Fs and fp (ties pessimistic), group sizes;
   (2) FP collisions: share of those molecules where another same-formula candidate has a bit vector identical to the truth's (fph equal) -- such
       decoys cannot be separated by N, Fs or fp;
-  (3) seen-candidate bias and the spectrum-masked score Np (constant spectrum = the set's mean unit embedding; literature audit) (label-free part): share of the top-1 under N / Fs / fp that is a training structure (in_train_c2), and the mean rank
+  (3) bias toward structures the 111 training used as positives (seen = split label train; in_train_c2 is only the C2 source flag) and Np (constant spectrum = the set's mean unit embedding; literature audit) (label-free part): share of the top-1 under N / Fs / fp that is a training structure (in_train_c2), and the mean rank
       percentile of training-structure candidates under each score; (label part) truth rank under N vs Fs among rows with the truth in the frame.
 Usage (Spark, experiments/b1_baseline): python -X utf8 x111_diag.py [--cks s2000 s8000 s20000]"""
 import argparse, os
@@ -13,6 +13,11 @@ from multiprocessing import Pool
 import numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 ap = argparse.ArgumentParser(); ap.add_argument("--cks", nargs="+", default=["s2000", "s8000", "s20000"]); a = ap.parse_args()
+# Codex 114: "seen" = identities the 111 training used as POSITIVES (split label train of experiments/n111/r1/work/split.parquet); in_train_c2 is only
+# the C2 candidate-source flag (truth hidden) and is reported separately as the train-source bias
+_ts = pd.read_parquet(os.path.join(ROOT, "experiments", "n111", "r1", "work", "train_structs.parquet"), columns=["sid", "key"])
+_sp = pd.read_parquet(os.path.join(ROOT, "experiments", "n111", "r1", "work", "split.parquet"))
+SEEN = set(_ts.key[~_ts.sid.isin(set(_sp.sid))].astype(str))
 TABS = {"f1dev": ("run_f1dev", ["C_np_crosslib", "D_np_single", "E_np_negonly", "F_np_uncovered", "G_tims_crosslib"]), "np053f1dev": ("run_np053_f1dev", ["NP_H", "NP_X", "NP_N"])}
 
 
@@ -40,13 +45,15 @@ with Pool(12) as p: res = p.map(formulas, [allsmi[i:i + 2000] for i in range(0, 
 FORM = dict(zip(allsmi, [x for r in res for x in r]))
 L = ["# 111 mechanism diagnostics (descriptive; C2 view frames of the fold-1 tables)", ""]
 for ck in a.cks:
-    L += [f"## {ck}", "", "| cell | molecules with a same-formula group | median group size | formula-group MRR N / Fs / fp / Np / Ft (111 FP head) | truth FP-collision share | top-1 is a train structure N / Fs / fp / Np | train-candidate mean rank pct N / Fs / fp / Np | truth rank median N / Fs / Np (spectrum-masked) |", "|---|---:|---:|---|---:|---|---|---|"]
+    L += [f"## {ck}", "", "| cell | molecules with a same-formula group | median group size | formula-group MRR N / Fs / fp / Np / Ft (111 FP head) | truth FP-collision share | top-1 is a seen-positive structure N / Fs / fp / Np | seen-positive candidates mean rank pct N / Fs / fp / Np | truth rank median N / Fs / Np (eval-set mean spectrum) | missing N / Fs / Ft / Np / fph | train-source (in_train_c2) share of candidates |", "|---|---:|---:|---|---:|---|---|---|---|---:|"]
     for (tag, s), F in frames.items():
         S = pd.read_parquet(os.path.join(ROOT, "experiments", "n111", "scores", ck, f"n111_{tag}_{s}.parquet"), columns=["molecule", "smiles", "N", "Fs", "Ft", "Np", "fph"])
         G = F.merge(S, on=["molecule", "smiles"], how="left", validate="one_to_one"); G["form"] = G.smiles.astype(str).map(FORM)
+        nmiss = {k: int(G[k].isna().sum()) for k in ("N", "Fs", "Ft", "Np", "fph")}   # coverage reported, never silently ranked last
+        G["seen"] = G.official_key.astype(str).isin(SEEN)
         ng = 0; sizes = []; rr = {"N": [], "Fs": [], "fp": [], "Np": [], "Ft": []}; coll = 0; top_tr = {"N": [], "Fs": [], "fp": [], "Np": []}; pct = {"N": [], "Fs": [], "fp": [], "Np": []}; tr_rank = {"N": [], "Fs": [], "Np": []}
         for mid, g in G.groupby("molecule", sort=False):
-            tr_ = g.in_train_c2.values.astype(bool)
+            tr_ = g.seen.values.astype(bool)   # seen as a POSITIVE by the 111 training (Codex 114); in_train_c2 = source flag, see the last column
             for k in ("N", "Fs", "fp", "Np"):
                 v = g[k].values.astype(float); o = np.argsort(-np.nan_to_num(v, nan=-1e18), kind="stable")
                 top_tr[k].append(bool(tr_[o[0]])) if len(o) else None
@@ -63,6 +70,6 @@ for ck in a.cks:
             coll += int((fg.fph.values == fg.fph.values[fti]).sum() > 1)
         mm = lambda x: f"{np.mean(x):.3f}" if len(x) else "n/a"
         L.append(f"| {tag} {s} | {ng} | {np.median(sizes) if sizes else 0:.0f} | {mm(rr['N'])} / {mm(rr['Fs'])} / {mm(rr['fp'])} / {mm(rr['Np'])} / {mm(rr['Ft'])} | {coll / max(1, ng):.3f} | {mm(top_tr['N'])} / {mm(top_tr['Fs'])} / {mm(top_tr['fp'])} / {mm(top_tr['Np'])} | "
-                 f"{mm(pct['N'])} / {mm(pct['Fs'])} / {mm(pct['fp'])} / {mm(pct['Np'])} | {np.median(tr_rank['N']) if tr_rank['N'] else float('nan'):.0f} / {np.median(tr_rank['Fs']) if tr_rank['Fs'] else float('nan'):.0f} / {np.median(tr_rank['Np']) if tr_rank['Np'] else float('nan'):.0f} |")
+                 f"{mm(pct['N'])} / {mm(pct['Fs'])} / {mm(pct['fp'])} / {mm(pct['Np'])} | {np.median(tr_rank['N']) if tr_rank['N'] else float('nan'):.0f} / {np.median(tr_rank['Fs']) if tr_rank['Fs'] else float('nan'):.0f} / {np.median(tr_rank['Np']) if tr_rank['Np'] else float('nan'):.0f} | {nmiss['N']} / {nmiss['Fs']} / {nmiss['Ft']} / {nmiss['Np']} / {nmiss['fph']} | {G.in_train_c2.astype(bool).mean():.3f} |")
     L.append("")
 open(os.path.join(HERE, "diag/x111_diag.md"), "w", encoding="utf-8").write(chr(10).join(L) + chr(10)); print(chr(10).join(L))
