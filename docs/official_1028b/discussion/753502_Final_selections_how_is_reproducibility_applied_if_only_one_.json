@@ -1,0 +1,14 @@
+{
+  "topic": {
+    "id": 753502,
+    "title": "Final selections: how is reproducibility applied if only one of the two selected submissions is reproducible?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/753502",
+    "postDate": "2026-10-28T11:02:39.178Z",
+    "authorName": "Elazar fuchs",
+    "authorUrl": "https://www.kaggle.com/elazarfuchs",
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi! A question on the reproducibility rule (thread 748065, \"any winning solution needs to be reproducible…\"). As we understand it, compliance is checked on the two selected submissions. Suppose a team selects one fully reproducible submission and one that uses public weights which can't be retrained (no training code available), and the second scores higher on the private LB. Is the team ranked by its best compliant selection, or would the whole entry be disqualified? Knowing this helps teams pick their two selections. Thanks!</p>"
+  },
+  "comments": []
+}
