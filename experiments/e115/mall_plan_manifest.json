@@ -2,6 +2,7 @@
  "mode": "all",
  "cycles": 2,
  "salt": "e115v2",
+ "limit": 0,
  "conditions": [
   [
    "[M+H]+",
@@ -33,9 +34,24 @@
   "data/external/identity_folds/structures.parquet": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
   "experiments/fpnet_seed/f1s1/work/train_structs.parquet": "f20aa1cac23af42e430a6633707fda34e48dea97114bdc3e443897f692df3656"
  },
+ "code": {
+  "/home/svlg/CASMI2026/experiments/e115/make_simplan.py": "d431a3934d32d2dad2e081459c6cdd246f56d547b91cfd2818044d46189be8bb",
+  "/home/svlg/CASMI2026/experiments/e115/../b1_baseline/gl_classify.py": "068d74009ee34ddd2d279df76c5efabc53fc1bebb3247d7d06cd59d8beb87f89"
+ },
  "coconut_rows": 462261,
- "alias_rows_mapped": 24,
- "alias_rows_without_canonical": 0,
+ "alias_rows_mapped": 25,
+ "raw_keys_shadowed_by_official": [
+  {
+   "key": "UWVKGDFRNQQIBO",
+   "raw_of": 272457,
+   "official_of": 253488
+  },
+  {
+   "key": "UWVKGDFRNQQIBO",
+   "raw_of": 272457,
+   "official_of": 253488
+  }
+ ],
  "identities": 462240,
  "canonical_rows": 462240,
  "in_mass_range": 447346,
@@ -43,6 +59,7 @@
  "catalog": 447245,
  "jobs": 894490,
  "plan": 894490,
+ "share_same_adduct_both_cycles": 0.3998770248968686,
  "outputs": {
   "catalog.parquet": "1954cd0d45d0fc97039a0de5b57b327754d02ab84d4e829c3e4a957f423c7f06",
   "jobs.json": "6dab9855b7403046089629f24887a9f7c95752ab91c582e3e4e5dc673b71249e",
