@@ -54,3 +54,12 @@
 - (21:52) v8w7a kernel v1 の smoke(commit run)は COMPLETE。パネル parity(c2 → c1 → 縮小版モデル)は実行中。
 - (22:09) **利用者が 10/28 の提出を許可**(「提出するのはいいけど」)。09:00 以降に 1028_submit.sh(枠 1 は v8w7a の条件付き、枠 5 は BASE_B probe)で提出する。
 - (23:04) **枠 1 = v8w7a の条件がすべて成立**: パネル parity c2 / c1 PASS(元のモデル)、縮小版モデルでも c2 / c1 PASS(実際の特徴行で順位一致)、smoke COMPLETE → 明朝は 1028_submit.sh のとおり v8w7a を枠 1 で提出。
+
+## 提出の記録(09:01〜09:03 JST、`1028_submit.sh`、利用者の許可済み)
+| 枠 | kernel | ref | 対照 |
+|---|---|---|---|
+| 1 | casmi26-b1-fpnet-v8w7a v1 | 57716320 | v7f 0.390 |
+| 2 | casmi26-b1-fpnet-ggt3t v1 | 57716378 | 0.379(gt3 0.377 も併記) |
+| 3 | casmi26-b1-fpnet-ea05w1 v1 | 57716445 | 0.379 |
+| 4 | casmi26-b1-fpnet-v7fea v1 | 57716496 | v7f 0.390 |
+| 5 | casmi26-e0-probe-baseb v1 | 57716550 | E0_B 0.259(診断) |

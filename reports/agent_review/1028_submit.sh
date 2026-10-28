@@ -10,7 +10,7 @@ sub hayatetaf/casmi26-b1-fpnet-v8w7a 1 "Codex 087/092 one-change vs v7f (0.390):
 sub hayatetaf/casmi26-b1-fpnet-ggt3t 1 "Codex 045/046 one-change vs 0.379: one generated analog derivative at rank 3 (b1_gen v2), GL gate on the GL path, fallback f.z gate vs main ranks 2-3 (ggt3t); gt3 Public 0.377 = undetermined -> precondition met"
 sub hayatetaf/casmi26-b1-fpnet-ea05w1 1 "Codex 076/082b one-change vs 0.379: explained-away demotion EA (score - 1 x [library references present and lib_sim < 0.5]); 073 confirmation NP C2 +0.0246 [+0.017, +0.033]; parity C2 PASS, C1 outputs identical (1 known flag exception)"
 sub hayatetaf/casmi26-b1-fpnet-v7fea 1 "Codex 080/081 one-change vs v7f (0.390): v7f + EA (theta 0.5, w 1); 053 conf NP C2 +0.0163 [+0.0086, +0.0252]; parity v7f-alone PASS both views, v7f+EA C2 PASS, C1 outputs identical (1 known flag exception)"
-echo "== $(date +%H:%M:%S) four submitted (slot 5 held)"
+echo "== $(date +%H:%M:%S) slots 1-4 submitted"
 $K competitions submissions $C 2>&1 | head -8
 # slot 5 (only if the user allows it and the commit run of casmi26-e0-probe-baseb is COMPLETE):
-# sub hayatetaf/casmi26-e0-probe-baseb 1 "DIAGNOSTIC (Codex 088): E0 engine-1 BASE list top 25 restricted to group B (COCONUT and not training, official key, T-priority exclusive), order kept, no refill, empty -> CCO; compare with E0_B 0.259; not a method candidate"
+sub hayatetaf/casmi26-e0-probe-baseb 1 "DIAGNOSTIC (Codex 088): E0 engine-1 BASE list top 25 restricted to group B (COCONUT and not training, official key, T-priority exclusive), order kept, no refill, empty -> CCO; compare with E0_B 0.259; not a method candidate"
