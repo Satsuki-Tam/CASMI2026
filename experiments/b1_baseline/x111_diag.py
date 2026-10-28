@@ -5,7 +5,7 @@ tables, with N / Fs from experiments/n111/scores/s<ck>/ and the merged-logit FP 
       SMILES); MRR of the truth inside its formula group under N, Fs and fp (ties pessimistic), group sizes;
   (2) FP collisions: share of those molecules where another same-formula candidate has a bit vector identical to the truth's (fph equal) -- such
       decoys cannot be separated by N, Fs or fp;
-  (3) seen-candidate bias (label-free part): share of the top-1 under N / Fs / fp that is a training structure (in_train_c2), and the mean rank
+  (3) seen-candidate bias and the spectrum-masked score Np (constant spectrum = the set's mean unit embedding; literature audit) (label-free part): share of the top-1 under N / Fs / fp that is a training structure (in_train_c2), and the mean rank
       percentile of training-structure candidates under each score; (label part) truth rank under N vs Fs among rows with the truth in the frame.
 Usage (Spark, experiments/b1_baseline): python -X utf8 x111_diag.py [--cks s2000 s8000 s20000]"""
 import argparse, os
@@ -40,29 +40,29 @@ with Pool(12) as p: res = p.map(formulas, [allsmi[i:i + 2000] for i in range(0, 
 FORM = dict(zip(allsmi, [x for r in res for x in r]))
 L = ["# 111 mechanism diagnostics (descriptive; C2 view frames of the fold-1 tables)", ""]
 for ck in a.cks:
-    L += [f"## {ck}", "", "| cell | molecules with a same-formula group | median group size | formula-group MRR N / Fs / fp | truth FP-collision share | top-1 is a train structure N / Fs / fp | train-candidate mean rank pct N / Fs / fp | truth rank median N / Fs |", "|---|---:|---:|---|---:|---|---|---|"]
+    L += [f"## {ck}", "", "| cell | molecules with a same-formula group | median group size | formula-group MRR N / Fs / fp / Np | truth FP-collision share | top-1 is a train structure N / Fs / fp / Np | train-candidate mean rank pct N / Fs / fp / Np | truth rank median N / Fs / Np (spectrum-masked) |", "|---|---:|---:|---|---:|---|---|---|"]
     for (tag, s), F in frames.items():
-        S = pd.read_parquet(os.path.join(ROOT, "experiments", "n111", "scores", ck, f"n111_{tag}_{s}.parquet"), columns=["molecule", "smiles", "N", "Fs", "fph"])
+        S = pd.read_parquet(os.path.join(ROOT, "experiments", "n111", "scores", ck, f"n111_{tag}_{s}.parquet"), columns=["molecule", "smiles", "N", "Fs", "Np", "fph"])
         G = F.merge(S, on=["molecule", "smiles"], how="left", validate="one_to_one"); G["form"] = G.smiles.astype(str).map(FORM)
-        ng = 0; sizes = []; rr = {"N": [], "Fs": [], "fp": []}; coll = 0; top_tr = {"N": [], "Fs": [], "fp": []}; pct = {"N": [], "Fs": [], "fp": []}; tr_rank = {"N": [], "Fs": []}
+        ng = 0; sizes = []; rr = {"N": [], "Fs": [], "fp": [], "Np": []}; coll = 0; top_tr = {"N": [], "Fs": [], "fp": [], "Np": []}; pct = {"N": [], "Fs": [], "fp": [], "Np": []}; tr_rank = {"N": [], "Fs": [], "Np": []}
         for mid, g in G.groupby("molecule", sort=False):
             tr_ = g.in_train_c2.values.astype(bool)
-            for k in ("N", "Fs", "fp"):
+            for k in ("N", "Fs", "fp", "Np"):
                 v = g[k].values.astype(float); o = np.argsort(-np.nan_to_num(v, nan=-1e18), kind="stable")
                 top_tr[k].append(bool(tr_[o[0]])) if len(o) else None
                 if tr_.any() and len(g) > 1:
                     r = np.empty(len(g)); r[o] = np.arange(len(g)); pct[k].append(float(np.mean(r[tr_] / (len(g) - 1))))
             t = np.flatnonzero(g.is_truth.values.astype(bool))
             if not len(t): continue
-            ti = int(t[0]); tr_rank["N"].append(rank_in(g.N.values, ti)); tr_rank["Fs"].append(rank_in(g.Fs.values, ti))
+            ti = int(t[0]); tr_rank["N"].append(rank_in(g.N.values, ti)); tr_rank["Fs"].append(rank_in(g.Fs.values, ti)); tr_rank["Np"].append(rank_in(g.Np.values, ti))
             fg = g[g.form == g.form.values[ti]]
             if len(fg) < 2 or g.form.values[ti] is None: continue
             ng += 1; sizes.append(len(fg)); fti = int(np.flatnonzero(fg.is_truth.values.astype(bool))[0])
-            for k in ("N", "Fs", "fp"):
+            for k in ("N", "Fs", "fp", "Np"):
                 rk = rank_in(fg[k].values, fti); rr[k].append(1.0 / rk if rk <= 25 else 0.0)
             coll += int((fg.fph.values == fg.fph.values[fti]).sum() > 1)
         mm = lambda x: f"{np.mean(x):.3f}" if len(x) else "n/a"
-        L.append(f"| {tag} {s} | {ng} | {np.median(sizes) if sizes else 0:.0f} | {mm(rr['N'])} / {mm(rr['Fs'])} / {mm(rr['fp'])} | {coll / max(1, ng):.3f} | {mm(top_tr['N'])} / {mm(top_tr['Fs'])} / {mm(top_tr['fp'])} | "
-                 f"{mm(pct['N'])} / {mm(pct['Fs'])} / {mm(pct['fp'])} | {np.median(tr_rank['N']) if tr_rank['N'] else float('nan'):.0f} / {np.median(tr_rank['Fs']) if tr_rank['Fs'] else float('nan'):.0f} |")
+        L.append(f"| {tag} {s} | {ng} | {np.median(sizes) if sizes else 0:.0f} | {mm(rr['N'])} / {mm(rr['Fs'])} / {mm(rr['fp'])} / {mm(rr['Np'])} | {coll / max(1, ng):.3f} | {mm(top_tr['N'])} / {mm(top_tr['Fs'])} / {mm(top_tr['fp'])} / {mm(top_tr['Np'])} | "
+                 f"{mm(pct['N'])} / {mm(pct['Fs'])} / {mm(pct['fp'])} / {mm(pct['Np'])} | {np.median(tr_rank['N']) if tr_rank['N'] else float('nan'):.0f} / {np.median(tr_rank['Fs']) if tr_rank['Fs'] else float('nan'):.0f} / {np.median(tr_rank['Np']) if tr_rank['Np'] else float('nan'):.0f} |")
     L.append("")
 open(os.path.join(HERE, "diag/x111_diag.md"), "w", encoding="utf-8").write(chr(10).join(L) + chr(10)); print(chr(10).join(L))
