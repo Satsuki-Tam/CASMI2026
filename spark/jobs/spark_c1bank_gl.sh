@@ -9,7 +9,8 @@ export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THRE
 B=experiments/b1_baseline; PY=$HOME/CASMI2026/.venv/bin/python; PYI=$HOME/CASMI2026/.venv-ice/bin/python; RUN=$B/run_c1bankdev_f1; OUT=spark/jobs/spark_c1bank.out
 STF=$RUN/c1bank_status.txt; RID="c1bank_gl $(date '+%F %T') pid $$"; rm -f $STF
 fail() { echo "C1BANK_FAIL $* $(date '+%F %T') [$RID]" | tee -a $OUT | tee $STF; exit 1; }
-while pgrep -f "[t]rain_fivefold.py.*--tag fpnet_f1s1" >/dev/null || pgrep -f "[s]park_n111_train.sh" >/dev/null; do sleep 120; done
+while pgrep -f "[t]rain_fivefold.py.*--tag fpnet_f1s1" >/dev/null || pgrep -f "[s]park_n111_train.sh" >/dev/null || pgrep -f "[s]park_n111_serial.sh" >/dev/null || pgrep -f "[t]rain_n111.py" >/dev/null; do sleep 120; done
+echo "== $(date '+%F %T') trainings over; 111 training status: $(cat experiments/n111/r1/train_status.txt 2>/dev/null || echo missing)" | tee -a $OUT
 while [ ! -s $B/diag/x110_status.txt ]; do pgrep -f "[s]park_x110.sh" >/dev/null || break; sleep 120; done
 echo "== $(date '+%F %T') bank GLACIER start (110 status: $(cat $B/diag/x110_status.txt 2>/dev/null))" | tee -a $OUT
 CSV=$B/c1bank_f1/c1dev/p2_molecules.csv; SETS=$($PY -c "import pandas as pd; print(' '.join(sorted(pd.read_csv('$CSV').set.unique())))")

@@ -15,7 +15,7 @@ EXPECT_EVAL_SHA=__EXPECT_EVAL_SHA__   # sha256 of the reviewed gen_eval2fd.py (P
 rm -f $ST
 fail() { echo "N111_FAIL $* $(date '+%F %T')" | tee $ST; exit 1; }
 [ "$(sha256sum $B/gen_eval2fd_n111.py | cut -c1-64)" = "$EXPECT_EVAL_SHA" ] || fail "gen_eval2fd_n111.py is not the reviewed evaluator"
-while [ ! -s $R/train_status.txt ]; do pgrep -f "[s]park_n111_train.sh" >/dev/null || fail "111 training job not running and no status"; sleep 120; done
+while [ ! -s $R/train_status.txt ]; do { pgrep -f "[s]park_n111_train.sh" >/dev/null || pgrep -f "[s]park_n111_serial.sh" >/dev/null; } || fail "111 training job not running and no status"; sleep 120; done
 grep -q "^N111_TRAIN_DONE" $R/train_status.txt || fail "111 training: $(cat $R/train_status.txt)"
 while true; do
   if [ -s $B/diag/x110_status.txt ]; then grep -q -E "^X110_(DONE|STAGE1_NO|FAIL_REPRO)" $B/diag/x110_status.txt && break; fail "110 ended with a technical failure: $(cat $B/diag/x110_status.txt)"; fi
