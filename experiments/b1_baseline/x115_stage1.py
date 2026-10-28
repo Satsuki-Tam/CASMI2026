@@ -68,12 +68,13 @@ for tag, (old, sets) in TAGS.items():
         for c_ in ("n_unique", "reach_external_b1", "truth_in_window", "n_query"):
             for arm in ("r", "a"):
                 if (z[f"{c_}_p0"].astype(str) != z[f"{c_}_{arm}"].astype(str)).any(): stop(f"{tag} {s}: {c_} differs between p0 and {arm}")
-        for arm in ARMS:
+        emp = pd.to_numeric(z.n_unique_p0, errors="coerce").eq(0).values & z.truth_in_window_p0.astype(str).str.lower().isin(["false", "0"]).values
+        for arm in ARMS:   # an EMPTY window (n_unique 0, truth not in it) carries NaN in b1_features = not in the window = -1 (same fix as x110_stage1, 2026-10-29)
             v_ = pd.to_numeric(z[f"truth_fp_rank_{arm}"], errors="coerce").astype(float); n_ = pd.to_numeric(z[f"n_unique_{arm}"], errors="coerce").astype(float)
-            ok_ = np.isfinite(v_) & (v_ == np.round(v_)) & ((v_ == -1) | ((v_ >= 1) & (v_ <= n_)))
+            ok_ = (np.isfinite(v_) & (v_ == np.round(v_)) & ((v_ == -1) | ((v_ >= 1) & (v_ <= n_)))) | (emp & v_.isna().values)
             if not ok_.all(): stop(f"{tag} {s} {arm}: truth_fp_rank outside -1 / 1..n_unique ({int((~ok_).sum())} rows)")
         ok = z.reach_external_b1_p0.astype(bool).values
-        for arm in ARMS: z[f"r_{arm}"] = np.where(ok, z[f"truth_fp_rank_{arm}"].values.astype(float), -1.0)
+        for arm in ARMS: z[f"r_{arm}"] = np.where(ok, z[f"truth_fp_rank_{arm}"].fillna(-1).values.astype(float), -1.0)
         pid = z.molecule.map(lambda m: k2p.get(sk.get(m, ""), -1)).values.astype(int)
         z["truth_in_mall"] = [p in cat for p in pid]; z["truth_sim_exposure"] = [float(expo[p]) if p >= 0 else 0.0 for p in pid]
         z["tag"] = tag; z["set"] = s; z["main_c2"] = [float(R.get((s, m), np.nan)) for m in z.molecule]; rows.append(z)

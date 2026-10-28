@@ -30,3 +30,8 @@
 - §2 の「通った場合は fold 2 で同じ手順を一回」を、fold 1 の結果を見る前にファイルで固定した。登録済みの fold 1 の読み取り・ジョブから、**パス・hash・表示だけを文字列置換で変えた** fold 2 版を生成する `experiments/b1_baseline/make_x110f2.py`(置換後に fold 1 の名残が一つでもあれば停止)→ `x110f2_stage1.py` / `x110f2_stage3.py` / `spark/jobs/spark_x110f2.sh` / `spark/jobs/x110f2_stage3_resume.sh`。fold 1 のファイルは変更していない。
 - 学習: `spark/jobs/spark_fpnet_f2s1.sh`(公開レシピ、fold 2 + NP 例 group を保留、seed 1、82,855 更新;共有の harness_work に split.parquet があれば停止、run 固有の split を make_split で作成 → fold_check → split_audit → 学習)。公開 fpnet_fold2(seed 0、sha 257062cb…)と 1:1 平均。表 f2dev / np053f2dev(既存、fold-2 スロット)、基準の主出力 diag/r102_f2dev / r102_np053f2dev。
 - 起動は fold 1 の段階 3 が関門を通った場合だけ、Codex 116 に従い現在の 110 / 111 の鎖が終わってから。関門・保護・停止条件は fold 1 と同一(fold 間で合算しない)。
+
+## 6. 追記(段階 1 の読み取りの技術修正、2026-10-29 05:17 JST、FPNet の学習中・x110 の manifest 作成前・結果の前)
+- 115 の段階 1 の読み取りを、既存の表を全群に当てて空試験したところ、**x110_stage1.py と同じ検査(Codex 114: 順位は有限で −1 または 1..n_unique)が既存の表で停止する**ことが分かった。原因は、窓が空(n_unique 0、truth_in_window False)の 4 分子(f1dev C 2、E 1、np053f1dev NP_H 1)で、b1_features が truth_fp_rank を −1 でなく NaN で書くこと。作り直す対照も同じ値を再現するので、このままでは 110 は段階 1 で X110_FAIL になっていた。
+- 修正(x110_stage1.py。make_x110f2.py で x110f2_stage1.py を再生成。x115_stage1.py も同じ): **窓が空(n_unique 0 かつ truth_in_window False)の行の NaN に限って「窓に無い = −1」として受理**する(§3.5「窓に正解が無ければ 0」と同じ意味)。それ以外の NaN や範囲外の値は従来どおり停止する。再現の記述では NaN 同士を一致として数える。判定式・関門・他の検査は変えていない。これらの分子は reach_external_b1 = False なので、修正の前後で RR は 0 のまま。
+- 空試験(Spark の ~/x110dry、両群に既存の表を当てる): 最後まで動き、dFP = 0 → NO、再現の差 0。修正版は x110 の manifest が書かれる前(学習終了の前)に Spark へ配置した(sha256 22a0bcc2…)。main の値(r102)は空窓の分子で 0.0 なので、段階 3 には影響しない。

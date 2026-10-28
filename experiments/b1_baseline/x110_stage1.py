@@ -46,14 +46,17 @@ for tag, (c0, c1, old, sets) in PAIRS.items():
         z = a[cols].merge(b[cols], on="molecule", suffixes=("_0", "_avg"), validate="one_to_one")
         for c_ in ("n_unique", "reach_external_b1", "truth_in_window", "n_query"):   # Codex 112: same windows / queries / reach in both arms
             if (z[c_ + "_0"].astype(str) != z[c_ + "_avg"].astype(str)).any(): sys.exit(f"STOP: {tag} {s} {c_} differs between the arms")
+        emp = pd.to_numeric(z.n_unique_0, errors="coerce").eq(0).values & z.truth_in_window_0.astype(str).str.lower().isin(["false", "0"]).values
         for c_, nu_ in (("truth_fp_rank_0", "n_unique_0"), ("truth_fp_rank_avg", "n_unique_avg")):   # Codex 114: finite, -1 or 1..n_unique
             v_ = pd.to_numeric(z[c_], errors="coerce").astype(float); n_ = pd.to_numeric(z[nu_], errors="coerce").astype(float)
-            ok_ = np.isfinite(v_) & (v_ == np.round(v_)) & ((v_ == -1) | ((v_ >= 1) & (v_ <= n_)))
+            # fixed 2026-10-29 before stage 1 (dry run on the existing tables): an EMPTY window (n_unique 0, truth not in it) carries NaN in
+            # b1_features = not in the window = -1 (prereg 3.5: no truth in the window -> 0); any other NaN still stops
+            ok_ = (np.isfinite(v_) & (v_ == np.round(v_)) & ((v_ == -1) | ((v_ >= 1) & (v_ <= n_)))) | (emp & v_.isna().values)
             if not ok_.all(): sys.exit(f"STOP: {tag} {s} {c_} outside -1 / 1..n_unique ({int((~ok_).sum())} rows)")
         q = a[cols].merge(o[cols], on="molecule", suffixes=("", "_old"), validate="one_to_one")
-        rep.append(f"| {tag} {s} | {len(q)} | {int((q.truth_fp_rank != q.truth_fp_rank_old).sum())} | {int((q.n_unique != q.n_unique_old).sum())} | {int((q.reach_external_b1.astype(bool) != q.reach_external_b1_old.astype(bool)).sum())} |")
+        rep.append(f"| {tag} {s} | {len(q)} | {int((q.truth_fp_rank.fillna(-1) != q.truth_fp_rank_old.fillna(-1)).sum())} | {int((q.n_unique != q.n_unique_old).sum())} | {int((q.reach_external_b1.astype(bool) != q.reach_external_b1_old.astype(bool)).sum())} |")
         ok = z.reach_external_b1_0.astype(bool).values
-        z["r0"] = np.where(ok, z.truth_fp_rank_0.values.astype(float), -1.0); z["r1"] = np.where(ok, z.truth_fp_rank_avg.values.astype(float), -1.0)
+        z["r0"] = np.where(ok, z.truth_fp_rank_0.fillna(-1).values.astype(float), -1.0); z["r1"] = np.where(ok, z.truth_fp_rank_avg.fillna(-1).values.astype(float), -1.0)
         z["tag"] = tag; z["set"] = s; z["main_c2"] = [float(R.get((s, m), np.nan)) for m in z.molecule]; rows.append(z)
 Z = pd.concat(rows, ignore_index=True); Z.to_csv(os.path.join(HERE, "diag/x110_stage1.csv"), index=False)
 def dm(tag, s):
