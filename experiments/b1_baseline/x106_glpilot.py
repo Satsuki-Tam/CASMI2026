@@ -28,16 +28,19 @@ def trank(score, tr, keys):
 
 
 rr = lambda r: (1.0 / r) if 1 <= r <= 25 else 0.0
-rows = []
+rows = []; NOISE = []
 for (tag, s), sub in SUB.groupby(["tag", "set"]):
     run = os.path.join(HERE, RUN_OF[tag]); dp = os.path.join(P, f"detail_{tag}_{s}.csv")
     if not os.path.exists(dp): sys.exit(f"STOP: missing {dp}")
     Dd = pd.read_csv(dp); Dd["mid"] = Dd.mid.astype(str)
     agg = Dd.groupby(["mid", "smiles"]).agg(gl_mean=("sim", "mean"), expl=("expl_obs", "mean"), unexpl=("unexpl_pred", "mean"), n_spec=("sim", "size")).reset_index()
     agg["net"] = agg.expl - agg.unexpl
-    gl = json.load(open(os.path.join(run, "work", f"gl_{s}.json")))
-    chk = [abs(float(gl[m][sm]) - g) for m, sm, g in zip(agg.mid, agg.smiles, agg.gl_mean) if (gl.get(m) or {}).get(sm) is not None]
-    if not chk or max(chk) > 1e-6: sys.exit(f"STOP: gl_mean does not reproduce gl_ex_mean for {tag} {s} (max diff {max(chk) if chk else 'n/a'})")
+    # amended before any result (17:12): the detail must reproduce THIS rerun's gl_ex_mean exactly; the stored run differs by GLACIER batch-composition noise
+    rer = json.load(open(os.path.join(P, f"out_{tag}_{s}.json"))); gl = json.load(open(os.path.join(run, "work", f"gl_{s}.json")))
+    chk = [abs(float(rer[m][sm]) - g) for m, sm, g in zip(agg.mid, agg.smiles, agg.gl_mean) if (rer.get(m) or {}).get(sm) is not None]
+    if len(agg) and (not chk or max(chk) > 1e-9): sys.exit(f"STOP: detail mean does not reproduce this rerun for {tag} {s} (max diff {max(chk) if chk else 'n/a'})")
+    st = np.array([abs(float(gl[m][sm]) - g) for m, sm, g in zip(agg.mid, agg.smiles, agg.gl_mean) if (gl.get(m) or {}).get(sm) is not None])
+    NOISE.append(f"| {tag} {s} | {len(st)} | {(st > 1e-6).mean():.3f} | {np.percentile(st, 99):.5f} | {st.max():.5f} |" if len(st) else f"| {tag} {s} | 0 (no covered spectrum) | - | - | - |")
     A = {(m, sm): (g, n) for m, sm, g, n in zip(agg.mid, agg.smiles, agg.gl_mean, agg.net)}
     F = pd.read_parquet(os.path.join(run, f"b1_features_{s}.parquet")); F["molecule"] = F.molecule.astype(str)
     M = pd.read_csv(os.path.join(run, f"b1_molecules_{s}.csv")); M["molecule"] = M.molecule.astype(str); M = M.set_index("molecule")
@@ -74,4 +77,5 @@ for lab, m in LAY.items():
     if not len(d): continue
     dg = c.gl2 - c.gl_mean; dc = d.conn - d.main
     L.append(f"| {lab} | {len(d)} ({len(c)}) | {c.gl_mean.mean():.4f} | {c.gl2.mean():.4f} | {ci(dg) if len(c) else '-'} | {int((dg > 1e-12).sum())} / {int((dg < -1e-12).sum())} | {d.main.mean():.4f} | {ci(dc)} | {int((dc > 1e-12).sum())} / {int((dc < -1e-12).sum())} |")
+L += ["", "GLACIER rerun vs the stored GL JSON (batch-composition noise; the detail reproduces the rerun exactly):", "", "| input | candidates | share diff > 1e-6 | p99 | max |", "|---|---:|---:|---:|---:|"] + NOISE
 open(os.path.join(P, "x106_glpilot.md"), "w", encoding="utf-8").write(chr(10).join(L) + chr(10)); print(chr(10).join(L))
