@@ -20,17 +20,22 @@ same representative structures; otherwise unresolved; C_Fs / C_Fm are never prom
 table's spelling aggregation), the leader-safe upper bound, and pure discrimination with NEUTRAL (pessimistic) ties: MRR of the truth under N,
 Fs, Fm alone (r*_pess).
 A pass is a fold-1 development result: the selected budget must pass the same gate on fold 2 (fold-2 init + training, same budget) on its own.
-Usage: python -X utf8 x111_summary.py"""
+Usage: python -X utf8 x111_summary.py [--fold 1 --cks s2000 s8000 s20000] (default = the registered fold-1 reading); fold 2: --fold 2 --cks s<selected>"""
 import os, sys
 import numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); NB = 4000; TOL = 1e-12
-CKS = ["s2000", "s8000", "s20000"]   # budgets in updates; the order is the tie-break (shorter first)
-EVAL_CSV = {"f1dev": "eval_set_f1/p2_molecules.csv", "np053f1dev": "np053_f1dev/p2_molecules.csv", "c1bankdev": "c1bank_f1/c1dev/p2_molecules.csv"}
-RUN_OF = {"f1dev": "run_f1dev", "np053f1dev": "run_np053_f1dev", "c1bankdev": "run_c1bankdev_f1"}
-BASE_OF = {"f1dev": "diag/r102_f1dev.csv", "np053f1dev": "diag/r102_np053f1dev.csv", "c1bankdev": "diag/r111_base_c1bankdev.csv"}
+import argparse
+_ap = argparse.ArgumentParser(); _ap.add_argument("--fold", type=int, default=1, choices=[1, 2]); _ap.add_argument("--cks", nargs="+", default=["s2000", "s8000", "s20000"])
+_A = _ap.parse_args(); K_ = _A.fold
+CKS = _A.cks   # budgets in updates; the order is the tie-break (shorter first); fold 2 = the one budget selected on fold 1 (Codex 111 Q3)
+SUF = "" if K_ == 1 else "f2"   # fold-2 files: diag/r111f2_<ck>_<tag>.csv, experiments/n111/scores_f2/<ck>/, run dir n111/r2
+TAGF, TAGN, TAGB = f"f{K_}dev", f"np053f{K_}dev", ("c1bankdev" if K_ == 1 else "c1bankf2dev")
+EVAL_CSV = {TAGF: f"eval_set_f{K_}/p2_molecules.csv", TAGN: f"np053_f{K_}dev/p2_molecules.csv", TAGB: f"c1bank_f{K_}/c1dev/p2_molecules.csv"}
+RUN_OF = {TAGF: f"run_f{K_}dev", TAGN: f"run_np053_f{K_}dev", TAGB: f"run_c1bankdev_f{K_}"}
+BASE_OF = {TAGF: f"diag/r102_{TAGF}.csv", TAGN: f"diag/r102_{TAGN}.csv", TAGB: f"diag/r111{SUF}_base_{TAGB}.csv"}
 NPS = ["C_np_crosslib", "D_np_single", "E_np_negonly", "F_np_uncovered"]
-CELLS_A = [("np053f1dev", "NP_H"), ("np053f1dev", "NP_N")]; CELLS_D = [("f1dev", "D_np_single")]
-PROT = {"old B f1dev C-F C2": ([("f1dev", s) for s in NPS], "c2"), "G C1 f1dev": ([("f1dev", "G_tims_crosslib")], "c1"), "NP C1 np053f1dev H/N": (CELLS_A, "c1")}
+CELLS_A = [(TAGN, "NP_H"), (TAGN, "NP_N")]; CELLS_D = [(TAGF, "D_np_single")]
+PROT = {f"old B {TAGF} C-F C2": ([(TAGF, s) for s in NPS], "c2"), f"G C1 {TAGF}": ([(TAGF, "G_tims_crosslib")], "c1"), f"NP C1 {TAGN} H/N": (CELLS_A, "c1")}
 VARS = ["t1N_0.5", "t1Fs_0.5", "t1Fm_0.5"]
 
 
@@ -62,12 +67,12 @@ for t, csv in EVAL_CSV.items():   # Codex 114: GLACIER audit of every table used
 
 def load(ck):
     D = {}; S_ = ck[1:]
-    ckp = os.path.join(ROOT, "experiments", "n111", "r1", f"n111_s{S_}_s{S_}.pt"); ck_sha = sha(ckp)
+    ckp = os.path.join(ROOT, "experiments", "n111", "r1" if K_ == 1 else "r2", f"n111{SUF}_s{S_}_s{S_}.pt"); ck_sha = sha(ckp)
     for t in EVAL_CSV:   # Codex 114: the scores were made with this budget's trained checkpoint
-        mf = json.load(open(os.path.join(ROOT, "experiments", "n111", "scores", ck, f"n111_{t}_manifest.json")))
+        mf = json.load(open(os.path.join(ROOT, "experiments", "n111", "scores" if K_ == 1 else "scores_f2", ck, f"n111_{t}_manifest.json")))
         if mf.get("model_sha256") != ck_sha or int(mf.get("model_step", -1)) != int(S_): stop(f"{ck} {t}: scores not made with the trained checkpoint {ckp}")
     for t, csv in EVAL_CSV.items():
-        p = os.path.join(HERE, f"diag/r111_{ck}_{t}.csv")
+        p = os.path.join(HERE, f"diag/r111{SUF}_{ck}_{t}.csv")
         if not os.path.exists(p): stop(f"missing {p}")
         x = pd.read_csv(p); x["molecule"] = x.molecule.astype(str)
         ev = pd.read_csv(os.path.join(HERE, csv)); ev["molecule"] = ev.molecule.astype(str); ig = dict(zip(ev.molecule, ev.identity_group.astype(int)))
@@ -134,12 +139,12 @@ for ck in CKS:
                     and np.allclose(x["t1Fm_0.5"].values, REF[t]["t1Fm_0.5"].values, atol=TOL, rtol=0)): stop(f"{ck} {t}: C_Fs / C_Fm differ between budgets (scoring conditions mixed up)")
     p, bs, (pa, ba), (pd_, bd) = primary(D, "t1N_0.5", "main", 1111, 1112)
     pr = {k: boot(D, c, v, "t1N_0.5", "main", 1117) for k, (c, v) in PROT.items()}
-    bank = D["c1bankdev"]; bank = bank[bank.view == "c1"]; pb, bb = boot_pooled(bank, "t1N_0.5", "main", 1118)
+    bank = D[TAGB]; bank = bank[bank.view == "c1"]; pb, bb = boot_pooled(bank, "t1N_0.5", "main", 1118)
     gate = p >= 0.005 and ci(bs)[0] > 0 and ci(ba)[0] >= -0.01 and ci(bd)[0] >= -0.01 and all(ci(b)[0] >= -0.01 for _, b in pr.values()) and ci(bb)[0] >= -0.01
     q, bq, _, _ = primary(D, "t1N_0.5", "t1Fs_0.5", 1119, 1120); f, bf, _, _ = primary(D, "t1Fs_0.5", "main", 1121, 1122); fm, bfm, _, _ = primary(D, "t1Fm_0.5", "main", 1123, 1124)
     cm = lambda t, s_: D[t][(D[t].set == s_) & (D[t].view == "c2")]
     ub = lambda r: float(np.where(r.rP_n > 1, 0.5 - r.main, 0.0).mean())
-    u = 0.25 * ub(cm("np053f1dev", "NP_H")) + 0.25 * ub(cm("np053f1dev", "NP_N")) + 0.5 * ub(cm("f1dev", "D_np_single"))
+    u = 0.25 * ub(cm(TAGN, "NP_H")) + 0.25 * ub(cm(TAGN, "NP_N")) + 0.5 * ub(cm(TAGF, "D_np_single"))
     RES[ck] = (p, gate, D)
     L.append(f"| {ck} | **{fmt(p, bs)}** | {fmt(pa, ba)} | {fmt(pd_, bd)} | " + " | ".join(fmt(*pr[k]) for k in PROT) + f" | {fmt(pb, bb)} (n {len(bank)}) | {'PASS' if gate else 'no'} | {fmt(q, bq)} | {fmt(f, bf)} | {fmt(fm, bfm)} | {u:+.4f} |")
 passing = [ck for ck in CKS if RES[ck][1]]
@@ -157,4 +162,4 @@ for ck in CKS:
             sp = r[both][["rP_n", "rN"]].rank().corr().iloc[0, 1] if both.sum() > 2 else float("nan")
             L.append(f"| {ck} | {t} {s} {v} | {len(r)} | {r.main.mean():.4f} | {r['t1N_0.5'].mean():.4f} | {r['t1Fs_0.5'].mean():.4f} | {r['t1Fm_0.5'].mean():.4f} | {rr(r.rN_pess.values).mean():.4f} | "
                      f"{rr(r.rFs_pess.values).mean():.4f} | {rr(r.rFm_pess.values).mean():.4f} | {int((d > TOL).sum())} / {int((d < -TOL).sum())} | {sp:.3f} |")
-open(os.path.join(HERE, "diag/x111_summary.md"), "w", encoding="utf-8").write(chr(10).join(L) + chr(10)); print(chr(10).join(L))
+open(os.path.join(HERE, f"diag/x111{SUF}_summary.md"), "w", encoding="utf-8").write(chr(10).join(L) + chr(10)); print(chr(10).join(L))

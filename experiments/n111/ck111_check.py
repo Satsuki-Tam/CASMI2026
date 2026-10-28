@@ -2,11 +2,11 @@
 (steps, K 63, K_F 48, workers 6, seed 0, lr_fp 1e-4, lr_head 5e-4, warmup 500, merge_p 0.3, loss weights 1 / 1 / 1 / 0.1, d_out 256, hid 1024,
 holdout hold,np), the checkpoint's own step / cfg / args equal to the receipt's, init = the fold-1 slot (sha 1739d568...), split.parquet sha equal
 to the training manifest, and the checkpoint's sha recorded in the training manifest equal to the current file. Exit 1 on any mismatch.
-Usage: python ck111_check.py <run_dir> <tag> <steps> <init.pt> <split.parquet> <train_manifest.txt>"""
+Usage: python ck111_check.py <run_dir> <tag> <steps> <init.pt> <split.parquet> <train_manifest.txt> [expected init sha256]"""
 import hashlib, json, os, sys
 import torch
 R, TAG, S, INIT, SPLIT, MAN = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4], sys.argv[5], sys.argv[6]
-SLOT = "1739d5683fa94fd73fe3b37db98ac364cb5dfdc22ad5bea9789be9c48d7cadc4"
+SLOT = sys.argv[7] if len(sys.argv) > 7 else "1739d5683fa94fd73fe3b37db98ac364cb5dfdc22ad5bea9789be9c48d7cadc4"   # fold-1 slot by default; fold 2: 257062cb...
 
 
 def sha(p):
