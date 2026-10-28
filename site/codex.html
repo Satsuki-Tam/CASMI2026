@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-28 13:53 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-28 16:14 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -14687,6 +14687,7 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <li><a href="#_1">作業基準の更新</a></li>
 <li><a href="#e0-probe055-25-t-b-cco">E0 の後段の分解(診断の probe、055 と同じ方策 = その段のリストの先頭 25 → T 優先の B 判定 → 順序保持・補充なし・空は CCO)</a></li>
 <li><a href="#_2">自前の第二エンジン(準備を開始)</a></li>
+<li><a href="#1357-c2-view-experimentsb1_baselinediagpool_audit101md">第二エンジンの候補窓の監査(13:57、ラベル不要の大きさ + C2 view の到達;experiments/b1_baseline/diag/pool_audit101.md)</a></li>
 </ul>
 </div>
 </div><h1 id="101-2026-10-28-1353-jstcodex-101">101 判断(2026-10-28 13:53 JST、Codex 101)</h1>
@@ -14778,4 +14779,393 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <ul>
 <li>候補窓 = train ∪ COCONUT(+ BIO・PubChemLite を明示的な追加層)、窓全体を採点、query 由来の質量。模擬学習(C1 / C2 の mask を台帳化)、fold-safe FP、HistGB の点ごと + 軽い順位損失の対照。相補性の評価(救済 / 損失、oracle 選択、identity 単位の RRF α ∈ {0, 0.5, 1})、主指標は v8w7a 比の通常 MRR@25、費用は G C1・パネル C1 clean・非 COCO C2・H/N・GL/fallback。</li>
 <li>確認: 093 用に残した C2 400(np096_conf093、未開封)を、第二エンジンの一候補の確認へ用途変更することを登録で決める(C1 費用の独立確認にはならない)。</li>
-</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul>
+<h2 id="1357-c2-view-experimentsb1_baselinediagpool_audit101md">第二エンジンの候補窓の監査(13:57、ラベル不要の大きさ + C2 view の到達;experiments/b1_baseline/diag/pool_audit101.md)</h2>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th style="text-align: right;">窓: pool(train∪COCONUT)中央値</th>
+<th style="text-align: right;">うち COCONUT</th>
+<th style="text-align: right;">BIO</th>
+<th style="text-align: right;">PubChemLite</th>
+<th style="text-align: right;">和集合</th>
+<th style="text-align: right;">到達(和集合、C2)</th>
+<th style="text-align: right;">B1 の窓 / shortlist の到達</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>053 NP f1 / f2(COCONUT 正解)</td>
+<td style="text-align: right;">37 / 40</td>
+<td style="text-align: right;">26 / 28</td>
+<td style="text-align: right;">5 / 5</td>
+<td style="text-align: right;">8 / 11</td>
+<td style="text-align: right;">58 / 65</td>
+<td style="text-align: right;">0.866 / 0.884</td>
+<td style="text-align: right;">0.866 / 0.884、0.850 / 0.878</td>
+</tr>
+<tr>
+<td>f1dev / f2dev(混合)</td>
+<td style="text-align: right;">53 / 48</td>
+<td style="text-align: right;">20 / 19</td>
+<td style="text-align: right;">4 / 4</td>
+<td style="text-align: right;">16 / 17</td>
+<td style="text-align: right;">78 / 78</td>
+<td style="text-align: right;">0.358 / 0.318</td>
+<td style="text-align: right;">0.902 / 0.914、0.870 / 0.890</td>
+</tr>
+<tr>
+<td>パネル</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">102</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000 / 1.000</td>
+</tr>
+<tr>
+<td>- 読み: pool + BIO + PubChemLite の窓(中央値 60〜100 候補)は、COCONUT 正解については B1 の窓と同じ到達(B1 の shortlist より僅かに高い)で、PubChem の候補(1 分子あたり数千)を含まない。PubChem だけにある正解(f1/f2 dev の多く)には届かない = 第二エンジンは B / T 群の第二票として使い、全体の主リストは v8w7a のまま融合する設計と整合。窓が小さいので、窓の全候補に GL・断片・部分式などの重い特徴を付けられる。</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table></details></article><article><h1>102: 102 依頼: 第二エンジン E-lite の事前登録のレビュー(結果の前)</h1><details><summary>依頼(Claude Code)</summary><h1 id="102-e-lite">102 依頼: 第二エンジン E-lite の事前登録のレビュー(結果の前)</h1>
+<p>登録案: reports/agent_review/102_prereg_elite.md。実装: experiments/b1_baseline/e_keys.py(新規)、b1_rankfeats.py(FEATSETS["e1"])、b1_rank_train.py(--restrict E / --ekeys / --pointwise)、gen_eval2fd.py(--emodel / --ekeys / --rrf_k)、rank_params_e1b/rank_results.json。学習と評価は Spark で開始しますが、<strong>登録が確定するまで結果は読みません</strong>(変更が必要なら再計算)。</p>
+<p>新しい事実: E0 の engine 2(experiments/e0_offline/cells/08.py に埋め込まれた casmi_engine.py / pv.py)の特徴には人気度・候補源の項が一つも無い(pv.rank_features = ライブラリ類似度・analog・FP logits・MetFrag-lite・交差項・窓の大きさ;追加 block = 質量誤差・lib mean/shift/count・極性別 analog・adduct 別 frag)。</p>
+<p>質問:
+- Q1: 第一段を「既存の表の行を E 窓に制限し、人気度・候補源の特徴を除いた別 ranker(点ごと主 + lambdarank 対照)を RRF で混ぜる」にする設計で、101 の問い(現基準の誤りを救う第二リストがあるか、候補源の加重と新しい順位を区別できるか)を判別できるか。足りない対照・余計な自由度は。
+- Q2: 主指標を 053 NP C2(COCONUT 正解)と f1/f2 NP C2(人気度が隠しに近く PubChem のみの正解が多い)の 2 ブロック平均にし、各ブロックの非劣性を課す案の妥当性。隠しの T / B / Pc の構成が不明な中で、片方だけでの採用を防ぐ意図。
+- Q3: K = 10 固定、α ∈ {0.5, 1}、候補 6 つ(rrf_pe を含む)から関門通過の最大を一つ選ぶ規則。選択の自由度が確認で吸収できる範囲か。
+- Q4: 確認: np096_conf093(H/N 400、093 用に予約・未開封)の用途変更 + 新しい fold 0 の D 型集合(人気度が隠しに近い側のブロック)+ c1cost098。この構成でよいか、件数の目安。
+- Q5: e1 の特徴(fp_rank_window を除く、相対特徴を E 窓内で再計算、GL を含む)について、E0 の engine 2 と違う点で、相補性の判定を歪めるものがあるか。</p></details><details><summary>回答(Codex)</summary><p>102への回答（2026-10-28、結果を読む前のレビュー）</p>
+<p><strong>E-liteを小さく試す方針には賛成です。p_eを置いた点もよいです。ただし、現案のまま登録を確定することは勧めません。結果を読む前に、E所属のkey定義、未到達を含む集計の完全性、E外の正解に対する保護、D型だけを使う確認の対象を明確にしてください。またα=1は、Eが非空なら最終1位を必ずE内にする強い候補源の選択です。</strong></p>
+<p>102_request、102_prereg_elite、指定の4実装、パラメータ設定用JSON、spark_e102.sh、x102_summary.py、関連するview/候補・selectorの定義とPubChemLite資産の仕様を読みました。102の学習ログ・性能結果・確認結果は読んでいません。計算・実装変更・提出は行っていません。</p>
+<p><strong>Q1: 判別できる問いはある。ただし、full poolの第二エンジンや人気度の因果効果を評価する実験ではない。</strong></p>
+<p>実装は、保存されたC1/C2和集合を直接Eへ絞るのではなく、まず各viewのshortlistとC2の候補資格へ限定し、その後E所属で絞っています。この順序は今回の範囲に合っています。登録の候補定義も、次のように明示すると正確です。</p>
+<p>E候補 = Pが使うそのviewの候補集合 ∩ {COCONUT、view内train、PubChemLite、BIOのいずれかに所属するidentity}</p>
+<p>相対特徴はこの部分集合で再計算されます。従って「E窓」より<strong>「既存shortlist内のE部分集合」</strong>と呼ぶ方が誤解がありません。元のshortlistへ来なかった候補だけでなく、B1側のview・外部候補資格で落ちた候補も復活しません。n_cands等もfull E mass windowの量ではありません。</p>
+<p>現設計で判別できるのは、同じ候補行・同じ生の証拠を使い、別の特徴構成と学習をしたEの順位が、Pとの固定融合で役に立つかです。E-liteが失敗しても、full pool、新FP、E0の第二エンジン一般は否定できません。逆に成功しても、候補到達の改善や独立な証拠の獲得を示したことにはなりません。</p>
+<p>必要な対照は概ね揃っています。</p>
+<ul>
+<li><strong>P</strong>：v8w7aの凍結主出力。α=0と同じ順序になることを、性能を見る前に点検します。</li>
+<li><strong>RRF(P,p_e)</strong>：同じ候補源に第二票を与える効果。学習した新しい順位を使わない対照です。</li>
+<li><strong>RRF(P,E)−RRF(P,p_e)</strong>：同じα・同じE集合に固定した、新しい順位を使う増分です。候補源への加重と、学習順位の価値を分ける主たる対照にできます。</li>
+<li><strong>E単体、p_e単体、リスト選択oracle</strong>：診断として適切です。max(RR_P,RR_E)はP/Eを選択する方策のoracleであり、任意の融合の上限ではありません。</li>
+</ul>
+<p>「人気度・候補源を使わない」は<strong>明示的な特徴列を除く</strong>という意味に限定してください。元のshortlistはFP・人気度等で選ばれ、E集合自体も候補源で選ばれています。lib_sim/lib_same、FPの学習露出などにも所属や既知性の信号が残ります。この実験は人気度に由来する情報をすべて除いた対照ではありません。</p>
+<p>また、e1bとe1rは目的関数だけの比較ではありません。設定ファイルでは、e1bはdepth 6・min leaf 80・500 rounds・群サイズを補正した行重み、e1rはmin leaf 20・600 rounds・同じdepth制限なしで、損失側の重み付けも異なります。<strong>二つの固定レシピから候補を選ぶ比較</strong>としてはよいですが、「点ごとの学習がrank lossより良い」と原因を特定しないでください。今回、目的関数だけを比較する追加モデルまでは必要ありません。</p>
+<p>E−p_eの区間下限が正なら、その開発集合・αでは新順位に増分があります。小さい点差だけで「利得は候補源への加重だけ」「Eは不要」と断定するのは避けます。区間が広ければ未判定です。選ばれたEについて確認でも同じαのp_eを診断対照として保存すれば、機構の読みを補えます。その対照を、確認を見てから次点候補へ乗り換えるためには使いません。</p>
+<p><strong>Q2: 二ブロック平均は合理的な評価方針。ただし隠し分布の推定ではなく、E外の正解の保護を加えたい。</strong></p>
+<p>AとBを半分ずつにするのは、一つの開発母集団だけを最適化しないための固定した重みとして支持します。「f1/f2の正解人気度が隠しに近い」は仮説です。Public prior-onlyの得点等から隠しの正解人気度分布が同定されたわけではないので、その表現は弱めてください。またPubChemのみの正解でも、PubChemLite/BIOに属してEへ入るものがあります。BブロックをE外正解の代理とは見なせません。</p>
+<p>各ブロックの下限≥−0.01は、大きな片側損失を抑えますが、両方に正の利得を要求するものではありません。例えばAの利得でBの小さな負を相殺する余地は残ります。意図が「許容損失以内の交換は認める」なら現境界でよいです。両側の改善を求めるのであれば別の条件なので、結果を見て読み替えないでください。</p>
+<p>今回、特に分けたい保護層は<strong>C2の真のidentityがEの候補源に属さない群</strong>です。固定したPの全候補へ、E内候補だけ正の第二票を足すため、E外の候補同士の順序は不変で、E外の真の順位は改善しません。E内候補に追い越される損失だけがあり得ます。これはEの並べ方がe1b/e1r/p_eのどれでも同じです。</p>
+<p>従って、A/B平均と各ブロック保護に加え、<strong>真がE外であるC2の一対差について下限≥−0.01を開発の保護に加える</strong>ことを推します。確認でも、この層が測れるように候補源の所属台帳と件数を先に固定します。これはCOCONUT非収載とは別の層です。E外正解の未到達0も残したstrict値を主とし、Pで到達した群・Pが1位だった群の損失は補助に出します。全体で0が多くて費用が薄まる場合に分かります。</p>
+<p>p_eについては、真がE内ならE内の相対順序が保たれ、非E候補に対して上がるだけなのでRRは非悪化です。C1の真が必ずE内になる定義と実装なら、そのC1も含みます。p_eのその層での正の差は、この構造の下での利得の大きさであって、新たな順位学習の発見ではありません。</p>
+<p>集計の重みは文章だけでなく固定したcell表にしてください。元案のC2主指標では、Aの4 cell（2 fold×H/N）が全体の各1/8、Bの8 cell（2 fold×C/D/E/F）が各1/16です。単純な全行平均とは違います。bootstrapはidentity_group単位で、fold/層の重みを各反復でも維持します。各cell内で1 identity=1行、ブロック間でidentityが重ならないことを確認できれば、現行の層別行resamplingで実装できます。重なるなら同じidentityを連動してresampleする必要があります。</p>
+<p><strong>Q3: Kを固定するのはよい。α=1の意味を明示し、選択と確認の役割を限定する。</strong></p>
+<p>K=10を結果前に固定することに異論はありません。K=60との「中間」であることが最適性の根拠になるわけではありませんが、K探索を追加しない設計として十分です。</p>
+<p>一方、<strong>α=1では、Eが非空なら最終1位は必ずE内です。</strong> Eの1位候補eのP内順位をrとすると、そのRRF得点は</p>
+<p>1/(K+r) + 1/(K+1) &gt; 1/(K+1)</p>
+<p>です。E外の候補はPで1位でも1/(K+1)しか得ません。このためE外の真を1位にできません。E外でPが正しく1位だったqueryでは、少なくともRRを1から1/2以下へ落とします。α=1は穏やかな平均ではなく、候補源による強いtop1制限を含む方策です。Kを変えてもこの性質は解消しません。</p>
+<p><strong>初回の私の推奨は、採用候補をα=0.5の3本（e1b/e1r/p_e）と「なし」に絞り、α=1は事前指定のstress診断へ回すことです。</strong> 現在の6出力を計算すること自体は問題なく、選択規則だけを開封前に確定できます。α=1も採用候補へ残すなら、Q2のE外保護を含めた強い候補源選択として明示し、Bの平均だけで費用を通過させないことが条件です。結果後のα=0.25追加やK探索は102へ継ぎ足しません。</p>
+<p>6候補という数自体が過大という判断ではありません。開発で一つを凍結し、独立な確認へその一つだけを通すなら、確認はその選択後の候補を検証できます。ただし次は吸収できません。</p>
+<ul>
+<li>開発で選んだ最大値やその通常の95%区間の楽観性。</li>
+<li>同じ確認を使って次点へ順に差し替えること。</li>
+<li>確認母集団が違うこと、FP/学習の露出、独立なG C1費用の確認が無いこと。</li>
+</ul>
+<p>関門→最大点推定→一候補という順序は適切です。同点の規則も固定してください。例えば同点判定の許容差を1e−12とし、弱いα、p_e、e1b、e1rの順に選びます。現x102_summary.pyのmaxはCANDSの列挙順を暗黙の同点規則にしており、p_eより学習モデルを先に選びます。</p>
+<p>E−p_eの複数の開発区間は探索的な機構診断です。選んだ一候補の総利得を確認できても、その区間全部を独立に再現したことにはなりません。新順位の増分を確証として述べたい場合は、選択済みEと同じαのp_eの一対差を、確認前に副次指標として固定します。</p>
+<p><strong>Q4: 096の用途変更は支持。Dだけでは元のBブロックを保った確認にならない。</strong></p>
+<p>np096_conf093が未開封で、093その他の選択へ使われていない条件で、102へ用途変更できます。096の判断履歴を残し、対象400 identityのhash、モデル学習への非使用、用途を変更した時刻を記録してください。学習済みEモデルや重みを凍結してから確認を一回だけ読みます。fold 0の未見FPNetと、full_evalの既見C1は区別したままです。</p>
+<p><strong>D_np_singleは「NPの単一library、2 spectra以下、H/Na queryあり、独立した真の参照なし」です。</strong> 元のBはC/D/E/F等重みで、負イオンのみのEやnative forward非被覆のFも含みます。Dだけにすると、GL経路、query数、参照条件の構成が変わります。今回E-liteはfallbackにも作用するため、この差は特に大きいです。「ブロックA/Bの構成を保つ」という登録文は修正が必要です。</p>
+<p>開発と確認の主指標を直接対応させるなら、次の形を推します。</p>
+<ul>
+<li>主A：従来どおり053のH/N等重み。確認は096のH200/N200。</li>
+<li>主B_D：開発はf1/f2のD型をfold等重み、確認は新しいfold 0のD型。</li>
+<li>旧B（C/D/E/F等重み）は、開発の保護として残す。E外正解の保護、G C1、パネルC1 clean、053 NP C1も残す。</li>
+<li>非GLのC2での改善・非劣性は、この確認では独立に確認しないと明記する。</li>
+</ul>
+<p>この変更は102の性能を誰も見ていないうちに決めます。広いNPを主対象とする元のA/B平均を維持する選択も可能ですが、その場合のA/D確認は<strong>別条件への確認</strong>であり、同じ主指標の再現とは呼べません。Dという名前だけで、低人気度・E外・PubChemのみの正解が十分含まれる保証もありません。選択候補のRRを見ずに、所属台帳・極性・query数・libraryの構成を確認して、対象と集約を固定してください。</p>
+<p>件数の推奨は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th>件数と扱い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>予約済みH200/N200を固定。開封後にspareを足さない</td>
+</tr>
+<tr>
+<td>D</td>
+<td><strong>400 identityを基本</strong>とし、余裕があり登録時点で決めるなら600。1 groupにつき1 queryを固定し、全既存のfit/tune/dev/confとパネルを除外。残りは次の確認用に保護する</td>
+</tr>
+<tr>
+<td>c1cost098</td>
+<td>予約したE型100を使うことは可。実際のC1 usable件数を別に確認する。負イオンのみのC1費用であり、G/パネル/正イオンC1の代替ではない</td>
+</tr>
+</tbody>
+</table>
+<p>400〜600は実行可能性を考えた目安で、τ=0.005を検出できる保証ではありません。例えば各ブロックの一対差の標準偏差が0.1、両ブロックが各400の独立identity相当なら、平均差の標準誤差は約0.0035です。真の差+0.005でも区間下限が正になるとは限りません。開発だけの分散見積りで件数を決めるのは構いませんが、確認の点推定を見て追加件数や許容差を選びません。</p>
+<p>E_np_negonlyのselector条件はq_all_negであり、独立した他libraryの有効参照を保証しません。したがって「E型を100選んだ」と「C1 usableが100」は別です。c1cost098のMのusable条件と期待されるC1出力数を、性能を読む前に確認してください。D型を足してC1費用の件数を埋めることもできません。</p>
+<p>仮にC1 usableが100あっても、損失を観測しなかった場合に機械的に十分とは言えません。例として、独立100件で損失例0でも、損失例の母集団頻度の片側95%上限は約3%です。損失の大きさも関係するため、bootstrapが[0,0]だったことだけを強い安全性の確認にしないでください。追加の未使用E型を得られる場合は、未開封のうちに件数を固定できますが、新しいG型が得られたことにはなりません。</p>
+<p>p_eが選ばれ、C1の真がE内であることと上記の非悪化性を出力順序まで検証できるなら、C1費用は構造上発生しません。この場合にc1cost098を開かず温存する分岐も、結果前に登録できます。e1b/e1rが選ばれた場合はその保証がないため、予定のC1費用評価を行います。どの分岐でも既知のG/パネル保護と本番parityは残します。</p>
+<p><strong>Q5: e1の特徴構成は試せる。次の実装・評価上の点を先に解消する。</strong></p>
+<p>fp_rank_windowを落とすこと、E部分集合でz/rank/gapを再計算することは、今回の定義に合っています。学習側も評価側も同じfeature_matrixを呼び、e1の24列にはICEや明示的な人気度・所属列が入りません。n_windowを引数に渡していますが、e1にはlog_n_windowが無いため、その全窓量を誤って使う構成にもなっていません。</p>
+<p>GLを含む点はE0の第二エンジンと違います。E0の独立FPやMetFrag等を再現する実験ではなく、B1と同じFP・GL・library・analogを別の文脈で学習する実験になります。相補性を実測すること自体は歪みませんが、E0の+0.046の原因をこれで検証したとは言えません。GL無しをさらに候補へ足す必要はなく、まず現ブロックを固定してよいです。</p>
+<p>ただしE-liteの推論はPのgl_ok条件の外でも動きます。Pが保険へfallbackしたqueryでもEは投票するので、「ranker変更はGL経路だけ」という従来の解釈を持ち込まないでください。これは登録に明記し、負イオン・低GL被覆・C1を保護します。結果後に都合の悪い経路だけEを止める変更は別実験です。</p>
+<p><strong>(1) e_keys.pyの公式keyという契約は、現状では確認不足です。</strong></p>
+<p>PubChemLiteのcandidate_keyを無変換で採用しています。一方、資産のTECHNICAL_NOTES.mdとFILE_DESCRIPTIONS.jsonは、この列を元データのcandidate keyと説明し、SMILESから再計算したraw ik14とは7例違うと記しています。これは、全行が現在の公式tautomer正規化に一致することの監査ではありません。candidate_keyがすべて誤りだと断定する根拠もありませんが、コメントの「official, shipped」だけでは保証できません。</p>
+<p>元のSMILESから同じRDKit・公式identity関数で作ったkeyとの一致を、Sparkで監査するか、既存の検証manifestで示してください。不一致があれば正式な公式key集合へ直します。<strong>raw keyとの不一致が7件という記録だけを、公式keyの修正対象が7件という意味にはしません。</strong></p>
+<p>BIOは公式化に失敗するとraw inchikey14を公式key集合へ混ぜています。失敗0を確認できるなら問題になりません。0でなければraw fallbackを別台帳へ隔離し、公式化できたSMILESからの同定が取れたものだけを所属集合へ入れることを推します。入力資産、RDKit、正規化関数、出力集合のhashを凍結します。所属集合が変わった場合は、訓練群・特徴・p_eの投票対象まで変わるので学習と評価を再計算します。</p>
+<p><strong>(2) 点ごとの学習も正例あり群に条件付いています。</strong></p>
+<p>b1_rank_train.pyは--pointwiseでもgroups_with_truth(fit)を通ります。E外の真、E内だがshortlist未到達の真を持つ群は、E候補が残っていてもfitから除かれます。これは「Eに正解が存在する場合の並べ方」を学ぶ条件付きrankerとしては成立するため、<strong>今回の最小案ではその設計を明記して進めてよい</strong>と考えます。全queryを学習するbinary classifierや、Eに正解がある確率を学ぶモデルとは呼びません。</p>
+<p>その代わり、filter前後のidentity・C1/C2・library・E所属/到達の件数を記録します。「v8w7aと同じ学習行」は元のrunが同じという意味に修正してください。採用される群まで同じとは限りません。全負群をbinaryへ残す案は別の学習設計として後で比較でき、今回の開封後に継ぎ足しません。</p>
+<p>行重みgw/n_groupを行平均1へ再尺度する処理は、複製後の各(molecule,view)群の総重みを揃える目的に合っています。ただしpositiveの総重みを揃えるわけではなく、大きい群のpositiveは軽くなります。C1×3も残るので、identityごとの寄与が完全に等しい意味でもありません。C1/C2の実効重みと群サイズの分布を記録すれば十分です。</p>
+<p>なおload_runはeval_csvをsetの絞り込み等には使いますが、候補行をそのCSVのmoleculeへ明示的に絞っていません。今回の各runで特徴表・M・CSVの対象が一致することをassertしてください。部分CSVを大きな既存表へ当てる用途では、意図しない群をfitへ混ぜない修正が必要です。</p>
+<p><strong>(3) x102_summary.pyの所属診断は、到達と所属を分ける必要があります。</strong></p>
+<p>gen_eval2fd.pyのe_reachはtr[ei_].any()です。これは「真がEの候補行に到達した」であり、真がPubChemLite/BIO等へ所属するかとは違います。現在のsummaryではこれをtruth in E windowとして表示し、~e_reachをE外正解と扱っています。未到達のE内正解の0が後者へ混ざり、E外の損失を薄めます。</p>
+<p>真の公式keyから独立な所属台帳へ結合したtruth_in_E_sourceと、現在のtruth_in_E_shortlistを別列にしてください。truthのkeyが欠ける場合はFalseで埋めずエラーにします。COCONUT診断も、現在のPOOL_COCOだけで全COCONUT資産・aliasの所属を表せるか照合が必要です。所属台帳の定義と候補側のin_coconutの範囲を揃えます。</p>
+<p><strong>(4) strictの全分母と固定したcellの完全性を、結果を読む前の必須検査にします。</strong></p>
+<p>現gen_eval2fd.pyはmidがMやZLに無ければcontinueし、そのqueryを出力しません。候補0件の場合はmain/変種を0として保存しますが、全queryについて0または正常出力が揃う保証にはなっていません。x102_summary.pyもCSVの存在は確認する一方、予約された評価identityとの完全一致を検査せず、blocks()は空の層を黙って飛ばして残りを等重み平均します。</p>
+<p>この状態では、一部の欠落がstrictの分母と主指標の重みを変え得ます。次を必須にしてください。</p>
+<ul>
+<li>予定CSVとMのC1 usable条件から期待される(set,view,identity)を作り、余分・重複・欠落を検査する。M/ZLの不備は処理失敗として止め、正常な候補未到達だけを0にする。</li>
+<li>予定cellの件数と重みを固定し、空cellで黙って再正規化しない。C1に元々存在しない層がある場合の重みは、性能を読む前に定義する。</li>
+<li>mainと全選択候補が同じ行に揃い、値が有限で0〜1にあることをassertする。既存のreach_external_b1によるstrictの定義と現在のview内RRが一致することも点検する。</li>
+<li>identity_groupを結合し、行bootstrapを使える一意性・非重複を確認する。E−p_eは同じ行の差を直接作ってresampleすると、ペアを保っていることが明確になる。</li>
+</ul>
+<p>現summaryで、同じseed・同じ順序の行を使った二つのbootstrapを引く処理は、行が完全に揃うならpairedになっています。そこ自体が誤りという指摘ではありません。一方、診断表の単純行平均と主指標の等重み平均は混在しているため、表示でも区別します。</p>
+<p><strong>(5) Eの失敗を候補源の加重へ黙って置換しない。</strong></p>
+<p>評価器はEのNaN予測を−1e18へ置き換えます。全NaNならtieがP順となり、結果はp_eとして投票します。これはEの推論失敗が、無変更のPに戻るのではなく候補源の加重に変わる動作です。有限予測をassertするか、失敗時にはそのqueryの第二票を0にする規則を登録してください。正常な全同点予測はp_eと同じになる、という診断とは区別します。</p>
+<p>訓練側のanalog cache欠損も0.0へ埋められます。Eに残る各候補のcache被覆と、評価で再計算するanalogの参照mask・生スコアの一致を確認します。0は実測0なのか未計算なのかを区別し、候補部分集合への縮小に伴うz/gapだけを再計算します。</p>
+<p>性能に触れずに確認できる最低限の不変条件は、α=0でP一致、E空でP一致、E=p_eで二つのRRFが一致、p_eでE内真は非悪化/E外真は非改善、α=1かつE非空ならtop1がE内、公式identity重複なし、tieはP順です。E追加の前後でmainの順序とRRが変わらないことも、今回の版で確認してください。</p>
+<p><strong>(6) ジョブ完了と凍結する版の確認。</strong></p>
+<p>spark_e102.shはbackground起動後に引数なしwaitを使い、個々の終了状態を採否へ反映していません。ev関数もPythonの終了値をechoした後はechoの成功で終わるため、E102_DONEだけでは全学習・評価の成功を保証できません。既存のモデルファイルが残っていれば、失敗後に古いモデルを使う余地もあります。PID別の終了状態、新しい出力の成立、モデル/特徴/key集合のhashを検証してから開封してください。</p>
+<p>実装を直す場合は、既に起動したrunのファイルをその場で差し替えず、旧出力を未読のまま保存して別版として再計算します。key集合や訓練対象が不変で、修正が集計の母数検査・登録の記述だけなら、対応を検証した上で既存予測を使うことは可能です。今回の回答を受けて何を確定したかを102_decisionへ残し、その版の一つの候補だけを確認へ進める形を推します。</p>
+<p>REVIEW_COMPLETE: 102</p></details></article><article><h1>103: 103 依頼: 102 の結果と文献調査を受けた今後 6 週間の本筋の選び方</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-reportscasmi-2026-md4-research_notescasmi-2026">1. 文献調査の要点(reports/CASMI 2026 順位融合と注釈伝播.md、4 本のメモ research_notes/CASMI 2026 順位融合と注釈伝播/)</a></li>
+<li><a href="#2-102e-litereportsagent_review102_resultmddiagx102_summarymd">2. 102(E-lite)の結果(reports/agent_review/102_result.md、diag/x102_summary.md)</a></li>
+<li><a href="#3">3. 本筋の候補(どれを優先し、どう検証するか)</a></li>
+<li><a href="#4">4. 質問</a></li>
+</ul>
+</div>
+</div><h1 id="103-102-6">103 依頼: 102 の結果と文献調査を受けた今後 6 週間の本筋の選び方</h1>
+<h2 id="1-reportscasmi-2026-md4-research_notescasmi-2026">1. 文献調査の要点(reports/CASMI 2026 順位融合と注釈伝播.md、4 本のメモ research_notes/CASMI 2026 順位融合と注釈伝播/)</h2>
+<ul>
+<li>融合が効くのは、誤りの重なりが小さい別系統のリストの組合せだけ。CASMI 2016 / 2017 の公開順位から再計算すると、同系統の道具どうしの正解順位(log)の相関は 0.45〜0.83、別系統は 0.03〜0.3。指紋型 + 別系統の組は、指紋型 2 本の組より oracle MRR が高い(0.536〜0.548 vs 0.499)。等重みの 6 道具の融合は oracle の余地の約 24〜30% しか回収しない。保留集合では Top-1 が僅かに下がり Top-10 だけ上がる例もある。弱いリストとの等重み融合は Top-1 を下げる(ESP、LambdaMerge)。ラベル付きの検証があれば、凸結合の重み調整が RRF に勝つ(Bruch 2023、9 データ全て)。</li>
+<li>強い prior(参照数)は断片化の道具を圧倒する(CASMI 2016: 参照数だけで Top-1 143 vs 6 道具の融合 82 / 208)。一方、<strong>天然物中心の CASMI 2017 では人気度の付加が逆効果</strong>(CFM-ID の Top-5 59% → 53%)— 090 の「隠しの正解は開発より人気度が低い」と同じ向き。</li>
+<li>ネットワーク伝播: アンカー無しの NAP Consensus で正解順位の中央値 5 → 2(類縁を持つスペクトルに限る)。分子式の一括推定(ZODIAC)の効果は大きい。同一装置のバッチでは偽の辺が多い(自前の監査でもパネルの最近傍 sim ≥ 0.6 の 79% が非類縁)。</li>
+<li>類縁構造の生成: 到達しても選べない(FOAM: 到達 68%、Top-1 11%;候補を増やすと Top-1 が悪化;<strong>著者の結論は「スペクトル予測の精度が律速」</strong>)。位置異性体は前方モデルでは区別できない(ModiFinder)。</li>
+</ul>
+<h2 id="2-102e-litereportsagent_review102_resultmddiagx102_summarymd">2. 102(E-lite)の結果(reports/agent_review/102_result.md、diag/x102_summary.md)</h2>
+<ul>
+<li><strong>選択なし</strong>。主指標 1/2 A + 1/2 B_D: p_e −0.011、e1b −0.006、e1r +0.002(いずれも区間に 0)。A(053 NP C2)は全候補で + (+0.017〜+0.039)、B_D / 旧 B は − 、正解が E 源の外の C2 行は −0.12(害)、G C1 は +0.043〜+0.048、パネル C1 clean は p_e +0.004 / e1b −0.018 / e1r −0.035。</li>
+<li>機構: 効果の大半は<strong>候補源の再加重</strong>(E 源の正解は救い、PubChem のみの正解を壊す)。正味は隠しの正解の候補源の構成で決まる。</li>
+<li>探索: 同じ α で rrf_e − rrf_p_e = e1r <strong>+0.0133 [+0.0060, +0.0211]</strong>(A +0.023、B_D +0.004)= 人気度を使わない別順位そのものの価値。費用はパネル C1(E 単体 0.69〜0.79 vs main 0.925)。</li>
+<li><strong>証拠の系統の監査</strong>(diag/fam_audit.md、記述): E-lite と main の正解順位(log)の Spearman は 0.62〜0.71(文献の「同系統」の範囲)、pair-oracle の余地は A +0.05、旧 B +0.04、G C1 +0.06、パネル C1 +0.01。単一証拠の MRR(A): FP 0.185、GL 0.258、人気度 0.337、library 0.110、main 0.588。<strong>人気度単独の MRR は層で極端に違う: パネル C2 0.805、A 0.337、旧 B 0.139、B_D 0.070、G C1 0.010(Public の人気度だけの順位は 0.135 ≈ 旧 B)</strong>。パネル C1 を保護に使うと、人気度を使わない変更は構造的に罰せられる(パネルの人気度は隠しとかけ離れている)。</li>
+<li>G C1 では E 窓に絞るだけ(p_e 単体 0.927 vs main 0.883)で改善 = 主リストが train 構造の正解の上に PubChem のみの decoy を置く誤りが約 5%。</li>
+</ul>
+<h2 id="3">3. 本筋の候補(どれを優先し、どう検証するか)</h2>
+<table>
+<thead>
+<tr>
+<th>案</th>
+<th>中身</th>
+<th>系統としての新しさ</th>
+<th>費用・前提</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(a) full E</td>
+<td>E0 の engine 2 型を自前の部品で:pool + COCONUT store + BIO + PubChemLite の窓全体(shortlist なし)、MetFrag-lite / analog / library / FP、人気度なし、模擬行(C1 / C2)で学習</td>
+<td>FP・GL を共有するので同系統寄り。MetFrag-lite(組合せ断片化)が別系統</td>
+<td>表の作り直し(学習 run + 開発表、Spark で半日)</td>
+</tr>
+<tr>
+<td>(b) 前方モデルの timsTOF 適応</td>
+<td>GLACIER(ms-pred JointModel、学習フックあり)を enveda-180 の timsTOF スペクトル等で追加学習(fold-safe に開発 identity を除外)</td>
+<td>異性体の区別の律速そのもの(文献の結論、P1 で GL 単独が最強)</td>
+<td>MAGMa の断片化木の前処理を自作、学習コードの公開義務、数日、ARM 上の実行環境</td>
+</tr>
+<tr>
+<td>(c) 別系統の FP</td>
+<td>MIST(許可済み、MIT)や自前の別 target(MACCS / FCFP 等)の FP 予測</td>
+<td>FP 系統だが別アーキテクチャ・別 target</td>
+<td>MIST の導入は利用者の許可が要る。DreaMS は 089 で不合格</td>
+</tr>
+<tr>
+<td>(d) 相補性の監査を先に</td>
+<td>単一証拠(FP、GL、人気度、library、analog、MetFrag-lite、ICE、DreaMS-FP、E-lite)の正解順位の相関と pair-oracle を、隠しに近い開発層で測る(fam_audit.py)</td>
+<td>系統の選択をデータで行う</td>
+<td>ICE / MetFrag-lite の開発表の点数を新たに計算(Spark で数時間)</td>
+</tr>
+<tr>
+<td>(e) トランスダクティブ</td>
+<td>テスト内の類縁(NAP consensus 型)</td>
+<td>新しい証拠(主催者許可)</td>
+<td>偽の辺が多い。利得 +0.005〜+0.015 の見込み</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4">4. 質問</h2>
+<ul>
+<li>Q1: 102 の結果と文献から、次の本筋は (a)〜(e) のどれか。(d) を先にやる価値はあるか。</li>
+<li>Q2: (b) の前方モデルの適応は、学習コードの公開義務・fold-safe な評価(GL は MSG で学習済み、パネルの 236 / 250 が MSG に含まれる)・Kaggle 上の推論互換の点で成立するか。最小の検証(例: enveda-180 の一部で追加学習 → G 型 / D 型の開発で GL 単独の MRR を比較)の設計。</li>
+<li>Q3: 10/29 の提出(利用者の許可待ち):ENG_B / pre-rank2_B の二枠でよいか、102 の結果を受けて変えるべきか。例えば「v8w7a + rrf_pe_0.5(候補源の再加重だけ、学習なしの低自由度)」を Public で一回測ることは、隠しの候補源の構成を直接測る手段として妥当か(102 の開発では選択なしなので、方法の採用ではなく測定として登録する案)。</li>
+<li>Q4: 保護層の人気度の偏り。パネル C1 clean(人気度単独 0.80)を、人気度を動かす変更の保護にそのまま使うのは妥当か。G C1 と f1/f2 の層(人気度単独 0.01〜0.14、Public 0.135 に近い)を主にし、パネルは人気度の層別か再重み付けで読む、という変更を結果の前に決めるべきか。</li>
+<li>Q5: 102 の探索結果(E の順位の価値 +0.013)を取りに行くなら、候補源の加重を構造的に 0 にする「E 候補が P で占める位置の中だけで並べ替える」(095 の bpp と同型)を新しい登録にする価値があるか。確認は np096_conf093 + np102_d0conf(未開封)を使える。</li>
+</ul></details><details><summary>回答(Codex)</summary><p>103への回答（2026-10-28）</p>
+<p><strong>直近は(d)の監査を修正して短く実施し、Q5の「1位を固定したE内の並べ替え」を一候補だけ試すことを推します。中期の主線は(b)の小規模な適応実験です。ただし、GL単独の識別順位と現基準への増分が出た場合に拡張します。(a)の全面的な表の作り直しと(e)の大規模化は、その証拠を待ちます。10/29はENG_B／pre-rank2_Bの二枠を維持し、102で落ちたp_eを候補源構成の「直接測定」として追加することは推しません。</strong></p>
+<p>103_request、102の登録確定版・結果・x102_summary、fam_audit.mdとその実装、文献報告書と相関の調査メモ、手元のGLACIERのモデル・runner・shim・manifest、公式ルール保存版を確認しました。主要な文献と公開学習コードも照合しました。追加実験、未開封の確認集合の性能参照、環境変更、提出は行っていません。</p>
+<p><strong>Q1: (d)は投資先を絞るために先に行う。ただし「相関が低い別系統を探す」だけの監査にはしない。</strong></p>
+<p>102の不採用判断は維持します。探索的なe1r−p_eの+0.0133は、同じ証拠から作った別順位にも、固定融合の条件下で増分があることを示します。一方で、そのRRF自体は旧Bで−0.0467、E外の真で−0.1160、パネルC1 cleanで−0.0348です。新順位の増分と、候補全体としての採用可能性は分けて読みます。</p>
+<p>また102_resultの「α=1は全層で悪い」は訂正が必要です。主指標や旧Bは悪化していますが、表ではG C1などに正の差があります。「主指標は全候補で悪化し、E外の費用が増える」が正確です。</p>
+<p>文献からは相補性を調べる理由を得られますが、次の強い一般化は採りません。</p>
+<ul>
+<li><strong>誤りの統計的な独立性や、モデルの系統差は必要条件ではありません。</strong> 同系統でも別の有用な順位を作れます。逆に無作為な順位は低相関でも役に立ちません。今回G C1のe1r相関は0.490、パネルC1では0.417であり、「E-liteは全層で0.62〜0.71」ともなっていません。</li>
+<li>文献メモのCASMI再集計は<strong>対数順位のPearson相関</strong>、fam_audit.pyは<strong>Spearman相関</strong>です。Spearmanはlogを取っても変わりません。この二つを0.45等の閾値で比較して系統を判定できません。両者とも正解が両リストに現れた問題への条件付きで、候補数や難易度の共通因子も含みます。</li>
+<li>oracle-selectの余地に24〜30%を掛けても、本コンペの期待改善量にはなりません。特定のデータ・融合規則の事後的な比率です。oracle-select自体も「どちらか一方のリストを選ぶ」方策の上限であり、任意の融合の上限ではありません。</li>
+<li>Bruchらの結果は、テキストのlexical/dense検索での凸結合とRRFの比較です。スコアを使う融合を試す動機にはなりますが、CASMIのMRR@25で必ず優れるという結論ではありません。<a href="https://arxiv.org/abs/2210.11934">原論文</a></li>
+</ul>
+<p><strong>現在のfam_auditは、投資判断に使う前に三点を直したいです。</strong></p>
+<ol>
+<li><strong>全分母へ戻す。</strong> x102_summaryのAは520、Dは200、旧Bは800ですが、fam_auditは514、199、793です。特徴行から反復しており、候補行がない分子が抜けています。PのMRRも0.5808→0.5876、0.2782→0.2796、0.4217→0.4255と変わっています。登録評価の全queryを基点に、正常な未到達を0で戻します。等重みの主集約と単純行平均も分けます。</li>
+<li><strong>「単一証拠」の同点処理を明示する。</strong> pop/lib/glはFPを第二キーに使っています。特にC2のlibraryは0同点が多く、これは純粋なlibrary-onlyではありません。GLが全欠測なら0、部分欠測ではFPによる順序が残る点も分けます。純粋な証拠の診断には固定identity順等の中立なtieを使うか、「GL＋FP tie」等の方策として表示します。欠測率・共通被覆上の値・全分母値を併記します。</li>
+<li><strong>現在の主系に残った誤りへの増分を測る。</strong> raw channel同士の相関だけでなく、Pが誤る分子で何が真を上げ、Pが正しい分子で何を壊すかを調べます。主系が既にFP・GL・analogを使うため、弱い単体がPと低相関でも、その情報が未利用とは限りません。MRR、top1の救済/損失、真対最上位デコイのmargin、同分子式内の識別、E内外、C1の学習露出、GL被覆を揃えて見ます。</li>
+</ol>
+<p>(d)は既存scoreの再利用を先にし、追加ICE/MetFrag等は既使用開発データから固定seedで選んだ層別200〜400 identity程度のpilotに限定する案がよいです。誤り例だけを選んだ集合を主評価にはしません。まず一日程度の調査工程として区切り、全道具・全表の計算を終えるまで次へ進まない形にはしないでください。</p>
+<p>私の優先順位は以下です。</p>
+<table>
+<thead>
+<tr>
+<th>案</th>
+<th>当面の扱いと拡張の条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(d) 相補性の監査</td>
+<td>最初に実施。母数・同点・露出を揃え、次の一仮説を選ぶために使う</td>
+</tr>
+<tr>
+<td>Q5の限定した並べ替え</td>
+<td>保存済みscoreで試せる短期の枝。後述の既知のパネル損失を回避する新しい規則を一つ事前固定する</td>
+</tr>
+<tr>
+<td>(b) timsTOF適応</td>
+<td>中期の第一候補。小さな実装・互換性確認→未見identityでの識別順位→主出力への増分、の順に関門を置く</td>
+</tr>
+<tr>
+<td>(a) full E</td>
+<td>到達不足が実際に効く層、またはMetFrag等の未利用の増分が見つかった場合に拡張。候補源の再加重問題はfull pool化だけでは解消しない</td>
+</tr>
+<tr>
+<td>(c) 別FP</td>
+<td>(b)と比較する候補として残す。MISTの特定checkpointの学習露出・修正版推論・導入条件を先に確認する。別targetという名称だけで相補性を期待しない</td>
+</tr>
+<tr>
+<td>(e) transductive</td>
+<td>cohortと親の予測を揃えた小規模研究として保持。+0.005〜+0.015は未検証の見積りで、投資判断の実測値にしない</td>
+</tr>
+</tbody>
+</table>
+<p>MetFrag-liteは主系のfallbackに既に入り、GLが働く経路では扱いが違います。「完全に新しい証拠を足す」のか「既存証拠を別経路へ使う」のかを分けます。full Eの候補到達差0.6〜1.6ポイントも、今回監査したCOCO群の値であり、全隠しや非COCOの上限ではありません。ただ、その小さな到達差だけを理由に全表を作り直す優先度は高くありません。</p>
+<p>六週間の目安としては、1週目に監査・限定した統合・GL学習/推論の往復を通し、2週目に(b)のpilotを判断、3〜4週目に通った一枝だけを拡張、5週目に凍結候補の確認、6週目に再現性・時間・提出構成を固める形を推します。初期pilotが識別順位を改善しなければ、(c)や(d)で見つかった別証拠へ切り替えます。単一の技術へ六週間を先払いする計画にはしません。</p>
+<p><strong>Q2: (b)は成立し得る。ただし学習コードがあること、fold-safeであること、Kaggleで同じ予測が出ることは別々に確認する。</strong></p>
+<p><strong>規則。</strong> MSG版GLACIERは主催者が許可しています。外部モデルの原学習コードと許可されたデータ、中間ファイルの生成コードも再現に必要という回答があり、資産版/取得日の記録も求められています。自前の追加学習も、その前処理・split・学習・exportを再生成できる形にします。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/744338">GLACIERへの回答</a>、<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/751373">モデルと中間物への回答</a>、<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/749397">原学習コードについて</a></p>
+<p>10/28保存のrulesでは、勝者がtraining/inference codeと環境・再現方法を提供することが定められています。「自前の試験学習を始める前に、すべてのコードを公開しなければならない」とまでは読めません。元の許可済みcheckpointと自前差分を区別し、公開・引渡し可能なコードとして作るのが具体的な対応です。Competition Dataを一般公開するという意味でもありません。Kaggleのページ本文は今回live取得できなかったため、この部分は保存済み公式本文と主催者回答に基づきます。<a href="https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra/rules">公式rules</a></p>
+<p><strong>前処理をゼロから自作する必要はありません。</strong> 元リポジトリにはMAGMa前処理、GLACIERへの強度付与、学習の手順があります。まずcompetitionの行をその入力形式へ変換するadapterと除外台帳を作り、既存の前処理を再利用するのがよいです。<a href="https://github.com/coleygroup/ms-pred#glacier">ms-predの学習手順</a></p>
+<p>手元のmanifestが示す元commitは708148c2a8eb0c32120644436fefd2fe90cd2214です。この版の学習入口には通常学習とcontrastive fine-tuningの両方があります。配布設定はNIST用なので、許可済みMSG checkpoint・competitionの学習行・適切なsplitへ変更し、設定だけを無点検で流用しません。<a href="https://github.com/coleygroup/ms-pred/blob/708148c2a8eb0c32120644436fefd2fe90cd2214/run_scripts/glacier/01_train_joint.sh">固定版の入口</a></p>
+<p><strong>手元の推論用shimを、そのまま学習用と見なさないでください。</strong> LinSATNetのshim自身が、推論ではtop-kのindexだけを使い、値は学習lossに入る、実パッケージとのparityは未検証と説明しています。推論で同じ順位を返す単調変換でも、勾配や損失は同じとは限りません。DGL等の代替実装も含め、学習は必要な本来の依存関係を揃えた環境から始め、少数batchのforward/backward、有限勾配、実際のweight更新を確認します。ARMで既存推論が動くことは、学習全体の成立の証明にはなりません。</p>
+<p><strong>評価の分割。</strong> 開発identityを追加学習から除くことは必要ですが、公開GLACIERが既に見ていたidentityはそれだけでは未見になりません。パネル236/250はMSGへの所属、報告書の204はMSG trainへの所属です。実際のcheckpointで使ったpositiveの集合・取得スペクトル・処理版に照合し、単なるMSG全体への所属と区別します。</p>
+<p>初回には、次の二つを混ぜずに評価します。</p>
+<ul>
+<li><strong>新規identityへの適応効果</strong>：ベースGLACIERの学習positiveと、今回の追加学習positiveの両方から、公式identity/alias groupごと外れたquery。GのtimsTOF queryとNPのD/COCO queryを分ける。各モデルで同じquery・候補・露出条件を使う。</li>
+<li><strong>既知identity・新しい取得への効果</strong>：同一identityの独立参照を学習へ残すC1の別評価。query取得・重複処理版を除く。パネルC1 cleanはこの側の保護であり、cold C2の確認にはしない。</li>
+</ul>
+<p>「fold-safe」はFPだけでなく、追加学習、checkpoint選択、CE補正、hard negative作成、補助統計まで含みます。今回のheld-out正解identityをfine-tuningのpositiveへ入れず、厳密な外側holdoutを作る場合は学習decoy/派生構造としての露出も記録・制御します。既存の公開モデルにあった露出は消せないので、その条件は台帳に残します。</p>
+<p>最小実験は以下を提案します。</p>
+<ol>
+<li><strong>データ/実装のpilot。</strong> 少数の既使用学習identityで、スペクトル変換→前処理→一回の更新→checkpoint export→現在のgl_runnerで再読込、を通す。モデル構造は変えない。timsTOFのQTOF token、adduct、CE単位/欠測、ピーク処理を本番と対応させる。</li>
+<li><strong>小規模適応。</strong> enveda-180から固定した1,000〜3,000 identity程度を上限とする初回を組む。公式identity単位でfit/tuneを分け、同一分子の複数スペクトルを独立標本として重く数えない。これは必要量の保証ではなく、計算量と効果を判断するためのpilotです。</li>
+<li><strong>比較を固定。</strong> C0=現在の凍結GLACIER、C0'=同じ重みを新しい学習/export環境を通しただけの対照、CFT=追加学習版。C0とC0'の差を先に潰し、FT利得に混ぜない。最初はbackbone/fragment detectorを固定し強度側を適応する等の限定した更新を一つ選びます。上流の断片検出を動かす実験は次に分けます。</li>
+<li><strong>識別を主に測る。</strong> GのtimsTOF群とNP/Dを含む固定の開発群で、同じ候補集合・同じ実測質量条件のGL単独MRR@25、top1、真とデコイのscore差、同分子式内の順位を比較する。真を候補へ注入せず、未到達は0。元から対象外のadductと実装失敗/欠測を分け、FTに都合のよい共通成功行だけへ絞らない。</li>
+<li><strong>主出力へ接続。</strong> まずv8w7aの候補と出力規則を固定しGLだけ交換する。GL特徴の分布が変わるため、単体が良くても旧rankerへの差し替えで利得が出ないことはあります。その場合は、旧/新GLのOOF特徴で対応するrankerを同じ手順で学習する比較へ進む。単体の類似度だけで本番候補にはしない。</li>
+</ol>
+<p>GLの主眼は「真のスペクトルを似せる」と「近いデコイより真を上げる」の両方です。GLACIERの原論文自身、contrastive fine-tuningでスペクトル精度が少し下がってもretrievalが改善する場合を報告しています。従って、cosine/entropyの平均改善だけを拡張条件にしません。強度適応で真の再現だけが改善し識別が動かなければ、同分子式hard negativeを使う既存のcontrastive学習を次の仮説にできます。<a href="https://arxiv.org/html/2606.29161v1#A5">GLACIER論文・contrastive fine-tuning</a></p>
+<p>enveda-180を使うことはtimsTOFの適応であると同時に、化学空間・libraryの適応でもあります。合成分子での改善を天然物へ外挿しないために、GだけでなくNP側の費用を必ず見ます。GがC1として評価可能でも、GL単体は残したライブラリ参照を使わないので、GLにとっての学習露出を別に記録します。</p>
+<p>Kaggleへの接続は早めに確認します。現在のrunnerはstate_dictとhyper_parametersを読み、strict=Trueでloadします。モデル構造と入出力を維持すればcheckpoint交換で接続できる見込みはありますが、成功を保証するものではありません。少数の同一分子について、学習側とKaggle相当のx86/T4環境で生成ピーク、gl score、候補順位を照合し、batch順・padding・CE・同点処理も点検します。CPU/GPUとも9時間、internet無効という要件に、追加モデルの全処理を含めて収めます。今回、この互換性試験を実行したわけではありません。</p>
+<p><strong>Q3: 10/29はENG_Bとpre-rank2_Bを維持。p_eを候補源構成の直接測定とは呼べない。</strong></p>
+<p>二つのE0 probeは、102で検証した自前E-liteとは別の問いです。E0の第二リスト自体が強いのか、最終rank-2処理がどれだけ寄与するのかはまだ未解決なので、優先順位を変える必要はありません。101の登録どおり、版・B定義・top25→B・補充なしを固定し、ENG_BはBASE_B=0.213とfinal_B=0.259の両方へ、pre-rank2_Bはfinal_Bへ比較します。</p>
+<p>p_eのPublic差は、概念的には</p>
+<p>ΔPublic = π_E × E[ΔRR | 真がE内] ＋ (1−π_E) × E[ΔRR | 真がE外]</p>
+<p>です。未知なのはπ_Eだけではありません。E内の増分も、E外の損失も、query条件、Pの元順位、デコイ構成、候補到達、C1/C2等で変わります。今回の局所表でも、p_eのE内差はAで約+0.017、D内のE正解で約+0.074と違います。したがって一つのPublic差から候補源の混合比を直接逆算できません。T/B/Pcのprobeも、元の順位を詰めた方策の得点であり、そのまま各群の比率ではありません。</p>
+<p><strong>「学習なしで低自由度」は、測定対象が同定できる理由にはなりません。</strong> p_eはE外に明確な損失を出し、102の登録では不採用です。そのままPublicで上がれば採用する、という流れは登録関門の迂回になります。今回は追加しない方がよいと考えます。</p>
+<p>将来、局所とPublicの反応の違い自体を一回だけ観測する価値があると判断するなら、「候補源再加重への感度」という新しい探索として登録することは可能です。その場合も対照は現在のv8w7a=0.394、α/K/候補集合を固定し、正なら「この方策がこのPublic subsetで増分を持った」、負ならその逆とだけ読む。混合比の推定、即時採用、αのPublic探索へ繋げない分岐を先に書きます。提出の実行は、この相談とは別に利用者から許可された範囲で行うものです。</p>
+<p><strong>Q4: パネルの偏りは扱うべき。ただし今回の結果を救うために保護を外すことは支持しない。</strong></p>
+<p>第一に、<strong>パネルを保護から外しても102の選択なしは変わりません。</strong> p_eはパネルで+0.0043と非劣性を満たしたのに、旧BとE外正解の費用で落ちています。e1rにも同じ費用があります。現在の失敗全体を「人気度の高いパネルが不適切だから」と説明できません。</p>
+<p>第二に、監査表の0.8054はパネルC2全250、C1 clean202では0.7799です。またPublic 0.135と旧B 0.139の近さは、隠しの真の人気度分布が旧Bに近い証拠としては弱いです。prior-only MRRは、未到達と順位と母集団混合が合成された一数値です。候補集合・tie・学習露出も揃える必要があります。CASMI 2017で特定のpriorが悪化した文献所見は、分布差を疑う動機であり、今回の隠しに対する方向の証明ではありません。</p>
+<p>パネルC1 cleanの役割は、天然物の既知identity・query取得未見の条件で、現在ある能力を失っていないかを見ることです。Gは同じtimsTOFでも化学空間や参照・既見性が違い、f1/f2のC2も別条件です。人気度の得点がPublicに近いという理由だけで、これらをパネルの代替にしません。パネルのMSG/FP既見性は明記しますが、C1で許される既知identityの性能まですべて無効になるわけではありません。</p>
+<p><strong>今後の設計変更は、次の新候補の結果前に行うなら可能です。</strong> 私は、まず次の形を推します。</p>
+<ul>
+<li>102の判定とパネル損失をそのまま残す。新しい登録で、G C1、NPのC1、未見C2、パネルC1 cleanの役割を分ける。</li>
+<li>既存の固定binを使い、真のprior順位/文献数、E所属、参照比較可能性、FP/GLの学習露出で局所差を層別する。真のprior順位は分析用ラベルであり、推論時のgateには使わない。</li>
+<li>パネルの再重み付けは、複数の事前に決めた混合比に対する感度として併記する。Public 0.135を合わせるために重みを推定したり、一番都合のよい混合だけを主値にしたりしない。重みの上限と実効標本数も示す。</li>
+<li>主にしたい母集団を、queryの装置・adduct・スペクトル数等の観測可能な条件と、目標とするC1/C2 regimeで定義する。隠しの真の人気度を知っているかのような重みは置かない。</li>
+</ul>
+<p>当面は、パネルのε=0.01の保護を維持したまま、モデルや適用規則で既知の損失を減らす方を先に試したいです。将来、具体的な目標母集団と新しい確認が得られ、許容するパネル費用を変える判断をするなら、平均性能の代償として明示的に登録できます。「次の結果前に変更した」という事実だけでは、既に見た102に由来する選択バイアスが消えるわけではありません。</p>
+<p><strong>Q5: E位置保存は有用な切り分け。ただし、そのままではパネル費用を解消できないことが既に分かる。</strong></p>
+<p>Pの全候補順序からEの位置を取り、E候補を並べ替えて同じ位置へ戻して最後にtop25へ切れば、<strong>非E候補の絶対順位とtop25内のE枠数を不変にできます。</strong> top25内のEだけを並べるのではなく、全shortlistのEを対象にすることで、元々25位以下だったEの真も既存のE枠へ上げられます。新候補は足さず、Pのscoreやz/gapも再計算しません。</p>
+<p>ただし「候補源の加重をすべて0にする」という表現は広すぎます。不変なのはE対非Eの位置です。E内部のtrain/COCONUT/PubChemLite/BIO等の配分は動き、C1の費用は残ります。G C1のp_eによる約+0.043は、E外デコイを下げる効果を含むので、この案にはそのまま持ち越せません。</p>
+<p>ここには計算を始める前に使える上限があります。</p>
+<p><strong>E単独順位でE枠を丸ごと置き換える場合。</strong> E内順位jをP内のj番目のE枠へ置くと、その絶対位置はj以上です。従って真がE内なら、位置保存後のRR@25はE単独のRR@25以下です。パネルC1 cleanでは真がすべてE内にあり、main=0.9251に対して、E単独はe1r=0.6858、e1b=0.7921でした。したがってこの丸ごとの置換は、同じ202分子では</p>
+<ul>
+<li>e1r：MRR≤0.6858、main比≤−0.2393</li>
+<li>e1b：MRR≤0.7921、main比≤−0.1330</li>
+</ul>
+<p>です。この方式を、現在のパネル保護を通る有望候補として確認集合へ進める理由はありません。</p>
+<p><strong>102のRRFが作ったE内部の順位だけを採用する場合。</strong> こちらはPの情報を残しますが、102の全体RRFよりEの真の順位は上がりません。RRFは非Eのscoreを据え置きEへ非負の第二票を足すため、得点順でj番目のEは、元のPのj番目のE枠と同じかそれより前へ来ます。元のE枠へ戻す操作は、その昇格分を取り除きます。</p>
+<p>従ってパネルC1の真がすべてE内である以上、同じ相対E順序を保つ版の差は、既存のrrf_e1r_0.5の−0.0348以下です。<strong>非Eの費用は消せても、既知のパネル害からは逃れません。</strong> 同じpaired resamplingであれば区間も改善しません。E−p_eの+0.0133はそのRRFでの順位変更の増分であり、E枠内だけの純増としてそのまま取り出せる値ではないのです。</p>
+<p>そこで新規の小規模案として試すなら、<strong>Pの1位を全queryで固定し、残りのE枠だけを102のRRF scoreで並べ替える一候補</strong>を推します。</p>
+<ol>
+<li>Pとe1r、E key集合、K=10、α=0.5を凍結する。e1rを選ぶ根拠は102の探索であり、独立確認済みとは書かない。</li>
+<li>Pの先頭候補を固定する。先頭がEなら、その候補を残りの並べ替え対象から外す。</li>
+<li>残りのE候補について、102と同じ元の全体順位r_PとE順位r_Eから、1/(10+r_P)+0.5/(10+r_E)を計算する。E部分集合へPを詰め直した順位へ、暗黙に変えない。</li>
+<li>その順序を元の残りのE枠へ入れる。tieは元のP順、非有限等の失敗はPを維持するかfailとして扱う規則を固定し、最後にtop25を取る。</li>
+</ol>
+<p>これは隠しのクラスや真の人気度を使わず、C1の正しい1位を落とす損失を構造上なくします。ただし、主系の誤った1位も直せず、2〜25位にある真を落とす費用も残ります。102の新top1 27件という利得も回収できません。したがって成功を予測する提案ではなく、<strong>低自由度で、今回の救済と損失の機構を分けられる次の一実験</strong>です。必要なら確信度に応じたtop1固定はその後に別登録し、最初からgate閾値を増やしません。</p>
+<p>採否は新しい登録で、v8w7a比の主指標、旧B、G C1、パネルC1 clean、053 NP C1の保護を維持します。非E真の差0、Pの1位不変、P由来p_eを使えば全順序がPに戻ることを先に検査します。E内MRRだけで判断せず、通常MRRを全分母で測ります。</p>
+<p>開発の関門を通った一候補に限り、未開封のnp096_conf093(H200/N200)とnp102_d0confを使う用途へ再登録できます。<strong>後者は最新の102記録では400ではなく286 identity</strong>です。二ブロックの重みと件数不足の限界を残し、C1は既知の保護と、使用するならc1cost098の実際のusable件数で読むことになります。二つのC2集合を使っても、timsTOF C1費用を独立に確認したことにはなりません。GL適応等の別候補にも同じ未開封集合を順次使わず、用途を分けて保護してください。</p>
+<p>最後に文献報告書の二点は、以後の実装判断で修正して扱いたいです。FOAMの「予測精度が律速」は、そのGA・ICEBERG・候補生成条件での所見で、GLACIERのtimsTOF適応が効くという直接の証拠ではありません。<a href="https://arxiv.org/html/2602.07709v1">FOAM原論文</a> またModiFinderの比較は、特定のCFM-IDによる位置異性体の模擬スペクトルが似すぎた事例です。「前方モデルでは位置異性体を区別できない」という普遍的制約にはせず、公式identityが異なる位置異性体を無条件に一つへ畳む根拠にも使わないでください。<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11540723/">ModiFinder</a></p>
+<p>REVIEW_COMPLETE: 103</p></details></article><article><h1>104: 104への回答（2026-10-28、性能結果は未読）</h1><details><summary>回答(Codex)</summary><p>104への回答（2026-10-28、性能結果は未読）</p>
+<p><strong>並べ替え本体は103 Q5の提案どおりです。</strong> 全shortlistの元のr_P・r_Eで得点を作り、Pの1位を対象から外し、残りのE枠だけへ戻しています。top1を外した後にr_Eを詰め直していない点も正しいです。確定前の修正は以下です。</p>
+<ol>
+<li>
+<p><strong>102とのmain比較を必須・全行一致にする。</strong> x104_summary.pyは比較元が無い場合のn/aを許し、mergeもinnerなので、比較元の欠落行や空の結合でも差0として通り得ます。対象tagの102 CSVを必須にし、キーの重複なし・集合完全一致・one-to-one結合・結合後件数を検査してからmainを比較してください。087との参考比較で代替しません。</p>
+</li>
+<li>
+<p><strong>C1確認の合格条件を明記する。</strong> 登録§4はc1cost098を読むとしていますが、C1の合否条件がありません。「C1 usable群のt1E−mainの95%区間下限≥−0.01を必要条件とする。usableが0、欠測、非劣性未確認の場合は合格にしない」を追記してください。top1固定でも2位以下のC1損失は残ります。確認の主指標もH/4＋N/4＋D/2と明記すると、件数400対286で単純平均する誤りを防げます。</p>
+</li>
+<li>
+<p><strong>位置保存を真のRR以外でも検査する。</strong> evaluatorの既存top1 assertに加え、全候補が重複・欠落のない同じ集合であること、全非E候補の絶対位置が不変であることをassertしてください。真のRRが同じだけでは、他の非E候補の移動を検出できません。summaryのtop1検査も「失った1位」だけでなく、mainとt1EのRR=1の行集合が完全一致する形にします。</p>
+</li>
+<li>
+<p><strong>人気度感度の定義・表示を合わせる。</strong> 0.66を今回の「パネルC1 clean・view内shortlist」の実測割合とする根拠は未確認なので、登録の「現状」を外して固定した仮定と記し、実測割合と未加重の差を別に表示してください。prior_ranksは人気度同点をFPで解くため、現実装を維持するなら「pop降順、同点はFP降順、さらに同点は固定順」と登録に明記します。純粋な人気度だけの層とは呼びません。再重み付けには両群の件数と実効標本数を添え、群が空なら算出不可とします。感度を採否へ使わない規則は維持します。</p>
+</li>
+</ol>
+<p>一候補・K/α・開発の関門を増やす必要はありません。上記の集計・登録修正では既存予測を利用できます。構造assert等を追加する場合は実行中の版を上書きせず、確認した版と実行時のhashを記録してください。</p>
+<p>REVIEW_COMPLETE: 104</p></details></article><article><h1>105: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
