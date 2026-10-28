@@ -5,7 +5,8 @@ own changes:
   - loss: w_cos * CE over cos-scores (1 positive + K mass-window negatives) + the public losses as auxiliaries (f.z ranking CE, FP BCE, elements);
   - negatives (Codex 111 (2)(3)): from the +-10 ppm pool window AFTER removing (a) every pool structure of a held-out identity group (split labels
     hold / np = evaluation fold + NP-example groups; their structures are never shown as negatives) and (b) every structure of the positive's own
-    identity group; when >= 8 valid same-formula structures exist, K_F (48) of the K (63) are drawn from them and the rest from the whole valid
+    identity group, and (c) pool rows not reached through train_structs whose key is a scorer key / InChIKey14 / raw key of any identity
+    group (alias rows, Codex 112 audit); when >= 8 valid same-formula structures exist, K_F (48) of the K (63) are drawn from them and the rest from the whole valid
     window (fixed ratio); windows with < 8 valid structures are half filled with random valid decoys, empty windows fully (rates are logged);
   - schedule: linear warmup, cosine to 2% at --steps; checkpoints only at the fixed --save_at steps and at --steps (no evaluation inside training,
     no selection by training metrics); no resume (a failed run is restarted from scratch with the same seed).
@@ -107,12 +108,19 @@ def main():
     held_groups = np.unique(gsid[np.isin(D.fold, hold)])
     bad = np.zeros(npool, bool); bad[pid[has & np.isin(D.fold, hold)]] = True
     bad |= (grp >= 0) & np.isin(grp, held_groups)
+    # Codex 112 audit: pool rows NOT reached through train_structs but whose key equals a scorer key / InChIKey14 / raw key of ANY identity group
+    # are aliases of a known identity (24 rows; 7 of a held-out group) -> never negatives
+    ts2 = pd.read_parquet('work/train_structs.parquet', columns=['key', 'rawkey']); st2 = pd.read_parquet(FOLDS, columns=['inchikey14', 'scorer_key'])
+    known = set(ts2.key.astype(str)) | set(ts2.rawkey.astype(str)) | set(st2.inchikey14.astype(str)) | set(st2.scorer_key.astype(str))
+    pkeys = pd.read_parquet('work/pool_meta.parquet', columns=['key']).key.astype(str).values
+    alias_rows = (grp < 0) & np.fromiter((k in known for k in pkeys), bool, npool)
+    bad |= alias_rows
     okpid = np.flatnonzero(~bad); assert (np.diff(D.pmass[okpid]) >= 0).all(), 'pool not sorted by mass'
     G['okpid'], G['okmass'], G['grp'] = okpid, D.pmass[okpid], grp
     G['formula'] = pd.factorize(pd.read_parquet('work/pool_meta.parquet', columns=['formula']).formula.astype(str).to_numpy(dtype=object))[0].astype(np.int64)
     tr_groups = np.unique(gsid[~np.isin(D.fold, hold)])
     assert not np.isin(tr_groups, held_groups).any(), 'an identity group is both training and held out'
-    neg_audit = dict(pool=int(npool), excluded=int(bad.sum()), held_groups=int(len(held_groups)), allowed=int(len(okpid)))
+    neg_audit = dict(pool=int(npool), excluded=int(bad.sum()), held_groups=int(len(held_groups)), alias_rows_excluded=int(alias_rows.sum()), allowed=int(len(okpid)))
     log('negative pool', json.dumps(neg_audit))
     q = mp.get_context('fork').Queue(maxsize=64)
     procs = [mp.get_context('fork').Process(target=worker, args=(w, q), daemon=True) for w in range(args.workers)]

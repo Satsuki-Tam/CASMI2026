@@ -179,10 +179,10 @@ if __name__ == "__main__":
     FDV += (["p_e"] + [f"rrf_pe_{al_}" for al_ in (0.5, 1.0)] + [v_ for t_, _ in EMODS for v_ in [f"{t_}_only", f"orc_{t_}"] + [f"rrf_{t_}_{al_}" for al_ in (0.5, 1.0)] + [f"pp_{t_}_{al_}" for al_ in (0.5, 1.0)] + [f"t1E_{t_}_0.5"]]) if a.emodel else []
     NSC, NDIAG = {}, []
     if a.nscore:   # 111: N / Fs per (set, molecule, smiles) from n111_score.py
-        NDIAG = ["t1N_0.5", "t1Fs_0.5", "N_only", "Fs_only", "rN", "rFs", "miss_N", "miss_Fs", "rP_n"]   # kept OUT of FDV: the run summary (md / log) never shows them; read only by the registered reader
+        NDIAG = ["t1N_0.5", "t1Fs_0.5", "t1Fm_0.5", "N_only", "Fs_only", "Fm_only", "rN", "rFs", "rFm", "rN_pess", "rFs_pess", "rFm_pess", "miss_N", "miss_Fs", "miss_Fm", "rP_n"]   # kept OUT of FDV: the run summary (md / log) never shows them; read only by the registered reader
         for s_ in a.sets:
             X_ = pd.read_parquet(os.path.join(HERE, a.nscore, f"n111_{a.ntag}_{s_}.parquet"))
-            for m_, sm_, n_, f_ in zip(X_.molecule.astype(str), X_.smiles.astype(str), X_.N.values, X_.Fs.values): NSC[(s_, m_, sm_)] = {"N": float(n_), "Fs": float(f_)}
+            for m_, sm_, n_, f_, fm_ in zip(X_.molecule.astype(str), X_.smiles.astype(str), X_.N.values, X_.Fs.values, X_.Fm.values): NSC[(s_, m_, sm_)] = {"N": float(n_), "Fs": float(f_), "Fm": float(fm_)}
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -375,12 +375,13 @@ if __name__ == "__main__":
                     if a.nscore and mi_ == 0:   # 111 (Codex 111): fixed connection over the WHOLE view list; main rank-1 kept
                         pos_n = np.empty(len(g), int); pos_n[np.asarray(order, int)] = np.arange(len(g)); top_ = int(order[0])
                         out["rP_n"] = int(pos_n[tr].min() + 1) if tr.any() else 0
-                        for t_ in ("N", "Fs"):
+                        for t_ in ("N", "Fs", "Fm"):   # Fm = merged-input control on the same representative SMILES (Codex 112); diagnostics only
                             xv_ = np.array([NSC.get((s, mid, str(sm_)), {}).get(t_, np.nan) for sm_ in g.smiles], float)
                             miss_ = ~np.isfinite(xv_); out[f"miss_{t_}"] = int(miss_.sum())
                             ox_ = np.lexsort((pos_n, -np.where(miss_, -np.inf, xv_)))   # missing -> last, ties -> main order
                             rx_ = np.empty(len(g), int); rx_[ox_] = np.arange(1, len(g) + 1)
                             out[f"r{t_}"] = int(rx_[tr].min()) if tr.any() else 0
+                            xs_ = np.where(miss_, -np.inf, xv_); out[f"r{t_}_pess"] = int(min(np.sum(xs_ >= xs_[i]) for i in np.flatnonzero(tr))) if tr.any() else 0   # neutral (pessimistic) ties, no main information
                             out[f"{t_}_only"] = rr_of([("db", int(i)) for i in ox_])
                             sc_ = 1.0 / (10 + pos_n + 1) + 0.5 / (10 + rx_)
                             rest_ = np.array([i for i in range(len(g)) if i != top_], int)

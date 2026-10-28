@@ -1,11 +1,14 @@
-"""110 stage 1 (110_prereg_fpseed.md section 3, amendment after Codex 110), written before the model exists. FP-only rank of the truth over the WHOLE
-+-10 ppm window (b1_features truth_fp_rank: official-key / alias aggregation of the window structures, max f.z over spellings, ties pessimistic;
--1 = truth not in the window -> RR 0). Control = seed 0 alone (public fpnet_fold1 in the fold-1 slot) REBUILT with the same code on the same system
-(run_f1dev_s0rep, run_np053f1dev_s0rep); FPavg = the same build with --extra_ckpts <seed-1 final> (1:1 logit average) (run_*_fpavg). Same molecules
-(fold 1: f1dev C-G, np053f1dev NP_H/NP_X/NP_N). C2 eligibility: a truth reachable only as a training structure (reach_external_b1 False) counts as
-unreached in both tables (no train-only truth revived in the C2 view). Checks before any number (STOP on failure): manifests (control: no extra
-checkpoint; FPavg: exactly one extra = the checked seed-1 final, sha256 equal to ckpt_check.json; same fold-1 slot sha 1739d568...; every other
-setting equal), same molecule sets and reach flags in both arms.
+"""110 stage 1 (110_prereg_fpseed.md sections 3-4, amendments after Codex 110 / 112), written before the model exists. Measure (an FP PROXY, named
+precisely after Codex 112): b1_features truth_fp_rank = the best rank, among the truth's aliases (raw key or tautomer alias), of f.z over the
+RAW-InChIKey14 window of the +-10 ppm search (fp of a raw key = max over its SMILES spellings; other candidates' tautomer aliases may hold
+several ranks; ties pessimistic: rank = number of window keys with f.z >= the truth's); -1 = truth not in the window -> RR 0. This is not the
+official-identity MRR of the final list. Control = seed 0 alone (public fpnet_fold1 in the fold-1 slot) REBUILT with the same code on the same
+system (run_f1dev_s0rep, run_np053f1dev_s0rep); FPavg = the same build with --extra_ckpts <seed-1 final> (1:1 logit average) (run_*_fpavg).
+Same molecules (fold 1: f1dev C-G, np053f1dev NP_H/NP_X/NP_N). C2 eligibility: a truth reachable only as a training structure
+(reach_external_b1 False) counts as unreached in both tables (no train-only truth revived in the C2 view).
+Checks before any number (STOP on failure): manifests (control: no extra checkpoint; FPavg: exactly one extra = the checked seed-1 final, sha256
+equal to ckpt_check.json; same fold-1 slot sha 1739d568...; every other setting equal); per molecule, both arms have the same window size
+(n_unique), truth_in_window, reach_external_b1 and n_query; ranks are integers >= -1.
 Gate (registered, Codex 110 (4)): dFP = 1/4 dMRR(np053f1dev NP_H) + 1/4 dMRR(np053f1dev NP_N) + 1/2 dMRR(f1dev D_np_single) must be strictly > 0,
 else stop the seed line. Diagnostics only: top-1, mean log-rank difference over rows reached in both (with count), other strata, rows where the
 v8w7a main misses rank 1 (diag/r102), and the reproduction of the existing tables (run_f1dev / run_np053_f1dev) by the rebuilt control.
@@ -39,9 +42,13 @@ for tag, (c0, c1, old, sets) in PAIRS.items():
         a, b, o = (pd.read_csv(os.path.join(HERE, d, f"b1_molecules_{s}.csv")) for d in (c0, c1, old))
         for d in (a, b, o): d["molecule"] = d.molecule.astype(str)
         if set(a.molecule) != set(b.molecule) or set(a.molecule) != set(o.molecule) or a.molecule.duplicated().any() or b.molecule.duplicated().any(): sys.exit(f"STOP: {tag} {s} molecule sets differ")
-        cols = ["molecule", "truth_fp_rank", "n_unique", "reach_external_b1"]
+        cols = ["molecule", "truth_fp_rank", "n_unique", "reach_external_b1", "truth_in_window", "n_query"]
         z = a[cols].merge(b[cols], on="molecule", suffixes=("_0", "_avg"), validate="one_to_one")
-        if (z.reach_external_b1_0.astype(bool) != z.reach_external_b1_avg.astype(bool)).any(): sys.exit(f"STOP: {tag} {s} reach flags differ between the arms")
+        for c_ in ("n_unique", "reach_external_b1", "truth_in_window", "n_query"):   # Codex 112: same windows / queries / reach in both arms
+            if (z[c_ + "_0"].astype(str) != z[c_ + "_avg"].astype(str)).any(): sys.exit(f"STOP: {tag} {s} {c_} differs between the arms")
+        for c_ in ("truth_fp_rank_0", "truth_fp_rank_avg"):
+            v_ = pd.to_numeric(z[c_], errors="coerce")
+            if v_.isna().any() or (v_ < -1).any() or (v_ != v_.round()).any(): sys.exit(f"STOP: {tag} {s} {c_} not an integer >= -1")
         q = a[cols].merge(o[cols], on="molecule", suffixes=("", "_old"), validate="one_to_one")
         rep.append(f"| {tag} {s} | {len(q)} | {int((q.truth_fp_rank != q.truth_fp_rank_old).sum())} | {int((q.n_unique != q.n_unique_old).sum())} | {int((q.reach_external_b1.astype(bool) != q.reach_external_b1_old.astype(bool)).sum())} |")
         ok = z.reach_external_b1_0.astype(bool).values

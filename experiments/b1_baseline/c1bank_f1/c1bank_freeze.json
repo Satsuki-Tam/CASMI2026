@@ -1,0 +1,249 @@
+{
+ "bank": "c1bank_f1 (fold 1 NP C1, metadata only)",
+ "produced_by_selector_sha256": "f96ec668f3ca19bd7ca75ec07be669569b75e385219d67c5dbaf394b0fa4d0a9",
+ "selector_fixed_version_sha256": "6652cb02f2ea96cf85ace9c2d5888776e686b08ff9f3d98eb05d9d6630876fcc",
+ "raw_vs_rounded_ce_query_check": "0 of 861 molecules differ (5 have > 8 eligible spectra); bank kept (Codex 112 selector check, 2026-10-28)",
+ "csv_sha256": {
+  "c1dev": "a0bb55624022ae545cb4acfa9178e2c664dc59972498cb3fe3dea153316d1eac",
+  "c1conf": "0fcd0b991c1ff6679b56d7e0219a31944b8c9860a2a4f29c9e878026e10aa939"
+ },
+ "used_roster": {
+  "experiments/b1_baseline/c1cost098/p2_molecules.csv": {
+   "rows_resolved": 100,
+   "sha256": "b5ef980845ba1f77eebc71f3bca2c9a5c9b30d20fdc2a8c9004abf80e1f6ca49"
+  },
+  "experiments/b1_baseline/c1cost098_raw/p2_molecules.csv": {
+   "rows_resolved": 561,
+   "sha256": "39ed49df1b743378ab77bc6801d9b1c190575d2e840d229d9136a9fb26a284a2"
+  },
+  "experiments/b1_baseline/c1cost098_unused/p2_molecules.csv": {
+   "rows_resolved": 400,
+   "sha256": "9d9eefa1585ec6e31c23186d1d7a2c7bd1ff7c1be7ab04697d7497f7820416e6"
+  },
+  "experiments/b1_baseline/conf_g_f1a/p2_molecules.csv": {
+   "rows_resolved": 474,
+   "sha256": "c2c130304a4fd9cb720709a73c9dd819dd98ca4ee1d0df12462a28b537369432"
+  },
+  "experiments/b1_baseline/conf_g_f1b/p2_molecules.csv": {
+   "rows_resolved": 313,
+   "sha256": "8439df6257cffd1349607e877032512d8c64f023069690c42d21bfc0a2f22d87"
+  },
+  "experiments/b1_baseline/eval_c1/p1_molecules.csv": {
+   "rows_resolved": 300,
+   "sha256": "768aa184ae106f7f03c4b165fe01fe1994cb96679b3ecc284a88db91435e0e78"
+  },
+  "experiments/b1_baseline/eval_conf_fit/p2_molecules.csv": {
+   "rows_resolved": 256,
+   "sha256": "4d248f8446a50741eaf8a7b62c230c1a4802b2bbfdf0c62dd4a9e124e44b8945"
+  },
+  "experiments/b1_baseline/eval_conf_fit2/p2_molecules.csv": {
+   "rows_resolved": 350,
+   "sha256": "6bb1207cc9926d3b7a5f0c71f17ba94f7959476a0eaea613e1cffb746e7af588"
+  },
+  "experiments/b1_baseline/eval_set/p1_molecules.csv": {
+   "rows_resolved": 600,
+   "sha256": "bbfd686c9ae9effb7c25f777dd96396af66d96fdff20f2b18b1c2cd907a60811"
+  },
+  "experiments/b1_baseline/eval_set2/fit_pool/p2_molecules.csv": {
+   "rows_resolved": 956,
+   "sha256": "726b19c795d51f5beb374b848446405740a310690288ccf6ad1ffb98874b40be"
+  },
+  "experiments/b1_baseline/eval_set2/fit_pool_overflow/p2_molecules.csv": {
+   "rows_resolved": 632,
+   "sha256": "fc8cd182e878c5f4630821dc47fb03a7e4cb885fcba976fe63bd9f3dd8512d96"
+  },
+  "experiments/b1_baseline/eval_set2/p2_dev_molecules.csv": {
+   "rows_resolved": 500,
+   "sha256": "e4c76bc0e2f350877e723d73e63bfd747d21fc92c40add86f6a62858b0acf98a"
+  },
+  "experiments/b1_baseline/eval_set2/v2/p2_molecules.csv": {
+   "rows_resolved": 500,
+   "sha256": "fd013e44c88ce65d2ec8b7c2c4d65ad7060ce30a6c4ab071bf247b27dffb414b"
+  },
+  "experiments/b1_baseline/eval_set3/p2_molecules.csv": {
+   "rows_resolved": 80,
+   "sha256": "91122d9252bb0ec2bfc6c3b2808712ac28f45b7c12fff6bec1d7733a6a224cc6"
+  },
+  "experiments/b1_baseline/eval_set_f1/p2_molecules.csv": {
+   "rows_resolved": 500,
+   "sha256": "9a4be25e68925eae49e06fb925af6f123d61bdd45d807b8284f96dab238b7811"
+  },
+  "experiments/b1_baseline/eval_set_f2/p2_molecules.csv": {
+   "rows_resolved": 500,
+   "sha256": "63841ebe776979aefd4f95490f45ea141970c4db65f5a09e995fe6530db0f72c"
+  },
+  "experiments/b1_baseline/locked_eval/p1_molecules.csv": {
+   "rows_resolved": 600,
+   "sha256": "724f4af05978304d53f635fc7c71df12ba91b4892819fd8b8a4c04aed81bc364"
+  },
+  "experiments/b1_baseline/locked_eval2/v2/p2_molecules.csv": {
+   "rows_resolved": 500,
+   "sha256": "f86a068a782dff00e87fff928e0bf7ad75fee3cce440b06e11fa2fbd1ad63ba4"
+  },
+  "experiments/b1_baseline/locked_eval3/p2_molecules.csv": {
+   "rows_resolved": 80,
+   "sha256": "a95f2235a4cc64e37ea5817a16c8dc32f86ff4913a230f93ef5d19571b43c750"
+  },
+  "experiments/b1_baseline/locked_eval_f1/p2_molecules.csv": {
+   "rows_resolved": 500,
+   "sha256": "4dbe5539b5c0c625111d028c95c2f07e9db7caf23b491f48ed6e41ca1e197690"
+  },
+  "experiments/b1_baseline/locked_eval_f2/p2_molecules.csv": {
+   "rows_resolved": 500,
+   "sha256": "5a78daa73735b0bc04c529bc71f6bf94cddfced2d3d2ede06c2b08f52969795a"
+  },
+  "experiments/b1_baseline/np053_f1conf/p2_molecules.csv": {
+   "rows_resolved": 320,
+   "sha256": "c5b8766da0901dda73bfdfcdba8531179f26dfacf1f6289c5f29c94c8966ce90"
+  },
+  "experiments/b1_baseline/np053_f1dev/p2_molecules.csv": {
+   "rows_resolved": 320,
+   "sha256": "d1e613f892aaf2fb1af01cd07101ccefa8e965016b20885a654bb0caded9f411"
+  },
+  "experiments/b1_baseline/np053_f2conf/p2_molecules.csv": {
+   "rows_resolved": 320,
+   "sha256": "72d55d5331c84017122dba0ffa7c0aad6cd14c35d169b12f9394eb09368205d0"
+  },
+  "experiments/b1_baseline/np053_f2dev/p2_molecules.csv": {
+   "rows_resolved": 320,
+   "sha256": "84ae3d50998cccdc795b8fee730058bd5588af572f47d9a65c940c2b20752326"
+  },
+  "experiments/b1_baseline/np061_f3pool/p2_molecules.csv": {
+   "rows_resolved": 1000,
+   "sha256": "6fd4cdaf7517f64d3452820b7f63c83f6f8bf7488a4f2462a140af916e8d97fc"
+  },
+  "experiments/b1_baseline/np061_f3unused/p2_molecules.csv": {
+   "rows_resolved": 366,
+   "sha256": "6affc097fc8d2c4b39eeee418a4bc51321571584488b94c0c893c781e8559425"
+  },
+  "experiments/b1_baseline/np061_f4pool/p2_molecules.csv": {
+   "rows_resolved": 1000,
+   "sha256": "4e21ff4e74a5666b5e1ba5e8f0dcd97524a62662fe83437cf96834bb7b5b94bf"
+  },
+  "experiments/b1_baseline/np061_f4unused/p2_molecules.csv": {
+   "rows_resolved": 381,
+   "sha256": "50d380ee044fccdfc56ba03b4b8f92d2d999dd7ea796feb1c72f4babdc2c35e7"
+  },
+  "experiments/b1_baseline/np096_conf093/p2_molecules.csv": {
+   "rows_resolved": 400,
+   "sha256": "f70fa50478d9e19f2583c7dfb3d5d75b510fcc7a7059842901ca2eaa126f4263"
+  },
+  "experiments/b1_baseline/np096_conf095/p2_molecules.csv": {
+   "rows_resolved": 400,
+   "sha256": "1122fc7a427b6e88bc55626fffc8d84eaaa3df1333ff0126ce6708056f5b89e3"
+  },
+  "experiments/b1_baseline/np096_f0conf/p2_molecules.csv": {
+   "rows_resolved": 800,
+   "sha256": "cd6ccbf29c549a40d65d9f484291779ccb9392429e269705249bd3bb1de4b9a6"
+  },
+  "experiments/b1_baseline/np096_f0spare/p2_molecules.csv": {
+   "rows_resolved": 90,
+   "sha256": "9ce2e11908574708620a468709bb10eb42d1d2617e28235b49cf238aa5273b2b"
+  },
+  "experiments/b1_baseline/np102_d0conf/p2_molecules.csv": {
+   "rows_resolved": 286,
+   "sha256": "d246cdf02696ac55c7589ba0938988d9bd01a99256fd3786cebf20f6f8249c7f"
+  },
+  "experiments/b1_baseline/np102_raw/p2_molecules.csv": {
+   "rows_resolved": 286,
+   "sha256": "b8813786b9f51f2f7a12cb9c776192c217dc663a2a7cf78063987b9a3662a145"
+  },
+  "experiments/b1_baseline/np102_unused/p2_molecules.csv": {
+   "rows_resolved": 0,
+   "sha256": "d889a49bbf87fa2e5ab4e470b711ffa8786fd35386534aa5b80d93a2736d40c6"
+  },
+  "experiments/b1_baseline/panel_np250/p1_molecules.csv": {
+   "rows_resolved": 250,
+   "sha256": "a715c6c7b0153a4561f41deb6013a35507d12463d5aab5e6ed30075736385a8e"
+  },
+  "experiments/b1_baseline/pxconf_f1/p2_molecules.csv": {
+   "rows_resolved": 200,
+   "sha256": "6c8d5dfbf9721720e3852be750063f97c26c1c5efec780e2be2f16e7ce4d12eb"
+  },
+  "experiments/b1_baseline/pxconf_f1a/p2_molecules.csv": {
+   "rows_resolved": 200,
+   "sha256": "4ab8fcbce7389e4c517e1fda3e9f1c17638aab7dfbcabb93f348ee300a9f503e"
+  },
+  "experiments/b1_baseline/pxconf_f1b/p2_molecules.csv": {
+   "rows_resolved": 200,
+   "sha256": "6a0b8c7b90f8c7114149c2541669e7ef7d6a6a4ce58e166e41df0180a8217e5e"
+  },
+  "experiments/b1_baseline/pxconf_f2/p2_molecules.csv": {
+   "rows_resolved": 244,
+   "sha256": "bb81fe589fbe09be0260bd2a0d26ee316da27b31b545fdb43b93093bf180864a"
+  },
+  "experiments/b1_baseline/pxconf_f2a/p2_molecules.csv": {
+   "rows_resolved": 444,
+   "sha256": "03c81c3cc94132fc95dbf0dbfbdbcc0b640a78c3976ef7f667a82bcd445c12a0"
+  },
+  "experiments/b1_baseline/pxconf_f2b/p2_molecules.csv": {
+   "rows_resolved": 254,
+   "sha256": "b37ac6a24a150575496f7b72046d4dba8c37c490e97cab14c2744803fb398c79"
+  },
+  "experiments/b1_baseline/train_pool_f3a/p2_molecules.csv": {
+   "rows_resolved": 1000,
+   "sha256": "b48929fdf357c210f36df1b428adb0704167d216b50fcf7a575d4c28ded62240"
+  },
+  "experiments/b1_baseline/train_pool_f3a_np/p2_molecules.csv": {
+   "rows_resolved": 800,
+   "sha256": "5f68229fdfcb9c00368e058c3b29b91eb0f5605ec897ed8ac1c1a9328b50e66e"
+  },
+  "experiments/b1_baseline/train_pool_f3b/p2_molecules.csv": {
+   "rows_resolved": 802,
+   "sha256": "14a72c2209251ca817949347a2955d78724cc05b908667f3f6637ca422bfd105"
+  },
+  "experiments/b1_baseline/train_pool_f4a/p2_molecules.csv": {
+   "rows_resolved": 1000,
+   "sha256": "2590ad838abe8b086ac4f89ea966fed86cd200f69a74a3b3d59218c4ab811d5e"
+  },
+  "experiments/b1_baseline/train_pool_f4a_np/p2_molecules.csv": {
+   "rows_resolved": 800,
+   "sha256": "73e4b0855ddce174c58f79808aa5d55f799bb56e93035fc8c05f0145693631ce"
+  },
+  "experiments/b1_baseline/train_pool_f4b/p2_molecules.csv": {
+   "rows_resolved": 807,
+   "sha256": "4be914271dc39b6209c3a92b3d9d4209926311727aa8011cfe7edb3b6ac5837f"
+  },
+  "experiments/p1_baseline/run1/p1_molecules.csv": {
+   "rows_resolved": 600,
+   "sha256": "b18cdb9869d3f8e28447577fbf59a09b66585a41a839461172c9e0bad700989a"
+  }
+ },
+ "spec_meta_sha256": "460b910f175e4840c3e145c61e6c6bc2e89116ef1b111ad5493b2e016af9548d",
+ "census_sha256": "813f7ef84a77164f8a344003eab8191d6b37f3150ef5f55921b86b5a00eb34aa",
+ "structures_sha256": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
+ "counts": {
+  "census_raw_keys": 269846,
+  "fold_raw_keys": 53936,
+  "fold_groups": 53616,
+  "after_used_and_panel": 50738,
+  "after_msg_any": 45045
+ },
+ "strata": {
+  "pos_few": {
+   "groups": 731,
+   "c1dev": 366,
+   "c1conf": 365
+  },
+  "pos_many": {
+   "groups": 2,
+   "c1dev": 1,
+   "c1conf": 1
+  },
+  "neg_few": {
+   "groups": 103,
+   "c1dev": 52,
+   "c1conf": 51
+  },
+  "neg_many": {
+   "groups": 25,
+   "c1dev": 13,
+   "c1conf": 12
+  }
+ },
+ "roles": {
+  "c1dev": "development protection (added to 111; pooled, one identity one vote)",
+  "c1conf": "one-time confirmation of ONE frozen recipe (fold-1-held-out models); tables not built until then"
+ },
+ "eligibility": "final eligible set = c1_usable of the evaluator (spectral duplicate rule) on the bank tables, fixed before any model is scored on them; no replenishment"
+}

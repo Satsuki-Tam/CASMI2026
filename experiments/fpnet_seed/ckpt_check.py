@@ -2,7 +2,7 @@
 existence alone, and the job log's 'segment N exit S' field (always 0: `echo "$(date +%T) ... $?"` expands $? after the date substitution).
 Checks (any failure -> exit 1): no trainer process of the run remains; <tag>_progress.json has step == optimizer_updates == max_steps and complete
 true; <tag>_final.pt (torch.load weights_only=True) has step == max_steps, nbits 10226 and the registered args (seed, max_steps, holdout 'hold,np',
-tag, run dir); <tag>_history.json's last entry is final with step == max_steps (its metrics are not read); train.log has no Traceback /
+tag, run dir) and the public recipe values (bs 256, lr 3e-4, wd 0.01, warmup 2000, merge_p 0.3, w_bce 1, w_el 0.1, layers 8, d 512, bias_init 0); <tag>_history.json's last entry is final with step == max_steps (its metrics are not read); train.log has no Traceback /
 non-finite / Error line. Only the final checkpoint is used (never <tag>_last.pt or an intermediate one; the trainer's EVAL lines are not read).
 Writes <run>/ckpt_check.json (incl. the final checkpoint's sha256). Usage: python -I ckpt_check.py <run> <tag> <max_steps> <seed>"""
 import hashlib, json, os, subprocess, sys
@@ -18,7 +18,8 @@ fp = os.path.join(RUN, f"{TAG}_final.pt")
 import torch
 ck = torch.load(fp, map_location="cpu", weights_only=True); ar = ck.get("args", {})
 check("final checkpoint step / nbits", ck.get("step") == MAX and ck.get("nbits") == 10226, f"step {ck.get('step')} nbits {ck.get('nbits')}")
-want = dict(seed=SEED, max_steps=MAX, holdout="hold,np", tag=TAG)
+want = dict(seed=SEED, max_steps=MAX, holdout="hold,np", tag=TAG,   # + the public recipe values (Codex 112: assert, not only display)
+            bs=256, lr=3e-4, wd=0.01, warmup=2000, merge_p=0.3, w_bce=1.0, w_el=0.1, layers=8, d=512, bias_init=0)
 check("final checkpoint args", all(ar.get(k) == v for k, v in want.items()) and os.path.abspath(str(ar.get("run"))) == RUN, str({k: ar.get(k) for k in list(want) + ["run", "bs", "lr", "warmup", "merge_p", "w_bce", "w_el", "layers", "d"]}))
 hist = json.load(open(os.path.join(RUN, f"{TAG}_history.json")))
 check("history ends with the final entry", bool(hist) and hist[-1].get("final") is True and hist[-1].get("step") == MAX, f"entries {len(hist)}")

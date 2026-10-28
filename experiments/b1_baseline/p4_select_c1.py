@@ -6,7 +6,7 @@ identity_group column, which is a local index in the panel CSV; an unresolved ro
 (panel) library. Query acquisition = (raw key, NP library L): the shared selector's queries (b1_common.select_queries, max 8, test adducts);
 qualifies if the queries are positive with [M+H]+ / [M+Na]+ (pol = pos) or all negative (pol = neg), and the same-polarity OTHER-library spectra
 after removing cross-library copies of a query (metadata de-dup on adduct, precursor 3 dp, CE 1 dp, n_peaks; an upper bound of the evaluator's
-usable C1 references, recorded as such) number >= 1. Strata: pol x refs (few 1-9 / many >= 10). One acquisition per global group: fixed-seed
+usable C1 references, recorded as such) number >= 1 (a METADATA SCREEN, not a bound on the evaluator's usable references; the evaluator's spectral duplicate rule decides c1_usable). Strata: pol x refs (few 1-9 / many >= 10). One acquisition per global group: fixed-seed
 choice among the group's qualifying acquisitions (sorted by raw key, library); the group's stratum is that acquisition's. Each stratum's groups are
 permuted with the seed and dealt alternately to c1dev (development protection) and c1conf (one-time confirmation of a frozen candidate).
 Writes <out>/c1dev/p2_molecules.csv, <out>/c1conf/p2_molecules.csv, <out>/c1bank_manifest.json.
@@ -59,14 +59,14 @@ print(f"files {len(files)}, used groups {len(used):,} + panel {len(panel_groups)
 m = meta.filter(pl.col("adduct").is_in(list(ADDUCT_SHIFT)) & pl.col("inchikey14").is_in(elig["inchikey14"].to_list())).with_columns(
     pl.col("ce_mean").fill_null(-1.0).round(1).alias("ce_r"), pl.col("precursor_mz").round(3).alias("prec_r"))
 rows_of = {}
-for ik, lib, add, mode, ce, pr, npk, row in m.select("inchikey14", "ingest_lib", "adduct", "ionization_mode", "ce_r", "prec_r", "n_peaks", "row").iter_rows():
-    rows_of.setdefault(ik, []).append(dict(lib=lib, adduct=add, mode=mode, ce=ce, prec=pr, npk=npk, row=row))
+for ik, lib, add, mode, ce, pr, npk, row, ce_raw in m.select("inchikey14", "ingest_lib", "adduct", "ionization_mode", "ce_r", "prec_r", "n_peaks", "row", "ce_mean").iter_rows():
+    rows_of.setdefault(ik, []).append(dict(lib=lib, adduct=add, mode=mode, ce=ce, prec=pr, npk=npk, row=row, ce_raw=(float(ce_raw) if ce_raw is not None else float("nan"))))
 
 
 def analyse(ik, L):
     rs = rows_of.get(ik, []); qrows = sorted((r for r in rs if r["lib"] == L), key=lambda r: r["row"])
     if not qrows: return None
-    q = select_queries(qrows, a.max_spectra, lambda r: r["adduct"], lambda r: (None if r["ce"] < 0 else r["ce"]))
+    q = select_queries(qrows, a.max_spectra, lambda r: r["adduct"], lambda r: r["ce_raw"])   # Codex 112: RAW CE for the selector (as b1_features); rounding only for the de-dup screen
     modes = {r["mode"] for r in q}; adds = {r["adduct"] for r in q}; qkeys = {(r["adduct"], r["prec"], r["ce"], r["npk"]) for r in q}
     other = [r for r in rs if r["lib"] != L and r["mode"] in modes]
     dedup = {(r["adduct"], r["prec"], r["ce"], r["npk"]) for r in other} - qkeys
@@ -102,7 +102,7 @@ assert checks["one_per_group"] == 1 and checks["vs_used"] == 0 and checks["vs_ms
 for role in ("c1dev", "c1conf"):
     os.makedirs(os.path.join(OUT, role), exist_ok=True); df.filter(pl.col("role") == role).drop("role").write_csv(os.path.join(OUT, role, "p2_molecules.csv"))
 man = dict(seed=a.seed, fold=a.fold, max_spectra=a.max_spectra, ref_many=a.ref_many, counts=counts, strata=strata, checks=checks, used_groups=len(used), panel_groups=len(panel_groups),
-           msg_groups=len(msg_groups), selection_files=per_file, reference_count_definition="same-polarity other-library spectra minus cross-library copies of a query (metadata de-dup); before the evaluator's spectral duplicate rule and MAX_REF; upper bound",
+           msg_groups=len(msg_groups), selection_files=per_file, reference_count_definition="metadata screen: same-polarity other-library spectra minus cross-library copies of a query (adduct, precursor 3 dp, CE 1 dp, n_peaks); the evaluator's spectral duplicate rule decides c1_usable",
            inputs_sha256=dict(census=sha(P(a.census)), structures=sha(P(f"{a.folds}/structures.parquet")), selector=sha(os.path.abspath(__file__)), b1_common=sha(os.path.join(HERE, "b1_common.py"))))
 json.dump(man, open(os.path.join(OUT, "c1bank_manifest.json"), "w"), indent=1)
 print("checks", checks, "rows", df.height, f"({time.time() - t0:.0f}s)")
