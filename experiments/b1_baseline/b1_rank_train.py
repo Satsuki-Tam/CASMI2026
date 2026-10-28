@@ -28,7 +28,8 @@ def exposure_of(keys):
 
 
 RESTRICT = ""   # 095: '' = full view list (default), 'B' = B-group candidates only; 102: 'E' = E-window candidates only
-EKEYS = set()   # 102: official keys of the extra E-window layers (PubChemLite / BIO, diag/e_window_keys.parquet)
+EKEYS = set()   # 102: official keys of the extra E-window layers (PubChemLite / BIO, diag/e_window_keys_v2.parquet)
+ECOUNT = {}     # 102: (run, set, view) -> [groups, groups with the truth in the view list, groups with a non-empty E subset, groups with the truth in the E subset]
 
 
 def load_run(run, eval_csv, group_override=None, feats=FEATS):
@@ -41,6 +42,9 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
     for s in sets_here:
         fp_ = f"{run}/b1_features_{s}.parquet"
         F = pd.read_parquet(fp_); M = pd.read_csv(f"{run}/b1_molecules_{s}.csv").set_index("molecule")
+        if RESTRICT == "E":   # Codex 102 Q5(2): the table, the molecule ledger and the selection CSV must describe the same molecules
+            extra_ = set(F.molecule.astype(str)) - set(ev.index.astype(str))
+            assert not extra_, f"102: {run} {s}: {len(extra_)} table molecules not in {eval_csv}"
         def load(model):
             p = f"{run}/work/{model}_{s}.json"
             try: ok = json.load(open(p + ".meta.json")).get("status") in ("ok", "partial")
@@ -60,8 +64,10 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                 g = g0[keep].reset_index(drop=True)
                 if RESTRICT == "B":   # 095: B-group specialist = COCONUT and not a training structure in this view (T-priority, exclusive); features recomputed within B
                     g = g[g.in_coconut.values.astype(bool) & ~g[f"in_train_{view}"].values.astype(bool)].reset_index(drop=True)
-                if RESTRICT == "E":   # 102: second engine E-lite = E window (COCONUT | train in this view | PubChemLite | BIO); features recomputed within the window
+                if RESTRICT == "E":   # 102: second engine E-lite = E subset of the view list (COCONUT | train in this view | PubChemLite | BIO); features recomputed within it
+                    c_ = ECOUNT.setdefault((os.path.basename(run), s, view), [0, 0, 0, 0]); c_[0] += 1; c_[1] += int(g.is_truth.values.astype(bool).any())
                     g = g[g.in_coconut.values.astype(bool) | g[f"in_train_{view}"].values.astype(bool) | np.fromiter((k_ in EKEYS for k_ in g.official_key.astype(str).values), bool, len(g))].reset_index(drop=True)   # set lookup (Series.isin of a 456k set costs ~1.5 s per call)
+                if RESTRICT == "E": c_[2] += int(len(g) > 0); c_[3] += int(len(g) > 0 and g.is_truth.values.astype(bool).any())
                 if len(g) == 0: continue
                 fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float)
                 glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
@@ -87,6 +93,8 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                 d["identity_group"] = int(m["identity_group"]) if "identity_group" in M.columns else -1
                 out.append(d)
     T = pd.concat(out, ignore_index=True) if out else pd.DataFrame()
+    for k_, c_ in sorted(ECOUNT.items()):
+        if k_[0] == os.path.basename(run): print(f"E-FILTER {k_[0]} {k_[1]} {k_[2]}: groups {c_[0]} | truth in view list {c_[1]} | E subset non-empty {c_[2]} | truth in E subset {c_[3]}", flush=True)
     # Codex 017: USED ledger -- what actually enters the training / evaluation tables per run and set (selection counts are not training counts)
     for s_ in sets_here:
         t = T[T.set == s_] if len(T) else T
@@ -134,7 +142,7 @@ def main():
     ap.add_argument("--refcmp", action="store_true", help="078: load diag/refcmpx_<run>.parquet (exact reference comparability) for every run; needed by the v2_noice_cmp feature set")
     ap.add_argument("--restrict", default="", choices=["", "B", "E"], help="095: B = train the ranker on the B-group candidates of each view only (COCONUT and not train; groups whose truth is not B drop out); "
                     "102: E = the E window (COCONUT | train in this view | PubChemLite | BIO keys of --ekeys)")
-    ap.add_argument("--ekeys", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "diag", "e_window_keys.parquet"), help="102: e_keys.py output (key, in_pcl, in_bio)")
+    ap.add_argument("--ekeys", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "diag", "e_window_keys_v2.parquet"), help="102: e_keys.py output (key, in_pcl, in_bio)")
     ap.add_argument("--pointwise", action="store_true", help="102: row weights = group weight / group size, rescaled to mean 1 (every (molecule, view) group carries its group weight in total) "
                     "for a pointwise objective given by --params_from (e.g. binary)")
     ap.add_argument("--prior_iw", default="", help="090: target shares of the C2 truths' prior-rank strata (rank by pop_public, fp tie-break: 1 / 2-3 / 4-10 / 11+), e.g. "

@@ -37,7 +37,7 @@ ap_.add_argument("--tparents_mode", default="only", choices=["only", "add"], hel
 ap_.add_argument("--dump_top", default="", help="099: parquet of the first model's main order, top 25 per (set, view, molecule): smiles, official key, fp (f.z), score")
 ap_.add_argument("--bmodel", default="", help="095: B-group specialist ranker (b1_rank_train --restrict B); variant bpp = the main order with the B candidates re-ordered by it inside the positions B already holds (GL path only; non-B positions unchanged)")
 ap_.add_argument("--emodel", default="", help="102: comma-separated second-engine E-lite models (b1_rank_train --restrict E), scored on the E-window rows of each view (COCONUT | train in that view | PubChemLite / BIO keys of --ekeys), features recomputed within the window; variants <tag>_only (E list alone), p_e (main order restricted to the E window), rrf_<tag>_<a> / rrf_pe_<a> (identity RRF of the main order with E / with p_e, K = --rrf_k, weight a on the second list), orc_<tag> (max(main, E alone)); diagnostics e_reach, nE, rP, r_<tag>; tag = model directory name")
-ap_.add_argument("--ekeys", default="diag/e_window_keys.parquet"); ap_.add_argument("--rrf_k", type=float, default=10.0)
+ap_.add_argument("--ekeys", default="diag/e_window_keys_v2.parquet"); ap_.add_argument("--rrf_k", type=float, default=10.0)
 ap_.add_argument("--fp_col", default="fp_s", choices=["fp_s", "fp_m"], help="091: which fp_mean_score column overrides fp (fp_m = PC-recomputed merge input = platform control)")
 ap_.add_argument("--fp_override", default="", help="091: fp_mean_score.py parquet; fp <- fp_s and fp_rank_window <- fprw_s for every candidate row (main and variants)")
 ap_.add_argument("--pop_ws", default="", help="090: comma-separated fixed-rule prior weights -> variants pw<w>")
@@ -335,7 +335,8 @@ if __name__ == "__main__":
                                                     sub(g[f"in_train_{vv}"].values), sub(g.in_coconut.values), sub(g.ppm_err.values), sub(g.fp_rank_window.values), float(M.loc[mid, "n_query"]),
                                                     float(M.loc[mid, "ce_known"]), n_window=float(M.loc[mid, "n_unique"]) if "n_unique" in M.columns else np.nan, feats=fe_,
                                                     analog=(dict(ap=sub(feats["ap"]), mean_tan=sub(feats["mean_tan"])) if any(f_.startswith("ana_") or f_ == "z_ana_ap" for f_ in fe_) else None))
-                                se_ = np.nan_to_num(np.asarray(emod_.predict(XE), float), nan=-1e18)
+                                se_ = np.asarray(emod_.predict(XE), float)
+                                if not np.isfinite(se_).all(): raise RuntimeError(f"102: non-finite E prediction ({t_}, {s}, {v}, {mid}) - stop (registered: an E failure must not turn into the p_e vote)")
                                 es_ = [int(ei_[j]) for j in np.lexsort((pos_m[ei_], -se_))]   # ties -> main order
                             out[f"r_{t_}"] = next((k + 1 for k, i in enumerate(es_) if tr[i]), 0)
                             out[f"{t_}_only"] = rr_of([("db", i) for i in es_]); out[f"orc_{t_}"] = max(out["main"], out[f"{t_}_only"])

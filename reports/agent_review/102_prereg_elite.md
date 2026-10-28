@@ -39,3 +39,16 @@
 ## 5. 実装(結果の前に固定)
 - e_keys.py(新規)、b1_rankfeats.py(`e1`)、b1_rank_train.py(`--restrict E`、`--ekeys`、`--pointwise`)、gen_eval2fd.py(`--emodel`、`--ekeys`、`--rrf_k`;main と他の変種は不変)、rank_params_e1b/rank_results.json。
 - 学習・評価は Spark。結果の読みは x102_summary.py(この登録の規則のみ)。
+
+## 6. 確定版(Codex 102 を受けて、14:37、結果は誰も見ていない)
+v1(キー = 同梱の candidate_key)の学習・評価は中止し、出力は未読のまま隔離した(diag/r102v1_unread、rank_e1b_v1 / rank_e1r_v1)。以下の v2 で再計算する。
+1. **呼称と範囲**: E 候補 = **P がその view で使う候補集合 ∩ E 源**(COCONUT | その view の train | PubChemLite | BIO)=「既存の shortlist の E 部分集合」(full E 窓ではない;shortlist・view の候補資格で落ちた候補は戻らない)。「人気度・候補源を使わない」は**明示的な特徴列を除く**意味に限る(shortlist の選択・E 源での選択・library 特徴等に所属や既知性の信号は残る)。e1b と e1r は**二つの固定レシピ**の比較であり、点ごと vs 順位損失の因果比較ではない。
+2. **E 源の key(v2)**: PubChemLite も BIO も **SMILES から公式 identity 関数で再計算**(PubChemLite の SMILES = tier_row → PubChem tier、無ければ pool_row → v2 pool;どちらも無い行は除外・件数記録 — B1 の候補になり得るのは COCONUT store 経由のみで、その行は in_coconut で E に入る)。BIO の解析失敗は除外(raw key で補わない)。入力・RDKit・出力の hash は diag/e_window_keys_v2_manifest.json。
+3. **採用候補は α = 0.5 の 3 本**(rrf_pe_0.5、rrf_rank_e1b_0.5、rrf_rank_e1r_0.5)と「なし」。**α = 1 は stress 診断**(E が空でなければ最終 1 位が必ず E 内になる強い候補源の選択)。同点(許容差 1e−12)は p_e → e1b → e1r の順。
+4. **主指標 = 1/2 A + 1/2 B_D、cell の重みを固定**: A = 053 NP C2 の 4 cell(np053f1dev NP_H / NP_N、np053f2dev NP_H / NP_N、各 1/8);**B_D = f1/f2 dev の D_np_single C2 の 2 cell(各 1/4)**(確認と同じ構成にするため;Codex 102 Q4)。「f1/f2 の正解の人気度が隠しに近い」は仮説として扱う。
+5. **関門**: 主指標 ≥ +0.005 かつ下限 > 0;A・B_D の各下限 ≥ −0.01;保護(下限 ≥ −0.01):**旧 B**(f1/f2 NP C2 の C/D/E/F、8 cell 等重み)、**正解が E 源に無い C2 行**(A と旧 B の cell、行をプール;正解の公式 key が pool の COCONUT・表の in_coconut・PubChemLite v2・BIO v2 のいずれにも無い)、G C1(f1/f2、2 cell 等重み)、パネル C1 clean、053 NP C1(4 cell 等重み)。
+6. **開封前の必須検査**(x102_summary.py が満たさなければ停止): 期待される (set, view, molecule)(選択 CSV と c1_usable)との完全一致(欠落・余分・重複なし)、全値が有限で [0, 1];不変条件 I1(E に到達した正解は p_e で非悪化、E に無い正解はどの変種でも非改善)、I2(α = 1 で E が非空・正解が E 外・main 1 位 → 変種は ≤ 0.5)、I5(E が空なら変種 = main)、I3(main = 087 の main;差があれば調査・記録してから読む)。
+7. E の予測が非有限なら評価を停止(p_e と同じ投票に化けさせない)。E は GL の fallback 分子にも投票する(GL 経路だけの変更ではない)— 負イオン・GL 非被覆の層は旧 B の保護で見る。
+8. 点ごとの学習は「E 部分集合に正解がある群」に条件付き(groups_with_truth)。学習行は「v8w7a と同じ run」であって同じ群ではない。filter 前後の群数を E-FILTER 行で記録。学習表と選択 CSV の分子の一致を assert。
+9. ジョブ: 各 PID の終了状態・新しく作った出力・hash(diag/r102_manifest.txt)を確認してから開封。
+10. **確認(開発の関門を通った一候補だけ、一回)**: A = **np096_conf093**(H200 / N200、C2、sha f70fa504、093 は開いていない)を 14:37 に 102 へ用途変更;B_D = **新しい fold 0 の D_np_single 400 identity**(既存の全選択 CSV とパネルを除外、1 group 1 query、seed と hash を開封前に記録;余りは次の確認用に保護)。C1 費用 = c1cost098(E 100、負イオンのみの C1 — G / パネル / 正イオン C1 の代替ではない)。**p_e が選ばれた場合**は C1 の正解が E 内で構造上非悪化であることを出力の順序で検証し、c1cost098 は開かずに保護する。確認の条件: 1/2 A + 1/2 B_D ≥ +0.005 かつ下限 > 0;各ブロック・確認集合の E 外正解の C2 行・(開く場合)c1cost098 の下限 ≥ −0.01。副次(記述のみ): 選ばれた E と同じ α の p_e との一対差。非 GL の C2 での改善は独立に確認しない。400 では +0.005 を検出できない可能性がある(開発の分散で件数を決めるが、確認の点推定を見て件数・許容差を変えない)。
