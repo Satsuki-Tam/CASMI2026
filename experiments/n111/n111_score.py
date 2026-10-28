@@ -5,11 +5,13 @@ enveda-180 positive spectra); each spectrum is one FPNet input (n_merged 1, own 
   Fs = f_candidate . mean over the query spectra of the BASE FPNet logits (single-spectrum mean of the same base checkpoint; input-format control)
   Fm = f_candidate . the BASE FPNet logits of the b1_features merged input (spectra of a polarity merged, size-weighted mean over polarities) on
        the SAME representative SMILES (Codex 112: separates the single-spectrum input from the table's spelling aggregation)
+  Ft = f_candidate . mean over the query spectra of the 111 model's OWN FP head (fine-tuned with the same-formula-concentrated negatives as an
+       auxiliary loss; diagnostic of the hard-negative fine-tuning itself, never a candidate)
   Np = m_candidate . s_global, s_global = mean over the set's molecules of their mean unit spectrum embedding (a CONSTANT spectrum for every
        query = the spectrum-masked score; literature audit: how much N ranks candidates without the query's spectrum; diagnostic only)
 Candidates = every row of b1_features_<set>.parquet (one row per official key; its representative SMILES; bits = casmi.chem.raw_fingerprint[fp_bits]).
 fph = 64-bit hash of the candidate's bit vector (FP-collision diagnostics). Missing values are kept as NaN and counted (never dropped).
-Writes <out>/n111_<tag>_<set>.parquet (set, molecule, smiles, official_key, N, Fs, Fm, Np, fph, n_query) and <out>/n111_<tag>_manifest.json.
+Writes <out>/n111_<tag>_<set>.parquet (set, molecule, smiles, official_key, N, Fs, Fm, Ft, Np, fph, n_query) and <out>/n111_<tag>_manifest.json.
 Usage: python n111_score.py --model M.pt --base BASE.pt --code <casmi code> --bits fp_bits.npy --store <spectra_store> --run <table dir> --eval_csv CSV
        --tag T --sets S1 S2 ... --out DIR [--device cuda] [--limit N]"""
 import argparse, hashlib, json, os, sys, time
@@ -83,7 +85,7 @@ def main():
                 cand = T[T.molecule == mid]
                 if not q:
                     n_noq += 1
-                    for c in cand.itertuples(index=False): rows.append(dict(set=s, molecule=mid, smiles=c.smiles, official_key=c.official_key, N=np.nan, Fs=np.nan, Fm=np.nan, fph=0, n_query=0))
+                    for c in cand.itertuples(index=False): rows.append(dict(set=s, molecule=mid, smiles=c.smiles, official_key=c.official_key, N=np.nan, Fs=np.nan, Fm=np.nan, Ft=np.nan, fph=0, n_query=0))
                     continue
                 items = []; qsp = []
                 for x in q:
@@ -96,8 +98,8 @@ def main():
                                       n_merged=1, mode=1.0 if mode_of_row[x] == "positive" else -1.0))
                 inp = fpnet.collate(items, dev)
                 with torch.autocast(dev, dtype=dtype, enabled=dev == "cuda"):
-                    _, _, sv = model.spectrum(*inp); zb = base(*inp)[0]
-                sbar = sv.float().mean(0); zbar = zb.float().mean(0); SB.append(sbar.cpu().numpy())
+                    zt, _, sv = model.spectrum(*inp); zb = base(*inp)[0]
+                sbar = sv.float().mean(0); zbar = zb.float().mean(0); ztbar = zt.float().mean(0); SB.append(sbar.cpu().numpy())
                 zl, wsum = None, 0.0   # b1_features merged input: merge per polarity, size-weighted mean over polarities
                 for mode in ("positive", "negative"):
                     grp = [g for g in qsp if g["mode"] == mode]
@@ -112,17 +114,17 @@ def main():
                     zl = zm * len(grp) if zl is None else zl + zm * len(grp); wsum += len(grp)
                 zmerged = zl / wsum
                 pk = [PK.get(str(sm)) for sm in cand.smiles]; ok = np.array([p is not None for p in pk])
-                Nv = np.full(len(cand), np.nan); Fv = np.full(len(cand), np.nan); Mv = np.full(len(cand), np.nan); H = np.zeros(len(cand), np.int64)
+                Nv = np.full(len(cand), np.nan); Fv = np.full(len(cand), np.nan); Mv = np.full(len(cand), np.nan); Tv = np.full(len(cand), np.nan); H = np.zeros(len(cand), np.int64)
                 if ok.any():
                     P = torch.as_tensor(np.stack([p for p in pk if p is not None]), device=dev)
                     fb = fpnet.unpack_gpu(P, nbits)
                     with torch.autocast(dev, dtype=dtype, enabled=dev == "cuda"):
                         mv = model.molecule(fb)
-                    Nv[ok] = (mv.float() @ sbar).cpu().numpy(); Fv[ok] = (fb @ zbar).cpu().numpy(); Mv[ok] = (fb @ zmerged).cpu().numpy()
+                    Nv[ok] = (mv.float() @ sbar).cpu().numpy(); Fv[ok] = (fb @ zbar).cpu().numpy(); Mv[ok] = (fb @ zmerged).cpu().numpy(); Tv[ok] = (fb @ ztbar).cpu().numpy()
                     MV.append((len(rows), np.flatnonzero(ok), mv.float().cpu().numpy()))
                     H[ok] = [int.from_bytes(hashlib.blake2b(p.tobytes(), digest_size=8).digest(), "little", signed=True) for p in pk if p is not None]
-                for c, nv, fv, mv_, h in zip(cand.itertuples(index=False), Nv, Fv, Mv, H):
-                    rows.append(dict(set=s, molecule=mid, smiles=c.smiles, official_key=c.official_key, N=float(nv), Fs=float(fv), Fm=float(mv_), fph=int(h), n_query=len(q)))
+                for c, nv, fv, mv_, tv, h in zip(cand.itertuples(index=False), Nv, Fv, Mv, Tv, H):
+                    rows.append(dict(set=s, molecule=mid, smiles=c.smiles, official_key=c.official_key, N=float(nv), Fs=float(fv), Fm=float(mv_), Ft=float(tv), fph=int(h), n_query=len(q)))
             O = pd.DataFrame(rows); O["Np"] = np.nan
             if SB:
                 sg = np.mean(np.stack(SB), 0)
