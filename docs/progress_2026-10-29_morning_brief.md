@@ -27,5 +27,5 @@
 
 ## 4. 判断をお願いしたいこと
 1. **10/29 の提出**: 準備済みの E0 診断 2 枠(ENG_B、pre-rank2_B;commit run 完了)。追加するなら Codex 116 の推奨は「現 P の固定部分の人気度係数 0」の診断 1 枠(人気度を全て外すモデルではない;承認後に kernel を作り、係数を戻すと P を再現することを確認してから提出)。
-2. **MIST の導入**(coleygroup/MIST、MIT、ホストが名指しで許可した checkpoint):Codex 115 / 116 は、許可が出れば MSG の aug / noaug の小さな推論比較を、自前の模擬スペクトル学習より先に推奨。
+2. **MIST の導入**(coleygroup/MIST、MIT、ホストが名指しで許可した checkpoint):Codex 115 / 116 は、許可が出れば MSG の aug / noaug の小さな推論比較を、自前の模擬スペクトル学習より先に推奨。調査(reports/research/mist_inference_requirements_2026-10-28.md、Web を読んだだけ): 依存は torch / numpy / pandas / h5py / pyyaml / rdkit のみ(Lightning・DGL 不要)、必要なのは repo の clone と `pip install -e .`(Spark、別 venv)、Zenodo 23303289 の 4 ファイル(mist_msg_aug / noaug の ckpt 各 289 MB、検証用 msg_compact 16 MB・msg_all 292 MB)、後で Kaggle への upload。新しいスペクトルの推論手順は repo に無く、入力配列を作る薄いラッパーが要る。前駆体の分子式が必須だが検査されないラベルなので、**候補の分子式ごとに推論**できる(P の誤りの 92% は同分子式の decoy なので、同じ式の候補どうしの比較に向く)。学習した付加体は [M+H]+ / [M+Na]+ のみ(負イオン不可)。aug / noaug の検索性能は未公表で、自前の検証(公表値との整合、batch・順序の不変性、自前の特徴化と公式キャッシュの一致)を先に行う。
 3. **ms-pred の導入**(GLACIER の timsTOF 微調整、105 の計画)。
