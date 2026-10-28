@@ -1,0 +1,91 @@
+{
+  "topic": {
+    "id": 745715,
+    "title": "Visible test.parquet molecule_ids appear to leak class-1 answers",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/745715",
+    "postDate": "2026-10-03T23:07:17.643Z",
+    "authorName": "Zihao Ou",
+    "authorUrl": "https://www.kaggle.com/nicholasooo",
+    "votes": 22,
+    "commentCount": 11,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>A public notebook (imranarif536/casmi26-v44-pairtail-locked-top1, V3, 0.417) hard-codes the 400 visible molecule_id → SMILES pairs (the structures of the train spectra copied into the dummy test file) and forces them to rank 1 for every row, unguarded; its previous version scored 0.402. That is only possible if (a) the hidden rerun reuses the visible molecule_ids and (b) for a substantial share of ids the dummy row's structure equals the hidden truth. Forks are spreading (two dozen teams at 0.416–0.418). Could you confirm whether molecule_ids are shared between the visible file and the hidden set, and shuffle/remap them before the final rerun? We are not using this and would prefer a level field.</p>"
+  },
+  "comments": [
+    {
+      "id": 3534546,
+      "authorName": "inversion",
+      "postDate": "2026-10-07T19:43:11.773Z",
+      "content": "<p>There is no overlap in IDs between train and test, or between dummy test and rerun test. It's a relatively low-observation test set, so participants should be careful that they don't interpret noise with causation.</p>",
+      "votes": 4
+    },
+    {
+      "id": 3533546,
+      "authorName": "Ranger789",
+      "postDate": "2026-10-06T10:45:11.677Z",
+      "content": "<p>+1 from our team. We don't use the visible molecule_id to structure pairs in any form, neither in submissions nor for diagnostics, and we'd welcome a remap or shuffle of the molecule_ids before the final rerun (ideally with the visible placeholder built from structures outside the hidden set), so the final leaderboard reflects identification from the spectra alone. Thanks for raising this.</p>",
+      "votes": 2,
+      "replies": [
+        {
+          "id": 3535731,
+          "authorName": "MarvinTMB",
+          "postDate": "2026-10-09T05:33:51.067Z",
+          "content": "<p>A remap before the end would be great </p>"
+        }
+      ]
+    },
+    {
+      "id": 3532549,
+      "authorName": "Patrick Chan",
+      "postDate": "2026-10-03T23:44:15.387Z",
+      "content": "<p>Can the admin confirm if the shuffle/remap will be done? Above is accurate according to my test.</p>",
+      "votes": 3
+    },
+    {
+      "id": 3532581,
+      "authorName": "Amin",
+      "postDate": "2026-10-04T03:15:51.863Z",
+      "content": "<p>+1 from our team. We do not use the visible molecule_id → structure pairs in any way (ids only join rows in our pipeline), and we would welcome a shuffle/remap of the ids before the final rerun so the final leaderboard reflects spectrum-based identification only. Could the hosts also confirm whether the hidden rerun currently reuses the visible ids?</p>",
+      "votes": 1
+    },
+    {
+      "id": 3533091,
+      "authorName": "kenneth uchegbu",
+      "postDate": "2026-10-05T13:07:13.230Z",
+      "content": "<p>are you in need of a team member?</p>",
+      "votes": -2
+    },
+    {
+      "id": 3533090,
+      "authorName": "kenneth uchegbu",
+      "postDate": "2026-10-05T13:01:42.077Z",
+      "content": "<p>please can anyone give a guide on how to use neural networks alongside the morgan, maccs fingerprints on how to retrieve structures and also how to go about the ranking.</p>",
+      "votes": -2
+    },
+    {
+      "id": 3533740,
+      "authorName": "MY",
+      "postDate": "2026-10-06T18:24:42.610Z",
+      "content": "<p>Anyone from hosts gonna answer?? </p>"
+    },
+    {
+      "id": 3532965,
+      "authorName": "Raagav Anand",
+      "postDate": "2026-10-05T07:11:31.867Z",
+      "content": "<p>My tests re-confirm this. Can something be done about this? \nPeople who use the visible molecule ID will get a huge advantage, atleast in the open test cases</p>\n<p>I'm optimistic that those types of predictions will fail in the hidden test cases, but it's fairly easy to just a run a check beforehand and operate differently on hidden test cases, so I wouldn't back this too much</p>\n<p>Ty in advance </p>"
+    },
+    {
+      "id": 3532647,
+      "authorName": "Pratham",
+      "postDate": "2026-10-04T10:16:11.173Z",
+      "content": "<p>Good finding. Hosts should clarify this.</p>"
+    },
+    {
+      "id": 3532603,
+      "authorName": "Bharath Varma",
+      "postDate": "2026-10-04T06:19:17.080Z",
+      "content": "<p>+1: please remap the test molecule_ids (or confirm they are not shared) before the final rerun</p>\n<p>Thanks <a href=\"/NicholasOOO\" target=\"_blank\">@NicholasOOO</a> for raising this. Our team doesn't use the visible molecule_id → structure pairs either, and we'd also prefer a level field.</p>\n<p>As described above, the visible test.parquet is a placeholder built from training spectra, so each visible molecule_id can be joined back to a known structure. If the hidden rerun reuses the same IDs, and the placeholder structure matches the hidden truth for some of them, ranking those structures first raises the score without any spectrum-based identification.</p>\n<p>Two small requests to the hosts:</p>\n<p>Could you confirm whether the hidden rerun currently uses the same molecule_id values as the visible file?\nIf it does, please remap or shuffle the IDs (and ideally build the visible placeholder from structures that aren't in the hidden set) before the final private rerun.</p>\n<p>Thanks for looking into this. It would be great for the final leaderboard to reflect identification from the spectra alone.</p>"
+    }
+  ]
+}

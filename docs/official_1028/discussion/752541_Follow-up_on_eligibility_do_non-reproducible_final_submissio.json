@@ -1,0 +1,49 @@
+{
+  "topic": {
+    "id": 752541,
+    "title": "Follow-up on eligibility: do non-reproducible final submissions stay on the private LB / medal ranking?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/752541",
+    "postDate": "2026-10-25T09:15:29.042Z",
+    "authorName": "LeeDongHyuk",
+    "authorUrl": "https://www.kaggle.com/odyssey189",
+    "votes": 3,
+    "commentCount": 4,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Thanks for the clarifications in #750612 and #748882 (weights need their original training code; non-reproducible submissions are not eligible to win).</p>\n<p>A follow-up on how this is applied to the final leaderboard. A yes/no per item is enough:</p>\n<ol>\n<li>If a team's selected final submissions use weights or intermediates without available original training/generation code (for example weights shared in public notebooks), will those submissions be removed from the private leaderboard, or only be ineligible for prizes?</li>\n<li>Will the private leaderboard be re-ranked after the compliance checks, so that medals follow the eligible ranking?</li>\n<li>Will compliance checks cover all medal-zone teams, or only prize-zone teams?</li>\n</ol>\n<p>Thank you!</p>"
+  },
+  "comments": [
+    {
+      "id": 3545027,
+      "authorName": "David Healey",
+      "postDate": "2026-10-26T17:09:28.173Z",
+      "content": "<p>We reserve the right to remove submissions that are not reproducible from the leaderboard, regardless of ranking. </p>",
+      "votes": 2
+    },
+    {
+      "id": 3544490,
+      "authorName": "PC Jimmmy",
+      "postDate": "2026-10-25T16:17:54.580Z",
+      "content": "<p>As a general practice the compliance checks have only occurred for money winning or I think on a few occasions the gold metals.  </p>",
+      "votes": 1,
+      "replies": [
+        {
+          "id": 3545901,
+          "authorName": "greySnow",
+          "postDate": "2026-10-28T00:17:50.253Z",
+          "content": "<p>In LEAP hosts wanted to check all gold medals gor eligibility and Kaggle said they can't do it, they can only check prize solutions.\nIt's so strange every competition different rules 🤣</p>",
+          "votes": 2,
+          "replies": [
+            {
+              "id": 3546001,
+              "authorName": "PC Jimmmy",
+              "postDate": "2026-10-28T04:41:38.233Z",
+              "content": "<p>Yes - got to wonder about reserving the right.  I reserve the right to run 100 yards for cold beer on a hot day, but at 80 years old that's probably beyond my capacity.  </p>",
+              "votes": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

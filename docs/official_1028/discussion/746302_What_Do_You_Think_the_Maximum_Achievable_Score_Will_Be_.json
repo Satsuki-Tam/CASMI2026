@@ -1,0 +1,53 @@
+{
+  "topic": {
+    "id": 746302,
+    "title": "What Do You Think the Maximum Achievable Score Will Be?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/746302",
+    "postDate": "2026-10-06T19:14:44.739Z",
+    "authorName": "Zorojuro",
+    "authorUrl": "https://www.kaggle.com/yahiaokba",
+    "votes": 2,
+    "commentCount": 5,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hey guys i hope ur doing well , What do you think the <strong>maximum achievable score</strong>will be in this competition?\nI’m curious what people think the practical ceiling for the leaderboard might be</p>"
+  },
+  "comments": [
+    {
+      "id": 3535728,
+      "authorName": "MarvinTMB",
+      "postDate": "2026-10-09T05:28:59.473Z",
+      "content": "<p>My analytical estimate is around 0.76,with a more realistic maximum probably around 0.55</p>",
+      "votes": 4,
+      "replies": [
+        {
+          "id": 3535851,
+          "authorName": "Shehab Alshehabi",
+          "postDate": "2026-10-09T10:40:08.240Z",
+          "content": "<p>Congratulations on topping the leaderboard! Can I ask how you came up with your analytical estimate? Did you break it down by class?</p>",
+          "replies": [
+            {
+              "id": 3536121,
+              "authorName": "MarvinTMB",
+              "postDate": "2026-10-09T19:17:06.147Z",
+              "content": "<p>Thank you. I broke it down by class and did some extrapolations from my model's accuracies.</p>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3533790,
+      "authorName": "Mohit",
+      "postDate": "2026-10-06T19:50:42.477Z",
+      "content": "<p>Probably 9.5 almost</p>",
+      "votes": -4
+    },
+    {
+      "id": 3533813,
+      "authorName": "Mintu Kumar",
+      "postDate": "2026-10-06T20:39:57.903Z",
+      "content": "<p>I'd be interested in a breakdown of candidate coverage versus ranking accuracy. On a held-out set, how often is the correct structure in the candidate list, and how often does it get ranked first? That seems like a useful starting point for estimating the ceiling. Has anyone checked those two numbers for their retrieval baseline?</p>"
+    }
+  ]
+}

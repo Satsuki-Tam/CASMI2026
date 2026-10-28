@@ -1,0 +1,65 @@
+{
+  "topic": {
+    "id": 742042,
+    "title": "train.parquet appears to genuinely exclude molecule_id / spectrum_id - can you confirm this is intentional?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742042",
+    "postDate": "2026-09-19T06:13:46.728Z",
+    "authorName": "Abhishek Jain",
+    "authorUrl": "https://www.kaggle.com/vardhmanandorid2015",
+    "votes": 3,
+    "commentCount": 7,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi David / team,</p>\n<p>Quick schema clarification on train.parquet vs. the Data page description.</p>\n<p>The Data page states:</p>\n<ol>\n<li><strong>test.parquet</strong> has 12 columns (explicitly listing molecule_id and spectrum_id among them)</li>\n<li><strong>train.parquet</strong> has 18 columns, described as \"the test columns above, plus\" normalized_smiles, inchikey / inchikey14, molecular_formula, ingest_lib, adduct_orig, precursor_error_ppm, num_peaks</li>\n</ol>\n<p>That \"plus\" list is 8 distinct columns once inchikey and inchikey14 are counted separately (they are separate columns in the actual file). So:</p>\n<ol>\n<li>12 (test) + 8 (train-only) = 20, which doesn't match the stated 18</li>\n<li>12 − 2 (molecule_id, spectrum_id) + 8 = 18, which matches exactly</li>\n</ol>\n<p>And this second calculation is exactly what I see in the real downloaded train.parquet: df.dtypes shows 18 columns, and neither molecule_id nor spectrum_id is among them (both are present in test.parquet as expected).</p>\n<p>Could you confirm that <strong>molecule_id/spectrum_id</strong> are intentionally excluded from train.parquet, and the \"plus\" wording in the Data page just wasn't updated to say so explicitly? Just want to make sure this isn't a corrupted download on my end before building further pipeline logic around it.</p>\n<p>Thanks!</p>"
+  },
+  "comments": [
+    {
+      "id": 3527520,
+      "authorName": "Tim",
+      "postDate": "2026-09-24T01:26:59.157Z",
+      "content": "<p>I should say up front that I came to this competition without a mass spectrometry\nbackground, so treat the framing here as a question rather than a finding. The\nnumbers are from my own run, and I am reasonably confident in those. What they mean\nin practice is where I would appreciate a correction.</p>\n<p>Frenio's explanation of the missing IDs matches what I ran into. The part I got\nstuck on is what you use in their place, since training spectra also come in groups,\nthe same molecule appearing at several collision energies and under different\nadducts. The obvious grouping key is inchikey14. What I did not expect is that it is\nnot the key the scorer compares against.</p>\n<p>Scoring passes both your SMILES and the answer through RDKit tautomer\ncanonicalization before reducing to the InChIKey14, and the inchikey14 column shipped\nin train.parquet is not canonicalized. I canonicalized the 66,490 distinct structures\nacross the natural product libraries, and 2,904 of them, about 4.4%, came back with a\ndifferent key. Those 66,490 shipped-distinct structures also collapse to 63,449\ncanonically distinct ones, so roughly one structure in 22 has a twin the scorer would\ntreat as identical.</p>\n<p>If I am reading that correctly, it cuts two ways. Deduplicating 25 candidates on the\nshipped column would spend slots on molecules the scorer already counted, and\nmatching retrieved structures against it could miss a correct answer sitting in the\nlibrary under a different tautomer. I have switched to computing the canonical key\nfor everything, which is slow but only has to happen once.</p>\n<p>My actual question: is this something people working with spectral libraries already\ntreat as standard, or is the shipped column usually close enough in practice that it\ndoes not matter? I may be solving a problem that experienced people here already\nroute around without thinking about it.</p>\n<p>To your point about the description, train.parquet does have 18 columns with\nneither identifier among them: ingest_lib, normalized_smiles, inchikey, inchikey14,\nmolecular_formula, ionization_mode, instrument_type, adduct, adduct_orig,\nprecursor_mz, precursor_error_ppm, ms2_mzs, ms2_normalized_intensities, num_peaks,\nbase_peak_intensity, collision_energy_ev, collision_energy_orig,\ncollision_energy_orig_units.</p>"
+    },
+    {
+      "id": 3526213,
+      "authorName": "kenneth uchegbu",
+      "postDate": "2026-09-20T17:40:57.110Z",
+      "content": "<p>please how do i about creating a team?</p>",
+      "replies": [
+        {
+          "id": 3527529,
+          "authorName": "Tim",
+          "postDate": "2026-09-24T02:16:45.213Z",
+          "content": "<p>I think you are technically on a team just based on the \"rules\" of this competition, which mention that everyone is a team even if it is a team of one. To make updates and add members to your team: go to the Team tab at the top of the competition page, just after Rules. </p>\n<p>From there, you can rename your team, flip the toggle under \"Let others know you're looking for\nteammates\" so your status shows on the leaderboard, and send invitations by searching\na username or team name. The person/people you invite also must be participants, so they have to have joined the competition already, I believe.</p>",
+          "replies": [
+            {
+              "id": 3527551,
+              "authorName": "kenneth uchegbu",
+              "postDate": "2026-09-24T04:10:16.290Z",
+              "content": "<p>Thank you very much. I really appreciate</p>"
+            },
+            {
+              "id": 3527892,
+              "authorName": "Tim",
+              "postDate": "2026-09-24T23:37:12.510Z",
+              "content": "<p>My pleasure :D</p>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3526044,
+      "authorName": "Frenio Redeker",
+      "postDate": "2026-09-20T03:06:31.727Z",
+      "content": "<p>The way I understand it <code>molecule_id</code> is given so you can pool your SMILES predictions for different spectra belonging to the same molecular structure, because <code>sumission.csv</code>s will be rejected if they contain more than one row for each unique molecule (see quote below). Both <code>molecule_id</code> and <code>spectrum_id</code> are just identifiers for the test spectra and there is no need for them in the train set. According to the  dataset description each test spectrum should have a unique <code>spectrum_id</code> and multiple spectra can have the same <code>molecule_id</code>. The number of unique <code>molecule_id</code>s should be 400.</p>\n<p>Quote from competition overview: \"Fewer than 25 guesses is allowed but there is no penalty for a wrong guess beyond the rank it occupies. A submission is rejected if it is missing the molecule_id or smiles column, is empty, contains nulls in either column, repeats a molecule_id, or gives more than 25 semicolon-separated guesses for any molecule.\"</p>",
+      "replies": [
+        {
+          "id": 3526595,
+          "authorName": "Abhishek Jain",
+          "postDate": "2026-09-21T19:25:12.893Z",
+          "content": "<p>Thanks for clarifying on as Competition Description was confusing to say Train dataset will have additional 6 columns… Anyways thanks a lot for responding</p>"
+        }
+      ]
+    }
+  ]
+}

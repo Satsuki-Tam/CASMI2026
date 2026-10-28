@@ -1,0 +1,15 @@
+{
+  "topic": {
+    "id": 746878,
+    "title": "Metric Update (RemoveStereochemistry)",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/746878",
+    "postDate": "2026-10-07T21:32:12.193Z",
+    "authorName": "inversion",
+    "authorUrl": "https://www.kaggle.com/inversion",
+    "votes": 5,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>The metric has been updated to <code>RemoveStereochemistry</code>. This will be applied retroactively within the next 12 hours, as well as to all future submissions. </p>"
+  },
+  "comments": []
+}

@@ -1,0 +1,14 @@
+{
+  "topic": {
+    "id": 753419,
+    "title": "Question about collision_energy_ev on timsTOF spectra",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/753419",
+    "postDate": "2026-10-28T03:33:07.689Z",
+    "authorName": "Ekrem Torun",
+    "authorUrl": "https://www.kaggle.com/trnntr",
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi, quick question about the collision_energy_ev column in the test data. On timsTOF instruments the collision energy is often ramped together with ion mobility during PASEF acquisition. Is the value in this column the actual energy that was applied for that spectrum, or a nominal value from the acquisition method that may stand for a ramp? And when the list has more than one value, does that always mean several acquisitions were merged into one spectrum? Thanks a lot!</p>"
+  },
+  "comments": []
+}

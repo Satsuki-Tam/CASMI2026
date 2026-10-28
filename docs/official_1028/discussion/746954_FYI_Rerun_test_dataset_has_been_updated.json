@@ -1,0 +1,15 @@
+{
+  "topic": {
+    "id": 746954,
+    "title": "FYI: Rerun test dataset has been updated",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/746954",
+    "postDate": "2026-10-07T23:49:12.219Z",
+    "authorName": "inversion",
+    "authorUrl": "https://www.kaggle.com/inversion",
+    "votes": 8,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>The rerun test data has been updated to  fix a tiny (mass of an electron) error in some of peak masses. A rerun of all submissions will begin shortly, and published tomorrow. (No action needed from competitors.)</p>"
+  },
+  "comments": []
+}

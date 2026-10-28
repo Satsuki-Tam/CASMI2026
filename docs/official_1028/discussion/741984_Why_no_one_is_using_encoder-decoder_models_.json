@@ -1,0 +1,65 @@
+{
+  "topic": {
+    "id": 741984,
+    "title": "Why no one is using encoder-decoder models ?",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741984",
+    "postDate": "2026-09-18T18:38:13.677Z",
+    "authorName": "RISHAV KUMAR",
+    "authorUrl": "https://www.kaggle.com/atomstack001",
+    "votes": 1,
+    "commentCount": 7,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hi was going through the code and all the shared code is around some ranker model. \nWhy no one is training a encoder decoder based model?</p>"
+  },
+  "comments": [
+    {
+      "id": 3526028,
+      "authorName": "Whisper Last",
+      "postDate": "2026-09-20T00:23:12.790Z",
+      "content": "<p>Do you you mean a spectrum2SMILES model? Generated SMILES might not be valid, while ranker models always choose valid ones.</p>",
+      "replies": [
+        {
+          "id": 3526076,
+          "authorName": "kiro",
+          "postDate": "2026-09-20T09:02:06.587Z",
+          "content": "<p>how can ranker models rank novel structures tho? if the inchikey14 is not present in available datasets?</p>",
+          "replies": [
+            {
+              "id": 3526205,
+              "authorName": "RISHAV KUMAR",
+              "postDate": "2026-09-20T17:31:49.250Z",
+              "content": "<p>yes same doubt\n <a href=\"/whisperlast\" target=\"_blank\">@whisperlast</a> </p>"
+            }
+          ]
+        },
+        {
+          "id": 3526209,
+          "authorName": "RISHAV KUMAR",
+          "postDate": "2026-09-20T17:33:15.380Z",
+          "content": "<p>yes, spectrum 2 smiles. the shared code by the organizers have an encoder decoder architecture</p>"
+        },
+        {
+          "id": 3526210,
+          "authorName": "RISHAV KUMAR",
+          "postDate": "2026-09-20T17:35:07.433Z",
+          "content": "<p>also can we generate the output through the model and then validate that compound is valid and then only give our top candidates something like this.</p>"
+        }
+      ]
+    },
+    {
+      "id": 3525765,
+      "authorName": "Kamran Heydarov",
+      "postDate": "2026-09-18T21:08:00.143Z",
+      "content": "<p>it takes long time</p>",
+      "replies": [
+        {
+          "id": 3526207,
+          "authorName": "RISHAV KUMAR",
+          "postDate": "2026-09-20T17:32:18.707Z",
+          "content": "<p>long time to compte or like long time to build it ? </p>"
+        }
+      ]
+    }
+  ]
+}

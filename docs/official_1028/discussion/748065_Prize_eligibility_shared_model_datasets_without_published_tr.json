@@ -1,0 +1,23 @@
+{
+  "topic": {
+    "id": 748065,
+    "title": "Prize eligibility: shared model datasets without published training code (yes/no needed)",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/748065",
+    "postDate": "2026-10-10T13:08:47.113Z",
+    "authorName": "Fasil",
+    "authorUrl": "https://www.kaggle.com/fasiltheengineer",
+    "votes": 4,
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>Hello hosts,</p>\n<p>Many public notebooks, including most of those above about 0.40 on the public leaderboard, load pretrained artifacts from participant-shared Kaggle datasets. Examples: ahmedberatozer/casmi26-v4b-models, casmi26-v3-models, casmi26-fpnet-full1 and casmi26-v2-pool, and prvsiyan/casmi26-fp-models-v2. These datasets are labelled \"Other\" (described as non-commercial) or CC BY-NC-SA, and for some of the weights the training code has not been published.</p>\n<p>The rules ask winners to deliver training code and to license their solution under an OSI-approved licence. The welcome post says that solutions built on data or tools that cannot be commercially licensed will not be eligible to win. On 5 October you confirmed that models trained on train.parquet, and redistributed artifacts of them, are fine.</p>\n<p>Could you please confirm three points, so that teams can plan their final selections?</p>\n<p>(1) Is a solution that loads such third-party weights as-is prize-eligible if the team cannot deliver the code that trained them? Or must every model used at inference be retrained with code the winner can deliver?</p>\n<p>(2) Does a \"non-commercial\" or CC BY-NC-SA label on a participant-shared dataset, derived only from train.parquet and public databases, make a solution that uses it ineligible?</p>\n<p>(3) Does the final compliance check apply only to a team's two selected submissions, or to all of its submissions?</p>\n<p>A short yes or no on each would settle a question raised in several threads (745072, 745841). Thank you.</p>"
+  },
+  "comments": [
+    {
+      "id": 3537876,
+      "authorName": "David Healey",
+      "postDate": "2026-10-13T07:53:52.230Z",
+      "content": "<ol>\n<li><p>No, for now any winning solution needs to be able to be reproducible. If there's no way to retrain the weights can be retrained on allowed datasets, or to that would be a problem. </p></li>\n<li><p>No, solutions derived from open source datasets even with NC, are fine to use. </p></li>\n<li><p>I believe the compliance check only applies to the selected submissions, but will clarify if otherwise</p></li>\n</ol>"
+    }
+  ]
+}

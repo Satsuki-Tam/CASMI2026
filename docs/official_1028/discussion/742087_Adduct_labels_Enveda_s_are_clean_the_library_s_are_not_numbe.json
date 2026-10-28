@@ -1,0 +1,23 @@
+{
+  "topic": {
+    "id": 742087,
+    "title": "Adduct labels: Enveda's are clean, the library's are not (numbers)",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/742087",
+    "postDate": "2026-09-19T17:51:09.305Z",
+    "authorName": "DancingLumberjack",
+    "authorUrl": "https://www.kaggle.com/jamesmcgarryiv",
+    "votes": 1,
+    "commentCount": 1,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>We measured whether \"wrong adduct label\" is a recall problem worth handling in candidate generation. Library-wide it looks like one: 6.9 % of NP-library rows in train.parquet (174,977 of 2,532,125) have a labelled-adduct neutral mass more than 10 ppm from the true structure, and on a 40,000-row random sample of those an alternative adduct hypothesis lands within 10 ppm for 40.1 %. But 12,043 of the 16,037 rescues are <code>[M+CH2O2-H]-</code> (formate) mislabels — a GNPS/MassBank curation artefact, not an acquisition effect.</p>\n<p>Per molecule on the Enveda-curated <code>enveda-np-examples</code> structures (the set that shares the hidden test's provenance): <strong>0 of 250 miss the truth under their labelled adduct</strong>. On a GNPS-heavy held-out set: 8 of 350 miss, 7 rescuable.</p>\n<p>Two takeaways: (1) do not spend effort in candidate generation on adduct re-hypothesis for the test — Enveda label their own adducts correctly; (2) if you <em>train</em> on the library, the formate mislabels are worth cleaning or down-weighting.</p>"
+  },
+  "comments": [
+    {
+      "id": 3527521,
+      "authorName": "Frenio Redeker",
+      "postDate": "2026-09-24T01:42:07.083Z",
+      "content": "<p>Thank you, that's helpful. Two questions:</p>\n<ol>\n<li><p>How many of the 174,977 rows whose neutral mass is more than 10 ppm off can be explained with low mass accuracy measurements, e.g. they were acquired on a triple quadrupole instrument?</p></li>\n<li><p>Does the majority of the formate mislabels have a uniformly wrong label or are they all over the place?</p></li>\n</ol>\n<p>Thanks again!</p>"
+    }
+  ]
+}
