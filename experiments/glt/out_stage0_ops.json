@@ -1,0 +1,51 @@
+{
+ "A_inten": {
+  "loss": 0.3843744397163391,
+  "calls": {
+   "LinSATNet.linsat_layer": {
+    "calls": 15,
+    "grad_path": 12
+   },
+   "pygmtools.hungarian": {
+    "calls": 4,
+    "grad_path": 4
+   },
+   "torch_scatter.scatter_max": {
+    "calls": 4,
+    "grad_path": 2
+   }
+  },
+  "trainable": 112,
+  "trainable_nonzero_grad": 111,
+  "trainable_without_grad": [
+   "collision_embed_merged"
+  ],
+  "frozen": 152,
+  "frozen_with_grad": 0
+ },
+ "all": {
+  "loss": 0.3843744397163391,
+  "calls": {
+   "LinSATNet.linsat_layer": {
+    "calls": 15,
+    "grad_path": 12
+   },
+   "pygmtools.hungarian": {
+    "calls": 4,
+    "grad_path": 4
+   },
+   "torch_scatter.scatter_max": {
+    "calls": 4,
+    "grad_path": 2
+   }
+  },
+  "trainable": 264,
+  "trainable_nonzero_grad": 262,
+  "trainable_without_grad": [
+   "collision_embed_merged",
+   "embedder._extra_embeddings"
+  ],
+  "frozen": 0,
+  "frozen_with_grad": 0
+ }
+}

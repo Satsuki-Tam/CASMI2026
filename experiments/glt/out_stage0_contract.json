@@ -1,0 +1,30 @@
+{
+ "items": 5135,
+ "labels": 5135,
+ "violations": [],
+ "n_violations": 0,
+ "ce_values": [
+  20.0,
+  30.0,
+  40.0,
+  60.0
+ ],
+ "target_peaks": {
+  "min": 3,
+  "median": 50.0,
+  "max": 50
+ },
+ "frag_targets": {
+  "min": 1,
+  "median": 54.0,
+  "zero": 0
+ },
+ "precursor_ppm_vs_formula": {
+  "median": 0.688873213432367,
+  "p99": 2.4964032808821166,
+  "n": 5135
+ },
+ "first_batch_loss": 0.8090500831604004,
+ "loss_finite": true,
+ "verdict": "STAGE0E_PASS"
+}
