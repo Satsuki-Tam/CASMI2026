@@ -115,7 +115,8 @@ def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src
 
 
 def mist_block(mist, fp, gl):
-    """133: EXTRA_MIST columns from dict(cos, nq, status, fint, npk, ppm, form) (one molecule's list; form = neutral formula or None)."""
+    """133: EXTRA_MIST columns from dict(cos, nq, status, fint, npk, ppm, form, mol_nq) (one molecule's list; form = neutral formula or None;
+    mol_nq = the molecule's number of MIST-usable queries, mist_qflags.py; v2: mist_mol_noq from mol_nq, disagreements only where both are finite)."""
     cos = np.asarray(mist["cos"], float); n = len(cos); st = np.asarray(mist["status"], dtype=object); form = list(mist["form"])
     ok = np.isfinite(cos); zm = term(cos); fp = np.asarray(fp, float); gl = np.asarray(gl, float)
     srt = np.sort(zm)[::-1]; margin = float(srt[0] - srt[1]) if n > 1 else 0.0
@@ -131,10 +132,10 @@ def mist_block(mist, fp, gl):
     keys_ = [k for k in groups if k in best_of]; gbest = np.array([best_of[k] for k in keys_], float)
     grank = dict(zip(keys_, rank_desc(gbest))) if len(keys_) else {}
     rfm = np.array([grank.get(form[i] if form[i] is not None else ("__none__", i), np.nan) for i in range(n)], float)   # NaN: the formula group has no MIST value
-    noq = bool(n) and all(str(x) in ("no_qrows", "no_mist_adduct") for x in st)
+    noq = float(mist["mol_nq"]) == 0   # v2 (Codex 133): query availability, independent of the candidate formulas
     return dict(mist=np.nan_to_num(cos, nan=-1.0), z_mist=zm, mist_missing=(~ok).astype(float), rank_mist=np.log1p(rank_desc(cos)), gap_mist=(float(np.max(zm)) - zm) if n else zm,
                 margin_mist_mol=np.full(n, margin), mist_nq=np.asarray(mist["nq"], float), mist_mol_noq=np.full(n, float(noq)), mist_mol_ok=np.full(n, float(ok.mean()) if n else 0.0),
                 rank_mist_form=np.log1p(rf), gap_mist_form=gf, n_form=np.log1p(nf), rank_form_mist=np.log1p(rfm),
                 mist_fint=np.asarray(mist["fint"], float), mist_npk=np.asarray(mist["npk"], float), mist_ppm=np.asarray(mist["ppm"], float),
-                d_rank_mist_fp=np.where(ok, np.log1p(rank_desc(cos)) - np.log1p(rank_desc(fp)), np.nan), d_z_mist_fp=np.where(ok, zm - zlist(fp), np.nan),
-                d_z_mist_gl=np.where(ok, zm - term(gl), np.nan))
+                d_rank_mist_fp=np.where(ok & np.isfinite(fp), np.log1p(rank_desc(cos)) - np.log1p(rank_desc(fp)), np.nan),
+                d_z_mist_fp=np.where(ok & np.isfinite(fp), zm - zlist(fp), np.nan), d_z_mist_gl=np.where(ok & np.isfinite(gl), zm - term(gl), np.nan))   # v2: both observed

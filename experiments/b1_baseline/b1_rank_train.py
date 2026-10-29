@@ -21,6 +21,7 @@ ANA = {}    # (set, view, molecule) -> {smiles: (ap, mean_tan)} from --analog_pa
 CMPX = {}   # 078: (run basename, set, molecule, official key) -> (n_cmp_pol_c1, n_cmp_add_c1, n_cmp_pol_c2, n_cmp_add_c2) from diag/refcmpx_<run>.parquet (refcmp_exact.py)
 MISTD = {}   # 133: (run basename, set, molecule) -> {smiles: (cos, nq, status, fint, npk, ppm)} from --mist_dir / --mist_tags
 MISTCOV = {}   # 133: (run basename, set) -> [groups, candidate rows]
+MISTQ = {}   # 133 v2: (run basename, set, molecule) -> number of MIST-usable queries (mist_qflags.py)
 EXPO = {}   # official key -> (fp_pos, negpool) from --exposure_ledger (Codex 028); used only when the feature list asks for the exposure block
 
 
@@ -43,8 +44,10 @@ def mist_of(run, s, mid, smiles):   # 133: strict lookup; the formula is the 128
     v_ = [d_.get(str(sm)) for sm in smiles]
     if any(x is None for x in v_): raise SystemExit(f"133: {sum(x is None for x in v_)} candidates of {os.path.basename(run)} {s} {mid} without a MIST row")
     c_ = MISTCOV.setdefault((os.path.basename(run), s), [0, 0]); c_[0] += 1; c_[1] += len(v_)
+    q_ = MISTQ.get((os.path.basename(run), s, str(mid)))
+    if q_ is None: raise SystemExit(f"133: no MIST query flag for {os.path.basename(run)} {s} {mid}")
     return dict(cos=[x[0] for x in v_], nq=[x[1] for x in v_], status=[x[2] for x in v_], fint=[x[3] for x in v_], npk=[x[4] for x in v_], ppm=[x[5] for x in v_],
-                form=[neutral_formula(str(sm)) for sm in smiles])
+                form=[neutral_formula(str(sm)) for sm in smiles], mol_nq=q_)
 
 
 def load_run(run, eval_csv, group_override=None, feats=FEATS):
@@ -213,13 +216,18 @@ def main():
         print(f"analog features {a.analog_parquet}: {len(ANA):,} (set, view, molecule) groups", flush=True)
     if a.mist_dir:   # 133
         import glob as _g
-        tags_ = dict(x.split('=', 1) for x in a.mist_tags); runs_ = [os.path.basename(r.split(':')[0]) for r in a.runs]
+        tags_ = dict(x.split('=', 1) for x in a.mist_tags); runs_ = [os.path.basename(r.split(':')[0]) for r in a.runs]; rpath_ = {os.path.basename(r.split(':')[0]): r.split(':')[0] for r in a.runs}
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mist")); import mist_validate as MV   # 133 v2
         if set(runs_) - set(tags_): raise SystemExit(f"133: runs without a MIST tag: {sorted(set(runs_) - set(tags_))}")
         for rb_ in runs_:
-            fs_ = sorted(_g.glob(os.path.join(a.mist_dir, f"mist_{tags_[rb_]}_*.parquet")))
+            fs_ = sorted(f_ for f_ in _g.glob(os.path.join(a.mist_dir, f"mist_{tags_[rb_]}_*.parquet")) if not f_.endswith("_qflags.parquet"))
             if not fs_: raise SystemExit(f"133: no MIST tables for {rb_} (tag {tags_[rb_]})")
             for f_ in fs_:
                 M_ = pd.read_parquet(f_); M_["molecule"] = M_.molecule.astype(str)
+                s1_ = str(M_["set"].iloc[0]) if len(M_) else os.path.basename(f_)[len(f"mist_{tags_[rb_]}_"):-len(".parquet")]
+                MV.validate_table(M_, f_, feat=pd.read_parquet(os.path.join(rpath_[rb_], f"b1_features_{s1_}.parquet"), columns=["molecule", "smiles", "official_key"]))
+                Q_ = pd.read_parquet(f_[:-len(".parquet")] + "_qflags.parquet"); Q_["molecule"] = Q_.molecule.astype(str); MV.validate_qflags(Q_, M_, f_)
+                for m_, n_ in zip(Q_.molecule, Q_.n_mist_q): MISTQ[(rb_, s1_, m_)] = float(n_)
                 if M_.duplicated(["set", "molecule", "smiles"]).any(): raise SystemExit(f"133: duplicate MIST rows in {f_}")
                 for (s_, m_), h_ in M_.groupby(["set", "molecule"]):
                     MISTD[(rb_, str(s_), m_)] = dict(zip(h_.smiles.astype(str), zip(h_.mist_cos.astype(float), h_.n_q.astype(float), h_.status.astype(str), h_.mist_fint.astype(float), h_.mist_npk.astype(float), h_.mist_ppm.astype(float))))

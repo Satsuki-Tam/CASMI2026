@@ -115,6 +115,7 @@ if __name__ == "__main__":
     import b1_analog as BA
     from b1_evaluate import z, term
     from b1_rankfeats import feature_matrix, EXTRA_MIST
+    import hashlib as _hl133
     from b1_common import ADDUCT_SHIFT, ELECTRON, select_queries
     from numba import set_num_threads, config as _ncfg
     import lightgbm as lgb
@@ -186,22 +187,25 @@ if __name__ == "__main__":
         for s_ in a.sets:
             X_ = pd.read_parquet(os.path.join(HERE, a.nscore, f"n111_{a.ntag}_{s_}.parquet"))
             for m_, sm_, n_, f_, fm_ in zip(X_.molecule.astype(str), X_.smiles.astype(str), X_.N.values, X_.Fs.values, X_.Fm.values): NSC[(s_, m_, sm_)] = {"N": float(n_), "Fs": float(f_), "Fm": float(fm_)}
-    MMX = {}   # 133: (set, molecule) -> {smiles: (cos, nq, status, fint, npk, ppm)}
+    MMX, MMQ = {}, {}   # 133: (set, molecule) -> {smiles: (cos, nq, status, fint, npk, ppm)}; (set, molecule) -> MIST-usable queries
     if any(f_ in EXTRA_MIST for fl_ in FEATS_M for f_ in fl_):
         if not (a.mist_main and a.mist_main_tag): raise SystemExit("133: a main model needs the MIST block but --mist_main / --mist_main_tag are not given")
         from wf_common import neutral_formula as _NF133
+        sys.path.insert(0, os.path.join(os.path.dirname(HERE), "mist")); import mist_validate as _MV133
         for s_ in a.sets:
-            X_ = pd.read_parquet(os.path.join(HERE, a.mist_main, f"mist_{a.mist_main_tag}_{s_}.parquet")); X_["molecule"] = X_.molecule.astype(str)
-            if X_.duplicated(["molecule", "smiles"]).any(): raise SystemExit(f"133: duplicate MIST rows in {s_}")
+            p_ = os.path.join(HERE, a.mist_main, f"mist_{a.mist_main_tag}_{s_}.parquet"); X_ = pd.read_parquet(p_); X_["molecule"] = X_.molecule.astype(str)
+            _MV133.validate_table(X_, p_, feat=pd.read_parquet(os.path.join(HERE, a.run, f"b1_features_{s_}.parquet"), columns=["molecule", "smiles", "official_key"]))
+            Q_ = pd.read_parquet(p_[:-len(".parquet")] + "_qflags.parquet"); Q_["molecule"] = Q_.molecule.astype(str); _MV133.validate_qflags(Q_, X_, p_)
+            for m_, n_ in zip(Q_.molecule, Q_.n_mist_q): MMQ[(s_, m_)] = float(n_)
             for m_, h_ in X_.groupby("molecule"): MMX[(s_, m_)] = dict(zip(h_.smiles.astype(str), zip(h_.mist_cos.astype(float), h_.n_q.astype(float), h_.status.astype(str), h_.mist_fint.astype(float), h_.mist_npk.astype(float), h_.mist_ppm.astype(float))))
-        log(f"133 MIST tables {a.mist_main} tag {a.mist_main_tag}: {len(MMX):,} (set, molecule) groups")
+        log(f"133 MIST tables {a.mist_main} tag {a.mist_main_tag}: {len(MMX):,} (set, molecule) groups, validated")
     def _mist133(s_, m_, smiles_):
         d_ = MMX.get((s_, str(m_)))
-        if d_ is None: raise SystemExit(f"133: no MIST rows for {s_} {m_}")
+        if d_ is None or (s_, str(m_)) not in MMQ: raise SystemExit(f"133: no MIST rows / query flag for {s_} {m_}")
         v_ = [d_.get(str(sm_)) for sm_ in smiles_]
         if any(x_ is None for x_ in v_): raise SystemExit(f"133: candidates of {s_} {m_} without a MIST row")
         return dict(cos=[x_[0] for x_ in v_], nq=[x_[1] for x_ in v_], status=[x_[2] for x_ in v_], fint=[x_[3] for x_ in v_], npk=[x_[4] for x_ in v_], ppm=[x_[5] for x_ in v_],
-                    form=[_NF133(str(sm_)) for sm_ in smiles_])
+                    form=[_NF133(str(sm_)) for sm_ in smiles_], mol_nq=MMQ[(s_, str(m_))])
     WMS, WMX = {}, {}
     if a.wf:   # 128 v2 (Codex 127 Q2 / 128): within-formula rerank
         from wf_common import neutral_formula as FORM_OF
@@ -364,6 +368,7 @@ if __name__ == "__main__":
                             if t_ == "gen" and i_ in mm["tokeys"]: return 1.0 / (k_ + 1)
                         return 0.0
                     out = dict(base, n_cand=len(g), main=rr_of(lst_db))
+                    out["gl_ok133"] = int(gl_ok); out["top25_133"] = _hl133.sha1(";".join(okeys[int(i)] for i in order[:25]).encode()).hexdigest()[:16]   # 133 v2
                     if EMODS and mi_ == 0:   # 102: second engine E-lite on the E window + identity RRF with the main order (rows = unique official keys)
                         em_ = g.in_coconut.values.astype(bool) | g[f"in_train_{vv}"].values.astype(bool) | np.fromiter((k_ in EKS for k_ in okeys), bool, len(okeys)); ei_ = np.flatnonzero(em_)
                         pos_m = np.empty(len(g), int); pos_m[np.asarray(order, int)] = np.arange(len(g))   # 0-based main position

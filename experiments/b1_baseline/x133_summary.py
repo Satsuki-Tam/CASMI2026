@@ -11,6 +11,8 @@ Readings (fixed; d = M main - P main per row, strict, identity bootstrap 4,000 p
           c1dev positive-ion C1 (C1_pos_*) pooled -> diag/x133_decision.json (PASS / NO).
   fold 2 (--fold 2, only after a fold-1 PASS): primary > 0 and block A / D, old B, G C1, NP C1 lower >= -0.01 -> stability ok / no.
 Diagnostics (not for the decision): rows up / down per cell, MIST-applicable (positive-capable) vs not.
+v2 (Codex 133, before any result): + validator / query-flag / trainer versions, control = P byte for byte, control and M share the fit roster,
+composition, params, rounds and differ only by EXTRA_MIST; P / M share n_cand and the GL path per row and are identical on the GL fallback path.
 Usage (Spark, experiments/b1_baseline): python -X utf8 x133_summary.py [--fold 2]"""
 import argparse, hashlib, json, os, sys
 import numpy as np, pandas as pd
@@ -55,6 +57,17 @@ for f, h in INP.items():
 for f, k in (("gen_eval2fd_m133.py", "evaluator_sha256"), ("b1_rankfeats.py", "rankfeats_sha256"), ("wf_common.py", "wf_common_sha256"), ("rank_v8w7a/lambdarank.txt", "P_sha256"),
              ("rank_m133/lambdarank.txt", "M_sha256")):
     if INP.get(f) != REG[k]: stop(f"{f} is not the registered version")
+for f, k in (("../mist/mist_validate.py", "validator_sha256"), ("../mist/mist_qflags.py", "qflags_sha256"), ("b1_rank_train.py", "trainer_sha256"),
+             ("rank_m133_ctrl/lambdarank.txt", "P_sha256")):   # v2 (Codex 133): the control retrained with the same trainer = P, byte for byte
+    if sha(os.path.join(HERE, f)) != REG[k]: stop(f"{f} is not the registered version")
+import filecmp
+for f in ("fit_roster.csv", "fit_composition.json"):
+    if not filecmp.cmp(os.path.join(HERE, "rank_m133_ctrl", f), os.path.join(HERE, "rank_m133", f), shallow=False): stop(f"control and M differ in {f} (training rows / composition)")
+RC, RM = json.load(open(os.path.join(HERE, "rank_m133_ctrl", "rank_results.json"))), json.load(open(os.path.join(HERE, "rank_m133", "rank_results.json")))
+if RC["selected"]["params"] != RM["selected"]["params"] or RC["selected"]["rounds"] != RM["selected"]["rounds"] or RC["c1_repeat"] != RM["c1_repeat"] or RC["drop"] != RM["drop"]: stop("control and M differ in the recipe")
+sys.path.insert(0, HERE); from b1_rankfeats import EXTRA_MIST
+if RM["feature_names"] != RC["feature_names"] + [c for c in EXTRA_MIST if c not in set(RM["drop"])]: stop("M feature list != control + EXTRA_MIST")
+print("control / M: same fit roster, composition, params, rounds; features differ by EXTRA_MIST only")
 for t in EVAL_CSV:
     mf = json.load(open(os.path.join(ROOT, "experiments", "mist", "scores_v4", f"mist_{t}_manifest.json")))
     if mf.get("ckpt_sha256") != REG["mist_ckpt_sha256"] or mf.get("mist_commit") != REG["mist_commit"]: stop(f"MIST v4 scores of {t}: checkpoint / commit not registered")
@@ -87,7 +100,13 @@ for t, csv in EVAL_CSV.items():
     if not exp <= set(zip(y.set, y.view, y.molecule)): stop(f"{t}: the frozen P lacks expected rows")
     z = xs["P"].merge(y, on=["set", "view", "molecule"], how="left", suffixes=("", "_base"), validate="one_to_one")
     if z.main_base.isna().any() or ((z.main - z.main_base).abs() > TOL).any(): stop(f"{t}: P's main differs from {BASE_OF[t]}")
-    j = xs["P"][["set", "view", "molecule", "main"]].merge(xs["M"][["set", "view", "molecule", "main"]].rename(columns={"main": "mm"}), on=["set", "view", "molecule"], how="inner", validate="one_to_one")
+    j = xs["P"][["set", "view", "molecule", "main", "n_cand", "gl_ok133", "top25_133"]].merge(xs["M"][["set", "view", "molecule", "main", "n_cand", "gl_ok133", "top25_133"]].rename(columns={"main": "mm", "n_cand": "n_cand_m", "gl_ok133": "gl_ok_m", "top25_133": "top25_m"}), on=["set", "view", "molecule"], how="inner", validate="one_to_one")
+    if not (j.n_cand.values == j.n_cand_m.values).all(): stop(f"{t}: P / M candidate counts differ")
+    gp_, gm_ = j.gl_ok133.fillna(-1).values, j.gl_ok_m.fillna(-1).values
+    if not (gp_ == gm_).all(): stop(f"{t}: P / M differ in the GL path")
+    fb_ = (gp_ == 0)
+    if not ((j.top25_133.values[fb_] == j.top25_m.values[fb_]).all() and np.allclose(j.main.values[fb_], j.mm.values[fb_], rtol=0, atol=0)): stop(f"{t}: P / M lists differ on the GL fallback path")
+    print(f"{t}: GL path {int((gp_ == 1).sum())}, fallback {int(fb_.sum())} (P = M there), empty {int((gp_ == -1).sum())}")
     if len(j) != len(exp): stop(f"{t}: P / M rows do not match one-to-one")
     j["ig"] = j.molecule.map(ig)
     if j.ig.isna().any() or j.duplicated(["set", "view", "ig"]).any(): stop(f"{t}: identity group missing or repeated within a cell")

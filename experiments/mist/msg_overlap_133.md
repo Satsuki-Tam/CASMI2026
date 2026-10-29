@@ -41,24 +41,35 @@
 
 ## development tables: identities by exposure
 
-| table | set | identities | msg_train_or_val | msg_test_only | not_in_msg | positive-capable (pos/both) |
-|---|---|---:|---:|---:|---:|---:|
-| f1dev | C_np_crosslib | 100 | 0 | 0 | 100 | 98 |
-| f1dev | D_np_single | 100 | 0 | 0 | 100 | 100 |
-| f1dev | E_np_negonly | 100 | 0 | 0 | 100 | 1 |
-| f1dev | F_np_uncovered | 100 | 0 | 0 | 100 | 98 |
-| f1dev | G_tims_crosslib | 100 | 0 | 0 | 100 | 92 |
-| f2dev | C_np_crosslib | 100 | 0 | 0 | 100 | 99 |
-| f2dev | D_np_single | 100 | 0 | 0 | 100 | 99 |
-| f2dev | E_np_negonly | 100 | 0 | 0 | 100 | 3 |
-| f2dev | F_np_uncovered | 100 | 0 | 0 | 100 | 94 |
-| f2dev | G_tims_crosslib | 100 | 0 | 0 | 100 | 96 |
-| np053f1dev | NP_H | 200 | 0 | 0 | 200 | 199 |
-| np053f1dev | NP_N | 60 | 0 | 0 | 60 | 1 |
-| np053f1dev | NP_X | 60 | 0 | 0 | 60 | 60 |
-| np053f2dev | NP_H | 200 | 0 | 0 | 200 | 197 |
-| np053f2dev | NP_N | 60 | 0 | 0 | 60 | 0 |
-| np053f2dev | NP_X | 60 | 0 | 0 | 60 | 58 |
-| panel | P_np250 | 250 | 226 | 10 | 14 | 232 |
+| table | set | identities | msg_train_or_val | msg_test_only | not_in_msg | unresolved key | positive-capable (pos/both) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| c1bankdev | C1_neg_few | 52 | 0 | 0 | 52 | 0 | 0 |
+| c1bankdev | C1_neg_many | 13 | 0 | 0 | 13 | 0 | 0 |
+| c1bankdev | C1_pos_few | 366 | 0 | 0 | 366 | 0 | 358 |
+| c1bankdev | C1_pos_many | 1 | 0 | 0 | 1 | 0 | 1 |
+| c1conf | C1_neg_few | 51 | 0 | 0 | 51 | 0 | 0 |
+| c1conf | C1_neg_many | 12 | 0 | 0 | 12 | 0 | 0 |
+| c1conf | C1_pos_few | 365 | 0 | 0 | 365 | 0 | 364 |
+| c1conf | C1_pos_many | 1 | 0 | 0 | 1 | 0 | 1 |
+| f1dev | C_np_crosslib | 100 | 0 | 0 | 100 | 0 | 98 |
+| f1dev | D_np_single | 100 | 0 | 0 | 100 | 0 | 100 |
+| f1dev | E_np_negonly | 100 | 0 | 0 | 100 | 0 | 1 |
+| f1dev | F_np_uncovered | 100 | 0 | 0 | 100 | 0 | 98 |
+| f1dev | G_tims_crosslib | 100 | 0 | 0 | 100 | 0 | 92 |
+| f2dev | C_np_crosslib | 100 | 0 | 0 | 100 | 0 | 99 |
+| f2dev | D_np_single | 100 | 0 | 0 | 100 | 0 | 99 |
+| f2dev | E_np_negonly | 100 | 0 | 0 | 100 | 0 | 3 |
+| f2dev | F_np_uncovered | 100 | 0 | 0 | 100 | 0 | 94 |
+| f2dev | G_tims_crosslib | 100 | 0 | 0 | 100 | 0 | 96 |
+| np053f1dev | NP_H | 200 | 0 | 0 | 200 | 0 | 199 |
+| np053f1dev | NP_N | 60 | 0 | 0 | 60 | 0 | 1 |
+| np053f1dev | NP_X | 60 | 0 | 0 | 60 | 0 | 60 |
+| np053f2dev | NP_H | 200 | 0 | 0 | 200 | 0 | 197 |
+| np053f2dev | NP_N | 60 | 0 | 0 | 60 | 0 | 0 |
+| np053f2dev | NP_X | 60 | 0 | 0 | 60 | 0 | 58 |
+| np096_conf093 | NP_H | 200 | 0 | 0 | 200 | 0 | 199 |
+| np096_conf093 | NP_N | 200 | 0 | 0 | 200 | 0 | 0 |
+| np102_d0conf | D_np_single | 286 | 0 | 0 | 286 | 0 | 284 |
+| panel | P_np250 | 250 | 226 | 10 | 14 | 0 | 232 |
 
 raw IK14 vs official-key agreement on the MSG membership (train runs): 1.0000

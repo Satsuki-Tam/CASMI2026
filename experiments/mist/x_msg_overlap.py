@@ -35,13 +35,15 @@ if __name__ == "__main__":
     key_of = dict(zip(us, ks)); msg["okey"] = msg.smiles.astype(str).map(key_of)
     folds = msg.dropna(subset=["okey"]).groupby("okey").fold.apply(set).to_dict()
     raw14 = msg.groupby(msg.inchikey.astype(str).str[:14]).fold.apply(set).to_dict()
-    exp = lambda k: ("msg_train_or_val" if (folds.get(k, set()) & {"train", "val"}) else ("msg_test_only" if k in folds else "not_in_msg"))
+    exp = lambda k: ("unresolved_key" if (k is None or str(k) in ("", "nan", "None")) else ("msg_train_or_val" if (folds.get(k, set()) & {"train", "val"}) else ("msg_test_only" if k in folds else "not_in_msg")))   # v2: null keys apart
     stats = dict(msg_spectra=len(msg), msg_smiles=len(us), msg_smiles_unparsed=sum(k is None for k in ks), msg_official_keys=len(folds),
                  msg_keys_by_fold={f: int(sum(f in v for v in folds.values())) for f in ("train", "val", "test")})
     RUNS = [("run_v3_p1", f"{ROOT}/experiments/p1_baseline/run1/p1_molecules.csv", "fit"), ("run_v3_eval", f"{B}/eval_set/p1_molecules.csv", None),
             ("run_v3_c1", f"{B}/eval_c1/p1_molecules.csv", None), ("run_tp_f3a", f"{B}/train_pool_f3a/p2_molecules.csv", "fit"), ("run_tp_f4a", f"{B}/train_pool_f4a/p2_molecules.csv", "fit")]
     DEV = [("np053f1dev", "run_np053_f1dev", f"{B}/np053_f1dev/p2_molecules.csv"), ("np053f2dev", "run_np053_f2dev", f"{B}/np053_f2dev/p2_molecules.csv"),
-           ("f1dev", "run_f1dev", f"{B}/eval_set_f1/p2_molecules.csv"), ("f2dev", "run_f2dev", f"{B}/eval_set_f2/p2_molecules.csv"), ("panel", "run_panel_fe", f"{B}/panel_np250/p1_molecules.csv")]
+           ("f1dev", "run_f1dev", f"{B}/eval_set_f1/p2_molecules.csv"), ("f2dev", "run_f2dev", f"{B}/eval_set_f2/p2_molecules.csv"), ("panel", "run_panel_fe", f"{B}/panel_np250/p1_molecules.csv"),
+           ("c1bankdev", "run_c1bankdev_f1", f"{B}/c1bank_f1/c1dev/p2_molecules.csv"), ("c1conf", "run_c1bankconf_f1", f"{B}/c1bank_f1/c1conf/p2_molecules.csv"),
+           ("np096_conf093", "run_np096_f0conf", f"{B}/np096_conf093/p2_molecules.csv"), ("np102_d0conf", "run_np102_d0conf", f"{B}/np102_d0conf/p2_molecules.csv")]   # v2 (Codex 133): + C1 bank and confirmation rosters
     def mol_info(run):
         fs = sorted(glob.glob(f"{B}/{run}/b1_molecules_*.csv"))
         if not fs: return pd.DataFrame(columns=["molecule", "adducts", "c1_usable"])
@@ -81,8 +83,8 @@ if __name__ == "__main__":
     for col in ("polarity", "c1_usable", "lib"):
         for val, gg in fit_ids.groupby(col):
             c = int((gg.exposure == "msg_train_or_val").sum()); md.append(f"| {col} | {val} | {len(gg)} | {c} | {len(gg) - c} |")
-    md += ["", "## development tables: identities by exposure", "", "| table | set | identities | msg_train_or_val | msg_test_only | not_in_msg | positive-capable (pos/both) |", "|---|---|---:|---:|---:|---:|---:|"]
+    md += ["", "## development tables: identities by exposure", "", "| table | set | identities | msg_train_or_val | msg_test_only | not_in_msg | unresolved key | positive-capable (pos/both) |", "|---|---|---:|---:|---:|---:|---:|---:|"]
     for (t, s), gg in R[R.kind == "dev"].drop_duplicates(["table", "group", "key"]).groupby(["table", "group"]):
-        c = gg.exposure.value_counts(); md.append(f"| {t} | {s} | {len(gg)} | {c.get('msg_train_or_val', 0)} | {c.get('msg_test_only', 0)} | {c.get('not_in_msg', 0)} | {int(gg.polarity.isin(['positive', 'both']).sum())} |")
+        c = gg.exposure.value_counts(); md.append(f"| {t} | {s} | {len(gg)} | {c.get('msg_train_or_val', 0)} | {c.get('msg_test_only', 0)} | {c.get('not_in_msg', 0)} | {c.get('unresolved_key', 0)} | {int(gg.polarity.isin(['positive', 'both']).sum())} |")
     md += ["", f"raw IK14 vs official-key agreement on the MSG membership (train runs): {float((tr.raw14_in_msg == (tr.exposure != 'not_in_msg')).mean()):.4f}"]
     open(f"{ROOT}/experiments/mist/out/msg_overlap.md", "w", encoding="utf-8").write("\n".join(md) + "\n"); print("\n".join(md))
