@@ -1,0 +1,20 @@
+{
+ "population": 1963,
+ "teacher_of_P": 232,
+ "used_dev": 1723,
+ "w135_overlap": 0,
+ "after_teacher_and_w135": 1731,
+ "after_teacher_w135_unused": 240,
+ "clean_families_ge2": 196,
+ "clean_members_in_fam_ge2": 940,
+ "clean_unused_families_ge2": 4,
+ "clean_unused_members_in_fam_ge2": 217,
+ "teacher_files_sha256": {
+  "experiments/p1_baseline/run1/p1_molecules.csv": "b18cdb9869d3f8e28447577fbf59a09b66585a41a839461172c9e0bad700989a",
+  "experiments/b1_baseline/eval_set/p1_molecules.csv": "bbfd686c9ae9effb7c25f777dd96396af66d96fdff20f2b18b1c2cd907a60811",
+  "experiments/b1_baseline/eval_c1/p1_molecules.csv": "768aa184ae106f7f03c4b165fe01fe1994cb96679b3ecc284a88db91435e0e78",
+  "experiments/b1_baseline/train_pool_f3a/p2_molecules.csv": "b48929fdf357c210f36df1b428adb0704167d216b50fcf7a575d4c28ded62240",
+  "experiments/b1_baseline/train_pool_f4a/p2_molecules.csv": "2590ad838abe8b086ac4f89ea966fed86cd200f69a74a3b3d59218c4ab811d5e"
+ },
+ "script_sha256": "f89aa34f398833f873f9f62788cf9377bb1e0bdd2f8175fde60a99215336757a"
+}
