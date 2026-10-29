@@ -6,6 +6,7 @@
   isomer  : truth in the list below rank 1 and P's rank-1 candidate has the truth's neutral formula (same-formula discrimination);
   formula : truth in the list below rank 1 and P's rank-1 candidate has another formula.
 For isomer / formula rows: which scores rank the truth above P's rank-1 (FP f.z, GL, library similarity). MRR loss = 1 - RR summed per layer.
+v2 (Codex 141): score comparisons stored as signs (pos / tie / neg / missing; a valid 0 is not missing) and the joint count reported.
 Usage (Spark, experiments/b1_baseline as cwd): python -X utf8 ../w135/x_error_ledger.py"""
 import json, os, sys
 import numpy as np, pandas as pd
@@ -31,8 +32,10 @@ for tag, run, s in SETS:
             ft, f1 = neutral_formula(tk_smi), neutral_formula(top_smi); rec["layer"] = "isomer" if (ft and ft == f1) else "formula"
             tv = view[view.is_truth.astype(bool)].iloc[0]; t1 = view[view.official_key.astype(str) == top[1]].iloc[0]; gq = gl.get(m) or {}
             g_t, g_1 = gq.get(tk_smi), gq.get(top_smi)
-            rec.update(fp_prefers_truth=bool(float(tv.fp or -1e9) > float(t1.fp or -1e9)), gl_prefers_truth=(None if g_t is None or g_1 is None else bool(g_t > g_1)),
-                       lib_prefers_truth=bool(float(tv.lib_sim_c2) > float(t1.lib_sim_c2)), truth_pop_higher=bool(float(tv.pop_public) > float(t1.pop_public)))
+            def sgn(a, b):   # v2 (Codex 141): sign of truth - top1 as pos / tie / neg / missing (a valid 0 is not missing)
+                a = np.nan if a is None else float(a); b = np.nan if b is None else float(b)
+                return "missing" if not (np.isfinite(a) and np.isfinite(b)) else ("pos" if a > b else ("tie" if a == b else "neg"))
+            rec.update(fp_sign=sgn(tv.fp, t1.fp), gl_sign=sgn(g_t, g_1), lib_sign=sgn(tv.lib_sim_c2, t1.lib_sim_c2), pop_sign=sgn(tv.pop_public, t1.pop_public))
         rows.append(rec)
 D = pd.DataFrame(rows); D["loss"] = 1.0 - D.rr
 print(f"molecules {len(D)}, MRR {D.rr.mean():.4f}")
@@ -41,6 +44,10 @@ for lay, g in D.groupby("layer"):
 A = D[D.layer == "absent"]; print("  absent split:", A["sub"].value_counts().to_dict())
 for lay in ("isomer", "formula"):
     g = D[D.layer == lay]
-    if len(g): print(f"  {lay}: truth preferred by FP {g.fp_prefers_truth.mean():.2f}, by GL {g.gl_prefers_truth.dropna().mean():.2f} (n {g.gl_prefers_truth.notna().sum()}), by library {g.lib_prefers_truth.mean():.2f}, truth more popular {g.truth_pop_higher.mean():.2f}")
+    if not len(g): continue
+    print(f"  {lay}: signs (truth - P top1) FP {g.fp_sign.value_counts().to_dict()} GL {g.gl_sign.value_counts().to_dict()} lib {g.lib_sign.value_counts().to_dict()} pop {g.pop_sign.value_counts().to_dict()}")
+    gg = g[g.gl_sign != "missing"]; anyp = (gg[["fp_sign", "gl_sign", "pop_sign"]] == "pos").any(axis=1)
+    print(f"    with a GL comparison: n {len(gg)}, at least one of FP / GL / popularity ranks the truth higher: {int(anyp.sum())} ({anyp.mean():.1%}); none: {int((~anyp).sum())}")
+    gm = g[g.gl_sign == "missing"]; print(f"    without a GL comparison: n {len(gm)} by set {gm.set.value_counts().to_dict()}")
 print("by set:"); print(D.groupby(["set", "layer"]).size().unstack(fill_value=0).to_string())
 D.to_parquet(os.path.join(HERE, "ledger", "ledger.parquet"), index=False)
