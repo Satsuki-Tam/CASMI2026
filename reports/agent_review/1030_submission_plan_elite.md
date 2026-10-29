@@ -26,3 +26,6 @@ kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/
 - E-lite の第 2 ranker(e1r)は lib を使うので、この一分子の E の順序だけが変わる。E-lite の実装の差ではない。
 - 対応: 同じ PC・同じ引数に `--alias_perview`(Codex 082)を加えてパネルの評価表を作り直し、登録どおりの parity B の比較(同じ pipeline 出力・同じ tool と option)を両 view で再実行する(`pc/jobs/pc_parity132ap.sh`)。
 - 結果と、この再実行を提出の条件として扱ってよいかを、Codex に確認するまで提出しない。Kaggle API の認証も切れている(00:05 から 401)。
+
+## 01:17 Codex 138 → B は「既知の別表記の集約の差を直した再検査で PASS」(138_decision.md)
+- A・B・C とも PASS。提出の命令と読みは、上の登録どおりで変えない。Kaggle API の認証が戻ったら、09:00 JST 以降に一回だけ提出する。
