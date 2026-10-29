@@ -28,3 +28,12 @@
 - データ・損失の契約(5,135 件)は違反 0。
 - 段階 2 の run の中で: export → gl_runner での strict な再読込、凍結 tensor の bit 一致、学習対象の変化、同じ 10 分子で適応版の採点が C0' と異なること(重みが使われる)を確認し、満たさなければ評価に進まない。
 - 学習は「GLACIER の強度側の追加学習(断片の提案と graph encoder は凍結)」であり、full GLACIER の学習の再現とは呼ばない。
+
+## 5. 確定版 v2(2026-10-29 22:19、Codex 134 を受けて、段階 2 の結果は未読)
+- **v1 の A1 は使わない(未読のまま保存)**: (1) collision_embedder_denominators / collision_embed_merged は本家の constructor で requires_grad = False の CE 符号化で、v1 の trainer はこれを学習可能にしていた(CE 表現は断片側にも渡るので、断片の提案集合も変わり得た)。(2) 新しい JointModel は step 0 から始まり、magma_warmup_steps 2,500 の間の学習の損失は「MAGMa 断片上の強度 + 断片」で、end-to-end の強度損失は入っていなかった(1,500 update はすべてこの期間)。A1 の採点(stage2_gl/gl_*_A1.json)も読まない。
+- **一候補 A2**(finetune_glt.py v2): 更新するのは **inten_encoder / inten_decoder / output_map だけ**(他は本家の requires_grad も含め固定、CE 符号化も固定 = 断片の提案は不変)、損失は **end-to-end の強度損失を明示的に最適化**(推論時と同じく、モデル自身が予測した断片の上の強度;本家の学習分岐と同じ cosine、Hungarian なし)×inten_weight。AdamW lr 1e-4・wd 0・warmup 100 の後一定・勾配の値で clip 5(clip の前に勾配の有限性を検査、更新後の parameter の有限性も検査)、1,500 update 固定、batch 16、seed 0、早期終了・checkpoint 選択なし、val 損失(モデルの検証損失、Hungarian あり)は記録のみ。sampling はスペクトル一様(identity あたり最大 4 スペクトル)。学習の前に CUDA の代表 batch で forward / backward / 1 update の事前検査(CPU では PASS:学習対象 110 tensor がすべて更新、凍結の変化 0)。学習後に凍結 tensor の bit 一致と export → runner の strict な再読込、10 分子で C0' と得点が異なることを検査。LinSATNet / pygmtools / 学習用 scatter shim / torch のパスと版を記録。
+- 学習データの CE は 20 / 30 / 40 / 60 eV(§0 の 20 / 40 / 60 を訂正)。
+- **評価器 v2**(gl_only_eval.py): 分母は選択名簿の全件(空の窓・正解未到達は両群 0)、真の GL が欠損なら rr_gl = 0(v1 は候補数を順位にしていた)、rr_form は真の式を使う能力診断(25 位で切らない)で rr_gl@25 と区別、A と B の非 null の (分子, SMILES) の集合と runner の状態・採点分子数の一致を要求(不一致は STOP;B が decoy を採点できずに rr_form が上がる値を利得にしない)、公式 key の重複は STOP、identity 単位の bootstrap、同式の競合 2 件以上・singleton・被覆を併記。
+- **関門 v2**(x134_read.py v2): **主 = f1dev G c2(timsTOF、base・適応とも未見)の rr_form の A2 − C0' ≥ +0.01 かつ 95% 下限 > 0**。費用(下限 ≥ −0.01): NP_H と D の rr_form、4 cell 各々の rr_gl(パネルを含む)。**パネルの rr_form は記述**(MSG で既見の NP 側;G の不改善をパネルで埋め合わせない)。+0.01 は小試験から次へ進む実用境界で、Public の +0.01 を意味しない。未見 NP への有効性は段階 3 の NP の主指標で判断する。
+- 採点: C0'(保存済み、stage2_gl)と A2 は同じ runner 入力・同じ runner の設定(batch 計画は入力から決まる)で順に採点。
+- **段階 3(関門を通った場合、別登録)**: 適応の identity は ranker の学習・開発・確認の identity と独立(Codex 134 が公式 key / global group で照合:重複 0)なので、単一の適応 GL で ranker の学習行を採点してよい。(1) GL だけの交換(同じ候補・query・凍結 ranker R0 に C0' と A2 を同条件で)、(2) ranker を合わせた比較(同じ学習 identity・候補・特徴・重み・params / rounds で C0' 特徴の R_A と A2 特徴の R_B):主 = (A2, R_B) − (C0', R_A)、参考 (A2, R0)。C0' の再採点と保存 cache の差は別に記録。
