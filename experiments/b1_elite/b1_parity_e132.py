@@ -38,6 +38,18 @@ keep = Fall[f"in_short_{v}"].astype(bool)
 if v == "c2": keep &= (Fall.in_tier | Fall.in_coconut | Fall.in_train_c2).astype(bool)
 F = Fall[keep]
 fails = []
+if a.elite_model:   # 132 (B v2, Codex 132)
+    for f_ in (a.pred_main, a.pred_fixed, a.pred_elite, a.model, a.stage_stats, a.elite_keys):
+        if not (f_ and os.path.exists(f_)): sys.exit(f"132: E-lite mode needs every input; missing {f_}")
+    if not S.molecule_id.is_unique: sys.exit("132: duplicate ids in the solution (roster)")
+    ROSTER = set(S.molecule_id)
+    for f_ in (a.pred_main, a.pred_fixed, a.pred_elite):
+        d_ = pd.read_csv(f_, dtype=str, keep_default_na=False)
+        if not d_.molecule_id.is_unique or set(d_.molecule_id) != ROSTER: sys.exit(f"132: {f_}: ids not unique or not the roster")
+    st_ = pd.read_csv(a.stage_stats); st_["molecule"] = st_.molecule.astype(str)
+    if not st_.molecule.is_unique or set(st_.molecule) != ROSTER: sys.exit("132: stage stats ids not unique or not the roster")
+    if not Mall.index.is_unique or not ROSTER <= set(Mall.index): sys.exit("132: evaluator ledger ids not unique or roster molecules missing")
+    EXP_IDS = ROSTER & set(F.molecule); EMPTY_IDS = ROSTER - EXP_IDS; CMP_IDS = set()
 # ---------------- (1) query selection
 q_bad = []
 if a.stage_stats and os.path.exists(a.stage_stats):
@@ -119,7 +131,9 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
         gl, gl_ok = load("gl", s_name); ice, ice_ok = load("ice", s_name)
         if a.w_ice == 0: ice, ice_ok = {}, False
         for mid, g in Fs.groupby("molecule", sort=False):
-            if mid not in pm_of or mid not in pf_of or mid not in truth_of: continue
+            if mid not in pm_of or mid not in pf_of or mid not in truth_of:
+                if a.elite_model: sys.exit(f"132: {mid} missing from an output or the solution")   # unreachable after the v2 pre-checks
+                continue
             g = g.reset_index(drop=True); fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float); lib = g[f"lib_sim_{v}"].values.astype(float)
             glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
             icv = np.array([np.nan if (ice.get(mid) or {}).get(sm) is None else float((ice.get(mid) or {}).get(sm)) for sm in g.smiles], float)
@@ -161,7 +175,7 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
                     es_ = EL.e_rank(EBST, XE_, ei_, EL.positions(o_, len(g)))
                 new_ = EL.rrf(o_, es_, a.elite_k, a.elite_alpha); assert EL.rrf(o_, es_, a.elite_k, 0.0) == o_
                 ev_el = [ident(str(g.smiles.values[i])) for i in new_[:25]]; pp_el = [ident(x) for x in pe_of[mid].split(";")]
-                stats["n_el"] += 1; stats["top1_el"] += ev_el[0] == pp_el[0]; stats["top25_el"] += ev_el == pp_el; stats["el_top1_changed"] += int(new_[0] != o_[0])
+                CMP_IDS.add(mid); stats["n_el"] += 1; stats["top1_el"] += ev_el[0] == pp_el[0]; stats["top25_el"] += ev_el == pp_el; stats["el_top1_changed"] += int(new_[0] != o_[0])
                 stats["rr_el"] += metric.per_molecule_reciprocal_rank(truth_of[mid], pe_of[mid].split(";")) == metric.per_molecule_reciprocal_rank(truth_of[mid], [str(g.smiles.values[i]) for i in new_[:25]])
                 if ev_el != pp_el: EL_BAD.append(mid)
                 dm_ = D[D.molecule == mid].drop_duplicates("key"); pk_ = set(dm_.key.astype(str))
@@ -207,6 +221,10 @@ if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and 
         if stats["n_el"] != stats["n"]: fails.append(f"132: E-lite compared on {stats['n_el']} of {stats['n']} molecules")
         if stats["top25_el"] < stats["n_el"] or stats["top1_el"] < stats["n_el"] or stats["rr_el"] < stats["n_el"]: fails.append(f"132: E-lite list differs (ordered top-25 {stats['n_el'] - stats['top25_el']}, top-1 {stats['n_el'] - stats['top1_el']}, RR {stats['n_el'] - stats['rr_el']} molecules; e.g. {EL_BAD[:3]})")
         if stats["emem_mismatch"]: fails.append(f"132: E membership differs for {stats['emem_mismatch']} shared candidates")
+        if CMP_IDS != EXP_IDS: fails.append(f"132: compared ids != expected ids (missing {sorted(EXP_IDS - CMP_IDS)[:3]}, extra {sorted(CMP_IDS - EXP_IDS)[:3]})")
+        bad_empty_ = [m_ for m_ in sorted(EMPTY_IDS) if not (pm_of[m_] == pe_of[m_] == "CCO")]
+        if bad_empty_: fails.append(f"132: roster molecules without a view list whose P / E-lite are not the same placeholder: {bad_empty_[:3]}")
+        md += ["", f"132 completeness: roster {len(ROSTER)}, compared {len(CMP_IDS)} = expected {len(EXP_IDS)} ({CMP_IDS == EXP_IDS}), empty view lists {len(EMPTY_IDS)} (placeholders equal: {not bad_empty_})"]
     if stats["top1_ins"] < n: fails.append(f"insurance top-1 differs for {n - stats['top1_ins']} molecules")
     if stats["rr_main"] < n or stats["rr_ins"] < n: fails.append(f"RR differs (main {n - stats['rr_main']}, insurance {n - stats['rr_ins']} molecules)")
     if stats["set25_main"] / n < a.top25_set_min_share or stats["set25_ins"] / n < a.top25_set_min_share: fails.append(f"top-25 sets identical below {a.top25_set_min_share:.2f} (main {stats['set25_main']/n:.3f}, insurance {stats['set25_ins']/n:.3f})")

@@ -5,6 +5,8 @@
 # official identities, top-1, RR, every molecule) and the E membership of every shared candidate. FPNet runs on the GPU (as when the table was
 # built), so the job waits for the PC-GPU window (00:00-09:00 JST) and refuses if another CUDA process is present. No --solution in the pipeline
 # runs (no score printed); the solution file is read only by the parity script.
+# v2 (Codex 132): each pipeline starts only before 08:00 and is stopped at 08:55 (timeout) -> incomplete = FAIL (the scope is never reduced);
+# the parity script runs in its complete E-lite mode (roster / ids / sets checked); the job exits 1 on any FAIL.
 set -u
 cd /c/kaggle/CASMI || exit 1
 until [ "$(date +%H)" -lt 9 ]; do sleep 60; done
@@ -19,10 +21,12 @@ FAIL=0
 for mode in c2 c1; do
   W=$E/run_e132_${mode}; G=$E/run_v8w7a_${mode}
   [ -e $W ] && { echo "refused: $W exists"; exit 1; }
-  $PY -X utf8 $S/b1_pipeline.py --test $E/test.parquet --out $W --workers 8 --mask_json $E/mask_$mode.json --rank_model $MODEL --tau 0.9 --main blend21 \
+  H=$((10#$(date +%H))); [ $H -lt 8 ] || { echo "== $(date +%T) pipeline $mode NOT started: past 08:00, the GPU part must end before 09:00 (Codex 132) -> incomplete"; FAIL=1; continue; }
+  LEFT=$(( $(date -d "today 08:55" +%s) - $(date +%s) )); [ $LEFT -gt 600 ] || { echo "== $(date +%T) pipeline $mode NOT started: less than 10 min before 08:55 -> incomplete"; FAIL=1; continue; }
+  timeout $LEFT $PY -X utf8 $S/b1_pipeline.py --test $E/test.parquet --out $W --workers 8 --mask_json $E/mask_$mode.json --rank_model $MODEL --tau 0.9 --main blend21 \
     --k_fpp 200 --k_pop 50 --w_ice 0 --fpnet_ckpt $CK --analog_w 0 --analog_w_fallback 1 --analog_feat ap --frag_w_fallback 1 \
     --gl_json $G/gl_out.json --elite_model $EM --elite_keys $EK --elite_model_sha $EMS --elite_keys_sha $EKS > $W.log 2>&1
-  rc=$?; echo "== $(date +%T) pipeline $mode exit $rc $(grep -a '132 E-lite: [0-9]' $W.log | tail -1 | cut -c1-200)"; [ $rc = 0 ] || FAIL=1
+  rc=$?; echo "== $(date +%T) pipeline $mode exit $rc (124 = stopped at the 08:55 deadline) $(grep -a '132 E-lite: [0-9]' $W.log | tail -1 | cut -c1-200)"; [ $rc = 0 ] || FAIL=1
 done
 for mode in c2 c1; do
   W=$E/run_e132_${mode}; G=$E/run_v8w7a_${mode}
@@ -39,4 +43,5 @@ a = pd.read_csv(sys.argv[1], dtype=str, keep_default_na=False).set_index('molecu
 d = [m for m in a.index if m not in b.index or a[m] != b[m]]
 print('descriptive: P of this run vs the 087 run main list:', len(a), 'molecules,', len(d), 'differ', d[:3])" $W/submission_pref.csv $G/submission.csv
 done
-[ $FAIL = 0 ] && echo "PARITY132_DONE PASS $(date '+%F %T')" || echo "PARITY132_DONE FAIL $(date '+%F %T')"
+if [ $FAIL = 0 ]; then echo "PARITY132_DONE PASS $(date '+%F %T')"; exit 0; fi   # Codex 132: FAIL -> non-zero exit
+echo "PARITY132_DONE FAIL $(date '+%F %T')"; exit 1

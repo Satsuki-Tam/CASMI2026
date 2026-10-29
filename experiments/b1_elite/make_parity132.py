@@ -71,6 +71,34 @@ rep('    if stats["top1_main"] < n: fails.append(f"main top-1 differs for {n - s
     '        if stats["n_el"] != stats["n"]: fails.append(f"132: E-lite compared on {stats[\'n_el\']} of {stats[\'n\']} molecules")\n'
     '        if stats["top25_el"] < stats["n_el"] or stats["top1_el"] < stats["n_el"] or stats["rr_el"] < stats["n_el"]: fails.append(f"132: E-lite list differs (ordered top-25 {stats[\'n_el\'] - stats[\'top25_el\']}, top-1 {stats[\'n_el\'] - stats[\'top1_el\']}, RR {stats[\'n_el\'] - stats[\'rr_el\']} molecules; e.g. {EL_BAD[:3]})")\n'
     '        if stats["emem_mismatch"]: fails.append(f"132: E membership differs for {stats[\'emem_mismatch\']} shared candidates")\n')
+# v2 (Codex 132, before B runs): E-lite mode is complete or it stops -- every input exists, ids unique, every output / the stage stats = the roster,
+# the compared ids = the roster molecules with a non-empty view list in the evaluator table (independent of the pipeline outputs), the other roster
+# molecules must carry the same placeholder in P and E-lite; nothing is dropped from the denominator.
+rep("F = Fall[keep]\nfails = []\n",
+    "F = Fall[keep]\nfails = []\n"
+    "if a.elite_model:   # 132 (B v2, Codex 132)\n"
+    "    for f_ in (a.pred_main, a.pred_fixed, a.pred_elite, a.model, a.stage_stats, a.elite_keys):\n"
+    "        if not (f_ and os.path.exists(f_)): sys.exit(f\"132: E-lite mode needs every input; missing {f_}\")\n"
+    "    if not S.molecule_id.is_unique: sys.exit(\"132: duplicate ids in the solution (roster)\")\n"
+    "    ROSTER = set(S.molecule_id)\n"
+    "    for f_ in (a.pred_main, a.pred_fixed, a.pred_elite):\n"
+    "        d_ = pd.read_csv(f_, dtype=str, keep_default_na=False)\n"
+    "        if not d_.molecule_id.is_unique or set(d_.molecule_id) != ROSTER: sys.exit(f\"132: {f_}: ids not unique or not the roster\")\n"
+    "    st_ = pd.read_csv(a.stage_stats); st_[\"molecule\"] = st_.molecule.astype(str)\n"
+    "    if not st_.molecule.is_unique or set(st_.molecule) != ROSTER: sys.exit(\"132: stage stats ids not unique or not the roster\")\n"
+    "    if not Mall.index.is_unique or not ROSTER <= set(Mall.index): sys.exit(\"132: evaluator ledger ids not unique or roster molecules missing\")\n"
+    "    EXP_IDS = ROSTER & set(F.molecule); EMPTY_IDS = ROSTER - EXP_IDS; CMP_IDS = set()\n")
+rep("            if mid not in pm_of or mid not in pf_of or mid not in truth_of: continue\n",
+    "            if mid not in pm_of or mid not in pf_of or mid not in truth_of:\n"
+    "                if a.elite_model: sys.exit(f\"132: {mid} missing from an output or the solution\")   # unreachable after the v2 pre-checks\n"
+    "                continue\n")
+rep('                stats["n_el"] += 1;', '                CMP_IDS.add(mid); stats["n_el"] += 1;')
+rep('        if stats["emem_mismatch"]: fails.append(f"132: E membership differs for {stats[\'emem_mismatch\']} shared candidates")\n',
+    '        if stats["emem_mismatch"]: fails.append(f"132: E membership differs for {stats[\'emem_mismatch\']} shared candidates")\n'
+    '        if CMP_IDS != EXP_IDS: fails.append(f"132: compared ids != expected ids (missing {sorted(EXP_IDS - CMP_IDS)[:3]}, extra {sorted(CMP_IDS - EXP_IDS)[:3]})")\n'
+    '        bad_empty_ = [m_ for m_ in sorted(EMPTY_IDS) if not (pm_of[m_] == pe_of[m_] == "CCO")]\n'
+    '        if bad_empty_: fails.append(f"132: roster molecules without a view list whose P / E-lite are not the same placeholder: {bad_empty_[:3]}")\n'
+    '        md += ["", f"132 completeness: roster {len(ROSTER)}, compared {len(CMP_IDS)} = expected {len(EXP_IDS)} ({CMP_IDS == EXP_IDS}), empty view lists {len(EMPTY_IDS)} (placeholders equal: {not bad_empty_})"]\n')
 dst = os.path.join(HERE, "b1_parity_e132.py")
 open(dst, "w", encoding="utf-8", newline="\n").write(t)
 print("wrote", dst, hashlib.sha256(t.encode()).hexdigest())

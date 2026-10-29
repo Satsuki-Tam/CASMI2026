@@ -30,3 +30,12 @@
 
 ## 4. 並行(この比較の結果で変えない)
 Codex 131 の Q2 / Q3(131_decision.md): 全名簿の源の確定と源の感度表、MIST 特徴の ranker 再学習の一対比較、GLACIER の timsTOF 適応、class 3 の実現性。
+
+## 5. Codex 132 を受けた技術修正(20:31、Public の前;候補・定数・読みは不変)
+- 書き方の訂正: §0 の「採否はこの登録の §3 の Public の読みだけで決める」は「**§2 の技術的成立(A・B・C の合格)を確認した上で、性能上の判断を §3 で行う**」と読む。elite.py の冒頭の「r_E … 0 for rows outside E」は「E 外は第二項 0(実装上 r_E = ∞)」の意味(実装と登録の式は一致;(A) で使った elite.py 4a11a714 の実体を変えないため、ファイルは書き換えない)。
+- **(A) の結果(20:22)**: 6 表・両 view の候補のある全分子で、評価器の inline 実装と elite.py が E の行・E の特徴行列・E の順序・α 0.5 / 1.0 の RRF の全順序・α 0 の main 順を完全再現(assert 件数 = 候補のある行数)。保存済み r102 の全 RR 列とも全行一致(x132a_compare.md、**PARITY_A PASS**)。最初の比較器は pandas 3 で NaN 同士の比較を不一致と数える誤り(候補 0 の行の e_reach)があり、NaN を考慮する版に直して保存出力を再比較した(v1 の出力は x132a_compare_v1_nanbug.md に保存)。親ジョブは FAIL を非 0 の終了にするよう修正(spark_e132a.sh)。
+- **(C) v1 の結果(20:21)**: commit run の P(submission_pref.csv)は v8w7a の参照 run 2 本と byte 一致、fixed / probe 一致、E-lite の list は妥当(check_elite_commit.py PASS)。ただし下の修正で pipeline と notebook が変わるため、**提出する版で C を取り直す**。
+- pipeline(b1_pipeline.py **930fa3f8**、make_elite.py): E 有効時に K = 10・α = 0.5・pcl_boost off・twin_tau None・主 ranker の読込を要求;E 入力は同名が複数あれば期待 sha のものだけ(曖昧なら停止)、解決した絶対パスと「期待 sha を渡したか」を manifest に記録;E 空なら E-lite = P、候補の公式 key は非 null・一意を分子ごとに assert;elite_stats は空でも列名を固定。elite.py は不変(4a11a714)。CPU の smoke で旧版と全出力の内容が一致(行の順だけ違う)。
+- notebook v2(make_b1_elite.py): pipeline の前に **公式 identity の RDKit = 2026.03.3** と互変異性・立体の fixture 12 件の公式 key を、pipeline と同じ新しいインタープリタで検査し、版・パス・wheel の hash を ELITE_RDKIT として記録(違えば停止)。RECORD: 期待 sha を渡したこと、入力が /kaggle/input 下に解決されたこと、elite_stats の分子 = n_shortlist > 0 の処理済み分子(一意)、n_cand = n_shortlist、0 ≤ n_e ≤ n_cand、E 空の分子で list 不変。
+- (B) v2(b1_parity_e132.py、make_parity132.py): E-lite モードでは全入力の存在、名簿(solution)・P / fixed / E-lite・stage stats の ID の一意と集合一致を先に要求し、**比較した ID = 評価器の表で view の list が空でない名簿の分子**を要求、list が空の名簿の分子は P と E-lite が同じ placeholder であることを要求(分母から落とさない)。ジョブは各 pipeline を 08:00 前にだけ開始し 08:55 で打ち切る(未完了 = FAIL、範囲を縮めない)、FAIL は非 0 で終了。
+- 提出の条件: A の JSON が PASS、B の c1 / c2 の parity がともに PASS(終了コード 0 と md の PARITY PASS)、提出する notebook の版の C が PASS、各記録の hash が提出する notebook・e1r・E keys と対応すること。読みは登録どおり(Public ≥ 0.402 暫定採用候補 / 0.379 < Public < 0.402 保留 / ≤ 0.379 点検)。

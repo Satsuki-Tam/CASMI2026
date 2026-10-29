@@ -1,4 +1,5 @@
 """132 E-lite commit-run check (parity (C) of 132_prereg_elite_public.md; written before the commit run is read). Exit code 0 only when every check passes.
+v2 (Codex 132): expected pipeline 930fa3f8 (registered-combination asserts), ELITE_RDKIT line (official-identity RDKit 2026.03.3 + fixture), shas given, inputs resolved under /kaggle/input.
 (1) The main list P of the E-lite commit run must reproduce the v8w7a commit runs already on disk (kernels/b1-probe-tv8w7a/output_v1 and
     b1-probe-bv8w7a/output_v1: the same recipe, the same 12 smoke molecules):
     - submission_pref.csv put into the reference run's molecule order, re-serialised with pandas (molecule_id, smiles; UTF-8; LF): sha256 equal to
@@ -15,7 +16,7 @@ Usage: python -X utf8 kernels/check_elite_commit.py kernels/b1-elite/output_v1""
 import hashlib, io, json, os, sys
 import pandas as pd
 out = sys.argv[1]; REF = ["kernels/b1-probe-tv8w7a/output_v1", "kernels/b1-probe-bv8w7a/output_v1"]
-PIPE_SHA, ELITE_SHA = "992912ecc35a0bf21cc8be1897587915513afc7454ba66cea5c29cc219dae1e7", "4a11a714eb0bfb52070ea66bf15413ed04c7019c2fe41c823f64dada2bad3ed2"
+PIPE_SHA, ELITE_SHA = "930fa3f835ecad9d54b5e2822427253c4758337104a32d3506da28252a337536", "4a11a714eb0bfb52070ea66bf15413ed04c7019c2fe41c823f64dada2bad3ed2"
 EM_SHA, EK_SHA = "8f4a81b5f8ba7f589cfd74980ea40075169121b2ce1382cb92a1f2aa150ec1f5", "f572682b47a882de18bbe3ded9129fa0544e3c52281447e90f7bc3f13042a672"
 EXTRA = ["--elite_model", "elite132_e1r_lambdarank.txt", "--elite_keys", "elite132_e_window_keys_v2.parquet", "--elite_k", "10", "--elite_alpha", "0.5", "--elite_model_sha", EM_SHA, "--elite_keys_sha", EK_SHA]
 ok = True
@@ -43,6 +44,8 @@ if mm["embedded_sha256"].get("b1_pipeline.py") != PIPE_SHA: fail(f"embedded b1_p
 if mm["embedded_sha256"].get("elite.py") != ELITE_SHA: fail(f"embedded elite.py {mm['embedded_sha256'].get('elite.py')}")
 if el.get("model_sha256") != EM_SHA or el.get("keys_sha256") != EK_SHA: fail(f"E-lite inputs {el.get('model_sha256')} / {el.get('keys_sha256')}")
 if el.get("K") != 10.0 or el.get("alpha") != 0.5: fail(f"K / alpha {el.get('K')} / {el.get('alpha')}")
+if el.get("expected_shas_given") is not True or el.get("pcl_boost") or el.get("twin_tau") is not None: fail(f"registered combination: shas given {el.get('expected_shas_given')}, pcl {el.get('pcl_boost')}, twin {el.get('twin_tau')}")
+if not str(el.get("model", "")).startswith("/kaggle/input/") or not str(el.get("keys", "")).startswith("/kaggle/input/"): fail(f"E inputs not resolved under /kaggle/input: {el.get('model')} {el.get('keys')}")
 if man["params"].get("LAM") != 0.5 or man["params"].get("lam_fixed") is not None: fail("LAM / lam_fixed")
 if man.get("fusion", {}).get("learned_failed"): fail("learned_failed present")
 es = pd.read_csv(os.path.join(out, "elite_stats.csv"), dtype={"molecule": str})
@@ -80,5 +83,8 @@ logs = [f for f in os.listdir(out) if f.startswith("casmi26-b1-elite") and f.end
 rec = [l for f in logs for l in open(os.path.join(out, f), encoding="utf-8", errors="replace").read().splitlines() if "ELITE_RECORD" in l]
 print("record:", rec[-1][:700] if rec else "MISSING")
 if not rec: fail("ELITE_RECORD line missing")
+rdk = [l for f in logs for l in open(os.path.join(out, f), encoding="utf-8", errors="replace").read().splitlines() if "ELITE_RDKIT" in l]
+print("rdkit:", rdk[-1][:400] if rdk else "MISSING")
+if not rdk or '\\"version\\": \\"2026.03.3\\"' not in rdk[-1]: fail("ELITE_RDKIT line missing or not 2026.03.3")
 print("ELITE_COMMIT_CHECK", "PASS" if ok else "FAIL")
 raise SystemExit(0 if ok else 1)

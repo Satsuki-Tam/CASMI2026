@@ -539,16 +539,26 @@ def main():
         import hashlib as _hl, lightgbm as _lgb
         import elite as EL
         from b1_rankfeats import feature_matrix as _fm_e
-        def _res(p_):   # Kaggle: a dataset file is found by its name under /kaggle/input
-            return p_ if (os.path.exists(p_) or not KAGGLE) else find(os.path.basename(p_))
+        assert args.elite_k == 10.0 and args.elite_alpha == 0.5, "132: only the registered K 10 / alpha 0.5"   # Codex 132: the registered combination
+        assert not args.pcl_boost and args.twin_tau is None, "132: pcl_boost / twin_tau must be off (the hook reads the final main order)"
+        assert booster is not None, "132: the main ranker must be loaded"
         def _sha(p_):
             with open(p_, "rb") as fh_: return _hl.sha256(fh_.read()).hexdigest()
-        _em, _ek = _res(args.elite_model), _res(args.elite_keys); _ems, _eks = _sha(_em), _sha(_ek)
+        def _res(p_, want_):   # Kaggle: a dataset file is found by its name under /kaggle/input; several hits -> the one with the expected sha256, else stop (Codex 132)
+            if os.path.exists(p_) or not KAGGLE: return os.path.abspath(p_)
+            hits_ = sorted(glob.glob(os.path.join("/kaggle/input", "**", os.path.basename(p_)), recursive=True))
+            if not hits_: raise FileNotFoundError(p_)
+            if len(hits_) == 1: return hits_[0]
+            ok_ = [h_ for h_ in hits_ if want_ and _sha(h_) == want_]
+            if len(ok_) != 1: raise SystemExit(f"132: ambiguous E input {os.path.basename(p_)}: {hits_}")
+            return ok_[0]
+        _em, _ek = _res(args.elite_model, args.elite_model_sha), _res(args.elite_keys, args.elite_keys_sha); _ems, _eks = _sha(_em), _sha(_ek)
         if args.elite_model_sha and _ems != args.elite_model_sha: raise SystemExit(f"132: E model sha256 {_ems} != expected {args.elite_model_sha}")
         if args.elite_keys_sha and _eks != args.elite_keys_sha: raise SystemExit(f"132: E keys sha256 {_eks} != expected {args.elite_keys_sha}")
         _eb = _lgb.Booster(model_file=_em); _ekeys = pd.read_parquet(_ek, columns=["key"]).key.astype(str)
         ELITE = dict(booster=_eb, feats=list(_eb.feature_name()), keys=set(_ekeys))
-        ELITE_MAN = dict(model=_em, model_sha256=_ems, keys=_ek, keys_sha256=_eks, n_keys=len(ELITE["keys"]), K=args.elite_k, alpha=args.elite_alpha, feats=ELITE["feats"], trees=_eb.num_trees())
+        ELITE_MAN = dict(model=_em, model_sha256=_ems, keys=_ek, keys_sha256=_eks, n_keys=len(ELITE["keys"]), K=args.elite_k, alpha=args.elite_alpha, feats=ELITE["feats"], trees=_eb.num_trees(),
+                         expected_shas_given=bool(args.elite_model_sha and args.elite_keys_sha), pcl_boost=args.pcl_boost, twin_tau=args.twin_tau)
         log(f"132 E-lite: model {_em} ({_ems[:12]}, {_eb.num_trees()} trees, {len(ELITE['feats'])} features), E keys {len(ELITE['keys']):,} ({_eks[:12]}), K {args.elite_k} alpha {args.elite_alpha}")
     def _elite_hook(mid, rows, order, fp, g, pop, lib):   # 132: reads the final main order of one molecule; writes only ELITE_OUT / ELITE_ST
         mi_ = molinfo.get(str(mid), dict(n_query=1, ce_known=0.0))
@@ -557,6 +567,8 @@ def main():
         o_ = [int(i) for i in order]
         assert EL.rrf(o_, es_, args.elite_k, 0.0) == o_, "132: alpha 0 does not reproduce the main order"
         assert sorted(new_) == sorted(o_), "132: the E-lite list changed the candidate set"
+        assert 0 <= ne_ <= len(o_) and (ne_ > 0 or new_ == o_), "132: E empty but the list changed"   # Codex 132
+        _k = [r["key"] for r in rows]; assert all(_k) and len(set(_k)) == len(_k), "132: candidate official keys must be non-null and unique"
         ELITE_OUT[str(mid)] = ";".join(rows[i]["smiles"] for i in new_[:25])
         ELITE_ST.append(dict(molecule=str(mid), n_cand=len(rows), n_e=ne_, top1_changed=int(new_[0] != o_[0]), top25_changed=int(new_[:25] != o_[:25]),
                              main_top1_in_e=int(o_[0] in set(es_)), e_top1_main_rank=(o_.index(es_[0]) + 1 if es_ else 0), new_top1_main_rank=o_.index(new_[0]) + 1))
@@ -634,7 +646,7 @@ def main():
         assert all(m_ in ELITE_OUT for m_ in _need) and len(ELITE_OUT) == len(_need), ("132: E-lite list missing for some molecules with candidates", len(ELITE_OUT), len(_need))
         sub_pref = sub; sub = [(m_, ELITE_OUT.get(str(m_), s_)) for m_, s_ in sub_pref]
         pd.DataFrame(sub_pref, columns=["molecule_id", "smiles"]).to_csv(f"{P['work']}/submission_pref.csv", index=False)
-        _st = pd.DataFrame(ELITE_ST); _st.to_csv(f"{P['work']}/elite_stats.csv", index=False)
+        _st = pd.DataFrame(ELITE_ST, columns=["molecule", "n_cand", "n_e", "top1_changed", "top25_changed", "main_top1_in_e", "e_top1_main_rank", "new_top1_main_rank"]); _st.to_csv(f"{P['work']}/elite_stats.csv", index=False)
         ELITE_MAN.update(molecules=len(_need), e_nonempty=int((_st.n_e > 0).sum()) if len(_st) else 0, e_size_median=float(_st.n_e.median()) if len(_st) else 0.0,
                          cand_median=float(_st.n_cand.median()) if len(_st) else 0.0, top1_changed=int(_st.top1_changed.sum()) if len(_st) else 0,
                          top25_changed=int(_st.top25_changed.sum()) if len(_st) else 0, lists_changed=int(sum(a_ != b_ for (_, a_), (_, b_) in zip(sub, sub_pref))))

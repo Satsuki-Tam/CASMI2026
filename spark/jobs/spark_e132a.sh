@@ -26,4 +26,5 @@ FAIL=0; for p in "${PIDS[@]}"; do wait $p || FAIL=1; done
 for f in diag/r132A_*.csv diag/r132A_*_e132check.json; do echo "$(sha256sum $f | cut -c1-64) $f" >> ../../$MAN; done
 [ $FAIL -eq 0 ] || { echo "E132A_FAIL evaluation (see diag/r132A_<T>.log) $(date +%T)"; exit 1; }
 $PY -X utf8 ../b1_elite/x132a_compare.py > diag/x132a_compare.log 2>&1; rc=$?
-echo "E132A_DONE compare_rc=$rc $(tail -1 diag/x132a_compare.log | cut -c1-200) $(date +%T)"
+if [ $rc -eq 0 ]; then echo "E132A_DONE PASS $(tail -1 diag/x132a_compare.log | cut -c1-200) $(date +%T)"; exit 0; fi   # Codex 132: a FAIL must end the job with a non-zero status
+echo "E132A_DONE FAIL compare_rc=$rc $(tail -1 diag/x132a_compare.log | cut -c1-200) $(date +%T)"; exit 1
