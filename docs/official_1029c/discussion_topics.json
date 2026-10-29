@@ -199,7 +199,9 @@
     "commentCount": 24,
     "votes": 8,
     "postDate": "2026-10-02T03:27:01.940Z",
-    "lastCommentPostDate": "2026-10-27T21:23:50.623Z"
+    "lastCommentPostDate": "2026-10-27T21:23:50.623Z",
+    "authorName": "gennexuslabsDDM",
+    "authorUrl": "https://www.kaggle.com/gennexuslabsddm"
   },
   {
     "id": 745468,
@@ -762,9 +764,7 @@
     "title": "Question on reproducibility: are public notebooks that rely on datasets without generation code eligible?",
     "topicUrl": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/753662",
     "postDate": "2026-10-28T22:16:38.183Z",
-    "lastCommentPostDate": "2026-10-28T22:16:38.183Z",
-    "authorName": "blaise yonga",
-    "authorUrl": "https://www.kaggle.com/blaiseyonga"
+    "lastCommentPostDate": "2026-10-28T22:16:38.183Z"
   },
   {
     "id": 753525,

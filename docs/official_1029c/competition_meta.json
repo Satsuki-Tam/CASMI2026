@@ -25,8 +25,8 @@
       "fullPath": "subject > earth and nature > physical science > chemistry",
       "competitionCount": 16,
       "datasetCount": 1312,
-      "scriptCount": 3873,
-      "totalCount": 5201
+      "scriptCount": 3872,
+      "totalCount": 5200
     },
     {
       "ref": "custom metric",
@@ -36,7 +36,7 @@
     }
   ],
   "deadline": "2026-12-14T23:59:00.000Z",
-  "teamCount": 4281,
+  "teamCount": 4282,
   "userHasEntered": true,
   "userRank": 916,
   "newEntrantDeadline": "2026-12-07T23:59:00.000Z",
