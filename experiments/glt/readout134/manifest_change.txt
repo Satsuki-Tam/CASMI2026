@@ -1,0 +1,1 @@
+2026-10-29 23:2x JST: gl_only_eval.py v2 -> v2.1 (technical fix, DataFrame.empty shadowing in the summary line; the reader stopped at f1G while writing the table, before any result was read). manifest_v2.txt = original; v2crash/ = the per-molecule table written by v2 before the stop, kept unread for a byte comparison with the v2.1 table.

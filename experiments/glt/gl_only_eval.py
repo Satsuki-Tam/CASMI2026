@@ -10,6 +10,8 @@ v2 (Codex 134, before any stage-2 result):
   - comparability: the (molecule, SMILES) pairs with a non-null score must be IDENTICAL in A and B and both runs must have the same runner
     status / scored-molecule counts (meta), else STOP -- a decoy that B failed to score must not raise rr_form;
   - the view list must have unique official keys per molecule (no silent de-duplication); rows = molecules = identities (bootstrap unit).
+v2.1 (2026-10-29 23:20 JST, technical fix after the first 134 reader run stopped while WRITING the summary table, before any result was read): r.empty is
+pandas DataFrame.empty (a bool), so the column is read as r["empty"]; the per-molecule table (written before that line) is unchanged.
 Reported per view: n, rr_gl / rr_form / top1_form / margin_form for A and B with B - A and an identity bootstrap (4,000, seed 105), molecules
 with >= 2 same-formula competitors, singletons, truth / decoy GL coverage. Writes <out>.csv and <out>.md.
 Usage: python gl_only_eval.py --run RUN --set SET --eval_csv CSV --gl_a A.json --gl_b B.json --views c2 [c1] --out OUT"""
@@ -75,6 +77,6 @@ for v, r in R.groupby("view"):
         if not len(d): continue
         bs = np.array([d[rng.integers(0, len(d), len(d))].mean() for _ in range(4000)]); lo, hi = np.percentile(bs, [2.5, 97.5])
         L.append(f"| {v} | {int(ok.sum())} | {met} | {np.nanmean(x[ok]):.4f} | {np.nanmean(y[ok]):.4f} | {d.mean():+.4f} [{lo:+.4f}, {hi:+.4f}] |")
-    L.append(f"| {v} | {len(r)} | roster: empty {int(r.empty.sum())}, truth absent {int(r.truth_absent.sum())}, truth covered A / B {int(r.covered_A.sum())} / {int(r.covered_B.sum())}, "
+    L.append(f"| {v} | {len(r)} | roster: empty {int(r['empty'].sum())}, truth absent {int(r.truth_absent.sum())}, truth covered A / B {int(r.covered_A.sum())} / {int(r.covered_B.sum())}, "
              f">= 2 same-formula competitors {int((r.n_same_form >= 3).sum())}, singletons {int((r.n_same_form == 1).sum())}, decoy GL coverage A / B {r.decoy_cov_A.mean():.3f} / {r.decoy_cov_B.mean():.3f} | | | |")
 open(a.out + ".md", "w", encoding="utf-8").write("\n".join(L) + "\n"); print("\n".join(L))
