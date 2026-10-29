@@ -1,0 +1,22 @@
+{
+ "purpose": "132 one-shot Public comparison (reports/agent_review/132_prereg_elite_public.md): inputs of the fixed E-lite RRF (experiments/b1_elite/elite.py) in the B1 pipeline",
+ "files": {
+  "elite132_e1r_lambdarank.txt": {
+   "sha256": "8f4a81b5f8ba7f589cfd74980ea40075169121b2ce1382cb92a1f2aa150ec1f5",
+   "bytes": 2104146
+  },
+  "elite132_e_window_keys_v2.parquet": {
+   "sha256": "f572682b47a882de18bbe3ded9129fa0544e3c52281447e90f7bc3f13042a672",
+   "bytes": 3540541
+  }
+ },
+ "e1r": {
+  "source": "experiments/b1_baseline/rank_e1r/lambdarank.txt (102 v2, 2026-10-28 14:41 JST, spark/jobs/spark_e102.sh)",
+  "trainer": "experiments/b1_baseline/b1_rank_train.py --feats e1 --restrict E --ekeys diag/e_window_keys_v2.parquet --params_from rank_params_v7a",
+  "training_data": "the v8w7a training runs (competition train.parquet derived feature tables RUNS0 v3 + pool f3a/f4a); no NIST-derived data"
+ },
+ "e_keys": {
+  "source": "experiments/b1_baseline/diag/e_window_keys_v2.parquet (e_keys.py v2)",
+  "inputs": "PubChemLite annotations (public Kaggle dataset casmi26-pubchem-popularity-prior, SMILES from the PubChem tier / v2 pool) and ChEBI / LIPID MAPS structures (public Kaggle dataset casmi26-attributed-v4g-reproduction-assets); official keys recomputed from SMILES with RDKit 2026.03.3"
+ }
+}

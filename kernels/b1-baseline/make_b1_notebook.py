@@ -19,6 +19,7 @@ files = {n: open(os.path.join(A.src_dir, n), encoding="utf-8").read() for n in (
 if os.path.exists(os.path.join(A.src_dir, "b1_analog.py")): files["b1_analog.py"] = open(os.path.join(A.src_dir, "b1_analog.py"), encoding="utf-8").read()   # analog channel (2026-10-26), imported by b1_pipeline only with --analog_w
 if os.path.exists(os.path.join(A.src_dir, "b1_frag.py")): files["b1_frag.py"] = open(os.path.join(A.src_dir, "b1_frag.py"), encoding="utf-8").read()   # MetFrag-lite (038), imported only with --frag_w_fallback
 if os.path.exists(os.path.join(A.src_dir, "b1_gen.py")): files["b1_gen.py"] = open(os.path.join(A.src_dir, "b1_gen.py"), encoding="utf-8").read()   # analog derivatives (042), imported only with --gen_rank / --gen_dv
+if os.path.exists(os.path.join(A.src_dir, "elite.py")): files["elite.py"] = open(os.path.join(A.src_dir, "elite.py"), encoding="utf-8").read()   # 132 E-lite RRF (shared function), imported only with --elite_model
 print("embedding sources from", A.src_dir)
 model = A.model
 if model and os.path.exists(model): files["lambdarank.txt"] = open(model, encoding="utf-8").read(); print("embedding model", model)

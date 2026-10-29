@@ -1,0 +1,224 @@
+"""W7 parity test with a verdict (Codex 007/009/010): the SUBMISSION pipeline vs the evaluator on the same molecules and view.
+
+Compared per molecule: (1) the query selection (number of spectra and adduct multiset), (2) candidate sets (official scorer keys) and the
+truth's membership, (3) features both sides compute (fp, pop, library similarity, flags, ppm), and -- given the pipeline's outputs and the
+model -- (4) the ORDERED top-25 (official identities) of the main (learned with the pipeline's GL-coverage fallback) and the insurance
+(fixed S + libpri) between the pipeline's submission files and the evaluator path (feature table + the evaluator run's GL/ICE + the same model).
+Verdict (PARITY PASS / FAIL): query selection identical for all molecules; truth membership identical for all; top-1 identical and RR
+identical for all molecules (main and insurance); ordered top-25 identical for >= 95% of molecules.
+Usage: python b1_parity.py --dump RUN/b1_candidates.parquet --features_run FEATURES_RUN --view c2|c1 --solution solution.csv --out parity.md
+         [--pred_main RUN/submission.csv --pred_fixed RUN/submission_fixed.csv --stage_stats RUN/b1_stage_stats.csv --model lambdarank.txt --w_ice 1 --tau 0.9 --margin 0.2 --min_gl_cover 0.5]
+"""
+import argparse, glob, json, os, sys
+import numpy as np, pandas as pd
+HERE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "b1_baseline"); sys.path.insert(0, HERE); sys.path.insert(1, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(HERE)), "src"))
+
+ap = argparse.ArgumentParser(); ap.add_argument("--dump", required=True); ap.add_argument("--features_run", required=True); ap.add_argument("--view", choices=["c1", "c2"], required=True)
+ap.add_argument("--solution", required=True); ap.add_argument("--out", required=True); ap.add_argument("--pred_main", default=None); ap.add_argument("--pred_fixed", default=None)
+ap.add_argument("--stage_stats", default=None); ap.add_argument("--model", default=None); ap.add_argument("--w_ice", type=float, default=1.0); ap.add_argument("--tau", type=float, default=0.9)
+ap.add_argument("--main", default="learned", choices=["learned", "blend21", "blend11"], help="the pipeline's main-list rule to replicate (b1_pipeline --main)")
+ap.add_argument("--forward_from", default="evaluator", choices=["evaluator", "pipe"], help="GL/ICE scores for the evaluator-side ranking: 'evaluator' = the evaluator run's own forward "
+                "run (independent GPU run -> ordering noise), 'pipe' = the pipeline's gl_out/ice_out (shared cache -> MECHANICAL check, Codex 014: outputs must then agree exactly)")
+ap.add_argument("--margin", type=float, default=0.2); ap.add_argument("--min_gl_cover", type=float, default=0.5)
+ap.add_argument("--analog_w", type=float, default=0.0, help="evaluator side adds analog_w * z(ap) to the main score (b1_pipeline --analog_w); ap from --analog_parquet (analog_probe.py)")
+ap.add_argument("--analog_parquet", default=None); ap.add_argument("--analog_feat", default="ap"); ap.add_argument("--analog_w_fallback", type=float, default=None)
+ap.add_argument("--ea_w", type=float, default=0.0, help="074/076 explained-away on the evaluator side: main - ea_w * 1[lib_nref > 0 and lib < ea_theta] (b1_v074 --ea_w)"); ap.add_argument("--ea_theta", type=float, default=0.3)
+ap.add_argument("--frag_w_fallback", type=float, default=0.0); ap.add_argument("--frag_parquet", default=None)
+ap.add_argument("--top25_set_min_share", type=float, default=0.95, help="top-25 identical as SETS (strict criterion)"); ap.add_argument("--top25_min_share", type=float, default=0.85, help="ordered top-25 identical (tail order is subject to forward-score run-to-run noise)")
+ap.add_argument("--elite_model", default=None, help="132 (B): E-lite model; the evaluator path replays the E-lite RRF (elite.py) and compares it with --pred_elite")
+ap.add_argument("--elite_keys", default=None); ap.add_argument("--elite_k", type=float, default=10.0); ap.add_argument("--elite_alpha", type=float, default=0.5)
+ap.add_argument("--pred_elite", default=None, help="132 (B): the pipeline's E-lite list (its submission.csv; --pred_main = its submission_pref.csv)")
+ap.add_argument("--pipe_work", default=None, help="pipeline output dir with gl_out.json / ice_out.json: measures forward-score differences vs the evaluator run"); a = ap.parse_args()
+D = pd.read_parquet(a.dump); D["molecule"] = D["molecule"].astype(str)
+Fall = pd.concat([pd.read_parquet(p) for p in sorted(glob.glob(f"{a.features_run}/b1_features_*.parquet"))], ignore_index=True); Fall["molecule"] = Fall["molecule"].astype(str)
+Mall = pd.concat([pd.read_csv(p) for p in sorted(glob.glob(f"{a.features_run}/b1_molecules_*.csv"))], ignore_index=True); Mall["molecule"] = Mall["molecule"].astype(str); Mall = Mall.set_index("molecule")
+S = pd.read_csv(a.solution); S["molecule_id"] = S["molecule_id"].astype(str)
+v = a.view
+keep = Fall[f"in_short_{v}"].astype(bool)
+if v == "c2": keep &= (Fall.in_tier | Fall.in_coconut | Fall.in_train_c2).astype(bool)
+F = Fall[keep]
+fails = []
+# ---------------- (1) query selection
+q_bad = []
+if a.stage_stats and os.path.exists(a.stage_stats):
+    st = pd.read_csv(a.stage_stats); st["molecule"] = st.molecule.astype(str); st = st.set_index("molecule")
+    for mid in S.molecule_id:
+        if mid in st.index and mid in Mall.index:
+            if int(st.loc[mid, "n_query"]) != int(Mall.loc[mid, "n_query"]) or sorted(str(st.loc[mid, "adducts"]).split("|")) != sorted(str(Mall.loc[mid, "adducts"]).split("|")): q_bad.append(mid)
+    if q_bad: fails.append(f"query selection differs for {len(q_bad)} molecules (e.g. {q_bad[:3]})")
+# ---------------- (2)(3) candidate sets and features
+rows = []
+for _, s in S.iterrows():
+    mid = s.molecule_id; truth = s.scorer_key if "scorer_key" in S.columns else None
+    f = F[F.molecule == mid]; p = D[D.molecule == mid]
+    fk, pk = set(f.official_key), set(p.key); inter = fk & pk
+    rec = dict(molecule=mid, set=s.get("set"), group=s.get("group"), n_f=len(fk), n_p=len(pk), n_inter=len(inter), only_f=len(fk - pk), only_p=len(pk - fk),
+               jaccard=len(inter) / max(len(fk | pk), 1), truth_in_f=truth in fk, truth_in_p=truth in pk)
+    if inter:
+        fm = f.drop_duplicates("official_key").set_index("official_key").loc[sorted(inter)]; pm = p.drop_duplicates("key").set_index("key").loc[sorted(inter)]
+        fp_d = np.abs(fm.fp.astype(float).values - pm.fp.astype(float).values); lib_d = np.abs(fm[f"lib_sim_{v}"].astype(float).values - pm.lib.astype(float).values)
+        rec.update(fp_absdiff_max=float(np.nanmax(fp_d)), fp_absdiff_mean=float(np.nanmean(fp_d)), lib_absdiff_max=float(np.nanmax(lib_d)),
+                   pop_equal=float(np.mean(np.isclose(fm.pop_public.astype(float).values, pm["pop"].astype(float).values, atol=1e-6))),
+                   tier_equal=float(np.mean(fm.in_tier.astype(bool).values == pm.in_tier.astype(bool).values)), coco_equal=float(np.mean(fm.in_coconut.astype(bool).values == pm.in_coconut.astype(bool).values)),
+                   train_equal=float(np.mean(fm[f"in_train_{v}"].astype(bool).values == pm.in_train.astype(bool).values)),
+                   ppm_absdiff_max=float(np.nanmax(np.abs(fm.ppm_err.astype(float).values - pm.ppm_err.astype(float).values))))
+        if a.ea_w:   # Codex 076: the EA flag itself (reference presence and lib < theta) must agree for EVERY shared candidate, not only where it moved the top 25
+            fe_ = (fm[f"lib_nref_{v}"].astype(float).values > 0) & (fm[f"lib_sim_{v}"].astype(float).values < a.ea_theta)
+            pe_ = (pm.lib_nref.astype(float).values > 0) & (pm.lib.astype(float).values < a.ea_theta)
+            rec.update(ea_flag_mismatch=int((fe_ != pe_).sum()), nref_presence_mismatch=int(((fm[f"lib_nref_{v}"].astype(float).values > 0) != (pm.lib_nref.astype(float).values > 0)).sum()), ea_flags=int(fe_.sum()))
+    rows.append(rec)
+R = pd.DataFrame(rows)
+if int((R.truth_in_f != R.truth_in_p).sum()): fails.append(f"truth membership differs for {int((R.truth_in_f != R.truth_in_p).sum())} molecules")
+if a.ea_w and "ea_flag_mismatch" in R.columns:
+    n_mm = int(R.ea_flag_mismatch.fillna(0).sum()); n_np = int(R.nref_presence_mismatch.fillna(0).sum())
+    print(f"EA flag parity: flags {int(R.ea_flags.fillna(0).sum())} | mismatching flags {n_mm} | reference-presence mismatches {n_np}", flush=True)
+    if n_mm: fails.append(f"EA flag differs for {n_mm} shared candidates")
+md = [f"# W7 parity: {a.dump} vs {a.features_run} (view {v})", "", f"molecules {len(S)}; query selection differs: {len(q_bad)}" + (" (stage stats not given)" if not a.stage_stats else ""), "",
+      "| metric | value |", "|---|---:|", f"| identical candidate sets | {(R.jaccard == 1).mean():.3f} |", f"| Jaccard median / mean / min | {R.jaccard.median():.3f} / {R.jaccard.mean():.3f} / {R.jaccard.min():.3f} |",
+      f"| candidates only in evaluator / only in pipeline (mean) | {R.only_f.mean():.2f} / {R.only_p.mean():.2f} |",
+      f"| truth in evaluator shortlist / in pipeline shortlist | {R.truth_in_f.mean():.3f} / {R.truth_in_p.mean():.3f} (disagree {int((R.truth_in_f != R.truth_in_p).sum())}) |"]
+if "fp_absdiff_max" in R.columns:
+    md += [f"| fp abs diff: max / mean of means | {R.fp_absdiff_max.max():.4f} / {R.fp_absdiff_mean.mean():.5f} |", f"| library similarity abs diff max | {R.lib_absdiff_max.max():.4f} |",
+           f"| pop / in_tier / in_coconut / in_train equal share | {R.pop_equal.mean():.4f} / {R.tier_equal.mean():.4f} / {R.coco_equal.mean():.4f} / {R.train_equal.mean():.4f} |", f"| ppm error abs diff max | {R.ppm_absdiff_max.max():.3f} |"]
+# ---------------- (4) ordered top-25 of main and insurance, by official identity
+if a.pred_main and a.pred_fixed and a.model and os.path.exists(a.pred_main) and os.path.exists(a.pred_fixed):
+    from b1_evaluate import z, term
+    from b1_rankfeats import feature_matrix
+    import metric, lightgbm as lgb
+    booster = lgb.Booster(model_file=a.model); feats = booster.feature_name()
+    PM = pd.read_csv(a.pred_main); PF = pd.read_csv(a.pred_fixed); PM["molecule_id"] = PM.molecule_id.astype(str); PF["molecule_id"] = PF.molecule_id.astype(str)
+    pm_of = dict(zip(PM.molecule_id, PM.smiles.astype(str))); pf_of = dict(zip(PF.molecule_id, PF.smiles.astype(str)))
+    cache = {}
+    def ident(smi):
+        if smi not in cache: cache[smi] = metric.canonicalize_smiles_to_ik14(smi)
+        return cache[smi]
+    def load(model, s):
+        p = f"{a.pipe_work}/{model}_out.json" if (a.forward_from == "pipe" and a.pipe_work) else f"{a.features_run}/work/{model}_{s}.json"
+        try: ok = json.load(open(p + ".meta.json")).get("status") in ("ok", "partial")
+        except Exception: ok = False
+        return (json.load(open(p)) if ok else {}), ok
+    ANA, ANA_MT = {}, {}
+    if a.analog_parquet:
+        _A = pd.read_parquet(a.analog_parquet); _A = _A[_A.view == v]; _A["molecule"] = _A["molecule"].astype(str)
+        ANA = {m_: dict(zip(h_.smiles.astype(str), h_[a.analog_feat].astype(float))) for m_, h_ in _A.groupby("molecule")}
+        ANA_MT = {m_: (dict(zip(h_.smiles.astype(str), h_.ap.astype(float))), dict(zip(h_.smiles.astype(str), h_.mean_tan.astype(float)))) for m_, h_ in _A.groupby("molecule")}
+    ana_diff = []; FRG = {}
+    if a.frag_w_fallback:
+        _F = pd.read_parquet(a.frag_parquet); _F = _F[_F.view == v]; _F["molecule"] = _F["molecule"].astype(str)
+        FRG = {m_: dict(zip(h_.smiles.astype(str), h_.frag.astype(float))) for m_, h_ in _F.groupby("molecule")}
+    stats = dict(n=0, top1_main=0, top1_ins=0, rr_main=0, rr_ins=0, top25_main=0, top25_ins=0, set25_main=0, set25_ins=0, fallback_eval=0)
+    EL = None
+    if a.elite_model:   # 132 (B)
+        import elite as EL
+        EBST = lgb.Booster(model_file=a.elite_model); EFEATS = list(EBST.feature_name()); EKS = set(pd.read_parquet(a.elite_keys, columns=["key"]).key.astype(str))
+        PE = pd.read_csv(a.pred_elite); PE["molecule_id"] = PE.molecule_id.astype(str); pe_of = dict(zip(PE.molecule_id, PE.smiles.astype(str)))
+        stats.update(n_el=0, top1_el=0, rr_el=0, top25_el=0, emem_cands=0, emem_mismatch=0, e_empty=0, truth_outside_e=0, neg_only=0, strong_c1=0, fallback_el=0, el_top1_changed=0)
+        EL_BAD = []
+    truth_of = dict(zip(S.molecule_id, S.smiles))
+    for s_name, Fs in F.groupby("set"):
+        gl, gl_ok = load("gl", s_name); ice, ice_ok = load("ice", s_name)
+        if a.w_ice == 0: ice, ice_ok = {}, False
+        for mid, g in Fs.groupby("molecule", sort=False):
+            if mid not in pm_of or mid not in pf_of or mid not in truth_of: continue
+            g = g.reset_index(drop=True); fp = g.fp.values.astype(float); pop = g.pop_public.values.astype(float); lib = g[f"lib_sim_{v}"].values.astype(float)
+            glv = np.array([np.nan if (gl.get(mid) or {}).get(sm) is None else float((gl.get(mid) or {}).get(sm)) for sm in g.smiles], float)
+            icv = np.array([np.nan if (ice.get(mid) or {}).get(sm) is None else float((ice.get(mid) or {}).get(sm)) for sm in g.smiles], float)
+            zgl = term(glv, gl_ok); zice = term(icv, ice_ok)
+            Sc = z(fp) + (2 * zgl if zgl is not None else 0) + (a.w_ice * zice if zice is not None else 0) + 0.5 * pop
+            top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
+            ins = np.where(lib >= a.tau, 100.0 + lib, Sc) if (lib.max() >= a.tau and lib.max() - second >= a.margin) else Sc
+            gl_ok_ = bool(np.isfinite(glv).sum() >= max(2, a.min_gl_cover * len(g)))
+            if gl_ok_:
+                X = feature_matrix(fp, glv, icv, pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values, lib, g[f"lib_same_{v}"].values,
+                                   g[f"lib_nref_{v}"].values, g.in_tier.values, g[f"in_train_{v}"].values, g.in_coconut.values, g.ppm_err.values, g.fp_rank_window.values,
+                                   float(Mall.loc[mid, "n_query"]), float(Mall.loc[mid, "ce_known"]), n_window=float(Mall.loc[mid, "n_unique"]) if "n_unique" in Mall.columns else np.nan, feats=feats,
+                                   analog=(dict(ap=[ANA_MT[mid][0][str(sm)] for sm in g.smiles], mean_tan=[ANA_MT[mid][1][str(sm)] for sm in g.smiles]) if mid in ANA_MT else None))
+                main = booster.predict(X)
+                if a.main != "learned": main = (2.0 if a.main == "blend21" else 1.0) * z(main) + z(Sc)   # blend hedge, as in b1_pipeline --main
+            else: main = ins; stats["fallback_eval"] += 1
+            if a.analog_w or a.analog_w_fallback:   # same formula as b1_pipeline: main + w * z(ap) over the molecule's candidates
+                apx = np.array([ANA.get(mid, {}).get(str(sm), np.nan) for sm in g.smiles], float); assert np.isfinite(apx).all(), (mid, "analog features missing")
+                w_ = a.analog_w if (gl_ok_ or a.analog_w_fallback is None) else a.analog_w_fallback
+                if w_: main = np.asarray(main, float) + w_ * (apx - apx.mean()) / (apx.std() + 1e-9)
+                if "ana_" + a.analog_feat in D.columns:
+                    dd_ = D[D.molecule == mid].drop_duplicates("smiles").set_index("smiles")["ana_" + a.analog_feat]
+                    ana_diff += [abs(float(dd_.get(str(sm), np.nan)) - x_) for sm, x_ in zip(g.smiles, apx) if str(sm) in dd_.index]
+            if a.frag_w_fallback and not gl_ok_:   # same formula as b1_pipeline (fallback path only)
+                frx = np.array([FRG.get(mid, {}).get(str(sm), np.nan) for sm in g.smiles], float); assert np.isfinite(frx).all(), (mid, "frag features missing")
+                main = np.asarray(main, float) + a.frag_w_fallback * (frx - frx.mean()) / (frx.std() + 1e-9)
+            if a.ea_w:   # same as b1_v074 b1_pipeline --ea_w / gen_eval2p ea<theta>w<w>, applied after the analog / frag terms
+                ea_ = ((g[f"lib_nref_{v}"].values.astype(float) > 0) & (lib < a.ea_theta)).astype(float)
+                main = np.asarray(main, float) - a.ea_w * ea_
+            if EL is not None:   # 132 (B): the E-lite RRF on the evaluator path, compared with the pipeline's E-lite list
+                o_ = [int(i) for i in np.argsort(-main, kind="stable")]; okeys_ = g.official_key.astype(str).values
+                em_ = EL.e_mask(g.in_coconut.values, g[f"in_train_{v}"].values, okeys_, EKS); ei_ = np.flatnonzero(em_); es_ = []
+                if len(ei_):
+                    assert mid in ANA_MT, (mid, "analog features missing for the E-lite replay")
+                    XE_ = EL.e_matrix(feature_matrix, EFEATS, ei_, fp, glv, pop, g.lsid.values, g.lpmid.values, g.lsynonyms.values, g["np"].values, g.src_mask.values, g.lotus_refs.values, lib,
+                                      g[f"lib_same_{v}"].values, g[f"lib_nref_{v}"].values, g.in_tier.values, g[f"in_train_{v}"].values, g.in_coconut.values, g.ppm_err.values, g.fp_rank_window.values,
+                                      float(Mall.loc[mid, "n_query"]), float(Mall.loc[mid, "ce_known"]), float(Mall.loc[mid, "n_unique"]) if "n_unique" in Mall.columns else np.nan,
+                                      [ANA_MT[mid][0][str(sm)] for sm in g.smiles], [ANA_MT[mid][1][str(sm)] for sm in g.smiles])
+                    es_ = EL.e_rank(EBST, XE_, ei_, EL.positions(o_, len(g)))
+                new_ = EL.rrf(o_, es_, a.elite_k, a.elite_alpha); assert EL.rrf(o_, es_, a.elite_k, 0.0) == o_
+                ev_el = [ident(str(g.smiles.values[i])) for i in new_[:25]]; pp_el = [ident(x) for x in pe_of[mid].split(";")]
+                stats["n_el"] += 1; stats["top1_el"] += ev_el[0] == pp_el[0]; stats["top25_el"] += ev_el == pp_el; stats["el_top1_changed"] += int(new_[0] != o_[0])
+                stats["rr_el"] += metric.per_molecule_reciprocal_rank(truth_of[mid], pe_of[mid].split(";")) == metric.per_molecule_reciprocal_rank(truth_of[mid], [str(g.smiles.values[i]) for i in new_[:25]])
+                if ev_el != pp_el: EL_BAD.append(mid)
+                dm_ = D[D.molecule == mid].drop_duplicates("key"); pk_ = set(dm_.key.astype(str))
+                ep_ = {k_ for k_, c_, t_ in zip(dm_.key.astype(str), dm_.in_coconut.astype(bool), dm_.in_train.astype(bool)) if c_ or t_ or k_ in EKS}
+                ef_ = {okeys_[i] for i in ei_}; sh_ = set(okeys_) & pk_
+                stats["emem_cands"] += len(sh_); stats["emem_mismatch"] += len((ef_ & sh_) ^ (ep_ & sh_))
+                tk_ = set(okeys_[g.is_truth.values.astype(bool)]) if "is_truth" in g.columns else set()
+                stats["e_empty"] += int(len(ei_) == 0); stats["truth_outside_e"] += int(bool(tk_) and not (tk_ & ef_)); stats["fallback_el"] += int(not gl_ok_)
+                stats["neg_only"] += int(all(str(x_).endswith("-") for x_ in str(Mall.loc[mid, "adducts"]).split("|")))
+                stats["strong_c1"] += int(v == "c1" and float(Mall.loc[mid, "lib_max_c1"]) >= 0.9)
+            ev_main = [ident(str(g.smiles.values[i])) for i in np.argsort(-main, kind="stable")[:25]]; ev_ins = [ident(str(g.smiles.values[i])) for i in np.argsort(-ins, kind="stable")[:25]]
+            pp_main = [ident(x) for x in pm_of[mid].split(";")]; pp_ins = [ident(x) for x in pf_of[mid].split(";")]
+            t = truth_of[mid]
+            stats["n"] += 1
+            stats["top1_main"] += ev_main[0] == pp_main[0]; stats["top1_ins"] += ev_ins[0] == pp_ins[0]
+            stats["top25_main"] += ev_main == pp_main; stats["top25_ins"] += ev_ins == pp_ins; stats["set25_main"] += set(ev_main) == set(pp_main); stats["set25_ins"] += set(ev_ins) == set(pp_ins)
+            stats["rr_main"] += metric.per_molecule_reciprocal_rank(t, pm_of[mid].split(";")) == metric.per_molecule_reciprocal_rank(t, [str(g.smiles.values[i]) for i in np.argsort(-main, kind="stable")[:25]])
+            stats["rr_ins"] += metric.per_molecule_reciprocal_rank(t, pf_of[mid].split(";")) == metric.per_molecule_reciprocal_rank(t, [str(g.smiles.values[i]) for i in np.argsort(-ins, kind="stable")[:25]])
+    n = max(stats["n"], 1)
+    if a.analog_w or a.analog_w_fallback: md += ["", f"analog feature parity (pipeline dump ana_ap vs analog_probe ap): {len(ana_diff)} candidates, max abs diff {max(ana_diff) if ana_diff else float('nan'):.6f}, share > 1e-6 {np.mean(np.array(ana_diff) > 1e-6) if ana_diff else float('nan'):.4f}"]
+    md += ["", f"## output agreement on {stats['n']} molecules (model {os.path.basename(a.model)}, w_ice {a.w_ice:g}, libpri({a.tau},{a.margin}), GL fallback < {a.min_gl_cover:g})", "",
+           "| output | top-1 identical | RR identical | top-25 identical as sets | ordered top-25 identical (official identities) |", "|---|---:|---:|---:|---:|",
+           f"| main (learned + fallback) | {stats['top1_main']}/{n} | {stats['rr_main']}/{n} | {stats['set25_main']}/{n} ({stats['set25_main']/n:.3f}) | {stats['top25_main']}/{n} ({stats['top25_main']/n:.3f}) |",
+           f"| insurance (fixed + libpri) | {stats['top1_ins']}/{n} | {stats['rr_ins']}/{n} | {stats['set25_ins']}/{n} ({stats['set25_ins']/n:.3f}) | {stats['top25_ins']}/{n} ({stats['top25_ins']/n:.3f}) |", f"evaluator-side GL fallbacks: {stats['fallback_eval']}"]
+    if a.pipe_work:   # forward-score run-to-run differences (the pipeline's own runners vs the evaluator run's stored scores)
+        for model in ("gl", "ice"):
+            pw = os.path.join(a.pipe_work, f"{model}_out.json")
+            if not os.path.exists(pw): continue
+            P = json.load(open(pw)); diffs = []
+            for s_name, Fs in F.groupby("set"):
+                ref, _ok = load(model, s_name)
+                for mid in Fs.molecule.unique():
+                    for smi, val in (P.get(mid) or {}).items():
+                        r_ = (ref.get(mid) or {}).get(smi)
+                        if val is not None and r_ is not None: diffs.append(abs(float(val) - float(r_)))
+            if diffs: d_ = np.array(diffs); md.append(f"forward-score noise {model}: {len(d_)} pairs, |diff| max {d_.max():.2e}, mean {d_.mean():.2e}, p99 {np.percentile(d_, 99):.2e}")
+    if stats["top1_main"] < n: fails.append(f"main top-1 differs for {n - stats['top1_main']} molecules")
+    if EL is not None:   # 132 (B)
+        md += ["", f"## 132 E-lite agreement on {stats['n_el']} molecules (K {a.elite_k:g}, alpha {a.elite_alpha:g}, E keys {len(EKS):,})", "",
+               f"| ordered top-25 identical | top-1 identical | RR identical | E membership mismatches / shared candidates | E-lite rank-1 changed vs P |", "|---:|---:|---:|---:|---:|",
+               f"| {stats['top25_el']}/{stats['n_el']} | {stats['top1_el']}/{stats['n_el']} | {stats['rr_el']}/{stats['n_el']} | {stats['emem_mismatch']} / {stats['emem_cands']} | {stats['el_top1_changed']} |", "",
+               f"strata covered: E empty {stats['e_empty']}, truth outside E {stats['truth_outside_e']}, negative-ion only {stats['neg_only']}, strong class-1 reference (c1, lib_max_c1 >= 0.9) {stats['strong_c1']}, GL fallback {stats['fallback_el']}"]
+        if stats["n_el"] != stats["n"]: fails.append(f"132: E-lite compared on {stats['n_el']} of {stats['n']} molecules")
+        if stats["top25_el"] < stats["n_el"] or stats["top1_el"] < stats["n_el"] or stats["rr_el"] < stats["n_el"]: fails.append(f"132: E-lite list differs (ordered top-25 {stats['n_el'] - stats['top25_el']}, top-1 {stats['n_el'] - stats['top1_el']}, RR {stats['n_el'] - stats['rr_el']} molecules; e.g. {EL_BAD[:3]})")
+        if stats["emem_mismatch"]: fails.append(f"132: E membership differs for {stats['emem_mismatch']} shared candidates")
+    if stats["top1_ins"] < n: fails.append(f"insurance top-1 differs for {n - stats['top1_ins']} molecules")
+    if stats["rr_main"] < n or stats["rr_ins"] < n: fails.append(f"RR differs (main {n - stats['rr_main']}, insurance {n - stats['rr_ins']} molecules)")
+    if stats["set25_main"] / n < a.top25_set_min_share or stats["set25_ins"] / n < a.top25_set_min_share: fails.append(f"top-25 sets identical below {a.top25_set_min_share:.2f} (main {stats['set25_main']/n:.3f}, insurance {stats['set25_ins']/n:.3f})")
+    if stats["top25_main"] / n < a.top25_min_share or stats["top25_ins"] / n < a.top25_min_share: fails.append(f"ordered top-25 identical below {a.top25_min_share:.2f} (main {stats['top25_main']/n:.3f}, insurance {stats['top25_ins']/n:.3f})")
+else:
+    md += ["", "(output agreement not run: --pred_main/--pred_fixed/--model not given)"]
+md += ["", "## by set", "", "| set | n | identical sets | Jaccard mean | truth in F | truth in P |", "|---|---:|---:|---:|---:|---:|"]
+for k, g in R.groupby("set"): md.append(f"| {k} | {len(g)} | {(g.jaccard == 1).mean():.3f} | {g.jaccard.mean():.3f} | {g.truth_in_f.mean():.3f} | {g.truth_in_p.mean():.3f} |")
+worst = R.sort_values("jaccard").head(8); cols = ["molecule", "set", "n_f", "n_p", "only_f", "only_p", "jaccard", "truth_in_f", "truth_in_p"]
+md += ["", "## largest candidate-set disagreements", "", "| " + " | ".join(cols) + " |", "|" + "---|" * len(cols)] + ["| " + " | ".join(f"{r_[c]:.3f}" if isinstance(r_[c], float) else str(r_[c]) for c in cols) + " |" for _, r_ in worst.iterrows()]
+verdict = "PARITY PASS" if not fails else "PARITY FAIL: " + "; ".join(fails)
+md = [md[0], "", f"**{verdict}**"] + md[1:]
+os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True); open(a.out, "w", encoding="utf-8").write("\n".join(md) + "\n"); R.to_csv(a.out.replace(".md", "_molecules.csv"), index=False)
+print("\n".join(md[:30])); print(verdict)
+sys.exit(0 if not fails else 1)
