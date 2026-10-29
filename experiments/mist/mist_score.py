@@ -13,7 +13,7 @@ candidate bits = RDKit MorganGenerator(radius 2, fpSize 4096) on the representat
   of the eval CSV (with or without --limit) and checked complete; the manifest binds code / checkpoint / MIST commit / inputs / outputs by sha256.
 Predictions are cached per (query row, formula, adduct) and shared by all candidates (and both views) of a molecule.
 v3 (Codex 129): the adapter rounds intensities as the official path (float32 then float16); --threads; an empty window is accepted only when
-the molecule ledger's n_shortlist is 0. Writes <out>/mist_<tag>_<set>.parquet and <out>/mist_<tag>_manifest.json (checkpoint sha256, counts).
+the molecule ledger records one (n_unique 0, truth not in the window, n_shortlist NaN or 0). Writes <out>/mist_<tag>_<set>.parquet and <out>/mist_<tag>_manifest.json (checkpoint sha256, counts).
 Usage (Spark, .venv-mist): python -X utf8 experiments/mist/mist_score.py --ckpt C --store data/processed/spectra_store --run <table dir>
        --eval_csv CSV --tag T --sets S1 ... --out DIR [--device cpu] [--limit N]"""
 import argparse, hashlib, json, os, sys, time
@@ -84,7 +84,9 @@ def main():
             q = [x for x in q0 if add_of_row[x] in MIST_ADD]; qreason = "no_qrows" if not q0 else ("no_mist_adduct" if not q else "")
             cand = T[T.molecule == mid]
             if not len(cand):
-                if mid not in LED.index or float(LED.loc[mid, "n_shortlist"]) != 0: raise RuntimeError(f"{s} {mid}: no candidate rows but the ledger shortlist is not empty")
+                lr_ = LED.loc[mid] if mid in LED.index else None   # the ledger's empty-window convention (as accepted since 110): n_unique 0, truth not in window, n_shortlist NaN or 0
+                if lr_ is None or not (int(lr_["n_unique"]) == 0 and str(lr_["truth_in_window"]) == "False" and (pd.isna(lr_["n_shortlist"]) or float(lr_["n_shortlist"]) == 0)):
+                    raise RuntimeError(f"{s} {mid}: no candidate rows but the ledger does not record an empty window")
                 cnt["empty_window"] += 1
             forms = sorted({INFO[str(c)][0] for c in cand.smiles if INFO[str(c)][0] is not None})
             pairs, feats = [], []
