@@ -1,0 +1,534 @@
+{
+ "c1bankdev:C1_neg_few:features": {
+  "path": "run_c1bankdev_f1/b1_features_C1_neg_few.parquet",
+  "sha256": "6c9f4a417b221cd1250bd9bcb53f650545d61bd82def99ff0bb109dbdee91b9b"
+ },
+ "c1bankdev:C1_neg_few:gl:gl_C1_neg_few.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_few.json",
+  "sha256": "68d260e90e4e23f68d93c5d22874887c95a6d2507ed76d3e7226ad026f750b18"
+ },
+ "c1bankdev:C1_neg_few:gl:gl_C1_neg_few.json.audit.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_few.json.audit.json",
+  "sha256": "a88688f5869cdbe23357a8a22468b0b28f7fb8707818803a4e58e84923688417"
+ },
+ "c1bankdev:C1_neg_few:gl:gl_C1_neg_few.json.meta.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_few.json.meta.json",
+  "sha256": "21e99b396d9988259e2bb6a6fee7515697ce92a39600d68b99f8d1d241c2ef1f"
+ },
+ "c1bankdev:C1_neg_few:gl:gl_C1_neg_few.json.part0.in.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_few.json.part0.in.json",
+  "sha256": "92b65842ec4737f0790219e3408176aad6a593d245d5116d54e4c7912d3774ed"
+ },
+ "c1bankdev:C1_neg_few:gl:gl_C1_neg_few.json.part0.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_few.json.part0.json",
+  "sha256": "68d260e90e4e23f68d93c5d22874887c95a6d2507ed76d3e7226ad026f750b18"
+ },
+ "c1bankdev:C1_neg_few:gl:gl_C1_neg_few.json.part0.json.meta.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_few.json.part0.json.meta.json",
+  "sha256": "2b9e02c91d552e1c73eaf27f2fad2d27925a428c8d0bfb858c762253a1ae81ec"
+ },
+ "c1bankdev:C1_neg_few:gl:gl_C1_neg_few.json.part0.log": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_few.json.part0.log",
+  "sha256": "2413fa68eedd551b0136f1920da8338f611a477ed8b64aa779fa0330e8598cf7"
+ },
+ "c1bankdev:C1_neg_few:ledger": {
+  "path": "run_c1bankdev_f1/b1_molecules_C1_neg_few.csv",
+  "sha256": "e93fc3defc96535f866eda7f0c87fec9c8c36a3ca966c42caaf182fa5bab76da"
+ },
+ "c1bankdev:C1_neg_few:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_c1bankdev_C1_neg_few.parquet",
+  "sha256": "f2f9e7bc8903fb4dbb387eeac6f3dc646b4c267c0fa3a57412709e5f7075f47e"
+ },
+ "c1bankdev:C1_neg_many:features": {
+  "path": "run_c1bankdev_f1/b1_features_C1_neg_many.parquet",
+  "sha256": "f78f9ed0d365ac4f4a2c83c0db1a612de76f1a8883cbed1c965fb32d9ffb25cf"
+ },
+ "c1bankdev:C1_neg_many:gl:gl_C1_neg_many.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_many.json",
+  "sha256": "59257ddacda2f7bde51378e2d16f4fccac6005537f1460566561cfc56c9ae5d5"
+ },
+ "c1bankdev:C1_neg_many:gl:gl_C1_neg_many.json.audit.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_many.json.audit.json",
+  "sha256": "e78fb5e29711ab24bd4420ee1ef7f142ab23751cdd5f582b32256a7f1316ef44"
+ },
+ "c1bankdev:C1_neg_many:gl:gl_C1_neg_many.json.meta.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_many.json.meta.json",
+  "sha256": "51f546dbf79d28946c8494197546e6415be8ef06ac1ec58eb3c443b12dca0d9d"
+ },
+ "c1bankdev:C1_neg_many:gl:gl_C1_neg_many.json.part0.in.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_many.json.part0.in.json",
+  "sha256": "54a2968c9a650c125e540eb5d7a3ccb7666e3da71d0c4c837a978713e942a1fc"
+ },
+ "c1bankdev:C1_neg_many:gl:gl_C1_neg_many.json.part0.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_many.json.part0.json",
+  "sha256": "59257ddacda2f7bde51378e2d16f4fccac6005537f1460566561cfc56c9ae5d5"
+ },
+ "c1bankdev:C1_neg_many:gl:gl_C1_neg_many.json.part0.json.meta.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_many.json.part0.json.meta.json",
+  "sha256": "b573c4316e1e8876bafbed2bf0d14bc3fafc54540e300cac4cc53d51fd79ce93"
+ },
+ "c1bankdev:C1_neg_many:gl:gl_C1_neg_many.json.part0.log": {
+  "path": "run_c1bankdev_f1/work/gl_C1_neg_many.json.part0.log",
+  "sha256": "917fb68eeecd93644f4446efeb6999499835f40ec3045ce40c778bf84ed66f58"
+ },
+ "c1bankdev:C1_neg_many:ledger": {
+  "path": "run_c1bankdev_f1/b1_molecules_C1_neg_many.csv",
+  "sha256": "ad21e85ca23d1b57a8b4229baafb7ec27391b19b08936a47557c38894f7aac1c"
+ },
+ "c1bankdev:C1_neg_many:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_c1bankdev_C1_neg_many.parquet",
+  "sha256": "38aa2264008f12bdb8eac0a126153f94ab9a414a7c9e8f4cf6bc7f321fe5f0b4"
+ },
+ "c1bankdev:C1_pos_few:features": {
+  "path": "run_c1bankdev_f1/b1_features_C1_pos_few.parquet",
+  "sha256": "825ac3bca1b77ab0ef75f6628cd0be4651f67636b4e5270054effe61ccc04ab6"
+ },
+ "c1bankdev:C1_pos_few:gl:gl_C1_pos_few.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_few.json",
+  "sha256": "39e6b551524a8c85dd80f2da4dea3a5aa728a6a4e5a3279bb1c8fa6e5d2c2078"
+ },
+ "c1bankdev:C1_pos_few:gl:gl_C1_pos_few.json.audit.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_few.json.audit.json",
+  "sha256": "e997dce51bdc00a106be93214a87b8ce3efa03aa56da96f9539972510714b6f6"
+ },
+ "c1bankdev:C1_pos_few:gl:gl_C1_pos_few.json.meta.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_few.json.meta.json",
+  "sha256": "3eb87cda7078fc1e3c0359cf91492035a13831a27ed958f49d4c98f315bbc25a"
+ },
+ "c1bankdev:C1_pos_few:gl:gl_C1_pos_few.json.part0.in.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_few.json.part0.in.json",
+  "sha256": "f2ed07f14d2fe08b2af9e11e580087eebe8fd5ce387881abd32bd2e9b3b1f56d"
+ },
+ "c1bankdev:C1_pos_few:gl:gl_C1_pos_few.json.part0.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_few.json.part0.json",
+  "sha256": "39e6b551524a8c85dd80f2da4dea3a5aa728a6a4e5a3279bb1c8fa6e5d2c2078"
+ },
+ "c1bankdev:C1_pos_few:gl:gl_C1_pos_few.json.part0.json.meta.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_few.json.part0.json.meta.json",
+  "sha256": "4d92826a6adff5a564e53a0a9cccd42e0bd9d04d389693805e609cb5e41026a2"
+ },
+ "c1bankdev:C1_pos_few:gl:gl_C1_pos_few.json.part0.log": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_few.json.part0.log",
+  "sha256": "ac0080e0eba0a1920d7a3c0f0ee1bd359abf0d69bcc92b12fbf417d7c7208804"
+ },
+ "c1bankdev:C1_pos_few:ledger": {
+  "path": "run_c1bankdev_f1/b1_molecules_C1_pos_few.csv",
+  "sha256": "ee475ac7898c611b7c25c68124a1c00bee906475f190c8f36f3a7c178e19885a"
+ },
+ "c1bankdev:C1_pos_few:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_c1bankdev_C1_pos_few.parquet",
+  "sha256": "bce06b41f17b81d3f87b59020dd97a6640a19ea00f2234e98aea1d644ffd6152"
+ },
+ "c1bankdev:C1_pos_many:features": {
+  "path": "run_c1bankdev_f1/b1_features_C1_pos_many.parquet",
+  "sha256": "1a8200fa2f1b5db548507f44c1bf28657d3962d0ded8bdc145d3a442f1627712"
+ },
+ "c1bankdev:C1_pos_many:gl:gl_C1_pos_many.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_many.json",
+  "sha256": "1b22e7f6bd5aabc92bf70e728b8d3e7a14aac727bb281d8f4267ec531ddd5dc2"
+ },
+ "c1bankdev:C1_pos_many:gl:gl_C1_pos_many.json.audit.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_many.json.audit.json",
+  "sha256": "f2160a1a228def80c5fdbad80714308cac462a2084173686c862826a94a33d99"
+ },
+ "c1bankdev:C1_pos_many:gl:gl_C1_pos_many.json.meta.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_many.json.meta.json",
+  "sha256": "0c55561882d6efcc394980bf29a17b480a9f5fd4d804e67e0b9a2eb03986968d"
+ },
+ "c1bankdev:C1_pos_many:gl:gl_C1_pos_many.json.part0.in.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_many.json.part0.in.json",
+  "sha256": "9d050e43c06663d7849a276eeabdc77622700983bd0860af9db3eba7084b0359"
+ },
+ "c1bankdev:C1_pos_many:gl:gl_C1_pos_many.json.part0.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_many.json.part0.json",
+  "sha256": "1b22e7f6bd5aabc92bf70e728b8d3e7a14aac727bb281d8f4267ec531ddd5dc2"
+ },
+ "c1bankdev:C1_pos_many:gl:gl_C1_pos_many.json.part0.json.meta.json": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_many.json.part0.json.meta.json",
+  "sha256": "d1dfc7a50fedd3baa39d5132402019f07bd34c9ea649cbb34b4ec70fb81a2658"
+ },
+ "c1bankdev:C1_pos_many:gl:gl_C1_pos_many.json.part0.log": {
+  "path": "run_c1bankdev_f1/work/gl_C1_pos_many.json.part0.log",
+  "sha256": "0bef2f781efe7836f7efecbccc3888fe0defe3dda983a91801f461a2d3e31272"
+ },
+ "c1bankdev:C1_pos_many:ledger": {
+  "path": "run_c1bankdev_f1/b1_molecules_C1_pos_many.csv",
+  "sha256": "6a59dc8a5924fa8da78b5cea9d253b1d8b11994fa78a1a091ea52a24e1e3c1b4"
+ },
+ "c1bankdev:C1_pos_many:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_c1bankdev_C1_pos_many.parquet",
+  "sha256": "c82186d2f17ad4f65df63d0aa02a37ec2c8bbbfaca1bc38189a92ab94e3483b2"
+ },
+ "c1bankdev:baseline": {
+  "path": "diag/r111_base_c1bankdev.csv",
+  "sha256": "469ae98a363613fed5459b8dd219bd0d66a8b9f484849c60b740fdc22affeb10"
+ },
+ "c1bankdev:eval_csv": {
+  "path": "c1bank_f1/c1dev/p2_molecules.csv",
+  "sha256": "a0bb55624022ae545cb4acfa9178e2c664dc59972498cb3fe3dea153316d1eac"
+ },
+ "c1bankdev:mist_manifest": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_c1bankdev_manifest.json",
+  "sha256": "13241368d6f30d924fb9cd071752bf8cf02b57693092b34d81abbe17fc5aba65"
+ },
+ "f1dev:C_np_crosslib:features": {
+  "path": "run_f1dev/b1_features_C_np_crosslib.parquet",
+  "sha256": "0b86b95c1e11932756691a651453148bca11167d32dbaee31931746f2c66d060"
+ },
+ "f1dev:C_np_crosslib:gl:gl_C_np_crosslib.json": {
+  "path": "run_f1dev/work/gl_C_np_crosslib.json",
+  "sha256": "714cd691d7d562377e411d44feff75e8e24d806d6ecc0c00adc5005b5458b36e"
+ },
+ "f1dev:C_np_crosslib:gl:gl_C_np_crosslib.json.audit.json": {
+  "path": "run_f1dev/work/gl_C_np_crosslib.json.audit.json",
+  "sha256": "0062313ef303183efd4992fde02c4333819284f45470435fb14271fb354f6692"
+ },
+ "f1dev:C_np_crosslib:gl:gl_C_np_crosslib.json.meta.json": {
+  "path": "run_f1dev/work/gl_C_np_crosslib.json.meta.json",
+  "sha256": "58a561a9738877ec2acdbd185f88dcc53c1ea46442203a813de236de7fecbb1b"
+ },
+ "f1dev:C_np_crosslib:gl:gl_C_np_crosslib.json.part0.in.json": {
+  "path": "run_f1dev/work/gl_C_np_crosslib.json.part0.in.json",
+  "sha256": "b0dc0c807d632014ae05b4aa4df6557270a0fcaa5d10888f892bb05a950b1d1a"
+ },
+ "f1dev:C_np_crosslib:gl:gl_C_np_crosslib.json.part0.json": {
+  "path": "run_f1dev/work/gl_C_np_crosslib.json.part0.json",
+  "sha256": "714cd691d7d562377e411d44feff75e8e24d806d6ecc0c00adc5005b5458b36e"
+ },
+ "f1dev:C_np_crosslib:gl:gl_C_np_crosslib.json.part0.json.meta.json": {
+  "path": "run_f1dev/work/gl_C_np_crosslib.json.part0.json.meta.json",
+  "sha256": "b5cf7fbdda233f695aa599fc2ce8d1aad18f0a542b1ce8ffcd6a4e499729ec1d"
+ },
+ "f1dev:C_np_crosslib:gl:gl_C_np_crosslib.json.part0.log": {
+  "path": "run_f1dev/work/gl_C_np_crosslib.json.part0.log",
+  "sha256": "8064160a40b931be09f195a1179d656859b041ea50d85cab456df836223b9d40"
+ },
+ "f1dev:C_np_crosslib:ledger": {
+  "path": "run_f1dev/b1_molecules_C_np_crosslib.csv",
+  "sha256": "89ad0448d53b7d306a960c408322a4f187e2bdad9e41fda795a4783889b145a7"
+ },
+ "f1dev:C_np_crosslib:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_f1dev_C_np_crosslib.parquet",
+  "sha256": "26df73ff64043745dab99bd25362135dfeb6794a18a1e7b09d8eac2ad8dd8760"
+ },
+ "f1dev:D_np_single:features": {
+  "path": "run_f1dev/b1_features_D_np_single.parquet",
+  "sha256": "b61762668146b290f7097a1b7457ebd02822e68347b68b04e340ea628d3d0aa3"
+ },
+ "f1dev:D_np_single:gl:gl_D_np_single.json": {
+  "path": "run_f1dev/work/gl_D_np_single.json",
+  "sha256": "b400a1f3a586e8e045832019b760afd99c72acbeeb7162bb68fbd6544e5d8b20"
+ },
+ "f1dev:D_np_single:gl:gl_D_np_single.json.audit.json": {
+  "path": "run_f1dev/work/gl_D_np_single.json.audit.json",
+  "sha256": "f51a3cc97e170101e870fd9dc446b14d5b9b80c6eaf9dbb29f6ad6522c8b3ed9"
+ },
+ "f1dev:D_np_single:gl:gl_D_np_single.json.meta.json": {
+  "path": "run_f1dev/work/gl_D_np_single.json.meta.json",
+  "sha256": "43fe24b52f88de346cb071fccb85ca59b083711d32e92d10b21d520e7abe8dd3"
+ },
+ "f1dev:D_np_single:gl:gl_D_np_single.json.part0.in.json": {
+  "path": "run_f1dev/work/gl_D_np_single.json.part0.in.json",
+  "sha256": "afa42f46012694445d77acd7b10ca57c4d4e734f13e1282a190344f713f80bc6"
+ },
+ "f1dev:D_np_single:gl:gl_D_np_single.json.part0.json": {
+  "path": "run_f1dev/work/gl_D_np_single.json.part0.json",
+  "sha256": "b400a1f3a586e8e045832019b760afd99c72acbeeb7162bb68fbd6544e5d8b20"
+ },
+ "f1dev:D_np_single:gl:gl_D_np_single.json.part0.json.meta.json": {
+  "path": "run_f1dev/work/gl_D_np_single.json.part0.json.meta.json",
+  "sha256": "6ddc6f96ab46705faabcfcf2c69dfce60d44a590ef6afcc3ddae0590826711fc"
+ },
+ "f1dev:D_np_single:gl:gl_D_np_single.json.part0.log": {
+  "path": "run_f1dev/work/gl_D_np_single.json.part0.log",
+  "sha256": "763d572cb9cec3444329437eb19186ac8eaf7ad3d09dbc7f95a28f3ee11816ac"
+ },
+ "f1dev:D_np_single:ledger": {
+  "path": "run_f1dev/b1_molecules_D_np_single.csv",
+  "sha256": "a578bfbbaf3f7ba7e94b13152f417f2b72320df7b36edf9680fce1989c0b22b7"
+ },
+ "f1dev:D_np_single:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_f1dev_D_np_single.parquet",
+  "sha256": "33ea3261513a861a2d8c4b3df98d62f08ae9a40f0779d8271e3062516f8b6f78"
+ },
+ "f1dev:E_np_negonly:features": {
+  "path": "run_f1dev/b1_features_E_np_negonly.parquet",
+  "sha256": "1a66ae0960fa9c64c3ba70e97ed0283c650a213f6f0ca29c800f811f881f04ef"
+ },
+ "f1dev:E_np_negonly:gl:gl_E_np_negonly.json": {
+  "path": "run_f1dev/work/gl_E_np_negonly.json",
+  "sha256": "f6e1aa763597c7d20c667dced6152a0ceaf1483c2928f1edd1cf617a1821bf69"
+ },
+ "f1dev:E_np_negonly:gl:gl_E_np_negonly.json.audit.json": {
+  "path": "run_f1dev/work/gl_E_np_negonly.json.audit.json",
+  "sha256": "f2caa3c10c9fa48802f73f1b880846757a29ee3165755ff109701e0475c6d511"
+ },
+ "f1dev:E_np_negonly:gl:gl_E_np_negonly.json.meta.json": {
+  "path": "run_f1dev/work/gl_E_np_negonly.json.meta.json",
+  "sha256": "3aff40760d664f0a209812c613823716baaff638fc82934f854a64876381b5b5"
+ },
+ "f1dev:E_np_negonly:gl:gl_E_np_negonly.json.part0.in.json": {
+  "path": "run_f1dev/work/gl_E_np_negonly.json.part0.in.json",
+  "sha256": "55d4e2876503edc544f03b596f2e756ac0b203e37011bedd7edf96e367a03e8e"
+ },
+ "f1dev:E_np_negonly:gl:gl_E_np_negonly.json.part0.json": {
+  "path": "run_f1dev/work/gl_E_np_negonly.json.part0.json",
+  "sha256": "f6e1aa763597c7d20c667dced6152a0ceaf1483c2928f1edd1cf617a1821bf69"
+ },
+ "f1dev:E_np_negonly:gl:gl_E_np_negonly.json.part0.json.meta.json": {
+  "path": "run_f1dev/work/gl_E_np_negonly.json.part0.json.meta.json",
+  "sha256": "22058a27e72f9f36ecac5486ae756cf86e7ee827e97bf4b41d55042f56feaea6"
+ },
+ "f1dev:E_np_negonly:gl:gl_E_np_negonly.json.part0.log": {
+  "path": "run_f1dev/work/gl_E_np_negonly.json.part0.log",
+  "sha256": "54dddaa473cc55d5987ddf268efc9cb4ab97a7dc7238b90038ce47e6d8cb5685"
+ },
+ "f1dev:E_np_negonly:ledger": {
+  "path": "run_f1dev/b1_molecules_E_np_negonly.csv",
+  "sha256": "0afc4d9e7170ad218f21937910f3967b0a7712b1d479ebd0860ecefe47c995e5"
+ },
+ "f1dev:E_np_negonly:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_f1dev_E_np_negonly.parquet",
+  "sha256": "5a9428c4d68c90b23c50e4a39fe156177ffed43df181fa2d3c4d434af16fb719"
+ },
+ "f1dev:F_np_uncovered:features": {
+  "path": "run_f1dev/b1_features_F_np_uncovered.parquet",
+  "sha256": "ed10d757e65032f5e62b2383a2e5bb567c5ddc000e9d40d7a48f85bd700755f8"
+ },
+ "f1dev:F_np_uncovered:gl:gl_F_np_uncovered.json": {
+  "path": "run_f1dev/work/gl_F_np_uncovered.json",
+  "sha256": "3f0aa1af01d5bad693bf06e63d4ddffea764c7cce3cd1b913ca9ce2a7490af7e"
+ },
+ "f1dev:F_np_uncovered:gl:gl_F_np_uncovered.json.audit.json": {
+  "path": "run_f1dev/work/gl_F_np_uncovered.json.audit.json",
+  "sha256": "6170b0f7268e35d6a89533d80bc91d3af7df0fad2cdaf146c7bde44c084b8da6"
+ },
+ "f1dev:F_np_uncovered:gl:gl_F_np_uncovered.json.meta.json": {
+  "path": "run_f1dev/work/gl_F_np_uncovered.json.meta.json",
+  "sha256": "0cac2f313fc210081d2e982b27c86cca053267a752d6ed31d5aa5bf8c948c7e6"
+ },
+ "f1dev:F_np_uncovered:gl:gl_F_np_uncovered.json.part0.in.json": {
+  "path": "run_f1dev/work/gl_F_np_uncovered.json.part0.in.json",
+  "sha256": "bad612ea6c3d7ed0a4ef8fca0b402f725ff8b99d03be00f92fca5c36616593b3"
+ },
+ "f1dev:F_np_uncovered:gl:gl_F_np_uncovered.json.part0.json": {
+  "path": "run_f1dev/work/gl_F_np_uncovered.json.part0.json",
+  "sha256": "3f0aa1af01d5bad693bf06e63d4ddffea764c7cce3cd1b913ca9ce2a7490af7e"
+ },
+ "f1dev:F_np_uncovered:gl:gl_F_np_uncovered.json.part0.json.meta.json": {
+  "path": "run_f1dev/work/gl_F_np_uncovered.json.part0.json.meta.json",
+  "sha256": "491f97812948fa941df308f6c5dc748811dd52ae0884674d9bfd871c2262f9e1"
+ },
+ "f1dev:F_np_uncovered:gl:gl_F_np_uncovered.json.part0.log": {
+  "path": "run_f1dev/work/gl_F_np_uncovered.json.part0.log",
+  "sha256": "87ed51ada555e704346d0367e7e1f188be174aae4a3151ba420043ace2443609"
+ },
+ "f1dev:F_np_uncovered:ledger": {
+  "path": "run_f1dev/b1_molecules_F_np_uncovered.csv",
+  "sha256": "2a79affea7e95adc23bc21d443476a9d0670ba83bf2941511933e35ebc81fe95"
+ },
+ "f1dev:F_np_uncovered:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_f1dev_F_np_uncovered.parquet",
+  "sha256": "16c1eece97ede636f4f7358a55045199c66d12ae8f79108d95434645c7deb4f2"
+ },
+ "f1dev:G_tims_crosslib:features": {
+  "path": "run_f1dev/b1_features_G_tims_crosslib.parquet",
+  "sha256": "f020c7d33e1415078eb03c42497b02a6681f1f92a31fc193d59b8f8de2e2f317"
+ },
+ "f1dev:G_tims_crosslib:gl:gl_G_tims_crosslib.json": {
+  "path": "run_f1dev/work/gl_G_tims_crosslib.json",
+  "sha256": "15a1835337b61927453379370e8424ba1e1de938ed4a7214ddd0d528c9dbb350"
+ },
+ "f1dev:G_tims_crosslib:gl:gl_G_tims_crosslib.json.audit.json": {
+  "path": "run_f1dev/work/gl_G_tims_crosslib.json.audit.json",
+  "sha256": "795c0132177b2ba33d1a10b051555abdfaca8657ec7f3f880118c2077eb9c1aa"
+ },
+ "f1dev:G_tims_crosslib:gl:gl_G_tims_crosslib.json.meta.json": {
+  "path": "run_f1dev/work/gl_G_tims_crosslib.json.meta.json",
+  "sha256": "755436cc085c8fbc60c3680be4eb6e8f024437505ab24559bb307b241a4287b8"
+ },
+ "f1dev:G_tims_crosslib:gl:gl_G_tims_crosslib.json.part0.in.json": {
+  "path": "run_f1dev/work/gl_G_tims_crosslib.json.part0.in.json",
+  "sha256": "7a1905f086d52cd6e8c7c61e294272bc9bd861d4830a4024dced86a5b36a7255"
+ },
+ "f1dev:G_tims_crosslib:gl:gl_G_tims_crosslib.json.part0.json": {
+  "path": "run_f1dev/work/gl_G_tims_crosslib.json.part0.json",
+  "sha256": "15a1835337b61927453379370e8424ba1e1de938ed4a7214ddd0d528c9dbb350"
+ },
+ "f1dev:G_tims_crosslib:gl:gl_G_tims_crosslib.json.part0.json.meta.json": {
+  "path": "run_f1dev/work/gl_G_tims_crosslib.json.part0.json.meta.json",
+  "sha256": "6baaab781e40f6c5bc542a45eadf3125f7ee446ac31019936885f921edf9f051"
+ },
+ "f1dev:G_tims_crosslib:gl:gl_G_tims_crosslib.json.part0.log": {
+  "path": "run_f1dev/work/gl_G_tims_crosslib.json.part0.log",
+  "sha256": "48b4edc2bb6cf73a5541a80aa24379d08eccffaf20d3a95c5243c37c493f99fa"
+ },
+ "f1dev:G_tims_crosslib:ledger": {
+  "path": "run_f1dev/b1_molecules_G_tims_crosslib.csv",
+  "sha256": "e6beb4229e9f451cfe5c78ba09e8e7d7a0245aaabdfac6ebd3d87e80f31e5359"
+ },
+ "f1dev:G_tims_crosslib:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_f1dev_G_tims_crosslib.parquet",
+  "sha256": "c5ba51949a2b774754b660fdc459cb8582aa0cf891f796579d72c04174fb6d59"
+ },
+ "f1dev:baseline": {
+  "path": "diag/r102_f1dev.csv",
+  "sha256": "634384e41072a2298e377e8c10278e08d9287351d00670e05fc7ad85841fb5ea"
+ },
+ "f1dev:eval_csv": {
+  "path": "eval_set_f1/p2_molecules.csv",
+  "sha256": "9a4be25e68925eae49e06fb925af6f123d61bdd45d807b8284f96dab238b7811"
+ },
+ "f1dev:mist_manifest": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_f1dev_manifest.json",
+  "sha256": "83c80602fc3858a1fa26bc72f8090af3772128de07abd7c9bdbb37060d335e4e"
+ },
+ "gen_eval2fd_n128v3.py": {
+  "path": "gen_eval2fd_n128v3.py",
+  "sha256": "3c51a35b0f0b2082932c1618dc9fa276d0d6895fe4a57ca4db4025b4e874c71d"
+ },
+ "np053f1dev:NP_H:features": {
+  "path": "run_np053_f1dev/b1_features_NP_H.parquet",
+  "sha256": "cf59bbd83a51c338e05083afdd094eb614b0206c1655e1f00b2191e8b6e7c102"
+ },
+ "np053f1dev:NP_H:gl:gl_NP_H.json": {
+  "path": "run_np053_f1dev/work/gl_NP_H.json",
+  "sha256": "8c7cee9dd05232c0a671fc5065a505a22c92de278b8be1fcb7435b2d2db1387d"
+ },
+ "np053f1dev:NP_H:gl:gl_NP_H.json.audit.json": {
+  "path": "run_np053_f1dev/work/gl_NP_H.json.audit.json",
+  "sha256": "ca0694324b0178159ea0e034cce2265e185a0b3fee04bac5dc19109b600b2ecd"
+ },
+ "np053f1dev:NP_H:gl:gl_NP_H.json.meta.json": {
+  "path": "run_np053_f1dev/work/gl_NP_H.json.meta.json",
+  "sha256": "b9bb0a53de20a56f2886e6f92edc091dcb7bb9985ea1a420afb379188258575c"
+ },
+ "np053f1dev:NP_H:gl:gl_NP_H.json.part0.in.json": {
+  "path": "run_np053_f1dev/work/gl_NP_H.json.part0.in.json",
+  "sha256": "b0147990281974adce399183f55c4c6cf8f0e4aa19cb0a7a0349e59decf77327"
+ },
+ "np053f1dev:NP_H:gl:gl_NP_H.json.part0.json": {
+  "path": "run_np053_f1dev/work/gl_NP_H.json.part0.json",
+  "sha256": "8c7cee9dd05232c0a671fc5065a505a22c92de278b8be1fcb7435b2d2db1387d"
+ },
+ "np053f1dev:NP_H:gl:gl_NP_H.json.part0.json.meta.json": {
+  "path": "run_np053_f1dev/work/gl_NP_H.json.part0.json.meta.json",
+  "sha256": "f0153b0a61653c08861510adcb5a45a9c4f0066431db5dbf9bd2f22497a32d20"
+ },
+ "np053f1dev:NP_H:gl:gl_NP_H.json.part0.log": {
+  "path": "run_np053_f1dev/work/gl_NP_H.json.part0.log",
+  "sha256": "3e37f248c5098679d64faa929fc1e71809ef8db731089f84d5b2430e3961bc6c"
+ },
+ "np053f1dev:NP_H:ledger": {
+  "path": "run_np053_f1dev/b1_molecules_NP_H.csv",
+  "sha256": "ba9575019d4723e647998b584858adc79d5a13c52fcdfc8ee2508ddef70e159a"
+ },
+ "np053f1dev:NP_H:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_np053f1dev_NP_H.parquet",
+  "sha256": "894282d250d3d6b87fafb534a2f927709fa0f09fbbe95093cde7d4b1321badd5"
+ },
+ "np053f1dev:NP_N:features": {
+  "path": "run_np053_f1dev/b1_features_NP_N.parquet",
+  "sha256": "16deb7291b90e81cb73b88b80c77dd1bb20791d87b12f98786035f9fec11ce98"
+ },
+ "np053f1dev:NP_N:gl:gl_NP_N.json": {
+  "path": "run_np053_f1dev/work/gl_NP_N.json",
+  "sha256": "b81e4117a5465f138ea93ace69851424630ed178aa3aeb2d5e8ab80c7d8e557c"
+ },
+ "np053f1dev:NP_N:gl:gl_NP_N.json.audit.json": {
+  "path": "run_np053_f1dev/work/gl_NP_N.json.audit.json",
+  "sha256": "27a46b1047dc18fb0fa3ecc2c56b61f5197b99ee765e6bf3af3613e33d017601"
+ },
+ "np053f1dev:NP_N:gl:gl_NP_N.json.meta.json": {
+  "path": "run_np053_f1dev/work/gl_NP_N.json.meta.json",
+  "sha256": "5cd278b00b73837c92913489cbb67785b55f8d9e98a44b8341a40e9998384d5a"
+ },
+ "np053f1dev:NP_N:gl:gl_NP_N.json.part0.in.json": {
+  "path": "run_np053_f1dev/work/gl_NP_N.json.part0.in.json",
+  "sha256": "628b3336f2c0fc4fcec658eef269b48086591ff7ecc82f56949c1e396a0a7310"
+ },
+ "np053f1dev:NP_N:gl:gl_NP_N.json.part0.json": {
+  "path": "run_np053_f1dev/work/gl_NP_N.json.part0.json",
+  "sha256": "b81e4117a5465f138ea93ace69851424630ed178aa3aeb2d5e8ab80c7d8e557c"
+ },
+ "np053f1dev:NP_N:gl:gl_NP_N.json.part0.json.meta.json": {
+  "path": "run_np053_f1dev/work/gl_NP_N.json.part0.json.meta.json",
+  "sha256": "5a859ba373c96c6a50008f2187dcbd9a0771b075aa3d25df010ec0d5679ba9f6"
+ },
+ "np053f1dev:NP_N:gl:gl_NP_N.json.part0.log": {
+  "path": "run_np053_f1dev/work/gl_NP_N.json.part0.log",
+  "sha256": "d1d2b02d6d082127c298fe7df69c267a84c2f6cc3ff06a7408316712884d5ef8"
+ },
+ "np053f1dev:NP_N:ledger": {
+  "path": "run_np053_f1dev/b1_molecules_NP_N.csv",
+  "sha256": "1f7812a0f794c04c11253b201eef4f5b461d758ed39f75e89ab07945b6c4fa9c"
+ },
+ "np053f1dev:NP_N:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_np053f1dev_NP_N.parquet",
+  "sha256": "810b0644e6700e4b11ccecef7720c221b05d1b7570a072fe1b47e2e070a823d9"
+ },
+ "np053f1dev:NP_X:features": {
+  "path": "run_np053_f1dev/b1_features_NP_X.parquet",
+  "sha256": "01dbec2d3396352d15677d711acbf68ec8b1d09200a2650d69bf5d094527ece0"
+ },
+ "np053f1dev:NP_X:gl:gl_NP_X.json": {
+  "path": "run_np053_f1dev/work/gl_NP_X.json",
+  "sha256": "6398348cc146760ec7854c81868aca9a74dd03bb78e23c85465c6f47f3ca2c85"
+ },
+ "np053f1dev:NP_X:gl:gl_NP_X.json.audit.json": {
+  "path": "run_np053_f1dev/work/gl_NP_X.json.audit.json",
+  "sha256": "78cad0a8aa4b9e6413ec64fdd09c7e09dc9f312437a1186db95aa15c686f96f8"
+ },
+ "np053f1dev:NP_X:gl:gl_NP_X.json.meta.json": {
+  "path": "run_np053_f1dev/work/gl_NP_X.json.meta.json",
+  "sha256": "5cd278b00b73837c92913489cbb67785b55f8d9e98a44b8341a40e9998384d5a"
+ },
+ "np053f1dev:NP_X:gl:gl_NP_X.json.part0.in.json": {
+  "path": "run_np053_f1dev/work/gl_NP_X.json.part0.in.json",
+  "sha256": "ea199c6dba6edbbacf9ec8b1a1470b6309ec35fafb19f59236e92d1e88862cca"
+ },
+ "np053f1dev:NP_X:gl:gl_NP_X.json.part0.json": {
+  "path": "run_np053_f1dev/work/gl_NP_X.json.part0.json",
+  "sha256": "6398348cc146760ec7854c81868aca9a74dd03bb78e23c85465c6f47f3ca2c85"
+ },
+ "np053f1dev:NP_X:gl:gl_NP_X.json.part0.json.meta.json": {
+  "path": "run_np053_f1dev/work/gl_NP_X.json.part0.json.meta.json",
+  "sha256": "857ba127503998365fe2a79398144bb2c67015162b769016df776649ce2f989f"
+ },
+ "np053f1dev:NP_X:gl:gl_NP_X.json.part0.log": {
+  "path": "run_np053_f1dev/work/gl_NP_X.json.part0.log",
+  "sha256": "72dae3069edded3fe8d3dc2aa09a5e369c7068d63735ba5649f80ff256b43b67"
+ },
+ "np053f1dev:NP_X:ledger": {
+  "path": "run_np053_f1dev/b1_molecules_NP_X.csv",
+  "sha256": "3853f97e4207ff6166a1315f17eac10d298312d3ef26f0bcfe74c235453c306e"
+ },
+ "np053f1dev:NP_X:mist": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_np053f1dev_NP_X.parquet",
+  "sha256": "641db45e8eda38d24b35f0c56ddc6352c3ede0d1362b65bc52f8ea3bd05cc8e9"
+ },
+ "np053f1dev:baseline": {
+  "path": "diag/r102_np053f1dev.csv",
+  "sha256": "f845f61b700dbf20326c8c6637bb937e4fb0ea22409ddb4cd6ae2beab35060ea"
+ },
+ "np053f1dev:eval_csv": {
+  "path": "np053_f1dev/p2_molecules.csv",
+  "sha256": "d1e613f892aaf2fb1af01cd07101ccefa8e965016b20885a654bb0caded9f411"
+ },
+ "np053f1dev:mist_manifest": {
+  "path": "/home/svlg/CASMI2026/experiments/mist/scores_v3/mist_np053f1dev_manifest.json",
+  "sha256": "fcc7cae4dc0c5265d92f6881e8061d9e40e32a792b261bcb76a6cb3ddff028b3"
+ },
+ "ranker": {
+  "path": "rank_v8w7a/lambdarank.txt",
+  "sha256": "fe61dc429bd2722363100d7a749f56cf4e4de3606fdce535f31b391c83004fe3"
+ },
+ "wf_common.py": {
+  "path": "wf_common.py",
+  "sha256": "c65e42bd3fd0f93e94be7dd0e28e82ce36532758b4d317415c578402d5af9434"
+ },
+ "x128v3_summary.py": {
+  "path": "x128v3_summary.py",
+  "sha256": "9c9a4cf94e3b2589bb5053319e31e25dc2cdae98844816794bb3105ad78d80ae"
+ }
+}
