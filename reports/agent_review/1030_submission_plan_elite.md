@@ -19,3 +19,10 @@ kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/
 
 ## 読み(登録 §3、Public の結果を見て α / K / E 源を動かさない)
 - Public ≥ 0.402 → 暫定採用候補;0.379 < Public < 0.402 → 保留;Public ≤ 0.379 → 点検して主系へ入れない。
+
+## 00:45 parity B の結果と対応(2026-10-30)
+- c2: **PASS**。c1: **FAIL**。一分子(SQFSKOYWJBQGKQ)の E-lite の順序付き top 25 が違う(top-1・RR は同一)。P の主出力と保険は、両 view の 250/250 で同一。
+- 原因は 076 / Codex 082 / 083 で既知の評価器の表の性質である。古いパネルの評価表 run_panel_fe_pc は、公式 key の別表記(raw 構造)を C1 + C2 の shortlist の和で集約する。そのため、候補 BEBLLQPTMVOKAX は C1 でも pool 側の別表記の train / COCONUT 所属と参照(lib 0.376、24 本)を持つ。pipeline(= 提出)は view ごとに集約するので、train ではなく参照 0・lib 0 になる。
+- E-lite の第 2 ranker(e1r)は lib を使うので、この一分子の E の順序だけが変わる。E-lite の実装の差ではない。
+- 対応: 同じ PC・同じ引数に `--alias_perview`(Codex 082)を加えてパネルの評価表を作り直し、登録どおりの parity B の比較(同じ pipeline 出力・同じ tool と option)を両 view で再実行する(`pc/jobs/pc_parity132ap.sh`)。
+- 結果と、この再実行を提出の条件として扱ってよいかを、Codex に確認するまで提出しない。Kaggle API の認証も切れている(00:05 から 401)。
