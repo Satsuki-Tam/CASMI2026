@@ -165,3 +165,4 @@ if a.ref_csv:
     miss = sorted(set(ref.molecule) - set(R.molecule)) if not a.limit else []
     print(f"PARITY_P {'PASS' if len(bad) == 0 and not miss and len(J) > 0 else 'FAIL'}: compared {len(J)} molecules (P rows {len(R)}, reference rows {len(ref)}), mismatches {len(bad)}, reference molecules missing {len(miss)}")
     if len(bad): print(bad[["set", "molecule", "main", "main_ref", "gl_ok", "gl_ok133", "top25_hash", "top25_133"]].head(10).to_string())
+    if len(bad) or miss or len(J) == 0: sys.exit(1)   # v2 (Codex 136): a parity FAIL is a non-zero exit

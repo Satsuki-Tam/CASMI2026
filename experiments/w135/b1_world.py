@@ -11,6 +11,8 @@ paths and constants, imported from b1_features where possible); only the masks d
 Every other structure keeps its references (with the usual per-query duplicate rule). One view: the c1_* and c2_* columns are written
 identical (the world view) so the downstream view code (b1_locked_eval.view_frame 'c2') reads the world. No truth-specific rule is used.
 --parity_c2: per-molecule masks exactly as b1_features' C2 view (no batch mask) -- for the parity check against an existing run.
+v2 (2026-10-30, Codex 136, before any reach number): the world-window official keys are dumped (gen_<set>_window_okeys.parquet) and the
+per-molecule column c1_usable is renamed c1_assigned (the class assigned by the batch CSV, not a measured usability).
 Usage: python -X utf8 b1_world.py --eval_csv BATCH.csv --wclass_col wclass_p30 --store ... --tier ... --pop ... --pool ... --coco ... --fold_safe DIR
        --v3 DIR --folds structures.parquet --out DIR [--k 100 --k_fpp 200 --k_pop 50 --k_pool 0] --sets dF1 [--dump_gen DIR]"""
 import os as _os
@@ -215,6 +217,9 @@ def main():
                 keys = list(rep); n_u = len(keys)
                 if a.dump_gen:
                     gen_dump["mol"].append(str(mid)); gen_dump["zlog"].append(zlog); gen_dump["masses"].append(json.dumps(M_by_add)); gen_dump["wkeys"].append(keys)
+                    if not a.parity_c2:   # v2 (Codex 136): official key of every world-window structure (one SMILES per raw key)
+                        sm_w = [smiles[rep[k]["i"]] for k in keys]
+                        gen_dump.setdefault("wokeys", []).append([k for rr in wp.map(BF._okey, [sm_w[i:i + 200] for i in range(0, len(sm_w), 200)]) for k in rr])
                 if n_u == 0:
                     rows_out.append(dict(set=set_name, molecule=mid, group=r.group, lib=lib, identity_group=int(getattr(r, "identity_group", -1)), wclass=WCLASS.get(mid, ""), n_query=len(qspec), n_unique=0,
                                          truth_in_window=False, truth_in_shortlist=False, n_drop_raw=n_drop_raw, n_drop_official=n_drop_ok)); continue
@@ -323,7 +328,7 @@ def main():
                                      adducts="|".join(sorted(M_by_add)), n_adducts=len(M_by_add), ce_known=float(np.mean([s["ce"] is not None for s in qspec])), n_window_structures=len(smiles), n_unique=n_u,
                                      n_unique_train=int(train_flag_orig.sum()), truth_in_window=truth_in_window, truth_in_shortlist=bool(tb), truth_in_short_c1=bool(set(tb) & short_v["c1"]),
                                      truth_in_short_c2=bool(set(tb) & short_v["c2"]), n_shortlist=len(best), n_short_c1=len(short_v["c1"]), n_short_c2=len(short_v["c2"]),
-                                     lib_max_c1=float(L["c1"].max()), lib_max_c2=float(L["c2"].max()), c1_usable=bool(WCLASS.get(mid) == "C1") if not a.parity_c2 else False,
+                                     lib_max_c1=float(L["c1"].max()), lib_max_c2=float(L["c2"].max()), c1_assigned=bool(WCLASS.get(mid) == "C1") if not a.parity_c2 else False,
                                      n_drop_raw=n_drop_raw, n_drop_official=n_drop_ok, seconds=time.time() - tm0))
                 if (n_i + 1) % 20 == 0 or n_i == len(ms) - 1:
                     d = pd.DataFrame(rows_out)
@@ -336,6 +341,8 @@ def main():
                 os.makedirs(a.dump_gen, exist_ok=True)
                 np.savez_compressed(f"{a.dump_gen}/gen_{set_name}.npz", mol=np.array(gen_dump["mol"]), zlog=np.stack(gen_dump["zlog"]).astype(np.float32), masses=np.array(gen_dump["masses"]))
                 pd.DataFrame([(m_, k_) for m_, ks_ in zip(gen_dump["mol"], gen_dump["wkeys"]) for k_ in ks_], columns=["molecule", "key"]).to_parquet(f"{a.dump_gen}/gen_{set_name}_window.parquet", index=False)
+                if gen_dump.get("wokeys"):
+                    pd.DataFrame([(m_, k_, o_) for m_, ks_, os_ in zip(gen_dump["mol"], gen_dump["wkeys"], gen_dump["wokeys"]) for k_, o_ in zip(ks_, os_)], columns=["molecule", "key", "official_key"]).to_parquet(f"{a.dump_gen}/gen_{set_name}_window_okeys.parquet", index=False)
             print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} shortlist rows ({time.time()-t0:.0f}s)", flush=True)
     import rdkit
     json.dump(dict(mode=("parity_c2" if a.parity_c2 else "world"), wclass_col=a.wclass_col, mask_stats=mask_stats, k=a.k, k_fpp=a.k_fpp, k_pop=a.k_pop, k_pool=a.k_pool, shortlist_lam=SHORTLIST_LAM, ppm=PPM,

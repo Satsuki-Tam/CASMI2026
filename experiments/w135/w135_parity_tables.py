@@ -4,11 +4,15 @@ floats, NaN == NaN), and the per-molecule key sets. Prints PARITY_TABLES PASS / 
 Usage: python -X utf8 w135_parity_tables.py --ref RUN/b1_features_SET.parquet --new OUT/b1_features_SET.parquet"""
 import argparse, sys
 import numpy as np, pandas as pd
-ap = argparse.ArgumentParser(); ap.add_argument("--ref", required=True); ap.add_argument("--new", required=True); a = ap.parse_args()
+ap = argparse.ArgumentParser(); ap.add_argument("--ref", required=True); ap.add_argument("--new", required=True)
+ap.add_argument("--eval_csv", default=""); ap.add_argument("--set", default=""); ap.add_argument("--limit", type=int, default=0); a = ap.parse_args()
 N = pd.read_parquet(a.new); R = pd.read_parquet(a.ref)
 for d in (N, R): d["molecule"] = d.molecule.astype(str); d["official_key"] = d.official_key.astype(str)
 R = R[R.molecule.isin(set(N.molecule))]
 bad = []
+if a.eval_csv:   # v2 (Codex 136): the expected roster (first --limit molecules of --set, as b1_world --limit) must be present in full
+    ev = pd.read_csv(a.eval_csv); ev = ev[ev.set.astype(str) == a.set]; exp = set((ev.head(a.limit) if a.limit else ev).molecule.astype(str))
+    if set(N.molecule) != exp: bad.append(f"roster: new has {len(set(N.molecule))} molecules, expected {len(exp)} (missing {len(exp - set(N.molecule))}, extra {len(set(N.molecule) - exp)})")
 for m in sorted(set(N.molecule)):
     kn, kr = set(N[N.molecule == m].official_key), set(R[R.molecule == m].official_key)
     if kn != kr: bad.append(f"{m}: key sets differ (new-only {len(kn - kr)}, ref-only {len(kr - kn)})")

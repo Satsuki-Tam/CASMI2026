@@ -34,6 +34,10 @@ if [ "${SPEED:-0}" = 1 ]; then
   [ $rc -eq 0 ] || fail "speed rc=$rc"
   echo "== $(date '+%F %T') speed: $(tail -1 $W/speed.log | cut -c1-200)"
 fi
-{ for f in experiments/w135/batches/$BATCH.csv experiments/w135/b1_world.py experiments/w135/w135_p.py experiments/w135/w135_gen.py $W/b1_features_$BATCH.parquet $W/b1_molecules_$BATCH.csv \
-    $W/world_masks.json $W/work/gl_$BATCH.json $W/P.parquet $W/gen/gen_$BATCH.npz $W/gen/gen_${BATCH}_window.parquet; do echo "$(sha256sum $f | cut -c1-64) $f"; done; } > $W/manifest.txt
+{ for f in experiments/w135/batches/$BATCH.csv experiments/w135/b1_world.py experiments/w135/w135_p.py experiments/b1_baseline/b1_features.py experiments/b1_baseline/b1_common.py \
+    experiments/b1_baseline/b1_analog.py experiments/b1_baseline/b1_rankfeats.py experiments/b1_baseline/b1_evaluate.py experiments/b1_baseline/b1_locked_eval.py experiments/b1_baseline/b1_frag.py \
+    experiments/b1_baseline/rank_v8w7a/lambdarank.txt $FS/fpnet_fold0.pt $FS/fp_bits.npy data/external/glacier/gl_runner.py \
+    $W/b1_features_$BATCH.parquet $W/b1_molecules_$BATCH.csv $W/world_masks.json $W/work/gl_$BATCH.json $W/work/gl_$BATCH.json.meta.json $W/P.parquet \
+    $W/gen/gen_$BATCH.npz $W/gen/gen_${BATCH}_window.parquet $W/gen/gen_${BATCH}_window_okeys.parquet; do echo "$(sha256sum $f | cut -c1-64) $f"; done; } > $W/manifest.txt
+# v2 (Codex 136): the manifest covers the shared code, the P model, the FPNet checkpoint / bit order, the GL runner and the window official keys.
 echo "W135_WORLD_DONE $BATCH p$PI $(date '+%F %T')" | tee -a experiments/w135/worlds/status.txt

@@ -1,0 +1,291 @@
+{
+ "batches": [
+  "dF1",
+  "dF2",
+  "dF3",
+  "dR1",
+  "dR2",
+  "dR3"
+ ],
+ "n": 600,
+ "eligible_batch": 230,
+ "eligible_world": 227,
+ "batch_yes_world_no": 14,
+ "batch_no_world_yes": 11,
+ "assigned_c1_p30_without_world_ref": 9,
+ "assignment_changes": [
+  {
+   "batch": "dF1",
+   "pi": 0.0,
+   "n_changed": 3,
+   "molecules": [
+    "XFDQJKDGGOEYPI",
+    "OZKVQSNRAFPWMK",
+    "CLYLZXCYEKJUEK"
+   ],
+   "new_counts": {
+    "C1": 38,
+    "C2": 62,
+    "C3": 0
+   }
+  },
+  {
+   "batch": "dF1",
+   "pi": 0.3,
+   "n_changed": 3,
+   "molecules": [
+    "XFDQJKDGGOEYPI",
+    "OZKVQSNRAFPWMK",
+    "CLYLZXCYEKJUEK"
+   ],
+   "new_counts": {
+    "C1": 27,
+    "C2": 43,
+    "C3": 30
+   }
+  },
+  {
+   "batch": "dF1",
+   "pi": 0.6,
+   "n_changed": 2,
+   "molecules": [
+    "OZKVQSNRAFPWMK",
+    "CLYLZXCYEKJUEK"
+   ],
+   "new_counts": {
+    "C1": 15,
+    "C2": 25,
+    "C3": 60
+   }
+  },
+  {
+   "batch": "dF2",
+   "pi": 0.0,
+   "n_changed": 3,
+   "molecules": [
+    "ACKYKPPUUIVFSB",
+    "RGRKFKRAFZJQMS",
+    "HUEBIMLTDXKIPR"
+   ],
+   "new_counts": {
+    "C1": 33,
+    "C2": 67,
+    "C3": 0
+   }
+  },
+  {
+   "batch": "dF2",
+   "pi": 0.3,
+   "n_changed": 3,
+   "molecules": [
+    "ACKYKPPUUIVFSB",
+    "RGRKFKRAFZJQMS",
+    "HUEBIMLTDXKIPR"
+   ],
+   "new_counts": {
+    "C1": 20,
+    "C2": 50,
+    "C3": 30
+   }
+  },
+  {
+   "batch": "dF2",
+   "pi": 0.6,
+   "n_changed": 3,
+   "molecules": [
+    "ACKYKPPUUIVFSB",
+    "RGRKFKRAFZJQMS",
+    "HUEBIMLTDXKIPR"
+   ],
+   "new_counts": {
+    "C1": 13,
+    "C2": 27,
+    "C3": 60
+   }
+  },
+  {
+   "batch": "dF3",
+   "pi": 0.0,
+   "n_changed": 2,
+   "molecules": [
+    "NABQBYDEMLGCEO",
+    "CRNOZLNQYAUXRK"
+   ],
+   "new_counts": {
+    "C1": 44,
+    "C2": 56,
+    "C3": 0
+   }
+  },
+  {
+   "batch": "dF3",
+   "pi": 0.3,
+   "n_changed": 1,
+   "molecules": [
+    "CRNOZLNQYAUXRK"
+   ],
+   "new_counts": {
+    "C1": 30,
+    "C2": 40,
+    "C3": 30
+   }
+  },
+  {
+   "batch": "dF3",
+   "pi": 0.6,
+   "n_changed": 1,
+   "molecules": [
+    "CRNOZLNQYAUXRK"
+   ],
+   "new_counts": {
+    "C1": 19,
+    "C2": 21,
+    "C3": 60
+   }
+  },
+  {
+   "batch": "dR1",
+   "pi": 0.0,
+   "n_changed": 3,
+   "molecules": [
+    "XREUEWVEMYWFFA",
+    "ROAHWVMKIWCCHH",
+    "WSCPRLMTEVITJR"
+   ],
+   "new_counts": {
+    "C1": 46,
+    "C2": 54,
+    "C3": 0
+   }
+  },
+  {
+   "batch": "dR1",
+   "pi": 0.3,
+   "n_changed": 2,
+   "molecules": [
+    "ROAHWVMKIWCCHH",
+    "WSCPRLMTEVITJR"
+   ],
+   "new_counts": {
+    "C1": 32,
+    "C2": 38,
+    "C3": 30
+   }
+  },
+  {
+   "batch": "dR1",
+   "pi": 0.6,
+   "n_changed": 2,
+   "molecules": [
+    "ROAHWVMKIWCCHH",
+    "WSCPRLMTEVITJR"
+   ],
+   "new_counts": {
+    "C1": 17,
+    "C2": 23,
+    "C3": 60
+   }
+  },
+  {
+   "batch": "dR2",
+   "pi": 0.0,
+   "n_changed": 7,
+   "molecules": [
+    "NIOKCFABUMZUDL",
+    "VNGUCOGHCJHFID",
+    "QPUHWUSUBHNZCG",
+    "KAKNTKKZIIXYAX",
+    "OAHFTKWSJGVMTG",
+    "NZZPSBRODDDVIU",
+    "SEWFWJUQVJHATO"
+   ],
+   "new_counts": {
+    "C1": 36,
+    "C2": 64,
+    "C3": 0
+   }
+  },
+  {
+   "batch": "dR2",
+   "pi": 0.3,
+   "n_changed": 5,
+   "molecules": [
+    "QPUHWUSUBHNZCG",
+    "KAKNTKKZIIXYAX",
+    "OAHFTKWSJGVMTG",
+    "NZZPSBRODDDVIU",
+    "SEWFWJUQVJHATO"
+   ],
+   "new_counts": {
+    "C1": 28,
+    "C2": 42,
+    "C3": 30
+   }
+  },
+  {
+   "batch": "dR2",
+   "pi": 0.6,
+   "n_changed": 2,
+   "molecules": [
+    "NZZPSBRODDDVIU",
+    "SEWFWJUQVJHATO"
+   ],
+   "new_counts": {
+    "C1": 18,
+    "C2": 22,
+    "C3": 60
+   }
+  },
+  {
+   "batch": "dR3",
+   "pi": 0.0,
+   "n_changed": 7,
+   "molecules": [
+    "KBKJEUISYFZICF",
+    "JRWJBFDOAUKNJA",
+    "FRXNXDHFQYZYNA",
+    "HRFSSDXPHTZMLA",
+    "GNSHTSGCUGMNBL",
+    "TZESVTWNFDGIAW",
+    "OADZSFPWAGMTDV"
+   ],
+   "new_counts": {
+    "C1": 30,
+    "C2": 70,
+    "C3": 0
+   }
+  },
+  {
+   "batch": "dR3",
+   "pi": 0.3,
+   "n_changed": 4,
+   "molecules": [
+    "HRFSSDXPHTZMLA",
+    "GNSHTSGCUGMNBL",
+    "TZESVTWNFDGIAW",
+    "OADZSFPWAGMTDV"
+   ],
+   "new_counts": {
+    "C1": 23,
+    "C2": 47,
+    "C3": 30
+   }
+  },
+  {
+   "batch": "dR3",
+   "pi": 0.6,
+   "n_changed": 4,
+   "molecules": [
+    "HRFSSDXPHTZMLA",
+    "GNSHTSGCUGMNBL",
+    "TZESVTWNFDGIAW",
+    "OADZSFPWAGMTDV"
+   ],
+   "new_counts": {
+    "C1": 12,
+    "C2": 28,
+    "C3": 60
+   }
+  }
+ ]
+}
