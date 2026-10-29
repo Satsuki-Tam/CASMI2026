@@ -1,12 +1,16 @@
 """MIST per-candidate scores for the B1 development tables (label-free; stage 2 input, written before any MIST result on CASMI data).
 Queries = the b1_features policy (n111_score.py): selection library, test adducts, select_queries round-robin, max 8, electron correction for
 enveda-180 positive spectra; then only queries whose adduct is [M+H]+ or [M+Na]+ (MIST's trained adducts) are used.
-Candidate formula = RDKit CalcMolFormula of the representative SMILES (neutral; net charge != 0, isotopes or elements outside MIST's 18 -> no
-formula). A (query, formula) pair is used only if |M(formula) + adduct shift - precursor| <= max(20 ppm, 5 mDa) (mass-consistent).
+Candidate formula = experiments/b1_baseline/wf_common.neutral_formula (128 v2: the SAME definition as the evaluator; unparsable, net charge != 0
+or isotope -> no_formula) and then MIST's 18-element vocabulary / counts <= 254 (else no_formula). A (query, formula) pair is used only if
+|theoretical m/z - measured precursor| <= max(20 ppm x measured, 5 mDa), theoretical m/z = monoisotopic mass of the formula (MIST masses) +
+chem_utils.ion_to_mass[adduct], measured = precursor_mz - the enveda-180 positive electron correction (as b1_features).
 For each used pair: p = MIST(query features from mist_adapter.featurize, formula, adduct) (EMA weights, weights_only loading, FP32, eval);
 candidate bits = RDKit MorganGenerator(radius 2, fpSize 4096) on the representative SMILES (MIST's contract, chirality ignored).
   mist_cos = mean over the candidate's usable queries of cos(p, bits);  mist_ll = mean over them of the per-bit Bernoulli log-likelihood / 4096
-  (diagnostic); n_q = number of usable queries; status in {ok, no_query (no [M+H]+/[M+Na]+ query), no_formula, mass_mismatch, no_fp}.
+  (diagnostic); n_q = number of usable queries; status in {ok, no_qrows (no spectrum of the selection library with a test adduct),
+  no_mist_adduct (selected queries, none [M+H]+ / [M+Na]+), no_formula, mass_mismatch, no_fp}.  The table is restricted to the selected molecules
+  of the eval CSV (with or without --limit) and checked complete; the manifest binds code / checkpoint / MIST commit / inputs / outputs by sha256.
 Predictions are cached per (query row, formula, adduct) and shared by all candidates (and both views) of a molecule.
 Writes <out>/mist_<tag>_<set>.parquet and <out>/mist_<tag>_manifest.json (checkpoint sha256, counts).
 Usage (Spark, .venv-mist): python -X utf8 experiments/mist/mist_score.py --ckpt C --store data/processed/spectra_store --run <table dir>
@@ -15,12 +19,12 @@ import argparse, hashlib, json, os, sys, time
 import numpy as np, pandas as pd, polars as pl, torch
 HERE = os.path.dirname(os.path.abspath(__file__)); B1 = os.path.abspath(os.path.join(HERE, "..", "b1_baseline")); sys.path.insert(0, HERE); sys.path.insert(0, B1)
 import mist_adapter as A
+from wf_common import neutral_formula
 from b1_common import select_queries, ADDUCT_SHIFT, ELECTRON
 from mist.models.scaled_mist import ScaledMIST
 from mist.utils import chem_utils as C
 from rdkit import Chem, RDLogger
 from rdkit.Chem import rdFingerprintGenerator
-from rdkit.Chem.rdMolDescriptors import CalcMolFormula
 RDLogger.DisableLog("rdApp.*")
 ap = argparse.ArgumentParser()
 for k in ("ckpt", "store", "run", "eval_csv", "tag", "out"): ap.add_argument(f"--{k}", required=True)
@@ -37,10 +41,11 @@ def cand_info(smi):
     m = Chem.MolFromSmiles(smi)
     if m is None: return None, None, "no_fp"
     bits = np.zeros(4096, np.float32); bits[list(MG.GetFingerprint(m).GetOnBits())] = 1.0
-    if Chem.GetFormalCharge(m) != 0 or any(at.GetIsotope() for at in m.GetAtoms()): return None, bits, "no_formula"
-    f = CalcMolFormula(m)
-    try: C.formula_to_dense(f)
+    f = neutral_formula(smi)
+    if f is None: return None, bits, "no_formula"
+    try: v = C.formula_to_dense(f)
     except Exception: return None, bits, "no_formula"
+    if (v > 254).any(): return None, bits, "no_formula"
     return f, bits, "ok"
 def fmass(f):
     v = C.formula_to_dense(f); return float(v @ C.VALID_MONO_MASSES)
@@ -54,18 +59,29 @@ def main():
     prec_of_row = meta["precursor_mz"].to_numpy(); ce_of_row = meta["ce_mean"].to_numpy(); ins_of_row = meta["instrument_type"].to_numpy() if "instrument_type" in meta.columns else None
     ik_rows = {k: np.asarray(r, np.int64) for k, r in meta.group_by("inchikey14").agg(pl.col("row")).iter_rows()}
     mols = pd.read_csv(a.eval_csv); mols["molecule"] = mols.molecule.astype(str)
-    man = dict(ckpt=a.ckpt, ckpt_sha256=sha(a.ckpt), step=int(ck["step"]), run=a.run, eval_csv=a.eval_csv, sets={}, max_spectra=a.max_spectra, device=a.device, adducts=MIST_ADD)
+    import subprocess, rdkit
+    mist_dir = os.path.dirname(os.path.dirname(os.path.abspath(C.__file__)))
+    try: mist_commit = subprocess.run(["git", "-C", mist_dir, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    except Exception: mist_commit = "unknown"
+    man = dict(ckpt=a.ckpt, ckpt_sha256=sha(a.ckpt), step=int(ck["step"]), run=a.run, eval_csv=a.eval_csv, eval_csv_sha256=sha(a.eval_csv), sets={}, max_spectra=a.max_spectra,
+               device=a.device, adducts=MIST_ADD, mass_rule="|M(F) + ion_to_mass[adduct] - (precursor_mz - enveda-180 positive electron)| <= max(20e-6 * measured, 0.005)",
+               code={f: sha(os.path.join(HERE, f)) for f in ("mist_score.py", "mist_adapter.py")} | {"wf_common.py": sha(os.path.join(B1, "wf_common.py"))},
+               mist_commit=mist_commit, rdkit=rdkit.__version__, torch=torch.__version__, numpy=np.__version__)
     for s in a.sets:
         T = pd.read_parquet(os.path.join(a.run, f"b1_features_{s}.parquet"), columns=["molecule", "smiles", "official_key"]); T["molecule"] = T.molecule.astype(str)
         ms = mols[mols.set == s]
-        if a.limit: ms = ms.head(a.limit); T = T[T.molecule.isin(set(ms.molecule))]
+        if a.limit: ms = ms.head(a.limit)
+        T = T[T.molecule.isin(set(ms.molecule))]   # 128 v2 (Codex 128): always restricted to the selected molecules
+        man["sets"][s] = dict(table_sha256=sha(os.path.join(a.run, f"b1_features_{s}.parquet")))
         INFO = {smi: cand_info(smi) for smi in T.smiles.astype(str).unique()}
-        rows, cnt, npred = [], dict(no_query=0), 0
+        rows, cnt, npred = [], dict(no_qrows=0, no_mist_adduct=0, empty_window=0), 0
         for r in ms.itertuples(index=False):
             mid = str(r.molecule); lib = r.lib; shift = ELECTRON if lib == "enveda-180" else 0.0
             qrows = sorted(int(x) for x in ik_rows.get(mid, []) if lib_of_row[x] == lib and add_of_row[x] in ADDUCT_SHIFT)
-            q = [x for x in select_queries(qrows, a.max_spectra, lambda x: add_of_row[x], lambda x: float(ce_of_row[x])) if add_of_row[x] in MIST_ADD]
+            q0 = select_queries(qrows, a.max_spectra, lambda x: add_of_row[x], lambda x: float(ce_of_row[x]))
+            q = [x for x in q0 if add_of_row[x] in MIST_ADD]; qreason = "no_qrows" if not q0 else ("no_mist_adduct" if not q else "")
             cand = T[T.molecule == mid]
+            if not len(cand): cnt["empty_window"] += 1
             forms = sorted({INFO[str(c)][0] for c in cand.smiles if INFO[str(c)][0] is not None})
             pairs, feats = [], []
             for x in q:
@@ -81,7 +97,7 @@ def main():
                     out, _ = model({k: v.to(dev) for k, v in A.collate(feats[b:b + a.batch]).items()})
                     for j, p in enumerate(out.float().cpu().numpy()): P[pairs[b + j]] = p
             npred += len(feats)
-            if not q: cnt["no_query"] += 1
+            if qreason: cnt[qreason] += 1
             for c in cand.itertuples(index=False):
                 f, bits, st = INFO[str(c.smiles)]
                 cs, ll = [], []
@@ -91,14 +107,16 @@ def main():
                         if p is None: continue
                         cs.append(float(p @ bits / (np.linalg.norm(p) * np.linalg.norm(bits) + 1e-12)))
                         pc = np.clip(p, 1e-6, 1 - 1e-6); ll.append(float((bits * np.log(pc) + (1 - bits) * np.log(1 - pc)).mean()))
-                    if not q: st = "no_query"
+                    if qreason: st = qreason
                     elif not cs: st = "mass_mismatch"
                 rows.append(dict(set=s, molecule=mid, smiles=c.smiles, official_key=c.official_key, mist_cos=float(np.mean(cs)) if cs else np.nan,
                                  mist_ll=float(np.mean(ll)) if ll else np.nan, n_q=len(cs), status=st))
         O = pd.DataFrame(rows)
         if len(O) != len(T) or O.duplicated(["molecule", "official_key"]).any(): raise RuntimeError(f"{s}: scored rows {len(O)} != table rows {len(T)} or duplicates")
+        if len(T) and set(T.molecule) - set(O.molecule): raise RuntimeError(f"{s}: molecules of the table without scored rows")
         O.to_parquet(os.path.join(a.out, f"mist_{a.tag}_{s}.parquet"), index=False)
-        man["sets"][s] = dict(rows=len(O), molecules=int(ms.molecule.nunique()), no_query_molecules=cnt["no_query"], predictions=npred, status=O.status.value_counts().to_dict())
+        outp = os.path.join(a.out, f"mist_{a.tag}_{s}.parquet")
+        man["sets"][s].update(rows=len(O), molecules=int(ms.molecule.nunique()), molecules_without_query=dict(cnt), predictions=npred, status=O.status.value_counts().to_dict(), output_sha256=sha(outp))
         print(f"{s}: {len(O)} rows, {ms.molecule.nunique()} molecules, predictions {npred}, status {O.status.value_counts().to_dict()} ({time.time() - t0:.0f}s)", flush=True)
     json.dump(man, open(os.path.join(a.out, f"mist_{a.tag}_manifest.json"), "w"), indent=2); print("DONE", json.dumps(man)[:600])
 if __name__ == "__main__":

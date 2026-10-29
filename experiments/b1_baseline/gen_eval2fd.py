@@ -38,7 +38,7 @@ ap_.add_argument("--dump_top", default="", help="099: parquet of the first model
 ap_.add_argument("--bmodel", default="", help="095: B-group specialist ranker (b1_rank_train --restrict B); variant bpp = the main order with the B candidates re-ordered by it inside the positions B already holds (GL path only; non-B positions unchanged)")
 ap_.add_argument("--emodel", default="", help="102: comma-separated second-engine E-lite models (b1_rank_train --restrict E), scored on the E-window rows of each view (COCONUT | train in that view | PubChemLite / BIO keys of --ekeys), features recomputed within the window; variants <tag>_only (E list alone), p_e (main order restricted to the E window), rrf_<tag>_<a> / rrf_pe_<a> (identity RRF of the main order with E / with p_e, K = --rrf_k, weight a on the second list), orc_<tag> (max(main, E alone)); diagnostics e_reach, nE, rP, r_<tag>; tag = model directory name")
 ap_.add_argument("--ekeys", default="diag/e_window_keys_v2.parquet"); ap_.add_argument("--rrf_k", type=float, default=10.0)
-ap_.add_argument("--wf", action="store_true", help="128 (Codex 127 Q2): WITHIN-FORMULA rerank of the main list of the first model: per neutral formula F (RDKit CalcMolFormula of the representative SMILES), the positions main gave to F's candidates are refilled in the order h = 1/(10 + r_P,F) + alpha/(10 + r_X,F) (ties -> main order), alpha in {0, 0.5, 2}; every other position unchanged; groups with < 2 covered members unchanged; X = stored GL (wf_gl_*) and, with --wf_mist, MIST cos (wf_mist_*); adds the self-controls, the upper bound wf_ub and per-row diagnostics; main unchanged")
+ap_.add_argument("--wf", action="store_true", help="128 v2 (Codex 127 Q2 / 128): WITHIN-FORMULA rerank of the main list of the first model: per neutral formula F (wf_common.neutral_formula; charged / isotope / unparsable candidates are never grouped and keep their positions), only the candidates of F with a FINITE score X are re-ordered among the positions they occupy in main, by h = 1/(10 + r_P) + alpha/(10 + r_X) with both ranks taken inside that finite subset (ties -> main order), alpha in {0, 0.5, 2}; subsets with < 2 members unchanged; every candidate without X keeps its position; X = stored GL (wf_gl_*) and, with --wf_mist, MIST cos (wf_mist_*); adds self-controls, the coverage-free upper bound wf_ub, coverage-aware bounds wf_ub_<x> and diagnostics; main unchanged")
 ap_.add_argument("--wf_mist", default="", help="128: dir with mist_<wf_mtag>_<set>.parquet (experiments/mist/mist_score.py: mist_cos per candidate)"); ap_.add_argument("--wf_mtag", default="")
 ap_.add_argument("--nscore", default="", help="111: dir with n111_<ntag>_<set>.parquet (n111_score.py: N, Fs per candidate); adds t1N_0.5 / t1Fs_0.5 (main rank-1 fixed, every other candidate of the view list ordered by 1/(10 + r_main) + 0.5/(10 + r_X), ties -> main order, then top 25), N_only / Fs_only and diagnostics rN, rFs, miss_N, miss_Fs, rP_n; main unchanged"); ap_.add_argument("--ntag", default="")
 ap_.add_argument("--fp_col", default="fp_s", choices=["fp_s", "fp_m"], help="091: which fp_mean_score column overrides fp (fp_m = PC-recomputed merge input = platform control)")
@@ -185,20 +185,20 @@ if __name__ == "__main__":
         for s_ in a.sets:
             X_ = pd.read_parquet(os.path.join(HERE, a.nscore, f"n111_{a.ntag}_{s_}.parquet"))
             for m_, sm_, n_, f_, fm_ in zip(X_.molecule.astype(str), X_.smiles.astype(str), X_.N.values, X_.Fs.values, X_.Fm.values): NSC[(s_, m_, sm_)] = {"N": float(n_), "Fs": float(f_), "Fm": float(fm_)}
-    WMS, WFORM = {}, {}
-    if a.wf:   # 128: within-formula rerank (Codex 127 Q2)
-        from rdkit.Chem.rdMolDescriptors import CalcMolFormula as _cmf
-        def FORM_OF(smi):
-            f_ = WFORM.get(smi)
-            if f_ is None:
-                m_ = Chem.MolFromSmiles(smi); f_ = _cmf(m_) if m_ is not None else "?" + smi; WFORM[smi] = f_
-            return f_
+    WMS, WMX = {}, {}
+    if a.wf:   # 128 v2 (Codex 127 Q2 / 128): within-formula rerank
+        from wf_common import neutral_formula as FORM_OF
         WX = ["gl"] + (["mist"] if a.wf_mist else [])
-        NDIAG = NDIAG + [f"wf_{x_}_{al_}" for x_ in WX for al_ in ("0.0", "0.5", "2.0")] + ["wf_ub", "wf_n_form", "wf_rP_form"] + [f"wf_r{x_}_form_pess" for x_ in WX] + [f"wf_cov_{x_}" for x_ in WX]
+        NDIAG = NDIAG + [f"wf_{x_}_{al_}" for x_ in WX for al_ in ("0.0", "0.5", "2.0")] + ["wf_ub", "wf_n_form", "wf_rP_form"] + [f"wf_ub_{x_}" for x_ in WX] + [f"wf_r{x_}_form_pess" for x_ in WX] + [f"wf_move_{x_}" for x_ in WX] + [f"wf_cov_{x_}" for x_ in WX] + [f"wf_ngrp_{x_}" for x_ in WX] + ["wf_ntruth"]
         if a.wf_mist:
             for s_ in a.sets:
-                X_ = pd.read_parquet(os.path.join(HERE, a.wf_mist, f"mist_{a.wf_mtag}_{s_}.parquet"))
-                for m_, sm_, c_ in zip(X_.molecule.astype(str), X_.smiles.astype(str), X_.mist_cos.values): WMS[(s_, m_, sm_)] = float(c_)
+                X_ = pd.read_parquet(os.path.join(HERE, a.wf_mist, f"mist_{a.wf_mtag}_{s_}.parquet")); X_["molecule"] = X_.molecule.astype(str)
+                st_ = set(X_.status.astype(str))
+                if not st_ <= {"ok", "no_qrows", "no_mist_adduct", "no_formula", "mass_mismatch", "no_fp"}: raise SystemExit(f"128: unknown MIST status {st_} in {s_}")
+                okr_ = (X_.status == "ok").values
+                if not (np.isfinite(X_.mist_cos.values[okr_].astype(float)).all() and (X_.n_q.values[okr_] > 0).all()): raise SystemExit(f"128: status ok without a finite score / query in {s_}")
+                if np.isfinite(X_.mist_cos.values[~okr_].astype(float)).any(): raise SystemExit(f"128: a score on a non-ok row in {s_}")
+                WMX[s_] = X_
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
     UNION = set()
@@ -209,6 +209,12 @@ if __name__ == "__main__":
     ROWS, parity, choice = [[] for _ in MODELS], [], []
     for s in a.sets:
         F = pd.read_parquet(os.path.join(HERE, a.run, f"b1_features_{s}.parquet")); F["molecule"] = F["molecule"].astype(str)
+        if a.wf and a.wf_mist:   # 128 v2: every feature-table row of the evaluated molecules has exactly one MIST row (molecule, official_key, smiles)
+            _evm = set(ev[ev.set == s].molecule.astype(str)); _Fk = F[F.molecule.isin(_evm)][["molecule", "official_key", "smiles"]].astype(str)
+            _Xk = WMX[s].astype({"official_key": str, "smiles": str})
+            _J = _Fk.merge(_Xk[["molecule", "official_key", "smiles", "mist_cos", "status"]], on=["molecule", "official_key", "smiles"], how="outer", indicator=True, validate="one_to_one")
+            if not (_J._merge == "both").all(): raise SystemExit(f"128: MIST rows do not match the feature table in {s}: {_J._merge.value_counts().to_dict()}")
+            for m_, sm_, c_ in zip(_J.molecule, _J.smiles, _J.mist_cos.values): WMS[(s, m_, sm_)] = float(c_)
         M = pd.read_csv(os.path.join(HERE, a.run, f"b1_molecules_{s}.csv")).set_index("molecule"); M.index = M.index.astype(str)
         gl, _, _ = E.runner(os.path.join(HERE, a.run), s, "gl"); gl = gl or {}
         G = np.load(os.path.join(HERE, a.gen, f"gen_{s}.npz")); ZL = dict(zip([str(x) for x in G["mol"]], G["zlog"])); MASS = dict(zip([str(x) for x in G["mol"]], [json.loads(x) for x in G["masses"]]))
@@ -407,44 +413,59 @@ if __name__ == "__main__":
                             assert int(new_[0]) == top_, "111: rank-1 changed"
                             out[f"t1{t_}_0.5"] = rr_of([("db", int(i)) for i in new_])
                             assert out["main"] != 1.0 or out[f"t1{t_}_0.5"] == 1.0, "111: a rank-1-correct row changed"
-                    if a.wf and mi_ == 0:   # 128 (Codex 127 Q2): within-formula rerank, positions of each formula kept
-                        forms_ = np.array([FORM_OF(str(sm_)) for sm_ in g.smiles], object)
+                    if a.wf and mi_ == 0:   # 128 v2 (Codex 127 Q2 / 128): within-formula rerank of the finite-X subset, every other position kept
+                        forms_ = [FORM_OF(str(sm_)) for sm_ in g.smiles]
                         pos_w = np.empty(len(g), int); pos_w[np.asarray(order, int)] = np.arange(len(g))
                         groups_ = {}
-                        for i_ in range(len(g)): groups_.setdefault(forms_[i_], []).append(i_)
+                        for i_, f_ in enumerate(forms_):
+                            if f_ is not None: groups_.setdefault(f_, []).append(i_)
                         XV_ = {"gl": glv}
-                        if a.wf_mist: XV_["mist"] = np.array([WMS.get((s, mid, str(sm_)), np.nan) for sm_ in g.smiles], float)
+                        if a.wf_mist: XV_["mist"] = np.array([WMS[(s, mid, str(sm_))] for sm_ in g.smiles], float)
+                        def _subsets(xv_):
+                            return [np.asarray([i_ for i_ in idx_ if np.isfinite(xv_[i_])], int) for idx_ in groups_.values()]
                         def _wf(xv_, al_):
-                            new_ = np.asarray(order, int).copy()
-                            for F_, idx_ in groups_.items():
-                                idx_ = np.asarray(idx_, int)
-                                if len(idx_) < 2: continue
-                                xs_ = xv_[idx_]
-                                if np.isfinite(xs_).sum() < 2: continue
-                                rp_ = np.empty(len(idx_), int); rp_[np.argsort(pos_w[idx_], kind="stable")] = np.arange(1, len(idx_) + 1)
-                                ox_ = np.lexsort((pos_w[idx_], -np.where(np.isfinite(xs_), xs_, -np.inf)))   # missing last, ties -> main order
-                                rx_ = np.empty(len(idx_), int); rx_[ox_] = np.arange(1, len(idx_) + 1)
+                            new_ = np.asarray(order, int).copy(); moved_ = np.zeros(len(g), bool)
+                            for fin_ in _subsets(xv_):
+                                if len(fin_) < 2: continue
+                                rp_ = np.empty(len(fin_), int); rp_[np.argsort(pos_w[fin_], kind="stable")] = np.arange(1, len(fin_) + 1)
+                                ox_ = np.lexsort((pos_w[fin_], -xv_[fin_])); rx_ = np.empty(len(fin_), int); rx_[ox_] = np.arange(1, len(fin_) + 1)
                                 h_ = 1.0 / (10 + rp_) + al_ / (10 + rx_)
-                                members_ = idx_[np.lexsort((pos_w[idx_], -h_))]
-                                for k_, i_ in zip(np.sort(pos_w[idx_]), members_): new_[k_] = i_
+                                members_ = fin_[np.lexsort((pos_w[fin_], -h_))]
+                                for k_, i_ in zip(np.sort(pos_w[fin_]), members_): new_[k_] = i_
+                                moved_[fin_] = True
                             assert sorted(new_.tolist()) == sorted(int(i) for i in order), "128: candidate set changed"
+                            assert all(int(new_[pos_w[i_]]) == i_ for i_ in range(len(g)) if not moved_[i_]), "128: a candidate without X (or not grouped) moved"
                             assert all(forms_[int(new_[k])] == forms_[int(order[k])] for k in range(len(order))), "128: a formula position moved"
                             return new_
-                        assert np.array_equal(_wf(glv, 0.0), np.asarray(order, int)), "128: alpha 0 must reproduce main"
+                        for x_, xv_ in XV_.items():
+                            assert np.array_equal(_wf(xv_, 0.0), np.asarray(order, int)), "128: alpha 0 must reproduce main"
                         assert np.array_equal(_wf(-pos_w.astype(float), 2.0), np.asarray(order, int)), "128: main's own ranks as X must reproduce main"
                         for x_, xv_ in XV_.items():
                             for al_ in (0.0, 0.5, 2.0): out[f"wf_{x_}_{al_}"] = rr_of([("db", int(i)) for i in _wf(xv_, al_)])
-                            out[f"wf_cov_{x_}"] = int(np.isfinite(xv_).sum())
-                        if tr.any():
-                            it_ = int(np.flatnonzero(tr)[np.argmin(pos_w[tr])]); fi_ = np.asarray(groups_[forms_[it_]], int)
-                            pmin_ = int(pos_w[fi_].min()); out["wf_ub"] = 1.0 / (pmin_ + 1) if pmin_ < 25 else 0.0
-                            out["wf_n_form"] = int(len(fi_)); out["wf_rP_form"] = int((pos_w[fi_] < pos_w[it_]).sum() + 1)
+                            out[f"wf_cov_{x_}"] = int(np.isfinite(xv_).sum()); out[f"wf_ngrp_{x_}"] = int(sum(len(f_) >= 2 for f_ in _subsets(xv_)))
+                        trs_ = np.flatnonzero(tr); out["wf_ntruth"] = int(len(trs_))
+                        rrk_ = lambda p_: 1.0 / (p_ + 1) if p_ < 25 else 0.0
+                        if len(trs_):
+                            best_ = min(trs_, key=lambda i_: pos_w[i_])
+                            ub_ = []   # coverage-free bound: any truth may take the earliest position of its formula (ungrouped truths stay)
+                            for t_ in trs_:
+                                ub_.append(rrk_(int(min(pos_w[j_] for j_ in groups_[forms_[t_]]))) if forms_[t_] is not None else rrk_(int(pos_w[t_])))
+                            out["wf_ub"] = max(ub_)
+                            fb_ = groups_.get(forms_[best_], [best_]) if forms_[best_] is not None else [best_]
+                            out["wf_n_form"] = int(len(fb_)); out["wf_rP_form"] = int(sum(pos_w[j_] < pos_w[best_] for j_ in fb_) + 1)
                             for x_, xv_ in XV_.items():
-                                xs_ = np.where(np.isfinite(xv_[fi_]), xv_[fi_], -np.inf); xt_ = xs_[int(np.flatnonzero(fi_ == it_)[0])]
-                                out[f"wf_r{x_}_form_pess"] = int(np.sum(xs_ >= xt_)) if np.isfinite(xt_) else 0
+                                ubx_ = []
+                                for t_ in trs_:
+                                    fin_ = [j_ for j_ in groups_.get(forms_[t_], []) if np.isfinite(xv_[j_])] if forms_[t_] is not None else []
+                                    ubx_.append(rrk_(int(min(pos_w[j_] for j_ in fin_))) if (np.isfinite(xv_[t_]) and len(fin_) >= 2) else rrk_(int(pos_w[t_])))
+                                out[f"wf_ub_{x_}"] = max(ubx_)
+                                fin_ = [j_ for j_ in fb_ if np.isfinite(xv_[j_])]
+                                mv_ = forms_[best_] is not None and bool(np.isfinite(xv_[best_])) and len(fin_) >= 2; out[f"wf_move_{x_}"] = int(mv_)
+                                out[f"wf_r{x_}_form_pess"] = int(sum(xv_[j_] >= xv_[best_] for j_ in fin_)) if mv_ else 0
                         else:
-                            out.update({"wf_ub": 0.0, "wf_n_form": 0, "wf_rP_form": 0, **{f"wf_r{x_}_form_pess": 0 for x_ in XV_}})
-                        assert out["wf_ub"] >= out["main"] - 1e-12, "128: upper bound below main"
+                            out.update({"wf_ub": 0.0, "wf_n_form": 0, "wf_rP_form": 0, **{f"wf_ub_{x_}": 0.0 for x_ in XV_}, **{f"wf_r{x_}_form_pess": 0 for x_ in XV_}, **{f"wf_move_{x_}": 0 for x_ in XV_}})
+                        assert out["wf_ub"] >= out["main"] - 1e-12 and all(out[f"wf_ub_{x_}"] >= out["main"] - 1e-12 for x_ in XV_), "128: an upper bound below main"
+                        assert all(out[f"wf_ub_{x_}"] <= out["wf_ub"] + 1e-12 for x_ in XV_), "128: a coverage-aware bound above the coverage-free bound"
                     if a.dump_top and mi_ == 0:
                         for k_, i_ in enumerate(order[:25]):
                             TOPD.append(dict(set=s, view=v, molecule=mid, rank=k_ + 1, smiles=str(g.smiles.values[i_]), okey=str(g.official_key.values[i_]), fp=float(fp[i_]) if np.isfinite(fp[i_]) else np.nan,
