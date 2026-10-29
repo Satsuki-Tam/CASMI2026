@@ -1,0 +1,8 @@
+[gl     0.0s] stubbed (absent) modules: ['pygmtools', 'h5py', 'multiprocess', 'platformdirs']
+[gl     2.3s] GLACIER loaded: 15,108,154 params 
+[gl     2.3s] model loaded on cuda (rdkit 2025.03.6, torch 2.14.1+cu130, numba True, threads 20)
+/home/svlg/CASMI2026/.venv-ice/lib/python3.12/site-packages/torch/nn/modules/transformer.py:533: UserWarning: The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /__w/pytorch/pytorch/aten/src/ATen/NestedTensorImpl.cpp:177.)
+  output = torch._nested_tensor_from_mask(
+[gl    26.6s] chunk: 5 mols 3077 jobs 22.2s (5/9 covered mols scored)
+[gl    40.0s] chunk: 4 mols 2340 jobs 13.2s (9/9 covered mols scored)
+[gl    40.0s] status ok {'n_mols': 10, 'n_mols_covered': 9, 'n_mols_scored': 9, 'n_cands': 2571, 'n_scored': 2320}
