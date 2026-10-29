@@ -1,0 +1,36 @@
+{
+  "scores": {
+    "ENG_B": 0.223,
+    "PRE_RANK2_B": 0.249,
+    "V8W7A_T": 0.148,
+    "V8W7A_B": 0.22,
+    "E0_T": 0.16
+  },
+  "status": {
+    "ENG_B": "SubmissionStatus.COMPLETE",
+    "PRE_RANK2_B": "SubmissionStatus.COMPLETE",
+    "V8W7A_T": "SubmissionStatus.COMPLETE",
+    "V8W7A_B": "SubmissionStatus.COMPLETE",
+    "E0_T": "SubmissionStatus.COMPLETE"
+  },
+  "known": {
+    "E0_B": 0.259,
+    "BASE_B": 0.213,
+    "OLD_B1_B": 0.204,
+    "OLD_B1_T_M2x": 0.16,
+    "V8W7A": 0.394,
+    "E0": 0.464
+  },
+  "quantities": {
+    "G_B = E0_B - v8w7a_B": 0.039,
+    "G_T = E0_T - v8w7a_T": 0.012,
+    "ENG_B - BASE_B": 0.01,
+    "E0_B - max(BASE_B, ENG_B)": 0.036,
+    "D = E0_B - pre-rank2_B": 0.01,
+    "pre-rank2_B - BASE_B": 0.036,
+    "v8w7a_B - old B1_B 0.204 (descriptive)": 0.016,
+    "v8w7a_T - old B1_T 0.160 (descriptive)": -0.012
+  },
+  "next": "fwdoff_B (kernels/e0-probe-fwdoffb, audit-hardened, REBUILD sha 9966254...): read pre-rank2_B - fwdoff_B with eta",
+  "local": ""
+}

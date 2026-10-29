@@ -1,0 +1,60 @@
+ref,fileName,date,description,status,publicScore,privateScore
+
+57754476,submission.csv,2026-10-29 01:19:13.740000,"DIAGNOSTIC (Codex 049/124/125): E0 final list (same base and extraction cell as E0_B 0.259) top 25 restricted to group T (training structure, official key), order kept, no refill, empty -> CCO; pair with v8w7a_T (57753951): G_T = E0_T - v8w7a_T read with eta 0.015; not a method candidate",SubmissionStatus.COMPLETE,0.160,
+
+57754031,submission.csv,2026-10-29 01:01:57.070000,"DIAGNOSTIC (Codex 049/124): v8w7a (Public 0.394; notebook of kernel b1-fpnet-v8w7a v1 unchanged) final list top 25 restricted to group B (COCONUT and not training, official key, T-priority exclusive), order kept, no refill, empty -> CCO; G_B = 0.259 (E0_B) - v8w7a_B read with eta 0.015; not a method candidate",SubmissionStatus.COMPLETE,0.220,
+
+57753951,submission.csv,2026-10-29 00:57:47.527000,"DIAGNOSTIC (Codex 049/124): v8w7a (Public 0.394; notebook of kernel b1-fpnet-v8w7a v1 unchanged) final list top 25 restricted to group T (training structure, official key), order kept, no refill, empty -> CCO; pair with E0_T: G_T = E0_T - v8w7a_T read with eta 0.015; not a method candidate",SubmissionStatus.COMPLETE,0.148,
+
+57753342,submission.csv,2026-10-29 00:31:05.837000,"DIAGNOSTIC (Codex 101): E0 output just before the final rank-2 insertion (E006 control) top 25 restricted to group B, same extraction; D = 0.259 - pre-rank2_B read with eta 0.015; not a method candidate",SubmissionStatus.COMPLETE,0.249,
+
+57753331,submission.csv,2026-10-29 00:30:42.417000,"DIAGNOSTIC (Codex 101): E0 engine-2 ENG list top 25 restricted to group B (COCONUT and not training, official key, T-priority exclusive), order kept, no refill, empty -> CCO; read vs BASE_B 0.213 and final E0_B 0.259 (eta 0.015); not a method candidate",SubmissionStatus.COMPLETE,0.223,
+
+57716550,submission.csv,2026-10-28 00:03:22.977000,"DIAGNOSTIC (Codex 088): E0 engine-1 BASE list top 25 restricted to group B (COCONUT and not training, official key, T-priority exclusive), order kept, no refill, empty -> CCO; compare with E0_B 0.259; not a method candidate",SubmissionStatus.COMPLETE,0.213,
+
+57716496,submission.csv,2026-10-28 00:02:57.807000,"Codex 080/081 one-change vs v7f (0.390): v7f + EA (theta 0.5, w 1); 053 conf NP C2 +0.0163 [+0.0086, +0.0252]; parity v7f-alone PASS both views, v7f+EA C2 PASS, C1 outputs identical (1 known flag exception)",SubmissionStatus.COMPLETE,0.392,
+
+57716445,submission.csv,2026-10-28 00:02:34.147000,"Codex 076/082b one-change vs 0.379: explained-away demotion EA (score - 1 x [library references present and lib_sim < 0.5]); 073 confirmation NP C2 +0.0246 [+0.017, +0.033]; parity C2 PASS, C1 outputs identical (1 known flag exception)",SubmissionStatus.COMPLETE,0.385,
+
+57716378,submission.csv,2026-10-28 00:02:10.913000,"Codex 045/046 one-change vs 0.379: one generated analog derivative at rank 3 (b1_gen v2), GL gate on the GL path, fallback f.z gate vs main ranks 2-3 (ggt3t); gt3 Public 0.377 = undetermined -> precondition met",SubmissionStatus.COMPLETE,0.378,
+
+57716320,submission.csv,2026-10-28 00:01:47.133000,"Codex 087/092 one-change vs v7f (0.390): ranker rank_v8w7a (v7f analog-feature recipe + fold-3a/4a pools, pool C1 x1; dev 053 NP_H C2 +0.0327 vs v7a_pc, G C1 +0.18; reserved-083 confirmation NP_H C2 +0.0245 [+0.0098, +0.0388]); frozen v7f pipeline 6e3b4d04; reading fixed in 1028_submission_plan",SubmissionStatus.COMPLETE,0.394,
+
+57682054,submission.csv,2026-10-27 00:02:52.393000,"DIAGNOSTIC pair (Codex 049, 055): current B1 0.379 (57650023 kernel) final list restricted to group B with the identical appended cell; not a method candidate",SubmissionStatus.COMPLETE,0.204,
+
+57682008,submission.csv,2026-10-27 00:02:29.297000,"DIAGNOSTIC pair (Codex 049, 055): E0 (0.464 reproduction) final list restricted to group B = COCONUT and not training (official key; T-priority exclusive), order kept, no refill, empty -> CCO; not a method candidate",SubmissionStatus.COMPLETE,0.259,
+
+57681941,submission.csv,2026-10-27 00:02:05.787000,"Codex 043 one-change comparison vs 0.379 (FE + anaw0.5): + one generated analog derivative (own b1_gen v2 ef8c856a; top-10 analog parents, 1-2 biosynthetic edits, query-derived mass, raw-window absence) at rank 3 if its FPNet f.z >= the main rank-3 f.z; pipeline 8d0c415e",SubmissionStatus.COMPLETE,0.377,
+
+57681864,submission.csv,2026-10-27 00:01:41.373000,"DIAGNOSTIC (Codex 039): working-baseline shortlist (full_eval, k_fpp 200, k_pop 50) ordered by the prior alone (FP tie-break), no forward models; measures this fixed policy only",SubmissionStatus.COMPLETE,0.135,
+
+57681793,submission.csv,2026-10-27 00:01:17.733000,"Codex 038/039 one-change comparison vs 0.379 (FE + anaw0.5): v7f = analog-feature ranker rank_v7a (600 trees) on GL-covered molecules, insurance + 1 z(ap) + 1 z(MetFrag-lite) on GL-fallback; pipeline 6e3b4d04; branch-B reading fixed in 038_decision",SubmissionStatus.COMPLETE,0.390,
+
+57650023,submission.csv,2026-10-26 02:05:02.980000,"Codex 035 one-change comparison: working baseline full_eval (0.370) + library-analog channel anaw0.5 (score + 0.5 z(ap), own b1_analog 4f471bd1, pipeline ef8f8f96); DUP 0.98; reading fixed in 035_decision",SubmissionStatus.COMPLETE,0.379,
+
+57645926,submission.csv,2026-10-26 00:02:05.713000,"DIAGNOSTIC (Codex 032): working baseline full_eval (0.370) with the inference-time entropy near-duplicate reference rule off (--dup_sim 1.01, exact rule kept); one change",SubmissionStatus.COMPLETE,0.370,
+
+57645908,submission.csv,2026-10-26 00:02:00.650000,DIAGNOSTIC probe band26 (Codex 027): ranks 26-50 of the old M2x main order (oracle add-on score); pipeline f9122e77; not a method candidate,SubmissionStatus.COMPLETE,0.005,
+
+57645901,submission.csv,2026-10-26 00:01:56.237000,"DIAGNOSTIC probe B (Codex 027): old M2x main order, COCONUT-and-not-train candidates only; empty -> CCO; pipeline f9122e77; not a method candidate",SubmissionStatus.COMPLETE,0.202,
+
+57645888,submission.csv,2026-10-26 00:01:52.310000,"DIAGNOSTIC probe T (Codex 027): old M2x main order, training-structure candidates only (run provenance); empty -> CCO; pipeline f9122e77; not a method candidate",SubmissionStatus.COMPLETE,0.160,
+
+57630996,submission.csv,2026-10-25 13:08:59.750000,"B1 M2x + own full-train FPNet (full_eval_final.pt sha 5b8d1c31, private model) - one-change comparison vs 0.354 (57610156): FPNet checkpoint only; same args, rank_v4b, blend21, GL-cover fallback; commit run = 12-molecule smoke",SubmissionStatus.COMPLETE,0.370,
+
+57630335,submission.csv,2026-10-25 12:44:19.263000,"DIAGNOSTIC probe Pc (Codex 023b): B1 M2x main order keeping only PubChem-tier-only candidates (not train, not COCONUT by run provenance); empty -> CCO; pipeline sha 1bc93dda; not a method candidate",SubmissionStatus.COMPLETE,0.046,
+
+57630176,submission.csv,2026-10-25 12:39:02.443000,DIAGNOSTIC probe pool (Codex 023b): B1 M2x main order with PubChem-tier-only candidates removed (keep train or COCONUT by run provenance); empty -> CCO; pipeline sha 1bc93dda; not a method candidate,SubmissionStatus.COMPLETE,0.336,
+
+57610167,submission.csv,2026-10-25 00:02:13.187000,"B1 M2x insurance list (fixed rule + library priority tau0.9, same pipeline run) - output-policy comparison",SubmissionStatus.COMPLETE,0.336,
+
+57610156,submission.csv,2026-10-25 00:02:09.440000,"B1 M2x blend21 (rank_v4b, k_fpp200 k_pop50, w_ice0, tau0.9, GL-cover fallback) - comparison vs M1 0.322 / fixed 0.334",SubmissionStatus.COMPLETE,0.354,
+
+57593667,submission.csv,2026-10-24 12:08:13.273000,"B1 M1 (own pipeline v2 + LambdaRank 28 features rank_v2 sha a84fe3ff, fit 884 groups; shortlist FP100+FPprior100+lib20; GL+ICE; learned main; pre-fix GL-coverage policy); kernel 3.17h",SubmissionStatus.COMPLETE,0.322,
+
+57588650,submission.csv,2026-10-24 08:51:52.317000,"B1 v2 notebook (own pipeline, measurement): label-free PubChem/COCONUT 10ppm windows, shortlist FP100+FPprior100+lib20, fixed rule z(FP)+2z(GL)+z(ICE)+0.5pop, no library priority, no learned model; kernel 3.45h",SubmissionStatus.COMPLETE,0.334,
+
+57578830,submission.csv,2026-10-24 01:51:48.550000,"E4 v5 measurement: E0 + PubChem-only list K 25->100, whole-list z(pc_fz)+2z(GL)+z(ICE) only when both models cover the whole list (else E0 rule); extra ICE/GL in separate budgeted runs. P1 proxy strict delta A +0.049 B +0.042; no LB increment predicted.",SubmissionStatus.COMPLETE,0.464,
+
+57567821,submission.csv,2026-10-23 17:13:12.550000,"E0 baseline: faithful reproduction of public pipeline (evgendvorkin V18 = Gluzdov scriptVersionId 361008383 config); measurement run, no method claim",SubmissionStatus.COMPLETE,0.464,
+
