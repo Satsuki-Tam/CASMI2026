@@ -1,0 +1,12 @@
+P (submission_pref) vs kernels/b1-probe-tv8w7a/output_v1: sha256 808a2632d2f44b32 want 808a2632d2f44b32 -> equal
+submission_fixed.csv vs kernels/b1-probe-tv8w7a/output_v1: rows 400, differing 0
+submission_probe_train.csv vs kernels/b1-probe-tv8w7a/output_v1: rows 400, differing 0
+submission_probe_nontrain.csv vs kernels/b1-probe-tv8w7a/output_v1: rows 400, differing 0
+P (submission_pref) vs kernels/b1-probe-bv8w7a/output_v1: sha256 de9d219d1ef3892b want de9d219d1ef3892b -> equal
+submission_fixed.csv vs kernels/b1-probe-bv8w7a/output_v1: rows 400, differing 0
+submission_probe_train.csv vs kernels/b1-probe-bv8w7a/output_v1: rows 400, differing 0
+submission_probe_nontrain.csv vs kernels/b1-probe-bv8w7a/output_v1: rows 400, differing 0
+descriptive: E-lite vs P of this run: processed 12 E-lite molecules 12 lists changed 12 rank-1 changed 0 | manifest {'e_nonempty': 12, 'e_size_median': 26.5, 'cand_median': 248.5, 'top1_changed': 0, 'lists_changed': 12}
+record: ,{"stream_name":"stdout","time":752.00685207,"data":"ELITE_RECORD {\"elite\": {\"model\": \"/kaggle/input/datasets/hayatetaf/casmi26-b1-elite-e1r/elite132_e1r_lambdarank.txt\", \"model_sha256\": \"8f4a81b5f8ba7f589cfd74980ea40075169121b2ce1382cb92a1f2aa150ec1f5\", \"keys\": \"/kaggle/input/datasets/hayatetaf/casmi26-b1-elite-e1r/elite132_e_window_keys_v2.parquet\", \"keys_sha256\": \"f572682b47a882de18bbe3ded9129fa0544e3c52281447e90f7bc3f13042a672\", \"n_keys\": 404487, \"K\": 10.0, \"alpha\": 0.5, \"trees\": 600, \"expected_shas_given\": true, \"molecules\": 12, \"e_nonempty\": 12, \"e_size_median\": 26.5, \"cand_median\": 248.5, \"top1_changed\": 0, \"top25_changed\": 12, \"lists_changed\"
+rdkit: ,{"stream_name":"stdout","time":23.391393819,"data":"ELITE_RDKIT {\"version\": \"2026.03.3\", \"file\": \"/usr/local/lib/python3.12/dist-packages/rdkit/__init__.py\", \"fixture\": 12, \"wheels\": {\"/kaggle/input/datasets/dmitriigluzdov/casmi26-attributed-v4g-reproduction-assets/rdkit-2026-3-3-wheel/rdkit-2026.3.3-cp310-cp310-manylinux_2_28_x86_64.whl\": \"40ccbd73bb8480dcba6033681ad9e8d4c3cdad297
+ELITE_COMMIT_CHECK PASS
