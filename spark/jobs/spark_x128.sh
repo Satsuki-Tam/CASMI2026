@@ -1,6 +1,6 @@
 #!/bin/bash
 # 128 fold-1 evaluation (128_prereg_wf.md): gen_eval2fd_n128.py (= PC gen_eval2fd.py with --wf / --wf_mist; sha checked) with rank_v8w7a on the fold-1
-# tables and the MIST aug scores (experiments/mist/scores), CPU only, then the registered reader x128_summary.py. Status: diag/x128_status.txt
+# tables and the MIST aug scores (experiments/mist/scores), CPU only, the reader x128_summary.py is run separately after the Codex review (results not opened before). Status: diag/x128_status.txt
 set -u
 cd ~/CASMI2026/experiments/b1_baseline || exit 1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=1 PYTHONUTF8=1
@@ -17,6 +17,5 @@ ev() { local T=$1; shift
 ev f1dev --run run_f1dev --gen run_f1dev/gen --sets $S5 --eval_csv eval_set_f1/p2_molecules.csv || fail "f1dev"
 ev np053f1dev --run run_np053_f1dev --gen run_np053_f1dev/gen --sets $S3 --eval_csv np053_f1dev/p2_molecules.csv || fail "np053f1dev"
 ev c1bankdev --run run_c1bankdev_f1 --gen run_c1bankdev_f1/gen --sets $BSETS --eval_csv c1bank_f1/c1dev/p2_molecules.csv || fail "c1bankdev"
-$PY -X utf8 x128_summary.py > diag/x128_summary.log 2>&1; rc=$?
-[ $rc -eq 0 ] || fail "reader rc=$rc ($(tail -1 diag/x128_summary.log | cut -c1-200))"
-echo "X128_DONE $(date '+%F %T')" | tee $ST
+for f in diag/r128_*.csv; do h=$(sha256sum $f | cut -c1-64); echo "$h $f"; done > diag/x128_rows_manifest.txt
+echo "X128_EVAL_DONE $(date '+%F %T') (reader not run: x128_summary.py runs only after the Codex review of the evaluator / registration)" | tee $ST
