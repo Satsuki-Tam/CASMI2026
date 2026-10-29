@@ -11,7 +11,9 @@ set -u
 cd /c/kaggle/CASMI || exit 1
 until [ "$(date +%H)" -lt 9 ]; do sleep 60; done
 GPU_APPS=$(nvidia-smi --query-compute-apps=pid,process_name --format=csv,noheader 2>&1); rc=$?
-{ [ $rc -eq 0 ] && [ -z "$GPU_APPS" ]; } || { echo "refused: GPU compute processes present or nvidia-smi failed: $GPU_APPS ($(date '+%F %T'))"; exit 1; }
+PY_APPS=$(echo "$GPU_APPS" | grep -i "python" || true)   # Windows lists the display (C+G) processes too: refuse only for another Python / CUDA job
+{ [ $rc -eq 0 ] && [ -z "$PY_APPS" ]; } || { echo "refused: a Python GPU process is present or nvidia-smi failed: rc=$rc $PY_APPS ($(date '+%F %T'))"; exit 1; }
+echo "== $(date '+%F %T') GPU check: non-Python GPU clients only ($(echo "$GPU_APPS" | wc -l) listed)"
 export OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THREADS=4 PYTHONUTF8=1
 B=experiments/b1_baseline; S=experiments/b1_elite; PY=/c/kaggle/CASMI/.venv/Scripts/python.exe; E=$B/eval_test_panel250_pc; FRUN=$B/run_panel_fe_pc; MODEL=$B/rank_v8w7a/lambdarank.txt
 CK=data/external/fpnet_fulleval_as_fold0/fpnet_fold0.pt; EM=$B/rank_e1r/lambdarank.txt; EK=$B/diag/e_window_keys_v2.parquet
