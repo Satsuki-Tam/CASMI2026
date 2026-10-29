@@ -189,15 +189,17 @@ if __name__ == "__main__":
     if a.wf:   # 128 v2 (Codex 127 Q2 / 128): within-formula rerank
         from wf_common import neutral_formula as FORM_OF
         WX = ["gl"] + (["mist"] if a.wf_mist else [])
-        NDIAG = NDIAG + [f"wf_{x_}_{al_}" for x_ in WX for al_ in ("0.0", "0.5", "2.0")] + ["wf_ub", "wf_n_form", "wf_rP_form"] + [f"wf_ub_{x_}" for x_ in WX] + [f"wf_r{x_}_form_pess" for x_ in WX] + [f"wf_move_{x_}" for x_ in WX] + [f"wf_cov_{x_}" for x_ in WX] + [f"wf_ngrp_{x_}" for x_ in WX] + ["wf_ntruth"]
+        NDIAG = NDIAG + [f"wf_{x_}_{al_}" for x_ in WX for al_ in ("0.0", "0.5", "2.0")] + ["wf_ub", "wf_n_form", "wf_rP_form"] + [f"wf_ub_{x_}" for x_ in WX] + [f"wf_r{x_}_form_pess" for x_ in WX] + [f"wf_rP_{x_}_form" for x_ in WX] + [f"wf_move_{x_}" for x_ in WX] + [f"wf_moveany_{x_}" for x_ in WX] + [f"wf_cov_{x_}" for x_ in WX] + [f"wf_ngrp_{x_}" for x_ in WX] + ["wf_ntruth"]
         if a.wf_mist:
             for s_ in a.sets:
                 X_ = pd.read_parquet(os.path.join(HERE, a.wf_mist, f"mist_{a.wf_mtag}_{s_}.parquet")); X_["molecule"] = X_.molecule.astype(str)
+                if X_[["molecule", "official_key", "smiles", "status"]].isna().any().any(): raise SystemExit(f"128: null key / status in the MIST table of {s_}")
                 st_ = set(X_.status.astype(str))
                 if not st_ <= {"ok", "no_qrows", "no_mist_adduct", "no_formula", "mass_mismatch", "no_fp"}: raise SystemExit(f"128: unknown MIST status {st_} in {s_}")
-                okr_ = (X_.status == "ok").values
-                if not (np.isfinite(X_.mist_cos.values[okr_].astype(float)).all() and (X_.n_q.values[okr_] > 0).all()): raise SystemExit(f"128: status ok without a finite score / query in {s_}")
-                if np.isfinite(X_.mist_cos.values[~okr_].astype(float)).any(): raise SystemExit(f"128: a score on a non-ok row in {s_}")
+                okr_ = (X_.status == "ok").values; c_ = X_.mist_cos.values.astype(float); q_ = X_.n_q.values.astype(float)
+                if not (np.isfinite(c_[okr_]).all() and (c_[okr_] >= -1e-6).all() and (c_[okr_] <= 1 + 1e-6).all()): raise SystemExit(f"128: status ok without a finite cos in [0, 1] in {s_}")
+                if not ((q_[okr_] == np.round(q_[okr_])).all() and (q_[okr_] >= 1).all() and (q_[okr_] <= 8).all()): raise SystemExit(f"128: status ok with n_q outside 1..8 in {s_}")
+                if not (np.isnan(c_[~okr_]).all() and (q_[~okr_] == 0).all()): raise SystemExit(f"128: a non-ok row with a score (incl. +-inf) or queries in {s_}")
                 WMX[s_] = X_
     # ---- union mask over every evaluated molecule (all sets of this run)
     allm = ev[ev.set.isin(a.sets)]
@@ -461,9 +463,11 @@ if __name__ == "__main__":
                                 out[f"wf_ub_{x_}"] = max(ubx_)
                                 fin_ = [j_ for j_ in fb_ if np.isfinite(xv_[j_])]
                                 mv_ = forms_[best_] is not None and bool(np.isfinite(xv_[best_])) and len(fin_) >= 2; out[f"wf_move_{x_}"] = int(mv_)
-                                out[f"wf_r{x_}_form_pess"] = int(sum(xv_[j_] >= xv_[best_] for j_ in fin_)) if mv_ else 0
+                                out[f"wf_r{x_}_form_pess"] = int(sum(xv_[j_] >= xv_[best_] for j_ in fin_)) if mv_ else 0   # X rank of the best truth inside the finite subset (0 = not movable)
+                                out[f"wf_rP_{x_}_form"] = int(sum(pos_w[j_] < pos_w[best_] for j_ in fin_) + 1) if mv_ else 0   # P rank of the same truth inside the SAME finite subset (Codex 129)
+                                out[f"wf_moveany_{x_}"] = int(any(forms_[t_] is not None and np.isfinite(xv_[t_]) and sum(np.isfinite(xv_[j_]) for j_ in groups_[forms_[t_]]) >= 2 for t_ in trs_))
                         else:
-                            out.update({"wf_ub": 0.0, "wf_n_form": 0, "wf_rP_form": 0, **{f"wf_ub_{x_}": 0.0 for x_ in XV_}, **{f"wf_r{x_}_form_pess": 0 for x_ in XV_}, **{f"wf_move_{x_}": 0 for x_ in XV_}})
+                            out.update({"wf_ub": 0.0, "wf_n_form": 0, "wf_rP_form": 0, **{f"wf_ub_{x_}": 0.0 for x_ in XV_}, **{f"wf_r{x_}_form_pess": 0 for x_ in XV_}, **{f"wf_rP_{x_}_form": 0 for x_ in XV_}, **{f"wf_move_{x_}": 0 for x_ in XV_}, **{f"wf_moveany_{x_}": 0 for x_ in XV_}})
                         assert out["wf_ub"] >= out["main"] - 1e-12 and all(out[f"wf_ub_{x_}"] >= out["main"] - 1e-12 for x_ in XV_), "128: an upper bound below main"
                         assert all(out[f"wf_ub_{x_}"] <= out["wf_ub"] + 1e-12 for x_ in XV_), "128: a coverage-aware bound above the coverage-free bound"
                     if a.dump_top and mi_ == 0:

@@ -29,3 +29,11 @@
 - **fold 2**: `--pick` は fold 1 の選択(diag/x128v2_selection.json)と一致する場合だけ受け付ける。条件 = 主指標 > 0 **かつ** block A / D、旧 B、G C1、NP C1 の下限 ≥ −0.01。記述は選んだ一つだけを出す。
 - **確認の C1 費用**: c1cost098(陰イオンのみ、介入が動かない)をやめ、**c1bank_f1/c1conf の陽イオンの群**(名簿上 366 群)を、未開封・他候補への未使用・開発との非重複を台帳で確かめた上でこの一候補の C1 費用の確認へ予約する。実際の c1_usable と、並べ替えが動く query・式群の被覆は開封前に数える。C2 は np096_conf093(run_np096_f0conf)+ np102_d0conf(run_np102_d0conf)を H/4 + N/4 + D/2 の重みで。
 - **MIST の前処理**: CASMI では割当済みの表が無いので、生ピークからの統合 → 部分式割当(MIST の関数)を**この実験の前処理条件として固定**する。検査 C2(同じ割当表からの詰め直しが公式の compact と完全一致するか、生ピーク経路との差の分類、予測の差の分布)を記録する。C の完全一致を「合格」と書き換えるのではなく、条件の違いとして残す。CASMI の成績を見て割当の規則を選ばない。
+
+## v3(Codex 129 を反映、結果の前 — v2 の評価は MIST の入力が変わるため途中で止め、未読のまま隔離)
+- **MIST の入力**: 強度の丸めを公式と同じ順に(float32 → float16)。この変更で MIST の得点を作り直す(experiments/mist/scores_v3、scorer v3:--threads、空の窓は分子台帳の n_shortlist = 0 のときだけ受理、全空でも列を持つ表)。
+- **評価器の入力検査**: 非 ok の行は cos が NaN かつ n_q = 0(±inf も拒否)、ok は有限な cos が [0, 1]、n_q は 1〜8 の整数、key / status の null を拒否。記述に、真の P 順位を**同じ有限な部分集合の中で**数えた wf_rP_<x>_form と、どれかの真が動ける行 wf_moveany_<x> を追加。
+- **入力の記録と照合**: job の開始時に、評価器・wf_common・ranker・MIST の manifest と得点表・選択 CSV・特徴表・分子台帳・保存済み GL・P の基準の sha256 を diag/x128v3_inputs.json に記録し、終了時に変化が無いことを確認。行の manifest は、その run が書いたファイルだけを明示して列挙(+ 入力記録)。
+- **読み取り v3**(x128v3_summary.py): 行の manifest = 期待するファイルの集合(欠け・余り・重複を拒否)、入力記録の全ファイルを再 hash、評価器・wf_common・ranker・MIST の scorer / adapter / commit / checkpoint が **128_registered_versions.json** と一致、**MIST の検査 C2 が C2_PASS**(登録した adapter・checkpoint について)でなければ停止、fold 2 の記述は選んだ系統だけ、表の列は fold 2 では stability、選択の JSON に入力記録と reader の hash・登録した版を残す。
+- **確認の C1 費用(明記)**: c1bank_f1/c1conf の陽イオン群のうち c1_usable の群で、選んだ候補 − P の **95% 下限 ≥ −0.01 を必要条件**にする(名簿 366 と実際の usable 件数は開封前に数える)。C2 は H/4 + N/4 + D/2 のまま。
+- **検査 C2 の合否**(check_c2.py v2): 同じ割当表からの詰め直しが**全 N 行で全項目一致**、変換の失敗 0(唯一の正規化 = 末尾の電荷記号の除去、該当 ID を列挙)、名前の一意・TSV との対応・指紋の形・CLS の位置・padding の確認 → C2_PASS / C2_FAIL を JSON と終了コードに。生ピーク経路との差は ID ごとに分類(同一 / 同点の順序だけ / count・root・intensity・formula・ion・peak_type の flag / 失敗)して CSV に、予測の差は符号付き(平均・分位・改善 / 悪化 / 不変)と絶対値、分類ごと、最大の ID。

@@ -12,7 +12,8 @@ candidate bits = RDKit MorganGenerator(radius 2, fpSize 4096) on the representat
   no_mist_adduct (selected queries, none [M+H]+ / [M+Na]+), no_formula, mass_mismatch, no_fp}.  The table is restricted to the selected molecules
   of the eval CSV (with or without --limit) and checked complete; the manifest binds code / checkpoint / MIST commit / inputs / outputs by sha256.
 Predictions are cached per (query row, formula, adduct) and shared by all candidates (and both views) of a molecule.
-Writes <out>/mist_<tag>_<set>.parquet and <out>/mist_<tag>_manifest.json (checkpoint sha256, counts).
+v3 (Codex 129): the adapter rounds intensities as the official path (float32 then float16); --threads; an empty window is accepted only when
+the molecule ledger's n_shortlist is 0. Writes <out>/mist_<tag>_<set>.parquet and <out>/mist_<tag>_manifest.json (checkpoint sha256, counts).
 Usage (Spark, .venv-mist): python -X utf8 experiments/mist/mist_score.py --ckpt C --store data/processed/spectra_store --run <table dir>
        --eval_csv CSV --tag T --sets S1 ... --out DIR [--device cpu] [--limit N]"""
 import argparse, hashlib, json, os, sys, time
@@ -29,7 +30,7 @@ RDLogger.DisableLog("rdApp.*")
 ap = argparse.ArgumentParser()
 for k in ("ckpt", "store", "run", "eval_csv", "tag", "out"): ap.add_argument(f"--{k}", required=True)
 ap.add_argument("--sets", nargs="+", required=True); ap.add_argument("--device", default="cpu"); ap.add_argument("--limit", type=int, default=0); ap.add_argument("--max_spectra", type=int, default=8)
-ap.add_argument("--batch", type=int, default=256)
+ap.add_argument("--batch", type=int, default=256); ap.add_argument("--threads", type=int, default=4)
 a = ap.parse_args()
 MG = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=4096); MIST_ADD = ("[M+H]+", "[M+Na]+")
 def sha(p):
@@ -50,7 +51,7 @@ def cand_info(smi):
 def fmass(f):
     v = C.formula_to_dense(f); return float(v @ C.VALID_MONO_MASSES)
 def main():
-    t0 = time.time(); os.makedirs(a.out, exist_ok=True); torch.set_num_threads(8)
+    t0 = time.time(); os.makedirs(a.out, exist_ok=True); torch.set_num_threads(a.threads)
     ck = torch.load(a.ckpt, map_location="cpu", weights_only=True); model = ScaledMIST(**ck["config"]["model"]); model.load_state_dict(ck["ema_model"], strict=True)
     dev = torch.device(a.device); model = model.to(dev).eval()
     S_MZ = np.load(f"{a.store}/spec_mz.npy", mmap_mode="r"); S_IT = np.load(f"{a.store}/spec_int.npy", mmap_mode="r"); S_OFF = np.load(f"{a.store}/spec_off.npy")
@@ -72,6 +73,7 @@ def main():
         ms = mols[mols.set == s]
         if a.limit: ms = ms.head(a.limit)
         T = T[T.molecule.isin(set(ms.molecule))]   # 128 v2 (Codex 128): always restricted to the selected molecules
+        LED = pd.read_csv(os.path.join(a.run, f"b1_molecules_{s}.csv")); LED["molecule"] = LED.molecule.astype(str); LED = LED.set_index("molecule")   # Codex 129: an empty window must be in the ledger
         man["sets"][s] = dict(table_sha256=sha(os.path.join(a.run, f"b1_features_{s}.parquet")))
         INFO = {smi: cand_info(smi) for smi in T.smiles.astype(str).unique()}
         rows, cnt, npred = [], dict(no_qrows=0, no_mist_adduct=0, empty_window=0), 0
@@ -81,7 +83,9 @@ def main():
             q0 = select_queries(qrows, a.max_spectra, lambda x: add_of_row[x], lambda x: float(ce_of_row[x]))
             q = [x for x in q0 if add_of_row[x] in MIST_ADD]; qreason = "no_qrows" if not q0 else ("no_mist_adduct" if not q else "")
             cand = T[T.molecule == mid]
-            if not len(cand): cnt["empty_window"] += 1
+            if not len(cand):
+                if mid not in LED.index or float(LED.loc[mid, "n_shortlist"]) != 0: raise RuntimeError(f"{s} {mid}: no candidate rows but the ledger shortlist is not empty")
+                cnt["empty_window"] += 1
             forms = sorted({INFO[str(c)][0] for c in cand.smiles if INFO[str(c)][0] is not None})
             pairs, feats = [], []
             for x in q:
@@ -111,7 +115,7 @@ def main():
                     elif not cs: st = "mass_mismatch"
                 rows.append(dict(set=s, molecule=mid, smiles=c.smiles, official_key=c.official_key, mist_cos=float(np.mean(cs)) if cs else np.nan,
                                  mist_ll=float(np.mean(ll)) if ll else np.nan, n_q=len(cs), status=st))
-        O = pd.DataFrame(rows)
+        O = pd.DataFrame(rows, columns=["set", "molecule", "smiles", "official_key", "mist_cos", "mist_ll", "n_q", "status"])
         if len(O) != len(T) or O.duplicated(["molecule", "official_key"]).any(): raise RuntimeError(f"{s}: scored rows {len(O)} != table rows {len(T)} or duplicates")
         if len(T) and set(T.molecule) - set(O.molecule): raise RuntimeError(f"{s}: molecules of the table without scored rows")
         O.to_parquet(os.path.join(a.out, f"mist_{a.tag}_{s}.parquet"), index=False)

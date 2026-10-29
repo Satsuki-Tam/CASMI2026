@@ -1,0 +1,10 @@
+{
+ "note": "128 v3 (Codex 129): the versions the 128 evaluation and reader must use; fixed before any 128 result",
+ "evaluator_sha256": "3c51a35b0f0b2082932c1618dc9fa276d0d6895fe4a57ca4db4025b4e874c71d",
+ "wf_common_sha256": "c65e42bd3fd0f93e94be7dd0e28e82ce36532758b4d317415c578402d5af9434",
+ "ranker_sha256": "fe61dc429bd2722363100d7a749f56cf4e4de3606fdce535f31b391c83004fe3",
+ "mist_score_sha256": "ce6b84df56bb584399478b4904b9ea67af63946d00ffe5effe15e9520479a869",
+ "mist_adapter_sha256": "bfe69bae33184df59a4fccfd02577b96d46cf2dc7b0bed395c26b053833f6290",
+ "mist_commit": "48e339be6535546c87ba4f6b81a0f787c2e4ac40",
+ "mist_ckpt_sha256": "9f251d772f68315ba6fe2dc75a3b2e1ec477d3f41ffbeaf5143749157b67b177"
+}
