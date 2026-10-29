@@ -18,4 +18,5 @@ one() { b=$1; p=$2; W=experiments/w135/worlds/${b}_p$p
 stream() { for spec in "$@"; do one ${spec%:*} ${spec#*:} || return 1; done; }
 stream cF1:30 cF2:30 cF3:30 cF1:0 cF2:0 cF3:0 cU1:30 & S1=$!; stream cR1:30 cR2:30 cR3:30 cR1:0 cR2:0 cR3:0 & S2=$!
 FAIL=0; wait $S1 || FAIL=1; wait $S2 || FAIL=1
-[ $FAIL = 0 ] && echo "CONFIRM_ALL_DONE $(date '+%F %T')" >> $L || echo "CONFIRM_FAIL (see above) $(date '+%F %T')" >> $L
+[ $FAIL = 0 ] && { echo "CONFIRM_ALL_DONE $(date '+%F %T')" >> $L; exit 0; }
+echo "CONFIRM_FAIL (see above) $(date '+%F %T')" >> $L; exit 1   # v2 (Codex 139): a failure is a non-zero exit

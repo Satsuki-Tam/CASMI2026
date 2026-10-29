@@ -30,6 +30,9 @@ popf = os.path.join(ROOT, "experiments/w135", "census" + ("" if a.fold == 1 else
 P = pl.read_parquet(popf)
 OUT = os.path.join(ROOT, "experiments/w135/batches"); os.makedirs(OUT, exist_ok=True)
 if os.path.exists(os.path.join(OUT, a.manifest_name)): sys.exit(f"REFUSED: {a.manifest_name} exists")
+for b_ in range(a.start, a.start + max(a.n_family, a.n_random, a.n_random_unused)):   # v2 (Codex 139): never overwrite a batch CSV
+    for k_ in ("F", "R", "U"):
+        if os.path.exists(os.path.join(OUT, f"{a.tag}{k_}{b_}.csv")): sys.exit(f"REFUSED: {a.tag}{k_}{b_}.csv exists")
 EXI, EXG, EXF = set(), set(), set()
 for f_ in a.exclude:
     e_ = pl.read_csv(f_); EXI |= set(e_["molecule"].cast(pl.Utf8).to_list()); EXG |= set(int(x) for x in e_["identity_group"].to_list()); EXF |= set(int(x) for x in e_["fam"].to_list())
@@ -129,6 +132,6 @@ checks = dict(no_identity_overlap=len(allm) == len(set(allm)), one_per_group=len
 man = dict(fold=a.fold, tag=a.tag, seed=a.seed, N=a.N, fam_cap=a.fam_cap, family_rule="Butina 0.5 Morgan r2 2048 (census fam50)", counts=counts, checks=checks,
            batches={k: {kk: vv for kk, vv in v.items() if kk != "molecules"} for k, v in batches.items()},
            inputs_sha256=dict(population=sha(popf), script=sha(os.path.abspath(__file__)), spec_meta=sha(os.path.join(ROOT, "data/processed/spectra_store/spec_meta.parquet"))))
-man["exclude"] = a.exclude; man["start"] = a.start
+man["exclude"] = a.exclude; man["exclude_sha256"] = {f_: hashlib.sha256(open(f_, "rb").read()).hexdigest() for f_ in a.exclude}; man["start"] = a.start
 json.dump(man, open(os.path.join(OUT, a.manifest_name), "w"), indent=1); print(json.dumps(man, indent=1)[:4000])
 assert all(checks.values()), checks
