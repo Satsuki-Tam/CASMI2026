@@ -1,0 +1,37 @@
+{
+ "n": 17556,
+ "adapter_failures": 1,
+ "field_exact_agreement": {
+  "lengths": 0.9998860723440616,
+  "peak_type": 0.9998860723440616,
+  "ion_vec": 0.9999430361720307,
+  "form_vec": 0.9610367416690402,
+  "intens": 0.9998860723440616
+ },
+ "threshold": 0.1878848671913147,
+ "tanimoto_compact": {
+  "n_spectra": 17555,
+  "mean_tanimoto": 0.43308321936365085,
+  "median_tanimoto": 0.3880597014925373,
+  "std_tanimoto": 0.2192896162752153,
+  "sem_tanimoto": 0.0016550748933677564,
+  "ci95_low": 0.42983927257265003,
+  "ci95_high": 0.43632716615465167,
+  "min_tanimoto": 0.0,
+  "max_tanimoto": 1.0
+ },
+ "tanimoto_adapter": {
+  "n_spectra": 17555,
+  "mean_tanimoto": 0.4331648669892866,
+  "median_tanimoto": 0.3880597014925373,
+  "std_tanimoto": 0.21929322558218034,
+  "sem_tanimoto": 0.0016551021343901165,
+  "ci95_low": 0.42992086680588193,
+  "ci95_high": 0.43640886717269123,
+  "min_tanimoto": 0.0,
+  "max_tanimoto": 1.0
+ },
+ "mean_diff_adapter_minus_compact": 8.164762563572792e-05,
+ "check_b_reverse_order_maxabs": 0.0,
+ "seconds": 551
+}

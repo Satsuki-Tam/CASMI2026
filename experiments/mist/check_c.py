@@ -17,7 +17,8 @@ torch.set_num_threads(8); t0 = time.time()
 thr = json.load(open(cka))["val_threshold"]
 ck = torch.load(ck_path, map_location="cpu", weights_only=True); model = ScaledMIST(**ck["config"]["model"]); model.load_state_dict(ck["ema_model"], strict=True); model.eval()
 ds = SpectrumOnlyDataset(root); names = ds.names(); N = len(ds)
-fps = np.concatenate([np.load(p / "fingerprints.npy", mmap_mode="r") for p in ds.part_paths]).astype(bool); assert len(fps) == N
+from mist.data.atlas import unpack_fingerprints   # stored targets are 512 packed bytes, little bit order (MIST contract)
+fps = unpack_fingerprints(np.concatenate([np.load(p / "fingerprints.npy", mmap_mode="r") for p in ds.part_paths])).astype(bool); assert fps.shape == (N, 4096)
 msg = pd.read_csv(tsv, sep="\t", usecols=["identifier", "mzs", "intensities", "precursor_mz", "adduct", "formula", "instrument_type"]).set_index("identifier")
 ids = [n.split("_collision")[0] for n in names]; assert len(set(ids)) == N, "identifier not unique"
 rows_c = [ds[i] for i in range(N)]; rows_a, fail = [], 0

@@ -1,0 +1,29 @@
+{
+ "checkpoint": "data/external/mist/zenodo_23303289/mist_msg_noaug.ckpt",
+ "step": 30000,
+ "val_threshold": 0.11034969985485077,
+ "val_spectrum": {
+  "n_spectra": 19429,
+  "mean_tanimoto": 0.17939373455508284,
+  "median_tanimoto": 0.17829457364341086,
+  "std_tanimoto": 0.03782298433731295,
+  "sem_tanimoto": 0.00027135046412832216,
+  "ci95_low": 0.17886188764539132,
+  "ci95_high": 0.17992558146477436,
+  "min_tanimoto": 0.05813953488372093,
+  "max_tanimoto": 0.32989690721649484
+ },
+ "check_b_val_batch61_maxabs": 0.0,
+ "test_spectrum": {
+  "n_spectra": 17556,
+  "mean_tanimoto": 0.18464165284195555,
+  "median_tanimoto": 0.18584070796460178,
+  "std_tanimoto": 0.03706976354126508,
+  "sem_tanimoto": 0.0002797737922999593,
+  "ci95_low": 0.18409329620904763,
+  "ci95_high": 0.18519000947486347,
+  "min_tanimoto": 0.02857142857142857,
+  "max_tanimoto": 0.3
+ },
+ "seconds": 853
+}
