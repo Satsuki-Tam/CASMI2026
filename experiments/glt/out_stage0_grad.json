@@ -1,0 +1,30 @@
+{
+ "device": "cpu",
+ "batch": 8,
+ "n_params": 259,
+ "params_total": 15105694,
+ "loss0": 0.389285147190094,
+ "finite_loss": true,
+ "no_grad_by_module": {},
+ "nonfinite_grads": [],
+ "zero_grads_by_module": {
+  "embedder": 1
+ },
+ "changed_after_step": 259,
+ "losses": [
+  0.38929,
+  0.34355,
+  0.34664,
+  0.33055,
+  0.31051,
+  0.25095,
+  0.24094,
+  0.2535
+ ],
+ "loss_drop": 0.1483442783355713,
+ "notes": [
+  "checkpoint loaded strictly"
+ ],
+ "linsat": "/home/svlg/CASMI2026/.venv-glt/lib/python3.12/site-packages/LinSATNet/__init__.py",
+ "verdict": "STAGE0B_PASS"
+}

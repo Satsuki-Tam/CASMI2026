@@ -8,3 +8,7 @@
 - checkpoint の linsat_tau = **15.0**(hyper_parameters;contr_weight 1.0 = 対照学習で仕上げた版)。
 - tau 15 では、shim と本物の **top-k の原子の選択は全件一致**(logit の尺度 1 / 5、N 10 / 40 / 100、k 1〜3、各 2,000 行)→ 推論(top-k の index だけを使う)への影響はない。
 - ただし**値は一致しない**(tau 15 で最大 0.04、tau 1 以下で大きくずれる)。値は学習の損失に入るので、**学習には本物の LinSATNet を使う**(shim は推論専用のまま)。
+
+## 0b: 学習の順伝播・逆伝播(stage0_grad.py、CPU、21:00)
+- 前処理の鎖(ms-pred 自身のコード、run_mspred.py 経由): make_msdata.py(MSG の [M+H]+ 16 分子 32 スペクトル、SIRIUS .ms を ms-pred の HDF5 形式で)→ run_magma.py(4 worker で 32 件 6 秒)→ 01_assign_subformulae.py → add_dag_intens.py --magma-output → magma_tree_with_inten.hdf5。spawn の worker のために PYTHONPATH に shim_train と ms-pred の src を入れる。追加した純 Python の依存(--no-deps): h5py、multiprocess / dill、platformdirs、pathos / pox / ppft、matplotlib / seaborn とその依存(numpy 等は推論環境のもの)。
+- **STAGE0B_PASS**: checkpoint を JointModel に strict に読込;batch 8 で損失 0.389(有限);学習可能な 259 tensor(1,511 万 parameter)すべてに有限の勾配(0 勾配は embedder の 1 tensor のみ);AdamW 1 step で 259 tensor すべてが変化;同じ batch で 30 step 学習すると損失 0.389 → 0.24 前後(過学習の確認)。contrastive の枝(decoy)は段階 1 で確認する。
