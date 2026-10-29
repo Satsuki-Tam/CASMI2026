@@ -82,3 +82,6 @@ Codex 136(`136_codex.md`)を全面的に採用する。以下は 136_prereg_w135
 1. 再構築(p30)→ 各世界に `w135_world_check.py` → 全部 PASS。
 2. この決定のコミットの後に `spark_w135_stage1_v2.sh`(full mode と reader v2 --decide)。
 3. 記述用の p0 / p60。
+
+## 追記(01:2x、stage 1 の実行前)
+- 生成器 v2.1: B の各生成物の詳細(key・SMILES・f.z・親得点・親・由来・編集・位置・off_mass)を `B_detail_<arm>` 列として出力に加えた。段階 2 用であり、登録したどの数字もこの列を読まない(sha 661d56d9…)。
