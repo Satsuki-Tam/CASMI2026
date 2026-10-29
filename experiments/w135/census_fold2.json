@@ -1,0 +1,108 @@
+{
+ "census": 269846,
+ "fold2": 53965,
+ "not_msg": 47915,
+ "not_panel": 47912,
+ "coconut_truth": 1869,
+ "with_test_adduct_spectra": 1869,
+ "with_timstof": 6,
+ "unused": 614,
+ "unused_with_timstof": 6,
+ "fingerprinted": 1869,
+ "butina_0.4": {
+  "n_clusters": 832,
+  "singletons": 583,
+  "fam_ge2": 249,
+  "members_in_fam_ge2": 1286,
+  "fam_ge3": 127,
+  "max_size": 273,
+  "size_hist": {
+   "2": 122,
+   "3": 51,
+   "4": 28,
+   "5": 17,
+   "6": 7,
+   "7": 4,
+   "8": 3,
+   ">8": 17
+  },
+  "fam_ge2_all_unused": 19,
+  "members_fam_ge2_all_unused": 45,
+  "members_fam_ge2_with_timstof": 1
+ },
+ "butina_0.5": {
+  "n_clusters": 1081,
+  "singletons": 860,
+  "fam_ge2": 221,
+  "members_in_fam_ge2": 1009,
+  "fam_ge3": 90,
+  "max_size": 250,
+  "size_hist": {
+   "2": 131,
+   "3": 36,
+   "4": 17,
+   "5": 14,
+   "6": 5,
+   "7": 2,
+   "8": 3,
+   ">8": 13
+  },
+  "fam_ge2_all_unused": 20,
+  "members_fam_ge2_all_unused": 44,
+  "members_fam_ge2_with_timstof": 1
+ },
+ "butina_0.6": {
+  "n_clusters": 1256,
+  "singletons": 1062,
+  "fam_ge2": 194,
+  "members_in_fam_ge2": 807,
+  "fam_ge3": 70,
+  "max_size": 225,
+  "size_hist": {
+   "2": 124,
+   "3": 38,
+   "4": 10,
+   "5": 6,
+   "6": 4,
+   "7": 4,
+   "8": 0,
+   ">8": 8
+  },
+  "fam_ge2_all_unused": 17,
+  "members_fam_ge2_all_unused": 38,
+  "members_fam_ge2_with_timstof": 0
+ },
+ "butina_0.7": {
+  "n_clusters": 1391,
+  "singletons": 1236,
+  "fam_ge2": 155,
+  "members_in_fam_ge2": 633,
+  "fam_ge3": 48,
+  "max_size": 172,
+  "size_hist": {
+   "2": 107,
+   "3": 21,
+   "4": 12,
+   "5": 2,
+   "6": 2,
+   "7": 1,
+   "8": 3,
+   ">8": 7
+  },
+  "fam_ge2_all_unused": 15,
+  "members_fam_ge2_all_unused": 34,
+  "members_fam_ge2_with_timstof": 0
+ },
+ "murcko_generic": {
+  "n": 757,
+  "empty": 391,
+  "ge2": 164
+ },
+ "inputs_sha256": {
+  "census": "813f7ef84a77164f8a344003eab8191d6b37f3150ef5f55921b86b5a00eb34aa",
+  "structures": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
+  "script": "839579c6901f4f81515ce44e820a5a59260d73b248ca5481df3bf02cbda948b7"
+ },
+ "used_files": 55,
+ "seconds": 50
+}

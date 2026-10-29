@@ -1,0 +1,108 @@
+{
+ "census": 269846,
+ "fold1": 53936,
+ "not_msg": 47921,
+ "not_panel": 47917,
+ "coconut_truth": 1937,
+ "with_test_adduct_spectra": 1937,
+ "with_timstof": 12,
+ "unused": 538,
+ "unused_with_timstof": 12,
+ "fingerprinted": 1937,
+ "butina_0.4": {
+  "n_clusters": 891,
+  "singletons": 632,
+  "fam_ge2": 259,
+  "members_in_fam_ge2": 1305,
+  "fam_ge3": 121,
+  "max_size": 285,
+  "size_hist": {
+   "2": 138,
+   "3": 47,
+   "4": 27,
+   "5": 16,
+   "6": 7,
+   "7": 4,
+   "8": 3,
+   ">8": 17
+  },
+  "fam_ge2_all_unused": 6,
+  "members_fam_ge2_all_unused": 12,
+  "members_fam_ge2_with_timstof": 3
+ },
+ "butina_0.5": {
+  "n_clusters": 1144,
+  "singletons": 918,
+  "fam_ge2": 226,
+  "members_in_fam_ge2": 1019,
+  "fam_ge3": 93,
+  "max_size": 255,
+  "size_hist": {
+   "2": 133,
+   "3": 38,
+   "4": 27,
+   "5": 8,
+   "6": 3,
+   "7": 1,
+   "8": 1,
+   ">8": 15
+  },
+  "fam_ge2_all_unused": 4,
+  "members_fam_ge2_all_unused": 8,
+  "members_fam_ge2_with_timstof": 2
+ },
+ "butina_0.6": {
+  "n_clusters": 1336,
+  "singletons": 1144,
+  "fam_ge2": 192,
+  "members_in_fam_ge2": 793,
+  "fam_ge3": 64,
+  "max_size": 227,
+  "size_hist": {
+   "2": 128,
+   "3": 32,
+   "4": 13,
+   "5": 1,
+   "6": 5,
+   "7": 5,
+   "8": 2,
+   ">8": 6
+  },
+  "fam_ge2_all_unused": 7,
+  "members_fam_ge2_all_unused": 14,
+  "members_fam_ge2_with_timstof": 0
+ },
+ "butina_0.7": {
+  "n_clusters": 1470,
+  "singletons": 1323,
+  "fam_ge2": 147,
+  "members_in_fam_ge2": 614,
+  "fam_ge3": 44,
+  "max_size": 169,
+  "size_hist": {
+   "2": 103,
+   "3": 23,
+   "4": 5,
+   "5": 3,
+   "6": 1,
+   "7": 3,
+   "8": 1,
+   ">8": 8
+  },
+  "fam_ge2_all_unused": 4,
+  "members_fam_ge2_all_unused": 8,
+  "members_fam_ge2_with_timstof": 0
+ },
+ "murcko_generic": {
+  "n": 824,
+  "empty": 385,
+  "ge2": 156
+ },
+ "inputs_sha256": {
+  "census": "813f7ef84a77164f8a344003eab8191d6b37f3150ef5f55921b86b5a00eb34aa",
+  "structures": "7c16c4968a15956e94eba58e3ff94d4a6c2f6899b10a2f2824047601a46bd6c8",
+  "script": "ca3420906dbae94d1c623c9bcb57f72dc42fa36d22837e96c296d6893d2a3308"
+ },
+ "used_files": 55,
+ "seconds": 46
+}
