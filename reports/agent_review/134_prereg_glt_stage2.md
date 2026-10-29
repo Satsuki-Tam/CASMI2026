@@ -22,3 +22,9 @@
 ## 3. 露出と限界
 - 適応の identity は fold 3 / 4 で、ranker の学習 pool(f3a / f4a)とも重ならない(全名簿を除外)。段階 3 で ranker を新 GL 特徴で学習する場合は、学習行の GL に適応データの露出が無いことを確認する。
 - パネルは base GLACIER の既見 identity が多い(timsTOF への適応の効果は読めるが、未見 identity への効果は G と NP の cell で読む)。
+
+## 4. 段階 0 の追加の検査(Codex 133 Q4、結果の前)
+- 学習の勾配経路で実際に動くのは scatter_max(shim)・本物の LinSATNet・本物の pygmtools だけ(DGL の shim は呼ばれない)。scatter_max は学習用の shim(勾配を argmax へ送る torch_scatter の意味)を参照と照合して合格。変種 A でも CE 埋め込みを通じて LinSAT の値が勾配に入るため、本物の LinSATNet を使う。
+- データ・損失の契約(5,135 件)は違反 0。
+- 段階 2 の run の中で: export → gl_runner での strict な再読込、凍結 tensor の bit 一致、学習対象の変化、同じ 10 分子で適応版の採点が C0' と異なること(重みが使われる)を確認し、満たさなければ評価に進まない。
+- 学習は「GLACIER の強度側の追加学習(断片の提案と graph encoder は凍結)」であり、full GLACIER の学習の再現とは呼ばない。
