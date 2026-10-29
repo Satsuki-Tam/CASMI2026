@@ -1,0 +1,143 @@
+{
+ "real": "/home/svlg/CASMI2026/.venv-glt/lib/python3.12/site-packages/LinSATNet/__init__.py",
+ "cases": [
+  {
+   "dev": "cpu",
+   "R": 7,
+   "N": 12,
+   "tau": 15.0,
+   "k": 1,
+   "max_abs_val": 0.003448203206062317,
+   "max_abs_grad": 0.001005140133202076,
+   "val_scale": 0.13984067738056183,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 7,
+   "N": 12,
+   "tau": 15.0,
+   "k": 2,
+   "max_abs_val": 0.0052046626806259155,
+   "max_abs_grad": 0.003321513067930937,
+   "val_scale": 0.23750942945480347,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 7,
+   "N": 12,
+   "tau": 15.0,
+   "k": 3,
+   "max_abs_val": 0.009585767984390259,
+   "max_abs_grad": 0.002834990620613098,
+   "val_scale": 0.37496665120124817,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 64,
+   "N": 40,
+   "tau": 15.0,
+   "k": 1,
+   "max_abs_val": 0.001353144645690918,
+   "max_abs_grad": 0.000569465453736484,
+   "val_scale": 0.0509549044072628,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 64,
+   "N": 40,
+   "tau": 15.0,
+   "k": 2,
+   "max_abs_val": 0.0021329596638679504,
+   "max_abs_grad": 0.0010749171487987041,
+   "val_scale": 0.0879741758108139,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 64,
+   "N": 40,
+   "tau": 15.0,
+   "k": 3,
+   "max_abs_val": 0.0036315321922302246,
+   "max_abs_grad": 0.0011993888765573502,
+   "val_scale": 0.15177249908447266,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 16,
+   "N": 100,
+   "tau": 0.01,
+   "k": 1,
+   "max_abs_val": 1.0,
+   "max_abs_grad": 29.238964080810547,
+   "val_scale": 1.0,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 16,
+   "N": 100,
+   "tau": 0.01,
+   "k": 2,
+   "max_abs_val": 1.0,
+   "max_abs_grad": 9.950512886047363,
+   "val_scale": 1.0,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 16,
+   "N": 100,
+   "tau": 0.01,
+   "k": 3,
+   "max_abs_val": 1.0,
+   "max_abs_grad": 29.950271606445312,
+   "val_scale": 1.0,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 5,
+   "N": 3,
+   "tau": 1.0,
+   "k": 1,
+   "max_abs_val": 0.3998532295227051,
+   "max_abs_grad": 0.21532081067562103,
+   "val_scale": 0.9998331069946289,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 5,
+   "N": 3,
+   "tau": 1.0,
+   "k": 2,
+   "max_abs_val": 0.4641800820827484,
+   "max_abs_grad": 0.2709604799747467,
+   "val_scale": 0.9997808337211609,
+   "finite": true
+  },
+  {
+   "dev": "cpu",
+   "R": 5,
+   "N": 3,
+   "tau": 1.0,
+   "k": 3,
+   "max_abs_val": 4.76837158203125e-07,
+   "max_abs_grad": 1.0438554909342201e-07,
+   "val_scale": 1.0,
+   "finite": true
+  }
+ ],
+ "summary": {
+  "max_abs_val": 1.0,
+  "max_abs_grad": 29.950271606445312,
+  "all_finite": true,
+  "agree_1e5": false
+ }
+}
