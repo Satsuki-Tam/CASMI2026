@@ -1,0 +1,21 @@
+mist_c1bankdev_C1_neg_few.parquet 11072 identical
+mist_c1bankdev_C1_neg_many.parquet 3009 identical
+mist_c1bankdev_C1_pos_few.parquet 84251 identical
+mist_c1bankdev_C1_pos_many.parquet 242 identical
+mist_f1dev_C_np_crosslib.parquet 20763 identical
+mist_f1dev_D_np_single.parquet 22569 identical
+mist_f1dev_E_np_negonly.parquet 21653 identical
+mist_f1dev_F_np_uncovered.parquet 21408 identical
+mist_f1dev_G_tims_crosslib.parquet 25416 identical
+mist_f2dev_C_np_crosslib.parquet 22196 identical
+mist_f2dev_D_np_single.parquet 22516 identical
+mist_f2dev_E_np_negonly.parquet 21358 identical
+mist_f2dev_F_np_uncovered.parquet 20352 identical
+mist_f2dev_G_tims_crosslib.parquet 25406 identical
+mist_np053f1dev_NP_H.parquet 42009 identical
+mist_np053f1dev_NP_N.parquet 12391 identical
+mist_np053f1dev_NP_X.parquet 11109 identical
+mist_np053f2dev_NP_H.parquet 39656 identical
+mist_np053f2dev_NP_N.parquet 12088 identical
+mist_np053f2dev_NP_X.parquet 11639 identical
+REGRESSION PASS 451103 rows
