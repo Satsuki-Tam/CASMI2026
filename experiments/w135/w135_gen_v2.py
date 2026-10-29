@@ -15,6 +15,8 @@ Changes from v1 (w135_gen.py, kept unchanged because the v1 world manifests reco
     in the analog lists;
   - --fold_safe must be the world's FPNet directory (fp_bits.npy hash compared with the world manifest).
 --speed_only: products / timing only (no truth, class or P rank is read).
+v2.1 (2026-10-30 01:2x, before the stage-1 run): adds B_detail_<arm> (key, SMILES, f.z, parent score, parents, sources, edit, location, off_mass
+of every B product) for a later stage 2; no registered number reads it.
 Usage (Spark, experiments/b1_baseline as cwd): python -X utf8 ../w135/w135_gen_v2.py --batch CSV --wclass_col wclass_p30 --world DIR --set dF1 --fold_safe DIR
        --out OUT [--speed_only] [--n_train 10 --n_peer 10 --budget 50] [--workers 16]"""
 import argparse, hashlib, json, os, sys, time
@@ -198,7 +200,8 @@ if __name__ == "__main__":
             Bl = cand[:a.budget]
             if len(set(Bl)) != len(Bl) or len(Bl) > a.budget or not all(np.isfinite(P_[k]["fz"]) for k in Bl): stop(f"{m} {arm}: B list invalid")
             rec.update({f"n_prod_{arm}": len(P_), f"n_in_window_{arm}": sum(1 for k in P_ if loc[k] == "in_window"), f"n_out_of_window_{arm}": sum(1 for k in P_ if loc[k] == "out_of_window"),
-                        f"n_off_mass_{arm}": int(sum(off.values())), f"n_pre_{arm}": len(Bl), f"B_hash_{arm}": hashlib.sha1(";".join(Bl).encode()).hexdigest()[:16], f"B_{arm}": json.dumps(Bl)})
+                        f"n_off_mass_{arm}": int(sum(off.values())), f"n_pre_{arm}": len(Bl), f"B_hash_{arm}": hashlib.sha1(";".join(Bl).encode()).hexdigest()[:16], f"B_{arm}": json.dumps(Bl),
+                        f"B_detail_{arm}": json.dumps([[k, P_[k]["smiles"], round(P_[k]["fz"], 6), round(P_[k]["apsc"], 6), P_[k]["n_parents"], P_[k]["srcs"], P_[k]["combo"], loc[k], bool(off[k])] for k in Bl])})   # v2.1: for stage 2 (no registered number uses it)
             if not a.speed_only:
                 tk = str(bt.loc[m, "scorer_key"]); cls = str(bt.loc[m, a.wclass_col])
                 rk_all = next((i + 1 for i, k in enumerate(cand) if k == tk), 0)
