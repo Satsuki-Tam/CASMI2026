@@ -1,0 +1,33 @@
+{
+ "stage": 3,
+ "gate": "NO",
+ "comparisons": {
+  "A - R": {
+   "primary": -0.007047208576092846,
+   "lower": -0.017672703962659606,
+   "passed": false
+  },
+  "A - P0": {
+   "primary": -0.002529823539034065,
+   "lower": -0.012633826048285219,
+   "passed": false
+  }
+ },
+ "sha256": {
+  "reader": "b61bb5b9222495c431315a75eba47b381cc0377b656d17ce7535bff9f753052a",
+  "stage1_decision": "82a7c47d790324bc6c126f19be67f7090f4f0783d3915190780fd94d5eef6836",
+  "stage3_csv": "67bbc9e6c87daac3cc90c52ee4f8bfd07520345a45fb934eba8b9b3d7029d503",
+  "baseline_f1dev": "634384e41072a2298e377e8c10278e08d9287351d00670e05fc7ad85841fb5ea",
+  "baseline_np053f1dev": "f845f61b700dbf20326c8c6637bb937e4fb0ea22409ddb4cd6ae2beab35060ea",
+  "baseline_c1bankdev": "469ae98a363613fed5459b8dd219bd0d66a8b9f484849c60b740fdc22affeb10",
+  "r115_p0_f1dev": "a9cf3a259cd5df53b066519264d9c9d700b966f290160883dab21c77cd25fd0f",
+  "r115_p0_np053f1dev": "766fe48d35f4cf3b587942c4d8543e0e57b1b5092b45bdb1b28559da9b6c4404",
+  "r115_p0_c1bankdev": "469ae98a363613fed5459b8dd219bd0d66a8b9f484849c60b740fdc22affeb10",
+  "r115_r_f1dev": "fbfa328842e0cab7279207cb47ba82c6b49b3f5d2cfe21254aef1d45b358574f",
+  "r115_r_np053f1dev": "051c2f4460e96e6982a0507039b932c4fce05c144b2fb0d5f87756361f1a3f9a",
+  "r115_r_c1bankdev": "ff9fcd156f6bfe5858042d66ee8384a11bdf634c744213df08542ec9ed1a22d9",
+  "r115_a_f1dev": "0c17f275cfea8148a45a74100086c54685a4d65a11339cc9a168c8735b0eac8d",
+  "r115_a_np053f1dev": "168564cbc0fcd5abd43aa3b631e19b8cc0d7bcd8cca16c8ecbd02a81d32f0750",
+  "r115_a_c1bankdev": "8a050e6095ecd61349075d9a83aa67ec29d52398686b00bdc3e16b694fb1509a"
+ }
+}
