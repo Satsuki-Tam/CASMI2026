@@ -2,6 +2,7 @@
 in 101_decision, 1029_submission_plan (addendum 2) and the reading order of Codex 125; it decides nothing else.
 eta = 0.015 is the diagnostic guide (not a significance threshold). B / T scores are compressed-rank scores of fixed candidate-membership
 groups; they are not additive parts of the normal score and not hidden class ratios (Codex 124 / 125).
+Amended before any score (Codex 126): the G_B-small wording, and the next-slot line is marked provisional until all five are scored.
 Usage: python -X utf8 reports/agent_review/1029_read_results.py [saved_submissions.csv]
   without an argument it calls the kaggle CLI once (--csv) and saves the raw table to reports/agent_review/1029_scores.csv."""
 import csv, io, json, os, subprocess, sys
@@ -34,7 +35,7 @@ Q["pre-rank2_B - BASE_B"] = sub(S["PRE_RANK2_B"], KNOWN["BASE_B"])
 Q["v8w7a_B - old B1_B 0.204 (descriptive)"] = sub(S["V8W7A_B"], KNOWN["OLD_B1_B"])
 Q["v8w7a_T - old B1_T 0.160 (descriptive)"] = sub(S["V8W7A_T"], KNOWN["OLD_B1_T_M2x"])
 READ = {
- "G_B = E0_B - v8w7a_B": {"+eta": "B-path gap remains -> decomposing E0's later stages stays first", "small": "no large net B gap observed on this Public (not equivalence) -> the E0 gap is outside the B-restricted order (T, P, reach, group mix-up) -> revisit priorities", "-eta": "on B, v8w7a is above E0"},
+ "G_B = E0_B - v8w7a_B": {"+eta": "B-path gap remains -> decomposing E0's later stages stays first", "small": "no large net B-policy difference observed on this Public (not equivalence; offsetting gains / losses inside B are not excluded) -> revisit priorities", "-eta": "on B, v8w7a is above E0"},
  "G_T = E0_T - v8w7a_T": {"+eta": "E0 has a T-path (train structure) lead -> study E0's T path (library merge, engine-1 handling of train structures) as a port candidate; first separate reference / seen-ness / prior on the local C1 ledger (Codex 125)", "small": "no large net T gap observed on this Public", "-eta": "on T, B1 is above E0"},
  "ENG_B - BASE_B": {"+eta": "the second list alone is stronger than BASE on B", "small": "second list alone ~ BASE on B (complementarity not refuted)", "-eta": "second list alone weaker than BASE on B (complementarity not refuted)"},
  "E0_B - max(BASE_B, ENG_B)": {"+eta": "final is stronger than both single lists (fusion / forward / adoption worth studying)", "small": "final ~ the better single list", "-eta": "final below the better single list"},
@@ -61,7 +62,8 @@ elif D <= -ETA:
     nxt, loc = POP0, "do not prioritise the rank-2 port; register which pre-insertion stage to study (the fwdoff condition is not treated as met)"
 else:
     nxt, loc = POP0 + (" (B gap small)" if gB < ETA else " (fwdoff condition not met)"), ""
-L += ["", f"**Next diagnostic slot (Codex 125 queue):** {nxt}"] + ([f"**Local work first:** {loc}"] if loc else [])
+allc = all(S[k] is not None for k in IDS)
+L += ["", f"**Next diagnostic slot (Codex 125 queue){'' if allc else ' - PROVISIONAL: not all five scored'}:** {nxt}", "(Codex 126: this is a proposal only; technical checks of every run come first and nothing is pushed automatically.)"] + ([f"**Local work first:** {loc}"] if loc else [])
 if Q["G_T = E0_T - v8w7a_T"] is not None and Q["G_T = E0_T - v8w7a_T"] >= ETA:
     L.append("**T gap >= eta:** first separate reference / seen-ness / prior effects on the local C1 ledger (Codex 125).")
 L += ["", "Limits (Codex 125): all five use the same Public (related policy comparisons, not replications); |G| < eta = no large net difference observed on this Public, not equivalence; using these results for the next research choice is itself Public adaptation (ledgered)."]
