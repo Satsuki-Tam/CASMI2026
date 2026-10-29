@@ -1,0 +1,35 @@
+{
+  "topic": {
+    "id": 741404,
+    "title": "A complete statistical tour of the data (EDA notebook)",
+    "url": "/competitions/enveda-CASMI26-molecule-id-mass-spectra/discussion/741404",
+    "postDate": "2026-09-15T01:33:17.699Z",
+    "authorName": "José Freitas",
+    "authorUrl": "https://www.kaggle.com/josefreitasalvesneto",
+    "votes": 30,
+    "commentCount": 3,
+    "forumName": "Enveda CASMI 2026 - Molecule ID From Mass Spectra",
+    "forumId": 11293906,
+    "content": "<p>I went through this dataset column by column and wrote the whole thing up in a public notebook. Sharing it here because three of the findings change how you should set up your validation, and it seems better if we all start from the same picture of the data.</p>\n<p><a href=\"https://www.kaggle.com/code/josefreitasalvesneto/casmi-2026-a-complete-statistical-tour\" target=\"_blank\">https://www.kaggle.com/code/josefreitasalvesneto/casmi-2026-a-complete-statistical-tour</a></p>\n<p>A few things you may want to know before you write any preprocessing code:</p>\n<p>The public leaderboard is measuring the wrong thing. The data page says the test file is \"comprised of examples from the training dataset\" — it turns out to be enveda-180 rows, and the ones I checked are byte-for-byte identical to training spectra. That library is drug-like screening chemistry, not the natural products the prize is decided on. I would not read anything into a public score.\nTest spectra only look 10x richer than training spectra. Median 230 raw peaks vs 27 — but 82% of the test peaks are below 1% relative intensity, and at a 1% floor the two land at 18 and 14. The apparent train/test shift is mostly noise floor.\nA plain library search already scores MRR@25 = 0.907 on natural products that have reference spectra. Novelty Class 1 is close to solved without any learning, which means the entire score differential is in Classes 2 and 3.\nThe notebook also covers the 11 source libraries and how little they overlap, chemical space, adducts, collision energy, neutral losses, and where the labels wobble. Every number is computed in the notebook, so you can check any of it yourself.</p>\n<p>Corrections very welcome — if something looks wrong, tell me and I will fix it. Good luck, everyone.</p>"
+  },
+  "comments": [
+    {
+      "id": 3524688,
+      "authorName": "David Healey",
+      "postDate": "2026-09-15T16:06:23.807Z",
+      "content": "<p>Thanks for making this notebook, and welcome to CASMI 2026!</p>\n<p>Just to clarify something about the public leaderboard and test.parquet: the public leaderboard score is calculated not on the contents of the test.parquet downloadable dummy file (which as you say just contains a sample of Enveda-180 spectra and is there to demonstrate the size and scope and structure of the test data), but rather on the public split of the Hidden test set provided to your submission notebook.</p>",
+      "votes": 7
+    },
+    {
+      "id": 3524708,
+      "authorName": "Mahmoud saad Elgharib",
+      "postDate": "2026-09-15T17:11:46.457Z",
+      "content": "<p>Thank you for sharing this detailed analysis. <a href=\"/josefreitasalvesneto\" target=\"_blank\">@josefreitasalvesneto</a> I’m still a beginner and learning step by step, but I’m very interested in the chemistry + data science side of this competition.\nI’m currently trying to organize the main areas that could be useful for this type of problem, including:</p>\n<ol>\n<li>Cheminformatics\nMolecular structures, SMILES, fingerprints, molecular descriptors, similarity search.\nPython: RDKit</li>\n<li>QSAR / QSPR\nPredicting molecular or chemical properties using machine learning.\nPython: RDKit + Scikit-learn</li>\n<li>Molecular Property Prediction\nPredicting properties such as activity, toxicity, solubility, and other molecular characteristics.\nPython: RDKit + Scikit-learn / PyTorch</li>\n<li>Molecular Representation Learning\nLearning useful representations from SMILES, fingerprints, molecular graphs, and molecular features.\nPython: RDKit + PyTorch / TensorFlow</li>\n<li>Graph Neural Networks for Chemistry\nRepresenting atoms as nodes and chemical bonds as edges.\nPython: PyTorch Geometric / DGL + RDKit</li>\n<li>AI for Drug Discovery\nVirtual screening, molecular activity prediction, hit discovery, and lead optimization.\nPython: RDKit + DeepChem</li>\n<li>Molecular Generation / Generative Chemistry\nUsing generative models to create or modify molecules with desired properties.\nPython: RDKit + PyTorch + Transformers / diffusion models</li>\n<li>Chemical Reaction Prediction\nReaction prediction, reaction classification, retrosynthesis, and reaction-condition prediction.\nPython: RDKit + reaction datasets + Transformer models</li>\n<li>Molecular Optimization\nOptimizing molecules toward specific chemical or biological objectives.\nPython: RDKit + Bayesian Optimization / evolutionary optimization</li>\n<li>Virtual Screening\nSearching large chemical libraries and ranking compounds that may match a target.\nPython: RDKit + similarity search + Mranking</li>\n<li>Computational Chemistry + Machine Learning\nCombining computational chemistry, molecular simulations, and ML.\nPython: RDKit + DeepChem + scientific Python tools</li>\n<li>Chemometrics\nApplying statistics and machine learning to chemical and experimental data.\nPython: NumPy + Pandas + Scikit-learn + SciPy</li>\n<li>Spectroscopy + Machine Learning\nWorking with NMR, IR, Raman, and mass-spectrometry data.\nPython: NumPy + SciPy + Scikit-learn + PyTorch</li>\n<li>Materials Informatics\nUsing data science and ML to discover and predict properties of materials and compounds.\nPython: pymatgen + Matminer + Scikit-learn / PyTorch\nI’m also trying to collect books, research papers, courses, official documentation, GitHub repositories, Python libraries, datasets, and practical notebooks for each section, so I can understand both the theory and the implementation.\nYour analysis of the validation setup, source-library overlap, noise floor, adducts, collision energy, and especially the Class 1 vs. Classes 2–3 difference is very helpful. I’ll definitely go through the notebook carefully before making assumptions about preprocessing or validation.\nI’m still learning, so I may not understand everything correctly yet, but I’d really appreciate any corrections or recommendations from people with more experience in computational chemistry and mass spectrometry.\nThank you again for sharing your work and helping everyone start from a better understanding of the data. 🙏\nGood luck with the competition!</li>\n</ol>",
+      "votes": 3
+    },
+    {
+      "id": 3536614,
+      "postDate": "2026-10-10T20:27:50.920Z"
+    }
+  ]
+}
