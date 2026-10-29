@@ -1,0 +1,14 @@
+{
+ "rank_e1r|c1|n": 295,
+ "rank_e1r|c1|e_nonempty": 295,
+ "rank_e1r|c1|gl_ok": 188,
+ "rank_e1r|c1|fallback": 107,
+ "rank_e1r|c1|truth_outside_e": 0,
+ "rank_e1r|c1|top1_changed": 24,
+ "rank_e1r|c2|n": 493,
+ "rank_e1r|c2|e_nonempty": 488,
+ "rank_e1r|c2|gl_ok": 289,
+ "rank_e1r|c2|fallback": 204,
+ "rank_e1r|c2|truth_outside_e": 210,
+ "rank_e1r|c2|top1_changed": 186
+}

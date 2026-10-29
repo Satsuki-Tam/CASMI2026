@@ -25,7 +25,8 @@ for T, run in T_.items():
         for c in COLS:
             if c + "_a" not in J.columns or c + "_r" not in J.columns: bad[c] = "missing column"; continue
             x, y = J[c + "_a"], J[c + "_r"]
-            if x.dtype == bool or y.dtype == bool or c == "e_reach": eq = x.astype(str).str.lower() == y.astype(str).str.lower()
+            if x.dtype == bool or y.dtype == bool or c == "e_reach":   # NaN-aware (pandas 3: astype(str) keeps NaN, and NaN == NaN is False)
+                nb_ = lambda v_: "<na>" if pd.isna(v_) else str(v_).lower(); eq = np.array([nb_(p_) == nb_(q_) for p_, q_ in zip(x, y)])
             else: eq = np.isclose(x.astype(float), y.astype(float), rtol=0, atol=0, equal_nan=True)
             if not np.all(eq): bad[c] = int((~np.asarray(eq)).sum())
     ncand = {v: int(((A.view == v) & (A.n_cand > 0)).sum()) for v in ("c1", "c2")}
@@ -35,7 +36,7 @@ for T, run in T_.items():
     mols = mols.drop_duplicates(["set", "molecule"]).set_index(["set", "molecule"])
     neg = A.apply(lambda r: all(str(x).endswith("-") for x in str(mols.loc[(r["set"], r["molecule"]), "adducts"]).split("|")) if (r["set"], r["molecule"]) in mols.index else False, axis=1)
     strong = A.apply(lambda r: r["view"] == "c1" and (r["set"], r["molecule"]) in mols.index and float(mols.loc[(r["set"], r["molecule"]), "lib_max_c1"]) >= 0.9, axis=1)
-    st = dict(e_empty=int(((A.nE == 0) & (A.n_cand > 0)).sum()), truth_outside_e=int(((A.rP > 0) & ~A.e_reach.astype(str).str.lower().eq("true")).sum()),
+    st = dict(e_empty=int(((A.nE == 0) & (A.n_cand > 0)).sum()), truth_outside_e=int(((A.rP > 0) & ~A.e_reach.map(lambda v_: (not pd.isna(v_)) and str(v_).lower() == "true")).sum()),
               negative_only=int((neg & (A.n_cand > 0)).sum()), strong_c1=int((strong & (A.n_cand > 0)).sum()), fallback={v: int(C.get(f"rank_e1r|{v}|fallback", 0)) for v in ("c1", "c2")},
               top1_changed={v: int(C.get(f"rank_e1r|{v}|top1_changed", 0)) for v in ("c1", "c2")})
     ok = uniq and same and not bad and cnt_ok

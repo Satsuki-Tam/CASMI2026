@@ -1,0 +1,179 @@
+{
+ "verdict": "PARITY_A PASS",
+ "tables": {
+  "np053f1dev": {
+   "rows": 372,
+   "unique": true,
+   "key_sets_equal": true,
+   "differing": {},
+   "assertion_counts": {
+    "c1": 52,
+    "c2": 319
+   },
+   "rows_with_candidates": {
+    "c1": 52,
+    "c2": 319
+   },
+   "strata": {
+    "e_empty": 3,
+    "truth_outside_e": 0,
+    "negative_only": 74,
+    "strong_c1": 24,
+    "fallback": {
+     "c1": 16,
+     "c2": 120
+    },
+    "top1_changed": {
+     "c1": 3,
+     "c2": 72
+    }
+   },
+   "pass_": true
+  },
+  "np053f2dev": {
+   "rows": 389,
+   "unique": true,
+   "key_sets_equal": true,
+   "differing": {},
+   "assertion_counts": {
+    "c1": 69,
+    "c2": 314
+   },
+   "rows_with_candidates": {
+    "c1": 69,
+    "c2": 314
+   },
+   "strata": {
+    "e_empty": 2,
+    "truth_outside_e": 0,
+    "negative_only": 81,
+    "strong_c1": 31,
+    "fallback": {
+     "c1": 29,
+     "c2": 119
+    },
+    "top1_changed": {
+     "c1": 6,
+     "c2": 70
+    }
+   },
+   "pass_": true
+  },
+  "panel": {
+   "rows": 500,
+   "unique": true,
+   "key_sets_equal": true,
+   "differing": {},
+   "assertion_counts": {
+    "c1": 250,
+    "c2": 250
+   },
+   "rows_with_candidates": {
+    "c1": 250,
+    "c2": 250
+   },
+   "strata": {
+    "e_empty": 0,
+    "truth_outside_e": 0,
+    "negative_only": 36,
+    "strong_c1": 30,
+    "fallback": {
+     "c1": 34,
+     "c2": 34
+    },
+    "top1_changed": {
+     "c1": 21,
+     "c2": 11
+    }
+   },
+   "pass_": true
+  },
+  "f1dev": {
+   "rows": 794,
+   "unique": true,
+   "key_sets_equal": true,
+   "differing": {},
+   "assertion_counts": {
+    "c1": 294,
+    "c2": 494
+   },
+   "rows_with_candidates": {
+    "c1": 294,
+    "c2": 494
+   },
+   "strata": {
+    "e_empty": 6,
+    "truth_outside_e": 191,
+    "negative_only": 178,
+    "strong_c1": 101,
+    "fallback": {
+     "c1": 115,
+     "c2": 210
+    },
+    "top1_changed": {
+     "c1": 16,
+     "c2": 163
+    }
+   },
+   "pass_": true
+  },
+  "f2dev": {
+   "rows": 795,
+   "unique": true,
+   "key_sets_equal": true,
+   "differing": {},
+   "assertion_counts": {
+    "c1": 295,
+    "c2": 493
+   },
+   "rows_with_candidates": {
+    "c1": 295,
+    "c2": 493
+   },
+   "strata": {
+    "e_empty": 5,
+    "truth_outside_e": 210,
+    "negative_only": 169,
+    "strong_c1": 103,
+    "fallback": {
+     "c1": 107,
+     "c2": 204
+    },
+    "top1_changed": {
+     "c1": 24,
+     "c2": 186
+    }
+   },
+   "pass_": true
+  },
+  "p2dev": {
+   "rows": 792,
+   "unique": true,
+   "key_sets_equal": true,
+   "differing": {},
+   "assertion_counts": {
+    "c1": 292,
+    "c2": 497
+   },
+   "rows_with_candidates": {
+    "c1": 292,
+    "c2": 497
+   },
+   "strata": {
+    "e_empty": 8,
+    "truth_outside_e": 194,
+    "negative_only": 176,
+    "strong_c1": 111,
+    "fallback": {
+     "c1": 105,
+     "c2": 208
+    },
+    "top1_changed": {
+     "c1": 20,
+     "c2": 177
+    }
+   },
+   "pass_": true
+  }
+ }
+}
