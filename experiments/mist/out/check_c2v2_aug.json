@@ -1,0 +1,173 @@
+{
+ "binding": {
+  "checkpoint_sha256": "9f251d772f68315ba6fe2dc75a3b2e1ec477d3f41ffbeaf5143749157b67b177",
+  "check_a_sha256": "ff9d85beb89a8793504a17432119e04af64c3706df6d4b2712d809a796d9f402",
+  "adapter_sha256": "9d33fdfefec5ba66c5fb3dfb0695acb20ac4b549f5ff96790bda3818865d7c7a",
+  "compact_manifest_sha256": "decd241da80cb8ec3e4f12fbc98580ae393a45339dc50483798a5c3a26a33b95",
+  "no_subform_sha256": "317c99fdf75b7f6d0178e9c2c84e020a3490952a722e45e3cc725bf90cbb753e",
+  "massspecgym_tsv_sha256": "0c9cc50450def3f0d4fe2dc09dea1105fc15e635db8c6656bc3e3be37a3bcd95",
+  "threshold": 0.1878848671913147
+ },
+ "consistency": {
+  "n": 17556,
+  "names_unique": true,
+  "fingerprints_shape_ok": true,
+  "cls_position_ok": 17556,
+  "padding_ok": 17556,
+  "tsv_identifiers_unique": true,
+  "names_map_to_tsv": 17556
+ },
+ "same_table": {
+  "agree_counts": {
+   "lengths": 17556,
+   "peak_type": 17556,
+   "ion_vec": 17556,
+   "form_vec": 17556,
+   "intens": 17556,
+   "all": 17556
+  },
+  "agree_share": {
+   "lengths": 1.0,
+   "peak_type": 1.0,
+   "ion_vec": 1.0,
+   "form_vec": 1.0,
+   "intens": 1.0,
+   "all": 1.0
+  },
+  "failures": [],
+  "charge_stripped_ids": [
+   "MassSpecGymID0179402_collision 49"
+  ],
+  "instruments_agree": 0.9767031214399635,
+  "pass_": true
+ },
+ "raw_path": {
+  "classes": {
+   "identical": 16871,
+   "tie_order_only": 538,
+   "other": 146,
+   "failure": 1
+  },
+  "flags": {
+   "formula": 144,
+   "count": 2
+  },
+  "failures": [
+   {
+    "id": "MassSpecGymID0179402_collision 49",
+    "reason": "ValueError(\"invalid molecular formula 'C22H28N7O+'\")"
+   }
+  ]
+ },
+ "prediction": {
+  "signed": {
+   "mean": 8.164762563572304e-05,
+   "quantiles": {
+    "0.001": -0.03190174441077818,
+    "0.01": 0.0,
+    "0.05": 0.0,
+    "0.5": 0.0,
+    "0.95": 0.0,
+    "0.99": 0.0,
+    "0.999": 0.0537866795366795
+   },
+   "improved": 74,
+   "worse": 58,
+   "unchanged": 17423
+  },
+  "absolute": {
+   "quantiles": {
+    "0.5": 0.0,
+    "0.9": 0.0,
+    "0.99": 0.0,
+    "0.999": 0.07099844720496887
+   },
+   "max": 0.19841269841269837
+  },
+  "by_class": {
+   "identical": {
+    "n": 16871,
+    "mean": 0.0,
+    "min": 0.0,
+    "max": 0.0
+   },
+   "other": {
+    "n": 146,
+    "mean": 0.009817288137226833,
+    "min": -0.19811320754716982,
+    "max": 0.19841269841269837
+   },
+   "tie_order_only": {
+    "n": 538,
+    "mean": 0.0,
+    "min": 0.0,
+    "max": 0.0
+   }
+  },
+  "largest": [
+   {
+    "id": "MassSpecGymID0076055_collision 75",
+    "cls": "other",
+    "flags": "formula",
+    "d": 0.19841269841269837
+   },
+   {
+    "id": "MassSpecGymID0046640_collision 30",
+    "cls": "other",
+    "flags": "formula",
+    "d": -0.19811320754716982
+   },
+   {
+    "id": "MassSpecGymID0186140_collision 28",
+    "cls": "other",
+    "flags": "formula",
+    "d": 0.13565891472868216
+   },
+   {
+    "id": "MassSpecGymID0186131_collision 28",
+    "cls": "other",
+    "flags": "formula",
+    "d": 0.13565891472868216
+   },
+   {
+    "id": "MassSpecGymID0106919_collision 30",
+    "cls": "other",
+    "flags": "formula",
+    "d": 0.13035135313968105
+   },
+   {
+    "id": "MassSpecGymID0106902_collision 6",
+    "cls": "other",
+    "flags": "formula",
+    "d": 0.13035135313968105
+   },
+   {
+    "id": "MassSpecGymID0119381_collision 10",
+    "cls": "other",
+    "flags": "formula",
+    "d": 0.12266416118592749
+   },
+   {
+    "id": "MassSpecGymID0119368_collision 6",
+    "cls": "other",
+    "flags": "formula",
+    "d": 0.12266416118592749
+   },
+   {
+    "id": "MassSpecGymID0049867_collision 110",
+    "cls": "other",
+    "flags": "formula",
+    "d": 0.11341734618235733
+   },
+   {
+    "id": "MassSpecGymID0080733_collision 45",
+    "cls": "other",
+    "flags": "formula",
+    "d": 0.11162790697674418
+   }
+  ],
+  "max_abs_probability_diff": 0.9490272402763367
+ },
+ "status": "C2_PASS",
+ "seconds": 297
+}
