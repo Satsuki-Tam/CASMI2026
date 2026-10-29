@@ -172,6 +172,8 @@ def main():
     ap.add_argument("--frag_parquet", default="", help="frag_probe.py features of the training tables (v2_noice_ana_frag)")
     ap.add_argument("--analog_parquet", default="", help="analog_probe.py features of the training tables (needed by the v2_noice_ana feature set)")
     ap.add_argument("--exposure_ledger", default="", help="ledger_<checkpoint>.parquet (key, fp_pos, negpool) of the FPNet that built the tables; needed by the v2_noice_exp feature set")
+    ap.add_argument("--fit_frac", type=float, default=1.0, help="127 learning-curve diagnostic: keep this seeded fraction of the FIT molecules (both views together; default 1.0 = all, unchanged)")
+    ap.add_argument("--fit_seed", type=int, default=0, help="127: seed of the --fit_frac subsample")
     ap.add_argument("--monotone_lib", action="store_true", help="monotone constraints incl. the library similarities (reference evidence may only raise a candidate)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); FE = [f for f in FEATSETS[a.feats] if f not in set(a.drop)]
     if a.frag_parquet:
@@ -221,6 +223,9 @@ def main():
         data = data[~drop1_].reset_index(drop=True)
     print("rows", len(data), "| molecules", data.molecule.nunique(), "| groups", data.groupby("group").molecule.nunique().to_dict(), "| views", data.groupby("view").molecule.nunique().to_dict())
     fit, tune, ev = (data[data.group == g].copy() for g in ("fit", "tune", "eval"))
+    if a.fit_frac < 1.0:   # 127 learning curve: a seeded subset of the fit molecules (sorted ids, permutation, first round(frac * n)); tune / eval untouched
+        mols_ = np.array(sorted(fit.molecule.astype(str).unique())); keep_ = set(np.random.default_rng(a.fit_seed).permutation(mols_)[:int(round(a.fit_frac * len(mols_)))])
+        fit = fit[fit.molecule.astype(str).isin(keep_)].copy(); print(f"127 learning curve: fit molecules kept {len(keep_)} / {len(mols_)} (frac {a.fit_frac}, seed {a.fit_seed})", flush=True)
     ig = {g: set(data[(data.group == g) & (data.identity_group >= 0)].identity_group) for g in ("fit", "tune", "eval")}
     assert not (ig["fit"] & ig["tune"]) and not (ig["fit"] & ig["eval"]) and not (ig["tune"] & ig["eval"]), "identity groups shared between fit/tune/eval"
     print("identity groups:", {g: len(v) for g, v in ig.items()})
