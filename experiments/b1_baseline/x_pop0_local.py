@@ -1,8 +1,9 @@
 """pop0 local cost (116 / 124 / 125): DESCRIPTIVE reading of diag/rpop0_<tag>.csv (gen_eval2fd --v7f --parents 0 --pop_ws 0.5,0 with rank_v8w7a),
 written before any of these rows existed. Not a gate and not a method selection: it states what the pop0 diagnostic kernel (fixed-rule prior
 coefficient 0 on both paths of the frozen v8w7a) costs or gains on the development layers, as Codex 116 asks before such a probe is proposed.
-Checks (STOP): pw0.5 == main on every row (the evaluator's variant path reproduces P); main equal to diag/r102_<tag>.csv (f1dev, np053f1dev,
-f2dev, np053f2dev) or diag/r111_base_c1bankdev.csv (bank) on the shared rows, with no missing rows; RR values finite in [0, 1].
+Checks (STOP): pw0.5 == main on every row (the evaluator's variant path reproduces P); (set, view, molecule) unique; main equal, one-to-one
+with no missing / extra rows, to the REQUIRED frozen-main reference diag/r102_<tag>.csv (f1dev, np053f1dev, f2dev, np053f2dev, panel) or
+diag/r111_base_c1bankdev.csv (bank) (Codex 126); every reported cell non-empty; RR values finite in [0, 1].
 Reported per fold (fold 1 = f1dev / np053f1dev / c1bankdev, fold 2 = f2dev / np053f2dev; the panel separately), d = pw0 - main:
   primary layout of 111 (1/4 NP_H C2 + 1/4 NP_N C2 + 1/2 D C2), old B (C/D/E/F C2 equal), G C1, NP C1 (NP_H / NP_N C1 equal), c1dev pooled C1,
   panel C2 and panel C1 clean; 95% identity-bootstrap intervals (4000, seed 20261029); rows changed up / down per cell.
@@ -17,19 +18,21 @@ for tag in ("f1dev", "np053f1dev", "c1bankdev", "f2dev", "np053f2dev", "panel"):
     for c in ("main", "pw0.5", "pw0.0"):
         v = x[c].values.astype(float); assert np.isfinite(v).all() and (v >= -TOL).all() and (v <= 1 + TOL).all(), (tag, c)
     assert (np.abs(x["pw0.5"].values - x["main"].values) <= TOL).all(), (tag, "pw0.5 != main", int((np.abs(x["pw0.5"].values - x["main"].values) > TOL).sum()))
-    ref = {"c1bankdev": "diag/r111_base_c1bankdev.csv", "panel": None}.get(tag, f"diag/r102_{tag}.csv")
-    if ref and os.path.exists(os.path.join(HERE, ref)):
-        y = pd.read_csv(os.path.join(HERE, ref), usecols=["set", "view", "molecule", "main"]); y["molecule"] = y.molecule.astype(str)
-        k = ["set", "view", "molecule"]; m = x[k + ["main"]].merge(y, on=k, how="outer", suffixes=("", "_ref"), indicator=True)
-        assert (m._merge == "both").all(), (tag, "rows differ from", ref, m._merge.value_counts().to_dict())
-        assert (np.abs(m.main.values - m.main_ref.values) <= TOL).all(), (tag, "main differs from", ref)
-        print(f"{tag}: main == {ref} on all {len(m)} rows; pw0.5 == main")
-    else:
-        print(f"{tag}: no reference file ({ref}); pw0.5 == main on all {len(x)} rows")
+    k = ["set", "view", "molecule"]
+    assert not x.duplicated(k).any(), (tag, "duplicate (set, view, molecule) rows")
+    ref = {"c1bankdev": "diag/r111_base_c1bankdev.csv"}.get(tag, f"diag/r102_{tag}.csv")   # every tag has a REQUIRED frozen-main reference (Codex 126)
+    assert os.path.exists(os.path.join(HERE, ref)), (tag, "required reference missing", ref)
+    y = pd.read_csv(os.path.join(HERE, ref), usecols=k + ["main"]); y["molecule"] = y.molecule.astype(str)
+    assert not y.duplicated(k).any(), (tag, "duplicate rows in", ref)
+    m = x[k + ["main"]].merge(y, on=k, how="outer", suffixes=("", "_ref"), indicator=True, validate="one_to_one")
+    assert (m._merge == "both").all(), (tag, "rows differ from", ref, m._merge.value_counts().to_dict())
+    assert (np.abs(m.main.values - m.main_ref.values) <= TOL).all(), (tag, "main differs from", ref, int((np.abs(m.main.values - m.main_ref.values) > TOL).sum()))
+    print(f"{tag}: rows unique; main == {ref} on all {len(m)} rows (one-to-one); pw0.5 == main")
     R[tag] = x
 def cell(tag, sets, view, filt=None):
     x = R[tag]; x = x[x.set.isin(sets) & (x.view == view)]
     if filt is not None: x = x[x.molecule.isin(filt)]
+    assert len(x) > 0, ("empty reported cell", tag, sets, view)
     return x
 def boot(parts):   # parts: list of (weight, frame); identities resampled within each part
     est = sum(w * (f["pw0.0"].values - f["main"].values).mean() for w, f in parts)

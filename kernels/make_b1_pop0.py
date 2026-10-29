@@ -2,8 +2,8 @@
 check; rebuilding v8w7a with this recipe from experiments/b1_v7f038 is byte-identical to kernels/b1-fpnet-v8w7a) with the sources of
 experiments/b1_pop0 (make_pop0.py: frozen fusion loop moved verbatim into _fusion_pass, fixed-rule prior coefficient as --lam_fixed) and
 --lam_fixed 0 -> submission.csv = the pop0 list; submission_lamref*.csv = the frozen-LAM lists of the same run (in-run control).
-An appended RECORD cell asserts lam_fixed 0 in the run manifest and the lamref files' ids, and prints the per-pass fusion counts and the number of
-molecules whose list / rank-1 changed. Not a method candidate.
+An appended RECORD cell asserts lam_fixed 0 / LAM 0.5 in the run manifest, the lamref files' ids, non-empty SMILES lists of at most 25, equal
+learned / fallback counts in both passes and no learned_failed (Codex 126), and prints the per-pass fusion counts. Not a method candidate.
 Usage: python -X utf8 kernels/make_b1_pop0.py"""
 import json, os, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
@@ -17,9 +17,14 @@ RECORD = """# ==== DIAGNOSTIC pop0 (116/124/125): record of the in-run control =
 import json as _j, pandas as _p
 _m = _j.load(open('/kaggle/working/b1_run_manifest.json'))
 assert _m['params'].get('lam_fixed') == 0.0 and _m['params'].get('LAM') == 0.5, ('lam_fixed / LAM', _m['params'].get('lam_fixed'), _m['params'].get('LAM'))
-_s = _p.read_csv('/kaggle/working/submission.csv')
+_s = _p.read_csv('/kaggle/working/submission.csv', dtype=str, keep_default_na=False)
 for _f in ('submission_lamref.csv', 'submission_lamref_fixed.csv', 'submission_lamref_probe_train.csv', 'submission_lamref_probe_nontrain.csv'):
-    _r = _p.read_csv('/kaggle/working/' + _f); assert len(_r) == len(_s) and set(_r.molecule_id) == set(_s.molecule_id) and _r.molecule_id.is_unique, _f
+    _r = _p.read_csv('/kaggle/working/' + _f, dtype=str, keep_default_na=False); assert len(_r) == len(_s) and set(_r.molecule_id) == set(_s.molecule_id) and _r.molecule_id.is_unique, _f
+    assert _r.smiles.map(lambda x: x != '' and len(x.split(';')) <= 25 and all(t_ != '' for t_ in x.split(';'))).all(), (_f, 'empty SMILES or more than 25')
+_fu, _fr = _m['fusion'], _m.get('fusion_lamref') or {}
+for _k in ('learned', 'fallback_gl_cover', 'gl_used', 'empty', 'analog', 'frag'):
+    assert _fu.get(_k, 0) == _fr.get(_k, 0), ('fusion count differs between the passes', _k, _fu.get(_k), _fr.get(_k))
+assert not _fu.get('learned_failed') and not _fr.get('learned_failed'), 'learned fusion failed on some molecule' 
 print('POP0_RECORD', _j.dumps(dict(lam_fixed=_m['params']['lam_fixed'], LAM=_m['params']['LAM'], fusion=_m['fusion'], fusion_lamref=_m.get('fusion_lamref'))), flush=True)
 """
 nb["cells"].append(dict(cell_type="code", metadata={}, execution_count=None, outputs=[], source=RECORD))
