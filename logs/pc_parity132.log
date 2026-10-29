@@ -1,0 +1,9 @@
+== 2026-10-30 00:00:17 GPU check: non-Python GPU clients only (25 listed)
+== 2026-10-30 00:00:17 pipeline 930fa3f835ec elite 4a11a714eb0b parity 5a86a89888c5 model fe61dc429bd2
+== 00:19:32 pipeline c2 exit 0 (124 = stopped at the 08:55 deadline) [b1    1152s] 132 E-lite: 250 molecules, E non-empty 250, median E 34 of 233, rank-1 changed 10, lists changed 249
+== 00:38:34 pipeline c1 exit 0 (124 = stopped at the 08:55 deadline) [b1    1140s] 132 E-lite: 250 molecules, E non-empty 250, median E 34 of 233, rank-1 changed 22, lists changed 249
+parity132 c2 exit 0 PARITY PASS
+descriptive: P of this run vs the 087 run main list: 250 molecules, 0 differ []
+parity132 c1 exit 1 PARITY FAIL: 132: E-lite list differs (ordered top-25 1, top-1 0, RR 0 molecules; e.g. ['SQFSKOYWJBQGKQ'])
+descriptive: P of this run vs the 087 run main list: 250 molecules, 0 differ []
+PARITY132_DONE FAIL 2026-10-30 00:45:09
