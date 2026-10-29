@@ -35,6 +35,10 @@ FEATSETS["v2_noice_cmp"] = FEATSETS["v2_noice"] + EXTRA_CMP
 # list context), with per-model rank / gap / margin within the list; no prior, no in_tier / in_train / in_coconut, no lib_nref, no fp_rank_window
 FEATSETS["e1"] = ["z_fp", "fp", "rank_fp", "gap_fp", "margin_fp_mol", "z_gl", "gl", "rank_gl", "gap_gl", "margin_gl_mol", "gl_missing", "lib_sim", "lib_same", "lib_margin",
                   "lib_max_mol", "lib_rank", "ppm_err", "n_cands", "n_query", "ce_known", "ana_ap", "z_ana_ap", "ana_mt", "ana_gap"]
+# 133 (Codex 131 Q2): MIST (public ScaledMIST, MSG-trained) as ranker inputs, opt-in; see experiments/mist/patch_rankfeats_m133.py for the definitions
+EXTRA_MIST = ["mist", "z_mist", "mist_missing", "rank_mist", "gap_mist", "margin_mist_mol", "mist_nq", "mist_mol_noq", "mist_mol_ok", "rank_mist_form", "gap_mist_form", "n_form",
+              "rank_form_mist", "mist_fint", "mist_npk", "mist_ppm", "d_rank_mist_fp", "d_z_mist_fp", "d_z_mist_gl"]
+FEATSETS["v2_noice_ana_mist"] = FEATSETS["v2_noice_ana"] + EXTRA_MIST
 # monotone directions for the constrained variant (0 = unconstrained): only the model scores (up) and the mass error (down), Codex 008
 MONO = dict(z_fp=1, z_gl=1, z_ice=1, fp=1, gl=1, ice=1, ppm_err=-1)
 # 2026-10-25 (panel probe): reference evidence may only raise a candidate -- in the C2 training view the truth has no references by construction,
@@ -65,7 +69,7 @@ def term(vals):
 
 
 def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src_mask, lotus_refs, lib_sim, lib_same, lib_nref, in_tier, in_train, in_coconut,
-                   ppm_err, fp_rank_window, n_query, ce_known, n_window=np.nan, feats=None, exposure=None, libcond=None, analog=None, frag=None, cmp=None):
+                   ppm_err, fp_rank_window, n_query, ce_known, n_window=np.nan, feats=None, exposure=None, libcond=None, analog=None, frag=None, cmp=None, mist=None):
     """arrays of equal length (one molecule's candidates) -> (n, len(FEATS)) float matrix in FEATS order."""
     fp = np.asarray(fp, float); gl = np.asarray(gl, float); ice = np.asarray(ice, float); lib = np.asarray(lib_sim, float)
     top = np.sort(lib)[::-1]; second = top[1] if len(top) > 1 else 0.0
@@ -104,4 +108,33 @@ def feature_matrix(fp, gl, ice, pop_public, lsid, lpmid, lsynonyms, np_bits, src
                     margin_fp_mol=margin(cols["z_fp"]), margin_gl_mol=margin(cols["z_gl"]), margin_ice_mol=margin(cols["z_ice"]),
                     lib_rank=np.log1p(rank_desc(lib)), in_train_x_lib=cols["in_train"] * lib,
                     log_n_window=np.full(len(fp), np.log1p(float(n_window)) if np.isfinite(float(n_window)) else np.nan))
+    if any(c in EXTRA_MIST for c in feats):   # 133
+        if mist is None: raise ValueError("feature list needs the MIST block but no mist arrays were given")
+        cols.update(mist_block(mist, fp, gl))
     return np.column_stack([cols[c] for c in feats])
+
+
+def mist_block(mist, fp, gl):
+    """133: EXTRA_MIST columns from dict(cos, nq, status, fint, npk, ppm, form) (one molecule's list; form = neutral formula or None)."""
+    cos = np.asarray(mist["cos"], float); n = len(cos); st = np.asarray(mist["status"], dtype=object); form = list(mist["form"])
+    ok = np.isfinite(cos); zm = term(cos); fp = np.asarray(fp, float); gl = np.asarray(gl, float)
+    srt = np.sort(zm)[::-1]; margin = float(srt[0] - srt[1]) if n > 1 else 0.0
+    rf = np.full(n, np.nan); gf = np.full(n, np.nan); nf = np.ones(n); best_of = {}
+    groups = {}
+    for i, f in enumerate(form): groups.setdefault(f if f is not None else ("__none__", i), []).append(i)
+    for key, idx in groups.items():
+        idx = np.asarray(idx, int); nf[idx] = len(idx); v = cos[idx]
+        if np.isfinite(v).any():
+            rf[idx] = rank_desc(v); gf[idx] = np.where(np.isfinite(v), np.nanmax(v) - v, np.nan); best_of[key] = float(np.nanmax(v))
+        rf[idx[~np.isfinite(v)]] = np.nan   # a candidate without a MIST value has no within-formula rank
+    fb = np.array([best_of.get(form[i] if form[i] is not None else ("__none__", i), np.nan) for i in range(n)], float)
+    keys_ = [k for k in groups if k in best_of]; gbest = np.array([best_of[k] for k in keys_], float)
+    grank = dict(zip(keys_, rank_desc(gbest))) if len(keys_) else {}
+    rfm = np.array([grank.get(form[i] if form[i] is not None else ("__none__", i), np.nan) for i in range(n)], float)   # NaN: the formula group has no MIST value
+    noq = bool(n) and all(str(x) in ("no_qrows", "no_mist_adduct") for x in st)
+    return dict(mist=np.nan_to_num(cos, nan=-1.0), z_mist=zm, mist_missing=(~ok).astype(float), rank_mist=np.log1p(rank_desc(cos)), gap_mist=(float(np.max(zm)) - zm) if n else zm,
+                margin_mist_mol=np.full(n, margin), mist_nq=np.asarray(mist["nq"], float), mist_mol_noq=np.full(n, float(noq)), mist_mol_ok=np.full(n, float(ok.mean()) if n else 0.0),
+                rank_mist_form=np.log1p(rf), gap_mist_form=gf, n_form=np.log1p(nf), rank_form_mist=np.log1p(rfm),
+                mist_fint=np.asarray(mist["fint"], float), mist_npk=np.asarray(mist["npk"], float), mist_ppm=np.asarray(mist["ppm"], float),
+                d_rank_mist_fp=np.where(ok, np.log1p(rank_desc(cos)) - np.log1p(rank_desc(fp)), np.nan), d_z_mist_fp=np.where(ok, zm - zlist(fp), np.nan),
+                d_z_mist_gl=np.where(ok, zm - term(gl), np.nan))

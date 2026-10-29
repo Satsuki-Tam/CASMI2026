@@ -19,6 +19,8 @@ from b1_rankfeats import FEATS, FEATSETS, MONO, MONO_LIB, feature_matrix
 FRG = {}    # (set, molecule) -> {smiles: frag} from --frag_parquet (039)
 ANA = {}    # (set, view, molecule) -> {smiles: (ap, mean_tan)} from --analog_parquet (analog_probe.py); used only when the feature list asks for the analog block
 CMPX = {}   # 078: (run basename, set, molecule, official key) -> (n_cmp_pol_c1, n_cmp_add_c1, n_cmp_pol_c2, n_cmp_add_c2) from diag/refcmpx_<run>.parquet (refcmp_exact.py)
+MISTD = {}   # 133: (run basename, set, molecule) -> {smiles: (cos, nq, status, fint, npk, ppm)} from --mist_dir / --mist_tags
+MISTCOV = {}   # 133: (run basename, set) -> [groups, candidate rows]
 EXPO = {}   # official key -> (fp_pos, negpool) from --exposure_ledger (Codex 028); used only when the feature list asks for the exposure block
 
 
@@ -32,6 +34,17 @@ FILTER_TO_CSV = False   # 107: --filter_to_csv
 ACOV = {}   # 107: (run, set) -> [groups, groups missing in the analog cache, candidate rows, candidate rows missing]
 EKEYS = set()   # 102: official keys of the extra E-window layers (PubChemLite / BIO, diag/e_window_keys_v2.parquet)
 ECOUNT = {}     # 102: (run, set, view) -> [groups, groups with the truth in the view list, groups with a non-empty E subset, groups with the truth in the E subset]
+
+
+def mist_of(run, s, mid, smiles):   # 133: strict lookup; the formula is the 128 neutral formula of the representative SMILES
+    from wf_common import neutral_formula
+    d_ = MISTD.get((os.path.basename(run), s, str(mid)))
+    if d_ is None: raise SystemExit(f"133: no MIST rows for {os.path.basename(run)} {s} {mid}")
+    v_ = [d_.get(str(sm)) for sm in smiles]
+    if any(x is None for x in v_): raise SystemExit(f"133: {sum(x is None for x in v_)} candidates of {os.path.basename(run)} {s} {mid} without a MIST row")
+    c_ = MISTCOV.setdefault((os.path.basename(run), s), [0, 0]); c_[0] += 1; c_[1] += len(v_)
+    return dict(cos=[x[0] for x in v_], nq=[x[1] for x in v_], status=[x[2] for x in v_], fint=[x[3] for x in v_], npk=[x[4] for x in v_], ppm=[x[5] for x in v_],
+                form=[neutral_formula(str(sm)) for sm in smiles])
 
 
 def load_run(run, eval_csv, group_override=None, feats=FEATS):
@@ -93,7 +106,8 @@ def load_run(run, eval_csv, group_override=None, feats=FEATS):
                                    frag=([FRG.get((s, mid), {}).get(str(sm), 0.0) for sm in g.smiles] if FRG else None),
                                    cmp=(dict(n_cmp_pol=[CMPX.get((os.path.basename(run), s, str(mid), str(k_)), (0, 0, 0, 0))[0 if view == "c1" else 2] for k_ in g.official_key],
                                              n_cmp_add=[CMPX.get((os.path.basename(run), s, str(mid), str(k_)), (0, 0, 0, 0))[1 if view == "c1" else 3] for k_ in g.official_key]) if CMPX else None),
-                                   analog=(dict(ap=[ANA.get((s, view, mid), {}).get(str(sm), (0.0, 0.0))[0] for sm in g.smiles], mean_tan=[ANA.get((s, view, mid), {}).get(str(sm), (0.0, 0.0))[1] for sm in g.smiles]) if ANA else None))
+                                   analog=(dict(ap=[ANA.get((s, view, mid), {}).get(str(sm), (0.0, 0.0))[0] for sm in g.smiles], mean_tan=[ANA.get((s, view, mid), {}).get(str(sm), (0.0, 0.0))[1] for sm in g.smiles]) if ANA else None),
+                                   mist=(mist_of(run, s, mid, g.smiles) if MISTD else None))
                 if ANA:   # 107 (Codex 107 (3)): analog cache coverage; a missing entry is filled with 0.0 by the lookup above
                     ak_ = ANA.get((s, view, mid)); c_ = ACOV.setdefault((os.path.basename(run), s), [0, 0, 0, 0]); c_[0] += 1; c_[1] += int(ak_ is None)
                     c_[2] += len(g); c_[3] += int(len(g) if ak_ is None else sum(1 for sm_ in g.smiles if str(sm_) not in ak_))
@@ -172,6 +186,8 @@ def main():
     ap.add_argument("--frag_parquet", default="", help="frag_probe.py features of the training tables (v2_noice_ana_frag)")
     ap.add_argument("--analog_parquet", default="", help="analog_probe.py features of the training tables (needed by the v2_noice_ana feature set)")
     ap.add_argument("--exposure_ledger", default="", help="ledger_<checkpoint>.parquet (key, fp_pos, negpool) of the FPNet that built the tables; needed by the v2_noice_exp feature set")
+    ap.add_argument("--mist_dir", default="", help="133: directory of mist_<tag>_<set>.parquet (experiments/mist/mist_score_v4.py); needed by the v2_noice_ana_mist feature set")
+    ap.add_argument("--mist_tags", nargs="*", default=[], help="133: RUN_BASENAME=TAG for every run (strict: every view row needs its MIST row)")
     ap.add_argument("--fit_frac", type=float, default=1.0, help="127 learning-curve diagnostic: keep this seeded fraction of the FIT molecules (both views together; default 1.0 = all, unchanged)")
     ap.add_argument("--fit_seed", type=int, default=0, help="127: seed of the --fit_frac subsample")
     ap.add_argument("--monotone_lib", action="store_true", help="monotone constraints incl. the library similarities (reference evidence may only raise a candidate)")
@@ -195,6 +211,19 @@ def main():
         A_ = pd.read_parquet(a.analog_parquet); A_["molecule"] = A_["molecule"].astype(str)
         for k_, h_ in A_.groupby(["set", "view", "molecule"]): ANA[k_] = dict(zip(h_.smiles.astype(str), zip(h_.ap.astype(float), h_.mean_tan.astype(float))))
         print(f"analog features {a.analog_parquet}: {len(ANA):,} (set, view, molecule) groups", flush=True)
+    if a.mist_dir:   # 133
+        import glob as _g
+        tags_ = dict(x.split('=', 1) for x in a.mist_tags); runs_ = [os.path.basename(r.split(':')[0]) for r in a.runs]
+        if set(runs_) - set(tags_): raise SystemExit(f"133: runs without a MIST tag: {sorted(set(runs_) - set(tags_))}")
+        for rb_ in runs_:
+            fs_ = sorted(_g.glob(os.path.join(a.mist_dir, f"mist_{tags_[rb_]}_*.parquet")))
+            if not fs_: raise SystemExit(f"133: no MIST tables for {rb_} (tag {tags_[rb_]})")
+            for f_ in fs_:
+                M_ = pd.read_parquet(f_); M_["molecule"] = M_.molecule.astype(str)
+                if M_.duplicated(["set", "molecule", "smiles"]).any(): raise SystemExit(f"133: duplicate MIST rows in {f_}")
+                for (s_, m_), h_ in M_.groupby(["set", "molecule"]):
+                    MISTD[(rb_, str(s_), m_)] = dict(zip(h_.smiles.astype(str), zip(h_.mist_cos.astype(float), h_.n_q.astype(float), h_.status.astype(str), h_.mist_fint.astype(float), h_.mist_npk.astype(float), h_.mist_ppm.astype(float))))
+        print(f"133 MIST tables {a.mist_dir}: {len(MISTD):,} (run, set, molecule) groups, tags {tags_}", flush=True)
     if a.exposure_ledger:
         L_ = pd.read_parquet(a.exposure_ledger); EXPO.update(zip(L_.key.astype(str), zip(L_.fp_pos.astype(float), L_.negpool.astype(float))))
         print(f"exposure ledger {a.exposure_ledger}: {len(EXPO):,} keys, fp_pos {int(L_.fp_pos.sum()):,}, negpool {int(L_.negpool.sum()):,}", flush=True)
@@ -202,6 +231,7 @@ def main():
     MONO_USED = MONO_LIB if a.monotone_lib else MONO
     print("features:", len(FE), "| dropped:", a.drop, "| c1_repeat:", a.c1_repeat, "| c2_nolib:", a.c2_nolib, "| monotone:", a.monotone, "lib" if a.monotone_lib else "")
     data = pd.concat([load_run(*r.split(":"), feats=FE) for r in a.runs], ignore_index=True)   # RUN:eval_csv[:group_override]
+    for k_, c_ in sorted(MISTCOV.items()): print(f"MIST-COVER {k_[0]} {k_[1]}: groups {c_[0]}, candidate rows {c_[1]} (all matched)", flush=True)
     for k_, c_ in sorted(ACOV.items()):
         print(f"ANALOG-COVER {k_[0]} {k_[1]}: groups missing {c_[1]}/{c_[0]}, candidate rows missing {c_[3]}/{c_[2]}", flush=True)
         if k_[0] in set(a.analog_strict) and (c_[1] or c_[3]): raise SystemExit(f"107: analog cache incomplete for strict run {k_[0]} {k_[1]}")
