@@ -9,6 +9,7 @@
 (3) Output sanity of F / H and P: unique ids = the sample ids, no empty SMILES, at most 25 candidates; lists differ only for molecules that went
     through E2 with a non-empty E2 list.
 Descriptive: lists / rank-1 changed on the smoke molecules, E2 failures.
+v2 (Codex 146): E2 failures must be 0 (manifest and e2_stats), the E2 index sha / unmapped 0 / key count, the model features and trees must equal the expected values.
 Usage: python -X utf8 kernels/check_e2k_commit.py kernels/b1-e2f/output_v1 F experiments/e2/model_v1/e2_lgb.txt"""
 import hashlib, io, json, os, sys
 import pandas as pd
@@ -18,6 +19,9 @@ _shat = lambda p: hashlib.sha256(open(p, encoding="utf-8").read().encode()).hexd
 PIPE_SHA, ENG_SHA, COM_SHA = _shat("experiments/b1_e2k/b1_pipeline.py"), _shat("experiments/b1_e2k/e2_engine.py"), _shat("experiments/b1_e2k/e2_common.py")
 EM_SHA = _sha(MODEL); HEDGE = 1 if VAR == "H" else 0
 EXTRA = ["--e2_model", "e2_lgb.txt", "--e2_model_sha", EM_SHA, "--e2_hedge", str(HEDGE)]
+import sys as _sys; _sys.path.insert(0, "experiments/e2"); from e2_common import FEATS as _FEATS   # v2 (Codex 146): expected E2 values
+_IDX = os.path.join(os.path.dirname(MODEL), "e2_ik14_to_scorer.parquet"); IDX_SHA = _sha(_IDX)
+IDX_KEYS = int(pd.read_parquet(_IDX, columns=["scorer_ik14"]).scorer_ik14.nunique())
 ok = True
 
 
@@ -44,10 +48,14 @@ if mm["embedded_sha256"].get("e2_engine.py") != ENG_SHA or mm["embedded_sha256"]
 if el.get("model_sha256") != EM_SHA or el.get("expected_sha_given") is not True: fail(f"E2 model {el.get('model_sha256')} given {el.get('expected_sha_given')}")
 if el.get("K") != 10.0 or el.get("alpha") != 0.5 or el.get("hedge") != HEDGE: fail(f"K / alpha / hedge {el.get('K')} / {el.get('alpha')} / {el.get('hedge')}")
 if not all(str(el.get(k, "")).startswith("/kaggle/input/") for k in ("model", "bio", "pcl", "structs")): fail(f"E2 inputs not resolved under /kaggle/input: {[el.get(k) for k in ('model', 'bio', 'pcl', 'structs')]}")
+if el.get("e2_failed") != 0: fail(f"E2 failures {el.get('e2_failed')} (must be 0)")
+if el.get("index_sha256") != IDX_SHA or el.get("index_unmapped_rows") != 0 or el.get("index_keys") != IDX_KEYS: fail(f"E2 index {el.get('index_sha256')} unmapped {el.get('index_unmapped_rows')} keys {el.get('index_keys')} (want {IDX_SHA[:16]} / 0 / {IDX_KEYS})")
+if el.get("feats") != list(_FEATS) or el.get("trees") != 800: fail(f"E2 model features / trees {el.get('trees')}")
 if man["params"].get("LAM") != 0.5 or man["params"].get("lam_fixed") is not None: fail("LAM / lam_fixed")
 if man.get("fusion", {}).get("learned_failed"): fail("learned_failed present")
 es = pd.read_csv(os.path.join(out, "e2_stats.csv"), dtype={"molecule": str})
 if el.get("molecules") != len(es): fail(f"E2 molecules {el.get('molecules')} vs e2_stats rows {len(es)}")
+if int(es.failed.sum()) != el.get("e2_failed"): fail("e2_stats failed column != manifest e2_failed")
 args_mine = mm["pipeline_args"]
 proc_mine = set(pd.read_csv(os.path.join(out, "b1_stage_stats.csv")).molecule.astype(str))
 for r in REF:
