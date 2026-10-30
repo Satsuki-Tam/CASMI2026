@@ -29,3 +29,6 @@ kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/
 
 ## 01:17 Codex 138 → B は「既知の別表記の集約の差を直した再検査で PASS」(138_decision.md)
 - A・B・C とも PASS。提出の命令と読みは、上の登録どおりで変えない。Kaggle API の認証が戻ったら、09:00 JST 以降に一回だけ提出する。
+
+## 09:00:16 JST 提出(ref 57785453)
+- 登録どおりの命令で一回だけ提出した(kernel hayatetaf/casmi26-b1-elite の v2、submission.csv)。今日の残りの枠は 4。Public の読みは、上の登録(≥ 0.402 / 0.379〜0.402 / ≤ 0.379)のとおり。
