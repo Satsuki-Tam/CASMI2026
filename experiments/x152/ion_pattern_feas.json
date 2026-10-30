@@ -1,0 +1,30 @@
+{
+ "panel_mols_also_in_enveda180": 0,
+ "E_oof_auc_has_neg": 0.9425060631572685,
+ "panel_auc_has_neg": 0.8157127715951246,
+ "E_oof_auc_has_pos": 0.8788086892427383,
+ "panel_auc_has_pos": 0.560344827586207,
+ "E_same_formula_pair_acc_has_neg": 0.9165738417876619,
+ "E_same_formula_pairs": 103241,
+ "panel_truth_vs_decoy_mean": 0.6251021073904887,
+ "panel_mols_with_decoys": 236,
+ "panel_truth_vs_decoy_by_pattern": {
+  "mean": {
+   "both": 0.6695,
+   "neg_only": 0.4888,
+   "pos_only": 0.5912
+  },
+  "size": {
+   "both": 123,
+   "neg_only": 16,
+   "pos_only": 97
+  }
+ },
+ "panel_truth_vs_decoy_quantiles": {
+  "0.1": 0.146,
+  "0.25": 0.396,
+  "0.5": 0.684,
+  "0.75": 0.887,
+  "0.9": 1.0
+ }
+}
