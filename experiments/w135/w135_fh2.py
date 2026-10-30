@@ -106,7 +106,9 @@ if __name__ == "__main__":
         if os.path.exists(out): stop(f"{out} exists (no overwrite)")
         U2, Q2 = build2(w)
         U2.to_parquet(out, index=False); Q2.to_parquet(os.path.join(OUTD, f"Q2_{w}.parquet"), index=False)
+        Wd = os.path.join(ROOT, "experiments/w135/worlds", w)
         meta = dict(world=w, script_sha256=sha(os.path.abspath(__file__)), fh_sha256=sha(os.path.join(HERE, "w135_fh.py")), e2_engine_sha256=sha(os.path.join(ROOT, "experiments/e2/e2_engine.py")),
+                    parent_receipt_sha256=sha(os.path.join(V2D, w, "receipt.json")), world_assets={f_: sha(os.path.join(Wd, f_)) for f_ in ("manifest.txt", "P.parquet", "gen_full_v2.parquet", "prod_gl.json")},
                     U2_sha256=sha(out), Q2_sha256=sha(os.path.join(OUTD, f"Q2_{w}.parquet")), n_rows=int(len(U2)), n_queries=int(len(Q2)),
                     n_P=int(U2.in_P.sum()), n_E_only=int(((U2.rep == "E")).sum()), n_B_only=int((U2.rep == "B").sum()), n_EB=int(((U2.in_B == 1) & (U2.in_Ewin == 1)).sum()))
         json.dump(meta, open(os.path.join(OUTD, f"U2_{w}.meta.json"), "w"), indent=1)
