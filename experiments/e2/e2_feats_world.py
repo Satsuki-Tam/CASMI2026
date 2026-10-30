@@ -89,12 +89,12 @@ def main():
             m = Chem.MolFromSmiles(smi) if smi else None; _FP[smi] = MG.GetFingerprint(m) if m is not None else None
         return _FP[smi]
     ev = pd.read_csv(P_(a.eval_csv)); ev["molecule"] = ev.molecule.astype(str)
-    man = dict(sets={}, masks=sha(P_(a.masks)), script=sha(os.path.abspath(__file__)))
+    man = dict(sets={}, masks=sha(P_(a.masks)), eval_csv=sha(P_(a.eval_csv)), script=sha(os.path.abspath(__file__)), version="2.1")
     with Pool(a.workers) as wp:
         for s in a.sets:
             out = os.path.join(P_(a.ewin), f"e2f_{s}.parquet")
             if os.path.exists(out): sys.exit(f"STOP: {out} exists (no overwrite)")
-            E = pd.read_parquet(os.path.join(P_(a.ewin), f"ewin_{s}.parquet")); E["molecule"] = E.molecule.astype(str); out_rows = []
+            ein = os.path.join(P_(a.ewin), f"ewin_{s}.parquet"); E = pd.read_parquet(ein); E["molecule"] = E.molecule.astype(str); out_rows = []; an_dump = {}
             mols = ev[ev.set == s] if "set" in ev.columns else ev; Q = {}; tasks = []
             for r in mols.itertuples(index=False):
                 mid, lib = str(r.molecule), r.lib
@@ -108,7 +108,7 @@ def main():
                 Q[mid] = (q, qspec, g); tasks.append((mid, g.smiles.astype(str).tolist(), [(s_["mz"].tolist(), s_["it"].tolist(), s_["prec"], s_["mode"]) for s_ in qspec]))
             FR = dict(wp.imap_unordered(_frag, tasks, chunksize=2)); print(f"  {s}: MetFrag-lite for {len(FR)} molecules ({time.time()-t0:.0f}s)", flush=True)
             for mid, (q, qspec, g) in Q.items():
-                lst = analogs_world(qspec, q)
+                lst = analogs_world(qspec, q); an_dump[mid] = [[str(k_), float(v_)] for k_, v_ in lst]   # v2.1: checked against the W135 world P analogs
                 afp = [(fp_of(KEY_SMI.get(k)), sv) for k, sv in lst]; afp = [(f_, sv) for f_, sv in afp if f_ is not None]
                 feats = BA.features([fp_of(sm) for sm in g.smiles.astype(str)], [f_ for f_, _ in afp], [sv for _, sv in afp])
                 for i, (ok, sm) in enumerate(zip(g.official_key.astype(str), g.smiles.astype(str))):
@@ -116,7 +116,10 @@ def main():
                     for v in ("c1", "c2"):
                         for f in ("ap", "a1", "best_tan", "top_tan", "mean_tan"): rec[f"ana_{f}_{v}"] = float(feats[f][i])
                     out_rows.append(rec)
-            pd.DataFrame(out_rows).to_parquet(out, index=False); man["sets"][s] = len(out_rows)
+            cols = ["set", "molecule", "official_key", "frag"] + [f"ana_{f}_{v}" for v in ("c1", "c2") for f in ("ap", "a1", "best_tan", "top_tan", "mean_tan")]
+            tmp_ = out + ".tmp"; pd.DataFrame(out_rows, columns=cols).to_parquet(tmp_, index=False); os.replace(tmp_, out)   # typed (an empty set keeps the schema)
+            ap_ = os.path.join(P_(a.ewin), f"e2f_analogs_{s}.json"); json.dump(an_dump, open(ap_, "w"))
+            man["sets"][s] = dict(rows=len(out_rows), input_ewin=sha(ein), output=sha(out), analogs=sha(ap_))
             print(f"saved {s}: {len(out_rows)} rows ({time.time()-t0:.0f}s)", flush=True)
     man["seconds"] = round(time.time() - t0); json.dump(man, open(os.path.join(P_(a.ewin), "e2f_world_manifest.json"), "w"), indent=1); print("done")
 

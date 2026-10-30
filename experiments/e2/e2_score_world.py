@@ -22,11 +22,18 @@ def main():
     if not msha.startswith(MODEL_SHA_PREFIX): sys.exit(f"STOP: E2 model sha {msha[:16]} is not the frozen model_v1")
     bst = lgb.Booster(model_file=mp)
     if bst.feature_name() != C.FEATS: sys.exit("STOP: model features differ from e2_common.FEATS")
-    man = dict(model_sha256=msha, script=sha(os.path.abspath(__file__)), common=sha(os.path.join(HERE, "e2_common.py")), sets={})
+    man = dict(model_sha256=msha, model_rounds=bst.num_trees(), script=sha(os.path.abspath(__file__)), common=sha(os.path.join(HERE, "e2_common.py")), version="2.1", sets={})
     for s in a.sets:
         out = os.path.join(P_(a.ewin), f"e2s_{s}.parquet")
         if os.path.exists(out): sys.exit(f"STOP: {out} exists (no overwrite)")
-        E = pd.read_parquet(os.path.join(P_(a.ewin), f"ewin_{s}.parquet")); F = pd.read_parquet(os.path.join(P_(a.ewin), f"e2f_{s}.parquet"))
+        pe, pf = os.path.join(P_(a.ewin), f"ewin_{s}.parquet"), os.path.join(P_(a.ewin), f"e2f_{s}.parquet")
+        E = pd.read_parquet(pe); F = pd.read_parquet(pf)
+        fm = json.load(open(os.path.join(P_(a.ewin), "e2f_world_manifest.json")))
+        if fm["sets"][s]["input_ewin"] != sha(pe) or fm["sets"][s]["output"] != sha(pf): sys.exit(f"STOP: {s}: e2f was not built from this ewin table (v2.1 chain)")
+        if set(zip(E.molecule.astype(str), E.official_key)) != set(zip(F.molecule.astype(str), F.official_key)): sys.exit(f"STOP: {s}: E / F key sets differ")
+        cols = ["set", "molecule", "official_key", "smiles", "e2_score", "e2_rank", "n_e", "fp", "in_train", "in_coconut", "in_pcl", "in_bio", "lib_sim", "ana_ap", "frag", "is_truth"]
+        if not len(E):   # v2.1: a legal all-empty set -> typed empty table, no predict
+            pd.DataFrame(columns=cols).to_parquet(out, index=False); man["sets"][s] = dict(rows=0, queries=0, sha=sha(out), input_ewin=sha(pe), input_e2f=sha(pf)); continue
         for c in ("in_train", "lib_sim", "lib_same", "lib_nref"):
             if not (E[f"{c}_c1"] == E[f"{c}_c2"]).all(): sys.exit(f"STOP: {c} c1 / c2 columns differ (not a world table)")
         X = C.view_frame(E, F, "c1")
@@ -39,7 +46,8 @@ def main():
                                    e2_score=R.score.values, e2_rank=R["rank"].values, n_e=np.exp(R.log_n.values).round().astype(int), fp=R.fp.values,
                                    in_train=R.in_train.values, in_coconut=R.in_coconut.values, in_pcl=R.in_pcl.values, in_bio=R.in_bio.values,
                                    lib_sim=R.lib_sim.values, ana_ap=R.ana_ap.values, frag=R.frag.values, is_truth=R.is_truth.values))
-        out_df.to_parquet(out, index=False); man["sets"][s] = dict(rows=int(len(out_df)), queries=int(out_df.molecule.nunique()), sha=sha(out))
+        tmp_ = out + ".tmp"; out_df[cols].to_parquet(tmp_, index=False); os.replace(tmp_, out)
+        man["sets"][s] = dict(rows=int(len(out_df)), queries=int(out_df.molecule.nunique()), sha=sha(out), input_ewin=sha(pe), input_e2f=sha(pf))
         print(f"{s}: {len(out_df)} rows, {out_df.molecule.nunique()} queries -> {out} (no metric)", flush=True)
     json.dump(man, open(os.path.join(P_(a.ewin), "e2s_manifest.json"), "w"), indent=1)
 

@@ -33,10 +33,12 @@ BIOP = f"{K}/casmi26-attributed-v4g-reproduction-assets/casmi-chebi-lmsd-structu
 def main():
     ap = argparse.ArgumentParser()
     for k in ("eval_csv", "fold_safe", "out", "masks"): ap.add_argument(f"--{k}", required=True)
-    ap.add_argument("--only", default=""); ap.add_argument("--sets", nargs="+", required=True); ap.add_argument("--workers", type=int, default=12); ap.add_argument("--max_spectra", type=int, default=8); ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--only", default=""); ap.add_argument("--gen_dump", required=True); ap.add_argument("--sets", nargs="+", required=True); ap.add_argument("--workers", type=int, default=12); ap.add_argument("--max_spectra", type=int, default=8); ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--store", default="data/processed/spectra_store"); ap.add_argument("--tier", default="data/external/pubchem_tier"); ap.add_argument("--pool", default="data/external/v2_pool/pool_meta.parquet")
     ap.add_argument("--coco", default="data/external/coconut"); ap.add_argument("--v3", default="data/external/v3_models/code")
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True); MAX_REF, DUP_SIM = BF.MAX_REF, BF.DUP_SIM
+    for s_ in a.sets:
+        if any(os.path.exists(f"{a.out}/{n_}") for n_ in (f"ewin_{s_}.parquet", f"ewin_molecules_{s_}.csv", f"ewin_refs_{s_}.json", f"ewin_zlog_{s_}.npz")): sys.exit(f"STOP: outputs of {s_} exist in {a.out} (no overwrite)")
     P_ = lambda p: p if os.path.isabs(p) else os.path.join(ROOT, p)
     import torch
     sys.path.insert(0, P_(a.v3))
@@ -79,11 +81,12 @@ def main():
         except Exception: pass
         return keys
     WM = json.load(open(P_(a.masks)))
+    with np.load(P_(a.gen_dump), allow_pickle=False) as G_: GEN_Z = {str(m_): np.asarray(z_, np.float32) for m_, z_ in zip(G_["mol"], G_["zlog"])}
     STRUCT_DROP = set(WM["struct_drop"]); TRAIN_HIDE = set(WM["train_hide"]); C3_OKEYS = set(WM["c3_okeys"]); C1_EXCL = {k_: set(int(x) for x in v_) for k_, v_ in WM["c1_excl"].items()}
     if not set(a.sets) <= set(WM["sets"]): sys.exit(f"STOP: sets {a.sets} not in the world masks {WM['sets']}")
     print(f"world masks: struct-drop {len(STRUCT_DROP):,}, train-hide {len(TRAIN_HIDE):,}, C3 official keys {len(C3_OKEYS)}, C1 keys {len(C1_EXCL)}", flush=True)
     man = dict(eval_csv=sha(P_(a.eval_csv)), fpnet=sha(f"{P_(a.fold_safe)}/fpnet_fold0.pt"), pool=sha(P_(a.pool)), pcl=sha(PCLP), bio=sha(BIOP), script=sha(os.path.abspath(__file__)),
-               masks=sha(P_(a.masks)), sets={})
+               masks=sha(P_(a.masks)), gen_dump=sha(P_(a.gen_dump)), version="2.1", sets={})
     with Pool(a.workers, initializer=BF._init, initargs=(P_(a.v3), P_(a.fold_safe))) as wp, torch.no_grad():
         for set_name in a.sets:
             ms = mols[mols.set == set_name]
@@ -137,14 +140,22 @@ def main():
                     zl = z * len(grp) if zl is None else zl + z * len(grp); wsum += len(grp)
                 zlog = (zl / wsum).astype(np.float32)
                 zdump["mol"].append(str(mid)); zdump["zlog"].append(zlog)   # 156: compared with the B1 world's gen dump (same query semantics)
+                zref = GEN_Z.get(str(mid)); zdiff = float(np.abs(zref - zlog).max()) if zref is not None and zref.shape == zlog.shape else float("inf")
                 chunks = [smiles[i:i + 400] for i in range(0, len(smiles), 400)]
                 res = wp.map(BF._feat, [(c, zlog) for c in chunks]) if chunks else []
                 raw_keys = [k for rr in res for k in rr[0]]; fp = np.concatenate([rr[1] for rr in res]) if res else np.zeros(0, np.float32)
                 okeys = [k for rr in wp.map(BF._okey, [smiles[i:i + 200] for i in range(0, len(smiles), 200)]) for k in rr] if smiles else []
-                rep = {}
+                rep = {}; n_src_c3 = n_src_hidden = 0
                 for i, (rk, ok) in enumerate(zip(raw_keys, okeys)):
                     if rk is None or ok is None: continue
-                    d = src[smiles[i]]; f_ = float(fp[i]) if np.isfinite(fp[i]) else -np.inf
+                    d = dict(src[smiles[i]]); pk_ = d["pkey"]; f_ = float(fp[i]) if np.isfinite(fp[i]) else -np.inf
+                    # v2.1 (Codex 158): qualify each SOURCE ROW before the merge -- C3 representations leave every source; a hidden (C2 / C3)
+                    # identity's representation loses its train membership and leaves when no public source remains; the representative,
+                    # f.z and mass are then chosen among the legal representations only
+                    if ok in C3_OKEYS or ok in STRUCT_DROP or rk in STRUCT_DROP or (pk_ is not None and pk_ in STRUCT_DROP): n_src_c3 += 1; continue
+                    if ok in TRAIN_HIDE or rk in TRAIN_HIDE or (pk_ is not None and pk_ in TRAIN_HIDE):
+                        d["train"] = False
+                        if not (d["coco"] or d["pcl"] or d["bio"]): n_src_hidden += 1; continue
                     if ok not in rep: rep[ok] = dict(i=i, rks={rk}, fp=f_, **{k_: d[k_] for k_ in ("train", "coco", "pcl", "bio", "pid", "pkey", "mass")})
                     else:
                         p = rep[ok]; p["rks"].add(rk)
@@ -155,15 +166,18 @@ def main():
                 rep = {k_: v_ for k_, v_ in rep.items() if k_ not in C3_OKEYS and k_ not in STRUCT_DROP and not (v_["rks"] & STRUCT_DROP)
                        and (v_["pkey"] is None or v_["pkey"] not in STRUCT_DROP)}
                 n_drop = n_raw - len(rep)
+                if n_drop: sys.exit(f"STOP: {mid}: {n_drop} merged structures still carried C3 keys after the source-row qualification")
                 # WORLD (Codex 156): a structure whose only source was a hidden train membership (C2 / C3 identities) leaves the window --
                 # keep a structure only if (train AND not hidden) OR COCONUT OR PCL OR BIO after the masks
                 hid0 = lambda k_, v_: bool(v_["rks"] & TRAIN_HIDE) or v_["pkey"] in TRAIN_HIDE or k_ in TRAIN_HIDE
                 n_before = len(rep)
                 rep = {k_: v_ for k_, v_ in rep.items() if (v_["train"] and not hid0(k_, v_)) or v_["coco"] or v_["pcl"] or v_["bio"]}
                 n_drop_trainonly = n_before - len(rep)
+                if n_drop_trainonly: sys.exit(f"STOP: {mid}: {n_drop_trainonly} merged structures were hidden train-only after the source-row qualification")
+                n_drop, n_drop_trainonly = n_src_c3, n_src_hidden   # ledger: source rows removed by the qualification
                 keys = list(rep); n_e = len(keys)
                 if n_e == 0:
-                    rows_out.append(dict(set=set_name, molecule=mid, n_query=len(qspec), n_e=0, truth_in_ewin=False, seconds=time.time() - tm0)); continue
+                    rows_out.append(dict(set=set_name, molecule=mid, wclass=WM["wclass"].get(mid, ""), n_drop_world=n_src_c3, n_drop_trainonly=n_src_hidden, zlog_maxdiff=zdiff, n_query=len(qspec), ce_known=float(np.mean([s["ce"] is not None for s in qspec])), n_e=0, truth_in_ewin=False, lib_max_c1=0.0, lib_max_c2=0.0, seconds=time.time() - tm0)); continue
                 aliases = alias_keys(key2smiles.get(truth_key, ""), truth_raw)
                 tset = {i for i, k in enumerate(keys) if k == truth_key or (rep[k]["rks"] & aliases) or rep[k]["pkey"] == truth_key}
                 fpu = np.array([rep[k]["fp"] for k in keys]); fpu[~np.isfinite(fpu)] = np.nan
@@ -184,9 +198,10 @@ def main():
                         if any(abs(s["prec"] - rprec) < 0.005 and s["mode"] == mode_of_row[x] and entropy_similarity(s["clean"][0], s["clean"][1], rmz, rit) >= DUP_SIM for s in qspec): continue
                         kept.append(x)
                     refs1 = list(kept)
-                    if pk in BATCH_KEYS and refs1: refs_log.append(dict(molecule=mid, official_key=k, pkey=pk, rows=[int(x) for x in refs1]))
                     if len(refs1) > MAX_REF:
                         pri = np.array([0 if add_of_row[x] in M_by_add else 1 for x in refs1]); refs1 = [refs1[i] for i in np.argsort(pri, kind="stable")[:MAX_REF]]
+                    if refs1 and (pk in BATCH_KEYS or k in BATCH_KEYS or (rep[k]["rks"] & BATCH_KEYS)):   # v2.1: the rows actually used (after MAX_REF)
+                        refs_log.append(dict(molecule=mid, official_key=k, pkey=pk, rows=[int(x) for x in refs1]))
                     b1 = s1 = 0.0; n1 = 0
                     for x in refs1:
                         (rmz, rit), rprec = ref_cache[x]; n1 += 1
@@ -203,14 +218,22 @@ def main():
                                          fp_rank_e=int(frank[ci]), n_e=n_e, ppm_err=float(ppm_err[ci]), in_train_c1=bool(train_orig[ci]), in_train_c2=bool(train_c2[ci]), in_coconut=bool(d["coco"]),
                                          in_pcl=bool(d["pcl"]), in_bio=bool(d["bio"]), lib_sim_c1=float(L["c1"][ci]), lib_sim_c2=float(L["c2"][ci]), lib_same_c1=float(L["same_c1"][ci]),
                                          lib_same_c2=float(L["same_c2"][ci]), lib_nref_c1=int(nref["c1"][ci]), lib_nref_c2=int(nref["c2"][ci])))
-                rows_out.append(dict(set=set_name, molecule=mid, wclass=WM["wclass"].get(mid, ""), n_drop_world=n_drop, n_drop_trainonly=n_drop_trainonly, n_query=len(qspec), ce_known=float(np.mean([s["ce"] is not None for s in qspec])), n_e=n_e, truth_in_ewin=truth_key in rep,
+                rows_out.append(dict(set=set_name, molecule=mid, wclass=WM["wclass"].get(mid, ""), n_drop_world=n_drop, n_drop_trainonly=n_drop_trainonly, zlog_maxdiff=zdiff, n_query=len(qspec), ce_known=float(np.mean([s["ce"] is not None for s in qspec])), n_e=n_e, truth_in_ewin=truth_key in rep,
                                      lib_max_c1=float(L["c1"].max()), lib_max_c2=float(L["c2"].max()), seconds=time.time() - tm0))
                 if (n_i + 1) % 25 == 0 or n_i == len(ms) - 1:
                     d_ = pd.DataFrame(rows_out); print(f"  {set_name} {n_i+1}/{len(ms)} | E window median {d_.n_e.median():.0f} | {d_.seconds.mean():.1f}s/mol ({time.time()-t0:.0f}s)", flush=True)
-            json.dump(refs_log, open(f"{a.out}/ewin_refs_{set_name}.json", "w"))
-            np.savez(f"{a.out}/ewin_zlog_{set_name}.npz", mol=np.array(zdump["mol"]), zlog=np.stack(zdump["zlog"]) if zdump["zlog"] else np.zeros((0, 1), np.float32))
-            pd.DataFrame(rows_out).to_csv(f"{a.out}/ewin_molecules_{set_name}.csv", index=False); pd.DataFrame(cand_out).to_parquet(f"{a.out}/ewin_{set_name}.parquet", index=False)
-            man["sets"][set_name] = dict(molecules=len(rows_out), rows=len(cand_out)); print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} rows ({time.time()-t0:.0f}s)", flush=True)
+            # v2.1 (Codex 158): typed tables (an all-empty set keeps the schema), temporary names renamed at the end, hashes in the manifest
+            CAND_COLS = ["set", "molecule", "official_key", "smiles", "is_truth", "fp", "fp_rank_e", "n_e", "ppm_err", "in_train_c1", "in_train_c2", "in_coconut", "in_pcl", "in_bio",
+                         "lib_sim_c1", "lib_sim_c2", "lib_same_c1", "lib_same_c2", "lib_nref_c1", "lib_nref_c2"]
+            outs = {f"ewin_{set_name}.parquet": lambda f_: pd.DataFrame(cand_out, columns=CAND_COLS).to_parquet(f_, index=False),
+                    f"ewin_molecules_{set_name}.csv": lambda f_: pd.DataFrame(rows_out).to_csv(f_, index=False),
+                    f"ewin_refs_{set_name}.json": lambda f_: json.dump(refs_log, open(f_, "w")),
+                    f"ewin_zlog_{set_name}.npz": lambda f_: np.savez(open(f_, "wb"), mol=np.array(zdump["mol"]), zlog=np.stack(zdump["zlog"]) if zdump["zlog"] else np.zeros((0, 1), np.float32))}
+            hashes = {}
+            for name, writer in outs.items():
+                tmp_ = f"{a.out}/.tmp_{name}"; writer(tmp_); hashes[name] = sha(tmp_)
+            for name in outs: os.replace(f"{a.out}/.tmp_{name}", f"{a.out}/{name}")
+            man["sets"][set_name] = dict(molecules=len(rows_out), rows=len(cand_out), outputs=hashes); print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} rows ({time.time()-t0:.0f}s)", flush=True)
     man["seconds"] = round(time.time() - t0); json.dump(man, open(f"{a.out}/ewin_manifest.json", "w"), indent=1); print(f"done {time.time()-t0:.0f}s")
 
 
