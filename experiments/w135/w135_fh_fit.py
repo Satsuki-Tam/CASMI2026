@@ -3,10 +3,11 @@ Inputs: experiments/w135/fh/U_<world>.parquet + Q_<world>.parquet (w135_fh.py), 
 Arms (same worlds, rules and capacity): db = U restricted to P's top-25 rows (a learned re-ranking of P's own list: the connection control);
 gen = P's top-25 + the generated products B (the S3 candidate). P = P's own order (rP), the frozen control.
 Features (observable only; per query, computed inside the arm's U):
-  candidate : is_gen, in_db, rP/25 (26/25 for products), sP_z (z of P's score among P rows; 0 for products) + sP_miss, fz, gl + gl_miss, frag,
+  candidate : is_gen, in_wwin (P rows 1; products: the generator's location is in the world window), p_empty (no P row), rP/25 (26/25 for products), sP_z (z of P's score among P rows; 0 for products) + sP_miss, fz, gl + gl_miss, frag,
               fz / gl / frag rank fractions in U (gl among non-missing; missing -> 1), differences to P's rank-1 (fz, gl (+ miss), frag),
               apsc, log_npar, src_peer, src_train, n_steps, off_mass, five edit groups;
-  query     : p_gap12, gl_ok, lib_max, log_ncand, best_analog, n_peer_struct, n_train, log1p(|B|) (0 in db), log1p(|P|).
+  query     : p_gap12, gl_ok, lib_max, log_ncand (P's wide view list size), best_analog, n_peer_struct, n_train, log1p(|B|), log1p(|P|) -- the same
+              query summary in both arms (Codex 153).
 Model: LightGBM binary, fixed PARAMS / ROUNDS; row weight = 1/|U(q)| x 1/(number of training worlds containing the query's identity).
 Final list: U sorted by the head's score (ties: rP, key), first 25.
 Two-way cross (153): --train design --test confirm, and --train confirm --test design. The truth is used for labels and for the RR after
@@ -19,13 +20,16 @@ import w135_selector as S
 
 FHD = os.path.join(ROOT, "experiments/w135/fh")
 EDITS = ["e_sugar", "e_methyl", "e_redox", "e_acyl", "e_other"]
-FEATS = ["is_gen", "in_db", "rP_frac", "sP_z", "sP_miss", "fz", "gl", "gl_miss", "frag", "fz_rf", "gl_rf", "frag_rf", "d_fz_top1", "d_gl_top1", "d_gl_miss",
+FEATS = ["is_gen", "in_wwin", "p_empty", "rP_frac", "sP_z", "sP_miss", "fz", "gl", "gl_miss", "frag", "fz_rf", "gl_rf", "frag_rf", "d_fz_top1", "d_gl_top1", "d_gl_miss",
          "d_frag_top1", "apsc", "log_npar", "src_peer", "src_train", "n_steps", "off_mass"] + EDITS + \
         ["p_gap12", "gl_ok", "lib_max", "log_ncand", "best_analog", "n_peer_struct", "n_train", "log_nb", "log_np"]
-PARAMS = dict(objective="binary", learning_rate=0.05, num_leaves=15, min_data_in_leaf=100, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=1,
+PARAMS = dict(objective="binary", learning_rate=0.05, num_leaves=15, max_depth=-1, min_data_in_leaf=100, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=1,
               lambda_l2=1.0, verbose=-1, seed=7, num_threads=8, deterministic=True, force_col_wise=True)
 ROUNDS = 300
-SETS = dict(design=S.DESIGN, confirm=S.CONFIRM)
+# Codex 153: fit and the primary comparison on the pi 0 / 0.3 worlds common to both sides (12 each); d-side pi 0.6 and cU1_p30 are applied
+# (descriptive) but never fitted on
+SETS = dict(design=[w for w in S.DESIGN if not w.endswith("_p60")], confirm=[w for w in S.CONFIRM if w != "cU1_p30"])
+EXTRA = dict(design=[w for w in S.DESIGN if w.endswith("_p60")], confirm=["cU1_p30"])
 sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
 def stop(m): sys.exit(f"STOP (w135_fh_fit): {m}")
 
@@ -68,7 +72,7 @@ def featurize(U, Q, arm):
         g["d_gl_top1"] = np.where(both, glv - (tgl if np.isfinite(tgl) else 0.0), 0.0); g["d_gl_miss"] = (~both).astype(int)
         g["d_frag_top1"] = g.frag - tfr
         for k in ("p_gap12", "gl_ok", "lib_max", "log_ncand", "best_analog", "n_peer_struct", "n_train"): g[k] = float(q[k])
-        g["log_nb"] = float(np.log1p(q["n_b"])) if arm == "gen" else 0.0; g["log_np"] = float(np.log1p(q["n_p"]))
+        g["log_nb"] = float(np.log1p(q["n_b"])); g["log_np"] = float(np.log1p(q["n_p"])); g["p_empty"] = int(q["n_p"] == 0)   # same query summary in both arms (Codex 153)
         g["nU"] = n
         out.append(g)
     R = pd.concat(out, ignore_index=True) if out else R.iloc[0:0]
@@ -96,21 +100,30 @@ if __name__ == "__main__":
     OUT = a.out if os.path.isabs(a.out) else os.path.join(ROOT, a.out)
     for suf in ("_queries.parquet", "_meta.json"):
         if os.path.exists(OUT + suf): stop(f"{OUT}{suf} exists (no overwrite)")
-    Utr, Qtr = load(SETS[a.train]); Ute, Qte = load(SETS[a.test])
+    Utr, Qtr = load(SETS[a.train]); Ute, Qte = load(SETS[a.test] + EXTRA[a.test])
     if set(Qtr.molecule) & set(Qte.molecule): stop("train / test identities overlap")
     res = Qte[["world", "batch", "pi", "molecule", "fam", "wclass", "used", "n_b", "n_p", "n_cand", "truth"]].copy()
     # P's own order (control)
     P_lists = {k: g.sort_values("rP").key.tolist()[:25] for k, g in Ute[Ute.src == "P"].groupby(["world", "molecule"], sort=False)}
     res["top25_P"] = [json.dumps(P_lists.get((w, m), [])) for w, m in zip(res.world, res.molecule)]
-    meta = dict(train=a.train, test=a.test, train_worlds=SETS[a.train], test_worlds=SETS[a.test], feats=FEATS, params=PARAMS, rounds=ROUNDS,
+    meta = dict(train=a.train, test=a.test, train_worlds=SETS[a.train], test_worlds=SETS[a.test] + EXTRA[a.test], feats=FEATS, params=PARAMS, rounds=ROUNDS,
                 script_sha256=sha(os.path.abspath(__file__)), fh_builder_sha256=sha(os.path.join(HERE, "w135_fh.py")),
-                inputs={w: json.load(open(os.path.join(FHD, f"U_{w}.meta.json")))["U_sha256"] for w in SETS[a.train] + SETS[a.test]})
+                inputs={w: json.load(open(os.path.join(FHD, f"U_{w}.meta.json")))["U_sha256"] for w in SETS[a.train] + SETS[a.test] + EXTRA[a.test]})
     for arm in ("db", "gen"):
         Rtr = featurize(Utr, Qtr, arm); Rte = featurize(Ute, Qte, arm)
-        y = Rtr.y.values.astype(int)
+        y = Rtr.y.values.astype(int); wtr = weights(Rtr, Qtr)
+        pos = Rtr[Rtr.y == 1]; qk = set(zip(Rtr.world, Rtr.molecule)); fam = Qtr.set_index(["world", "molecule"])
+        wcl = dict(zip(zip(Qtr.world, Qtr.molecule), Qtr.wclass))   # the class is per (world, identity): the same identity changes class across pi
+        meta[f"{arm}_train_desc"] = dict(groups=int(len(Qtr)), groups_with_rows=len(qk), empty_groups=int(len(Qtr) - len(qk)), pos_rows_P=int((pos.src == "P").sum()),
+                                          pos_rows_B=int((pos.src == "B").sum()), pos_identities_P=int(pos[pos.src == "P"].molecule.nunique()),
+                                          pos_identities_B=int(pos[pos.src == "B"].molecule.nunique()),
+                                          pos_families_B=int(len({(fam.loc[(w_, m_), "batch"], fam.loc[(w_, m_), "fam"]) for w_, m_ in zip(pos[pos.src == "B"].world, pos[pos.src == "B"].molecule)})),
+                                          class_weight={c: round(float(wtr[np.array([wcl[(w_, m_)] for w_, m_ in zip(Rtr.world, Rtr.molecule)]) == c].sum()), 3) for c in ("C1", "C2", "C3")})
+        print(f"[{time.time()-t0:5.0f}s] {arm} training set: {meta[arm + '_train_desc']}", flush=True)
         if y.sum() == 0 or y.sum() == len(y): stop(f"{arm}: training rows without both classes")
-        bst = lgb.train(PARAMS, lgb.Dataset(Rtr[FEATS].values.astype(float), y, weight=weights(Rtr, Qtr), feature_name=FEATS), num_boost_round=ROUNDS)
+        bst = lgb.train(PARAMS, lgb.Dataset(Rtr[FEATS].values.astype(float), y, weight=wtr, feature_name=FEATS), num_boost_round=ROUNDS)
         p = bst.predict(Rte[FEATS].values.astype(float))
+        if not np.isfinite(p).all(): stop(f"{arm}: non-finite prediction")
         L = rank_lists(Rte, p)
         res[f"top25_{arm}"] = [json.dumps(L.get((w, m), [])) for w, m in zip(res.world, res.molecule)]
         mp = OUT + f"_{arm}_model.txt"; bst.save_model(mp)

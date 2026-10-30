@@ -7,7 +7,7 @@ import w135_fh_read as RD
 
 E0 = {k: 0 for k in FF.EDITS}
 def row(w, m, key, src, rP, sP, fz, gl, glm, frag, y, **kw):
-    d = dict(world=w, molecule=m, key=key, smiles="C" + key, src=src, is_gen=int(src == "B"), in_db=int(src == "P"), rP=rP, sP=sP, sP_miss=int(src == "B"),
+    d = dict(world=w, molecule=m, key=key, smiles="C" + key, src=src, is_gen=int(src == "B"), in_wwin=int(src == "P"), rP=rP, sP=sP, sP_miss=int(src == "B"),
              fz=fz, gl=gl, gl_miss=glm, frag=frag, apsc=0.0, log_npar=0.0, src_peer=0, src_train=0, n_steps=0, off_mass=0, y=y, **E0)
     d.update(kw); return d
 U = pd.DataFrame([
@@ -22,10 +22,16 @@ for k in ("p_gap12", "gl_ok", "lib_max", "log_ncand", "best_analog", "n_peer_str
 Rg = FF.featurize(U, Q, "gen"); Rd = FF.featurize(U, Q, "db")
 print("gen rows", len(Rg), "db rows", len(Rd), "| db has B rows:", bool((Rd.src == "B").any()), "| db queries:", sorted(set(zip(Rd.world, Rd.molecule))))
 a = Rg[(Rg.world == "w1") & (Rg.molecule == "A")].set_index("key")
-print(a[["rP_frac", "sP_z", "fz_rf", "gl_rf", "frag_rf", "d_fz_top1", "d_gl_top1", "d_gl_miss", "d_frag_top1", "log_nb", "log_np", "nU"]].round(3).to_string())
+print(a[["rP_frac", "sP_z", "fz_rf", "gl_rf", "frag_rf", "d_fz_top1", "d_gl_top1", "d_gl_miss", "d_frag_top1", "log_nb", "log_np", "p_empty", "nU"]].round(3).to_string())
 assert np.isclose(a.loc["a1", "sP_z"], 1.2247, atol=1e-3) and a.loc["b1", "sP_z"] == 0.0 and a.loc["b1", "d_fz_top1"] == 1.0 and a.loc["b2", "d_gl_miss"] == 1
 assert a.loc["b1", "fz_rf"] == 0.0 and np.isclose(a.loc["a1", "fz_rf"], 0.2) and a.loc["a2", "gl_rf"] == 1.0 and np.isclose(a.loc["a1", "gl_rf"], 1 / 3)
 b = Rg[(Rg.world == "w1") & (Rg.molecule == "B")]; assert (b.d_fz_top1 == 0).all() and (b.d_gl_miss == 1).all(), "empty P: differences 0 + miss flag"
+assert (b.p_empty == 1).all() and (a.p_empty == 0).all(), "p_empty flag"
+assert (Rd[(Rd.world == "w1") & (Rd.molecule == "A")].log_nb > 0).all(), "db arm keeps the query summary log_nb (Codex 153)"
+# (1) a product with the maximum score goes to rank 1; (2) empty P + products -> the list comes from B; (3) no B -> P can be re-ordered
+L1 = FF.rank_lists(Rg, np.where(Rg.key == "b2", 9.0, 0.0)); assert L1[("w1", "A")][0] == "b2"
+assert L1[("w1", "B")] == ["c1", "c2"] or L1[("w1", "B")] == ["c2", "c1"]; L2 = FF.rank_lists(Rg, np.where(Rg.key == "d2", 9.0, 0.0)); assert L2[("w2", "C")] == ["d2", "d1"]
+print("connection checks (product to rank 1, empty P, re-ordered P) ok")
 w = FF.weights(Rg, Q); wa = dict(zip(zip(Rg.world, Rg.molecule, Rg.key), w))
 print("weights: w1/A/a1", round(wa[("w1", "A", "a1")], 4), "(1/5 x 1/2) | w1/B/c1", round(wa[("w1", "B", "c1")], 4), "(1/2 x 1/1)")
 assert np.isclose(wa[("w1", "A", "a1")], 0.1) and np.isclose(wa[("w1", "B", "c1")], 0.5)

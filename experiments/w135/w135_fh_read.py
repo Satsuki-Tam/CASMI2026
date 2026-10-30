@@ -1,7 +1,7 @@
 """153 FH v0 registered reader (153 registration; written before any FH number is read).
 Inputs: <x>_queries.parquet of the two directions (w135_fh_fit.py): d2c (train design, test confirm) and c2d (train confirm, test design).
-Primary (per direction): pi3 = 0.3 worlds, all queries, mean RR difference gen - P; 95% interval = family bootstrap (resample (batch, fam) units
-with replacement inside the direction's primary worlds; 4000 draws, seed 20261030). d2c primary worlds = cF1/cR1/cF2/cR2/cF3/cR3 _p30 (as 139),
+Primary (per direction): pi3 = 0.3 worlds, all queries, mean RR difference gen - P; 95% interval = batch-pair bootstrap (3 pairs per side,
+ratio estimator, 4000 draws, seed 20261030; exploratory as in 139); the family bootstrap is reported as auxiliary. d2c primary worlds = cF1/cR1/cF2/cR2/cF3/cR3 _p30 (as 139),
 cU1_p30 reported separately; c2d primary worlds = dF1/dR1/dF2/dR2/dF3/dR3 _p30.
 Gate (153): in BOTH directions gen - P >= +0.02 and the lower bound > 0; protections (lower bound >= -0.01): C1 and C2 queries of the pi 0.3
 worlds, C1 and C2 queries of the pi 0 worlds, all queries of the pi 0 worlds.
@@ -16,11 +16,13 @@ PI0 = dict(d2c=[f"{b}_p0" for b in ("cF1", "cR1", "cF2", "cR2", "cF3", "cR3")], 
 NB, SEED = 4000, 20261030
 
 
-def boot(D, a, b, mask):
-    """family bootstrap of mean(rr_a - rr_b) over rows in mask; units = (batch, fam)."""
+def boot(D, a, b, mask, unit="pair"):
+    """bootstrap of the registered all-query mean of (rr_a - rr_b) over rows in mask (ratio estimator: sum of differences / count of the drawn
+    units). unit 'pair' = the batch pair j (xFj + xRj, the 139 exploratory unit; 3 per side); 'fam' = (batch, family) (auxiliary)."""
     X = D[mask]
     if not len(X): return np.nan, np.nan, np.nan, 0
-    d = (X[f"rr_{a}"] - X[f"rr_{b}"]).values; u = (X.batch.astype(str) + "|" + X.fam.astype(str)).values
+    d = (X[f"rr_{a}"] - X[f"rr_{b}"]).values
+    u = (X.batch.astype(str).str[-1]).values if unit == "pair" else (X.batch.astype(str) + "|" + X.fam.astype(str)).values
     units, inv = np.unique(u, return_inverse=True); s = np.bincount(inv, weights=d); c = np.bincount(inv).astype(float)
     rng = np.random.default_rng(SEED); est = d.mean(); bs = np.empty(NB)
     for i in range(NB):
@@ -39,6 +41,7 @@ def main():
         prim = D.world.isin(PRIMARY[dn]); pi0 = D.world.isin(PI0[dn])
         g = boot(D, "gen", "P", prim); lines.append(f"## {dn} (train {meta['train']} -> test {meta['test']})")
         lines.append(f"PRIMARY gen - P (pi 0.3, all): {fmt(g)}")
+        lines.append(f"  auxiliary family bootstrap: {fmt(boot(D, 'gen', 'P', prim, unit='fam'))}")
         ok = (g[0] >= 0.02) and (g[1] > 0)
         prot = {"C1 @ pi0.3": prim & (D.wclass == "C1"), "C2 @ pi0.3": prim & (D.wclass == "C2"), "C1 @ pi0": pi0 & (D.wclass == "C1"),
                 "C2 @ pi0": pi0 & (D.wclass == "C2"), "all @ pi0": pi0}

@@ -1,11 +1,11 @@
 """153 FH v0 data assembly (153_draft_fh.md; Codex 152 Q3): the unified candidate table U(q) = P's top 25 + the generated products B of every
 query of a W135 world, with observable features computed on the same code paths as the 139 selector (w135_selector.load_world):
-  common (every candidate) : fz (f.z: the view row's fp for a P candidate -- max over the official key's rows; the product's own f.z for B),
+  common (every candidate) : fz (f.z: the view row of P's selected SMILES for a P candidate (no alias max -- Codex 153); the product's own f.z for B),
                              gl (released GLACIER, by SMILES; + gl_miss), frag (b1_frag, 0 when not computable);
   P side                   : rP (P's rank 1..25; 26 for products), sP (P's score; NaN for products, sP_miss = 1);
   product side             : apsc, log_npar, src_peer, src_train, n_steps, off_mass and the five edit groups of the 139 fixed edit table
-                             (0 for P candidates; is_gen separates them); in_db = the product's official key is in the world's view list
-                             (a DB structure outside P's top 25 that was also generated);
+                             (0 for P candidates; is_gen separates them); in_wwin = the generator's location of the product is 'in_window' (inside the world's
+                             mass window of the DB sources after the world's masks; NOT a global DB-membership claim -- Codex 153);
   query                    : p_gap12, gl_ok, lib_max, log_ncand, best_analog, n_peer_struct, n_train, n_b, n_p (= |P top 25|).
 Labels: y = (official key == the batch's scorer key); joined only to write the table (no metric is computed or printed here).
 Invariants (STOP): every check of w135_selector.check_world / load_world (world manifest, generation meta, product GL meta, B invariants,
@@ -62,7 +62,6 @@ def build(wname):
             if not np.isfinite(lib_max): stop(f"{wname} {m}: lib_max missing for a non-empty list")
             view = F[(F.molecule == m) & F.in_short_c2.astype(bool) & (F.in_tier | F.in_coconut | F.in_train_c2).astype(bool)]
             sc = [e[3] for e in t25]; gap = float(sc[0] - sc[1]) if len(sc) >= 2 else 0.0
-        vkeys = set(view.official_key.astype(str))
         an = json.loads(P.loc[m, "analogs"])
         q = dict(world=wname, batch=b, pi=int(p), molecule=m, fam=int(bt.loc[m, "fam"]), wclass=str(bt.loc[m, f"wclass_p{p}"]), used=bool(bt.loc[m, "used"]),
                  gl_ok=int(P.loc[m, "gl_ok"]), lib_max=lib_max, n_cand=n_cand, n_b=len(det), n_p=len(t25), p_gap12=gap, log_ncand=float(np.log1p(n_cand)),
@@ -73,20 +72,24 @@ def build(wname):
             rank, key, smi, score = int(e[0]), str(e[1]), str(e[2]), float(e[3])
             if key in seen:   # an alias row of a key already listed: the scorer counts the first occurrence only
                 n_dup += 1; continue
-            tv = view[view.official_key.astype(str) == key]
-            if not len(tv): stop(f"{wname} {m}: P candidate {key} not in the view list")
-            fz = float(tv.fp.astype(float).max()); g_ = gq.get(smi)
+            tv = view[(view.official_key.astype(str) == key) & (view.smiles.astype(str) == smi)]
+            if not len(tv): stop(f"{wname} {m}: P candidate {key} / {smi} not in the view list")
+            fzs = set(tv.fp.astype(float).round(9))
+            if len(fzs) != 1: stop(f"{wname} {m}: P candidate {key} has {len(fzs)} f.z values for its SMILES")
+            fz = float(tv.fp.astype(float).iloc[0]); g_ = gq.get(smi)
             if not np.isfinite(fz) or not np.isfinite(score): stop(f"{wname} {m}: non-finite P value")
-            rows.append(dict(world=wname, molecule=m, key=key, smiles=smi, src="P", is_gen=0, in_db=1, rP=rank, sP=score, sP_miss=0, fz=fz,
+            rows.append(dict(world=wname, molecule=m, key=key, smiles=smi, src="P", is_gen=0, in_wwin=1, rP=rank, sP=score, sP_miss=0, fz=fz,
                              gl=0.0 if g_ is None else float(g_), gl_miss=int(g_ is None), frag=float(FR[m].get(smi, 0.0)), apsc=0.0, log_npar=0.0,
                              src_peer=0, src_train=0, n_steps=0, off_mass=0, **{k: 0 for k in EDITS}))
             seen.add(key)
         q["n_p_dup"] = n_dup
+        if [r_["key"] for r_ in rows if r_["world"] == wname and r_["molecule"] == m and r_["src"] == "P"] != [str(e[1]) for e in t25]: stop(f"{wname} {m}: P rows do not reproduce the stored top 25")
         for i, d in enumerate(det):
             key, smi, fz, apsc, npar, srcs, combo, loc, off = d; g_ = pq.get(smi)
             if key in seen: stop(f"{wname} {m}: duplicated key in U")
+            if loc not in ("in_window", "out_of_window"): stop(f"{wname} {m}: product location {loc}")
             seen.add(key)
-            rows.append(dict(world=wname, molecule=m, key=str(key), smiles=str(smi), src="B", is_gen=1, in_db=int(str(key) in vkeys), rP=26, sP=0.0, sP_miss=1, fz=float(fz),
+            rows.append(dict(world=wname, molecule=m, key=str(key), smiles=str(smi), src="B", is_gen=1, in_wwin=int(loc == "in_window"), rP=26, sP=0.0, sP_miss=1, fz=float(fz),
                              gl=0.0 if g_ is None else float(g_), gl_miss=int(g_ is None), frag=float(FR[m].get(smi, 0.0)), apsc=float(apsc), log_npar=float(np.log1p(npar)),
                              src_peer=int("peer" in srcs), src_train=int("train" in srcs), n_steps=(combo or "").count("+") + 1, off_mass=int(bool(off)), **S.edit_groups(combo)))
     R = pd.DataFrame(rows); Q = pd.DataFrame(qrows)
@@ -111,7 +114,7 @@ if __name__ == "__main__":
         meta = dict(world=w, script_sha256=sha(os.path.abspath(__file__)), selector_sha256=sha(os.path.join(HERE, "w135_selector.py")), b1_frag_sha256=sha(os.path.join(B, "b1_frag.py")),
                     inputs=dict(gen=sha(os.path.join(Wd, "gen_full_v2.parquet")), P=sha(os.path.join(Wd, "P.parquet")), prod_gl=sha(os.path.join(Wd, "prod_gl.json")),
                                 world_manifest=sha(os.path.join(Wd, "manifest.txt"))),
-                    n_rows=int(len(R)), n_queries=int(len(Q)), n_P_rows=int((R.src == "P").sum()), n_B_rows=int((R.src == "B").sum()), n_B_in_db=int(R.in_db[R.src == "B"].sum()),
+                    n_rows=int(len(R)), n_queries=int(len(Q)), n_P_rows=int((R.src == "P").sum()), n_B_rows=int((R.src == "B").sum()), n_B_in_wwin=int(R.in_wwin[R.src == "B"].sum()),
                     U_sha256=sha(out), Q_sha256=sha(os.path.join(OUTD, f"Q_{w}.parquet")))
         json.dump(meta, open(os.path.join(OUTD, f"U_{w}.meta.json"), "w"), indent=1)
-        print(f"[{time.time()-t0:5.0f}s] {w}: {len(Q)} queries, {len(R)} rows (P {meta['n_P_rows']}, B {meta['n_B_rows']}, B in_db {meta['n_B_in_db']}) -- no metric printed", flush=True)
+        print(f"[{time.time()-t0:5.0f}s] {w}: {len(Q)} queries, {len(R)} rows (P {meta['n_P_rows']}, B {meta['n_B_rows']}, B in_wwin {meta['n_B_in_wwin']}) -- no metric printed", flush=True)
