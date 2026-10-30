@@ -39,3 +39,4 @@ experiments/fpnet_full/**/*.pt
 # synced evaluator predictions (large; kept on the Spark)
 experiments/b1_baseline/fe_eval_sync/**/pred_*.csv
 experiments/w135/fh_export_map/salt.txt
+experiments/w135/fh2_export_map/salt.txt
