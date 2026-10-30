@@ -53,3 +53,16 @@ kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/
   - P の不変は、同じ計算環境での対照で確かめる。同じ Spark・同じ引数で E2 を外した実行の P が、E2 ありの実行の submission_pref と完全一致することを見る(spark_e2k_pctrl.sh、実行中)。
   - 提出物そのものについての決定的な確認は、条件 2(Kaggle のコミット実行の P が、Kaggle 上の v8w7a の参照と byte 一致すること)で行う。
   - PC の参照との差は、計算環境の差として記録に残す。
+
+## 11:35 条件 2: Kaggle のコミット実行の点検 PASS(kernels/check_e2k_commit.py、kernels/b1-e2f/output_v1)
+- **P の不変**: submission_pref は、v8w7a の参照のコミット実行の二つ(b1-probe-tv8w7a / bv8w7a の output_v1)と、sha256 で一致した(808a2632… / de9d219d…)。
+  - 固定の規則のリストと、probe の train / nontrain のリストも、400 行が全て同一だった。
+- **E2 の記録**(E2_RECORD)
+  - モデル fba8e860…、索引 2f025d15…、800 本、K 10、α 0.5、hedge 0。
+  - 12 分子、E2 の失敗 0、1 位の変更 0、リストの変更 12。
+  - 入力は全て /kaggle/input の下で解決した。
+- **E2_RDKIT**: 2026.03.3、fixture 12 件が一致。
+- **実行時間**: 927 秒(v8w7a の参照は 658 秒)。
+  - E2 の準備は約 150 秒、E2 の計算は 1 分子あたり約 7.5 秒。
+  - 隠しテストの 400 分子での見積もりは約 4.7 時間(P だけなら約 3.9 時間)で、9 時間の上限に収まる。GL の予算は変わらない。
+- 出力の取得では、`--page-size 200` と `--file-pattern` が必要だった(10/29 の注意と同じ)。

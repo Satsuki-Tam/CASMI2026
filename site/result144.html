@@ -16,8 +16,15 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:27 JST</span></header>
-<main><article><h1 id="144-2026-10-30-1052-jst-v2-experimentse2eval_v1e2_eval_summarymd">144 の結果(2026-10-30 10:52 JST、登録 v2 どおりの読み。experiments/e2/eval_v1/e2_eval_summary.md)</h1>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:34 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#_1">判定</a></li>
+<li><a href="#_2">記述(判定には使わない)</a></li>
+<li><a href="#v3-2026-10-30-1130codex-145-experimentse2eval_v3e2_eval_v3py-v2">追記: 評価器 v3 での再採点(2026-10-30 11:30、Codex 145 の訂正。experiments/e2/eval_v3/、e2_eval_v3.py。判定の規則は v2 のまま)</a></li>
+</ul>
+</div>
+</div><h1 id="144-2026-10-30-1052-jst-v2-experimentse2eval_v1e2_eval_summarymd">144 の結果(2026-10-30 10:52 JST、登録 v2 どおりの読み。experiments/e2/eval_v1/e2_eval_summary.md)</h1>
 <ul>
 <li>モデル: experiments/e2/model_v1/e2_lgb.txt(sha fba8e860…)。</li>
 <li>木は 800 本(交差の基準: 100 → 0.7527、200 → 0.7616、400 → 0.7664、800 → 0.7673)。</li>
@@ -160,4 +167,23 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li>0.409 以上: 明瞭な正。新しい土台の候補にする。</li>
 <li>0.379 以下: 負。</li>
 <li>その間: 保留。</li>
+</ul>
+<h2 id="v3-2026-10-30-1130codex-145-experimentse2eval_v3e2_eval_v3py-v2">追記: 評価器 v3 での再採点(2026-10-30 11:30、Codex 145 の訂正。experiments/e2/eval_v3/、e2_eval_v3.py。判定の規則は v2 のまま)</h2>
+<ul>
+<li><strong>事前の検査</strong>: 全て通過した。</li>
+<li>名簿は選択の CSV と C1 の台帳から作り、群は 2,850 だった。P の表に無い 20 群は、P = F = [] として含めた(カーネルと同じ扱い)。</li>
+<li>F0 = P は、順序付きのリストで全て一致した。</li>
+<li>E2 が空の 30 群は、変わらなかった。</li>
+<li>予測値は全て有限だった。</li>
+<li><strong>判定は v1 と同じ</strong></li>
+<li>F の関門は不合格(+0.0033 [−0.0125, +0.0181])。</li>
+<li>H は不合格(H − F −0.0009。A / B_D を加えた関門でも不合格)。</li>
+<li><strong>診断経路: 条件を満たす。</strong> 固定の所属表で見た E 源の C2 の F − P は、fold 1 で +0.0295(455 分子)、fold 2 で +0.0271(434 分子)。新たに 1 位になったのは 48 identity。</li>
+<li><strong>新しい記述</strong>: P が届いている E 源の外の正解(203 分子)では、F − P は −0.2225 だった。</li>
+<li>この場合の損益分岐は、E 源の割合 w* = 0.887 になる(全ての E 源の外で見ると 0.787)。</li>
+<li>隠しテストの PubChem だけの正解の寄与によっては、F の Public の差は 0 付近になり得る。これが、診断として出す理由である。</li>
+<li><strong>C2 の正解の別表記の監査</strong>(x145_alias_audit.csv): 楽観は判定を左右しない規模だった。</li>
+<li>np053 の 560 分子とパネルの 250 分子は、全て「見える表記」だった(代表の SMILES が COCONUT / PCL / BIO に由来する)。</li>
+<li>f1/f2 では、train だけの表記が代表だったのは 5 分子(C2 の窓に残る正解の 0.4%)だけだった。</li>
+<li>一回目の実行は、fork の後に polars を使ったため固まった。spawn と pandas に直した。</li>
 </ul></article><p class='small muted'>原文: <code>reports/agent_review/144_result.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
