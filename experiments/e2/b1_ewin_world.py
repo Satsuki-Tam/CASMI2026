@@ -1,7 +1,8 @@
 """156 (v2 prep; copy of b1_ewin.py 143) -- the E-WINDOW table of a W135 WORLD: the E sources under the world's batch-level masks
 (world_masks.json written by experiments/w135/b1_world.py = the single source of truth): C3 identities leave every E source (raw / pool /
 official key), C2 / C3 identities lose train membership and every reference for every query, C1 identities lose their selection-library
-references and the duplicates of their query spectra (c1_excl) for every query. No truth-specific rule; the c1_* and c2_* columns are
+references and the duplicates of their query spectra (c1_excl) for every query; a structure left with no source after the masks
+(a hidden train-only structure) leaves the window (Codex 156). No truth-specific rule; the c1_* and c2_* columns are
 written identical (the world view). is_truth is written for labels only. Original 143 description below.
 143 E2 (independent second engine) step 1: the E-WINDOW candidate table of a molecule table, per view (C1 / C2), WITHOUT any shortlist.
 E window of a query = every structure within +-10 ppm (per query adduct, median neutral mass, as b1_features) of the E sources:
@@ -149,6 +150,12 @@ def main():
                 rep = {k_: v_ for k_, v_ in rep.items() if k_ not in C3_OKEYS and k_ not in STRUCT_DROP and not (v_["rks"] & STRUCT_DROP)
                        and (v_["pkey"] is None or v_["pkey"] not in STRUCT_DROP)}
                 n_drop = n_raw - len(rep)
+                # WORLD (Codex 156): a structure whose only source was a hidden train membership (C2 / C3 identities) leaves the window --
+                # keep a structure only if (train AND not hidden) OR COCONUT OR PCL OR BIO after the masks
+                hid0 = lambda k_, v_: bool(v_["rks"] & TRAIN_HIDE) or v_["pkey"] in TRAIN_HIDE or k_ in TRAIN_HIDE
+                n_before = len(rep)
+                rep = {k_: v_ for k_, v_ in rep.items() if (v_["train"] and not hid0(k_, v_)) or v_["coco"] or v_["pcl"] or v_["bio"]}
+                n_drop_trainonly = n_before - len(rep)
                 keys = list(rep); n_e = len(keys)
                 if n_e == 0:
                     rows_out.append(dict(set=set_name, molecule=mid, n_query=len(qspec), n_e=0, truth_in_ewin=False, seconds=time.time() - tm0)); continue
@@ -190,10 +197,10 @@ def main():
                                          fp_rank_e=int(frank[ci]), n_e=n_e, ppm_err=float(ppm_err[ci]), in_train_c1=bool(train_orig[ci]), in_train_c2=bool(train_c2[ci]), in_coconut=bool(d["coco"]),
                                          in_pcl=bool(d["pcl"]), in_bio=bool(d["bio"]), lib_sim_c1=float(L["c1"][ci]), lib_sim_c2=float(L["c2"][ci]), lib_same_c1=float(L["same_c1"][ci]),
                                          lib_same_c2=float(L["same_c2"][ci]), lib_nref_c1=int(nref["c1"][ci]), lib_nref_c2=int(nref["c2"][ci])))
-                rows_out.append(dict(set=set_name, molecule=mid, wclass=WM["wclass"].get(mid, ""), n_drop_world=n_drop, n_query=len(qspec), ce_known=float(np.mean([s["ce"] is not None for s in qspec])), n_e=n_e, truth_in_ewin=truth_key in rep,
+                rows_out.append(dict(set=set_name, molecule=mid, wclass=WM["wclass"].get(mid, ""), n_drop_world=n_drop, n_drop_trainonly=n_drop_trainonly, n_query=len(qspec), ce_known=float(np.mean([s["ce"] is not None for s in qspec])), n_e=n_e, truth_in_ewin=truth_key in rep,
                                      lib_max_c1=float(L["c1"].max()), lib_max_c2=float(L["c2"].max()), seconds=time.time() - tm0))
                 if (n_i + 1) % 25 == 0 or n_i == len(ms) - 1:
-                    d_ = pd.DataFrame(rows_out); print(f"  {set_name} {n_i+1}/{len(ms)} | E window median {d_.n_e.median():.0f} | truth in E {int(d_.truth_in_ewin.sum())} | {d_.seconds.mean():.1f}s/mol ({time.time()-t0:.0f}s)", flush=True)
+                    d_ = pd.DataFrame(rows_out); print(f"  {set_name} {n_i+1}/{len(ms)} | E window median {d_.n_e.median():.0f} | {d_.seconds.mean():.1f}s/mol ({time.time()-t0:.0f}s)", flush=True)
             pd.DataFrame(rows_out).to_csv(f"{a.out}/ewin_molecules_{set_name}.csv", index=False); pd.DataFrame(cand_out).to_parquet(f"{a.out}/ewin_{set_name}.parquet", index=False)
             man["sets"][set_name] = dict(molecules=len(rows_out), rows=len(cand_out)); print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} rows ({time.time()-t0:.0f}s)", flush=True)
     man["seconds"] = round(time.time() - t0); json.dump(man, open(f"{a.out}/ewin_manifest.json", "w"), indent=1); print(f"done {time.time()-t0:.0f}s")
