@@ -17,12 +17,12 @@ TAGS = {"np053f1dev": ("np053_f1dev", "p2_molecules.csv", ["NP_H", "NP_X", "NP_N
 G = {}
 
 
-def _init():
+def _init():   # workers read with pandas only: polars after fork can deadlock (the v1 run hung with every worker asleep)
     from e2_engine import EStores
     K = os.path.join(ROOT, "data/external_kaggle"); tier = os.path.join(ROOT, "data/external/pubchem_tier")
-    pcl = pl.read_parquet(f"{K}/casmi26-pubchem-popularity-prior/pubchemlite_annotations.parquet", columns=["tier_row"]).filter(pl.col("tier_row") >= 0)["tier_row"].unique().to_numpy()
-    bio = pl.read_parquet(f"{K}/casmi26-attributed-v4g-reproduction-assets/casmi-chebi-lmsd-structures/casmi-chebi-lmsd-structures/bio_structures.parquet", columns=["smiles", "monoisotopic_mass"]).drop_nulls()
-    pool = pl.read_parquet(os.path.join(ROOT, "data/external/v2_pool/pool_meta.parquet")).select("key", "smiles", "mass", "src", "pid")
+    pa = pd.read_parquet(f"{K}/casmi26-pubchem-popularity-prior/pubchemlite_annotations.parquet", columns=["tier_row"]); pcl = np.unique(pa.tier_row[pa.tier_row >= 0].to_numpy())
+    bio = pd.read_parquet(f"{K}/casmi26-attributed-v4g-reproduction-assets/casmi-chebi-lmsd-structures/casmi-chebi-lmsd-structures/bio_structures.parquet", columns=["smiles", "monoisotopic_mass"]).dropna()
+    pool = pd.read_parquet(os.path.join(ROOT, "data/external/v2_pool/pool_meta.parquet"), columns=["key", "smiles", "mass", "src", "pid"])
     csmi = pd.read_parquet(os.path.join(ROOT, "data/external/coconut/coco_meta.parquet"), columns=["smiles"]).smiles.to_numpy(); cmass = np.load(os.path.join(ROOT, "data/external/coconut/coco_mass.npy"))
     G["st"] = EStores(np.load(f"{tier}/pc_mass.npy", mmap_mode="r"), np.load(f"{tier}/pc_off.npy", mmap_mode="r"), np.load(f"{tier}/pc_smiles.npy", mmap_mode="r"), pcl, pool, cmass, csmi, bio)
 
@@ -56,9 +56,10 @@ def main():
                     sh = shift if mode_of_row[x] == "positive" else 0.0; Mb.setdefault(add_of_row[x], []).append(float(prec_of_row[x]) - sh + ADDUCT_SHIFT[add_of_row[x]])
                 tasks.append((tag, s, r.molecule, {k: float(np.median(v)) for k, v in Mb.items()}, r.smiles))
     print(f"{len(info)} truth rows, {len(tasks)} to rebuild ({time.time()-t0:.0f}s)", flush=True)
-    with Pool(12, initializer=_init) as wp: res = wp.map(_one, tasks, chunksize=8)
+    import multiprocessing as _mp
+    with _mp.get_context("spawn").Pool(12, initializer=_init) as wp: res = wp.map(_one, tasks, chunksize=8)   # spawn: no inherited polars threads
     A = pd.DataFrame(info).merge(pd.DataFrame(res, columns=["tag", "set", "molecule", "rep_class"]), on=["tag", "set", "molecule"], how="left")
-    A["rep_class"] = A.rep_class.fillna(np.where(A.truth_train, "not_in_c2", "no_train_spelling"))
+    A["rep_class"] = A.rep_class.where(A.rep_class.notna(), pd.Series(np.where(A.truth_train, "not_in_c2", "no_train_spelling"), index=A.index))
     A.to_csv(os.path.join(ROOT, "experiments/e2/x145_alias_audit.csv"), index=False)
     print(A.groupby(["tag", "rep_class"]).size().unstack(fill_value=0).to_string()); print(f"done {time.time()-t0:.0f}s")
 

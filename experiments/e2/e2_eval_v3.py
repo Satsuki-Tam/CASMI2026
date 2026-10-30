@@ -9,7 +9,7 @@ inputs (P top tables, E / F tables, model, code) by sha256. The decision rules a
 Outputs: <out>/e2_eval_groups.csv, <out>/e2_eval_summary.md, <out>/e2_eval_manifest.json."""
 import argparse, hashlib, json, os, sys, time
 import numpy as np, pandas as pd, polars as pl, lightgbm as lgb
-HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE); ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE); ROOT = os.path.abspath(os.path.join(HERE, "..", "..")); sys.path.insert(1, os.path.join(ROOT, "experiments", "b1_baseline"))
 from e2_common import FEATS, view_frame, rank_lists
 from e2_engine import fuse_rrf, insert2
 S5 = ["C_np_crosslib", "D_np_single", "E_np_negonly", "F_np_uncovered", "G_tims_crosslib"]; S3 = ["NP_H", "NP_X", "NP_N"]; NP = S5[:4]
