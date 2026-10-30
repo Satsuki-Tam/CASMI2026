@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 19:35 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 20:01 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-22400140">1. 22:40〜01:40 のまとめ</a></li>
@@ -26,6 +26,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#5-11501256-f-132-codex-147-148-s2">5. 11:50〜12:56 F の提出、132 の結果、Codex 147 / 148 の行程表、S2 の準備</a></li>
 <li><a href="#6-12561431-149-codex-152-discussion">6. 12:56〜14:31 149 の結果、Codex 152 への依頼、discussion の再確認</a></li>
 <li><a href="#7-14311519-codex-152-153fh-v0no">7. 14:31〜15:19 Codex 152 / 153、FH v0(NO)、ハーネスの導入</a></li>
+<li><a href="#8-19201935-v2-g0">8. 19:20〜19:35 v2 の G0 の前の必須条件の完了と、登録した診断</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-30claude-code-date-git">進捗 2026-10-30(夜間、Claude Code)— 時刻は date / git の記録から</h1>
@@ -189,4 +190,13 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li>U2 の builder v2.1(P が空の query の F は空 = 提出の pipeline と同じ、E の台帳の検査、E と B で同じ SMILES なら B の GL を再利用)。</li>
 <li>v2 のワークスペース(C:\kaggle\competitions\casmi-harness-v2)の G0 の材料: 100 枠の CV、FH-PEB の学習(62 特徴)、P / F-world / FH-PE の参照、仕様書(主対照は F-world、主系 / holdout の関門は F-world に対して +0.01)、逸脱の記録。Codex 159 で点検中。</li>
 <li><strong>Codex 159</strong>(v2 の G0 の材料の点検、18:36): 62 特徴と主系 / holdout の関門(F-world に対して +0.01)に賛成。G0 の前に、受領の監査(入力・コード・モデル・検査まで照合)、診断の U1 の独立の再構成、FH-PE の G0 時点の snapshot への結び付け、P と F の順序の往復の検査を求めた。全て実装した(159_decision.md)。37 世界の作成は 18 / 37(失敗 0)。</li>
+</ul>
+<h2 id="8-19201935-v2-g0">8. 19:20〜19:35 v2 の G0 の前の必須条件の完了と、登録した診断</h2>
+<ul>
+<li>受領の監査: 初回は 37 / 37 世界で analog の値の差(5e-7)で FAIL。原因は保存の規則の違い(P は round 6、E は生の値)。性能を読む前に「キーは完全一致、値は E 側を round 6 で丸めて完全一致」に固定(159_decision の追記)→ <strong>37 / 37 PASS</strong>、zlog の差 0。</li>
+<li>U2(P25 ∪ E25 ∪ B)を 37 世界で作成。全世界で F-world が提出の fuse_rrf と完全一致。書き出しの manifest は親の受領と世界の資産の hash を引き継ぐ(159 A')。</li>
+<li>v2 のワークスペースへ書き出し(dev 31 世界、hold 596 query は π0.3 だけ)→ cv.py の全検査 PASS → <strong>P / F の往復 3,095 / 3,095</strong> → <strong>技術の検査 PASS</strong> → <strong>旗の式の独立検査 PASS</strong>(3,691 query、U2 が空の 31 を含む)→ adapter の snapshot が一致 → G0 の dry-run(固定 163 ファイル)OK。仕様書 §14 に完了ログ。</li>
+<li><strong>登録した診断(d / c だけ)</strong>: U2 の追加の到達は主(π0.3、1,198)で <strong>+0.009</strong>(U2 0.652 対 U1 0.643)。4 つの組の世界で <strong>P 0.4540 → F-world 0.4723(+0.018)</strong>。これは Public の +0.020 とほぼ同じで、W135 の世界が順位の変化の向きと大きさを再現している。E2 の効果は到達ではなく、共通の候補の並べ替え(新しい 1 位 14 対 失った 1 位 3)から来ている。</li>
+<li>本質的な余地: 候補の中の順位(U2 の到達 0.652 に対し F の MRR 0.472)と、C3(30%、P も F も 0、生成物 B の到達 0.225)。</li>
+<li>Codex 160 に完了の点検と診断の読みを依頼(19:34)。次は指摘の反映 → v1 / v2 の G0 を利用者に依頼。</li>
 </ul></article><p class='small muted'>原文: <code>docs/progress_2026-10-30.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

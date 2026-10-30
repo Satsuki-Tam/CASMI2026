@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 19:35 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 20:01 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -21830,4 +21830,144 @@ v2 のワークスペース C:\kaggle\competitions\casmi-harness-v2(docs/g0_spec
 <li>U2 が空の 31 query は分母に入れて 0 点(隠れた test でも候補が無ければ 0)。これで正しいか。</li>
 <li>G0 の後の順序: 基準の FH-PEB(seed 11 / 12 / 13 → σ)→ FH-PE の参照(seed 11)→ 内側のループ(exploit 6 / explore 3 / wild 1、48 時間)。懸念はあるか。</li>
 </ol>
-<p>末尾に REVIEW_COMPLETE: 160 と書いてください。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>末尾に REVIEW_COMPLETE: 160 と書いてください。</p></details><details><summary>回答(Codex)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#q1-g0-a1a5">Q1. G0 前の条件は満たされたか。A1〜A5 で足りるか</a></li>
+<li><a href="#q2-analog-round-6">Q2. analog を round 6 で照合する変更</a></li>
+<li><a href="#q3-001-public-0500">Q3. 診断の読みと、+0.01 / Public 0.500 への道筋</a></li>
+<li><a href="#q4-u2-31-query">Q4. 空の U2 の 31 query</a></li>
+<li><a href="#q5-g0">Q5. G0 後の順序</a></li>
+</ul>
+</div>
+</div><h1 id="160-g0">160 レビュー — G0 前の完了確認と診断の解釈</h1>
+<p>結論: <strong>159 の主要な指摘は解消しており、基準 FH-PEB を測る段階に進む材料は整っている。G0 前の残件は、記録上まだ開発 31 世界だけになっている独立した候補集合・順序の照合を、e の 6 世界にもラベル非依存で通すこと。</strong> 新規学習や資産の一律再生成は不要で、差異がなければ完了ログへの追記でよい。</p>
+<p>診断は E2 の並べ替えの有効性を支持する。ただし「到達 0.652 − F の MRR 0.472 = 改善余地 0.18」は母集団が異なるので訂正する。Public 0.500 への見込みは、この診断だけでは数量化できない。</p>
+<p>協業ルール、159 の回答・判断、158 の登録・結果、関連スクリプト、v2 の src・refs・仕様・設定・小さな manifest を確認した。ワークスペースは変更していない。新たな性能集計、実モデルの学習、e のラベルの読み取りは行っていない。追加検査は、人工データでの adapter 呼出境界・枠の変換と、小さな query 表の件数・有限値に限った。</p>
+<h2 id="q1-g0-a1a5">Q1. G0 前の条件は満たされたか。A1〜A5 で足りるか</h2>
+<p><strong>今回の資産の受け入れとしては、大半を満たした。</strong> 担保の場所と範囲は次のように整理できる。</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>点検結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>受領と来歴</td>
+<td><code>w135_v21_audit.py</code> が期待する世界・出力集合・入力・段階間の hash・モデル・検査 PASS を照合する。<code>v21_expected.json</code> のコード hash 5 件が実際に commit a2108af の内容と一致することも今回確認した。37 世界 PASS 自体は保存された完了報告に依拠し、再実行していない。</td>
+</tr>
+<tr>
+<td>U2 から export への接続</td>
+<td>親 receipt・世界資産・builder の情報が meta と export manifest に入った。dev 31 世界、hold 6 世界の export manifest のファイル hash 一覧と、ワークスペースの data_manifest の対応部分が一致することを確認した。</td>
+</tr>
+<tr>
+<td>独立した集合の照合</td>
+<td><code>x158_diag.py</code> は元の U1、E2 の E25、U2 を別々に作るよう修正され、159 の循環した検査は解消した。ただし実行対象は d/c の 31 世界。e の 6 世界についても、正解を使わず <code>U2 = P25∪E25∪B</code> と P の順序を確認しておく。</td>
+</tr>
+<tr>
+<td>P/F の順序の往復</td>
+<td>独立の期待リストと補助 reader の復号結果を比較する構成になり、開発 3,095 件の PASS 記録は妥当。e でも特徴として持つ f_rank 等と元の P/E から再現した F の順序を照合できる。F の参照リストや対応表をワークスペースへ追加する必要はない。</td>
+</tr>
+<tr>
+<td>分割とラベル</td>
+<td>cv が query・候補・fold の名簿、truth/iid の fold 非交差、全行の y の定義、test の禁止列を確認する。A4 は test の禁止列を、C1 は誤ラベルを拒否する試験。</td>
+</tr>
+<tr>
+<td>固定 PE</td>
+<td><code>refs/adapter_g0.py</code>、設定、seed、データ・枠の hash に結び付いた。snapshot と現 adapter のバイト一致も確認した。出力先は学習前に用意され、途中出力と完成物が分離された。159 の問題は解消している。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A1〜A5 だけで、学習境界と予測契約を全て試したとは言わない。</strong> A1 は一つの fold の実学習で有限値と実在する検証枠の採点を確認するが、検証ラベルへの非依存性、余白の厳密な PAD、test の全実在枠の充足、7 fold の平均までをそれぞれ検査しているわけではない。</p>
+<p>ここはコード点検に加え、今回、学習器を記録用の代用品にした人工データで補った。</p>
+<ul>
+<li>検証側の y と特徴を変更しても、学習器へ渡る X・y・重みが変わらない。</li>
+<li>valid/test の実在枠に代用学習器の予測が入り、余白と空 query は PAD のままになる。</li>
+<li>空 query の RR は 0 で、例えば RR が 1 と 0 の二件を主集合として渡すと score は 0.5 になる。</li>
+<li>実際のワークスペース内の runner は、7 fold の test 予測を同じ枠で平均する実装になっている。</li>
+</ul>
+<p>これは LightGBM の性能の試験ではなく、学習への入力と出力の接続の検査である。既存の実学習を含む A1 と合わせ、初期 adapter の学習境界・枠の契約に具体的な破れは見つからなかった。追加の学習試験は不要。</p>
+<p>なお <code>x160_flags.py</code> の NaN は報告するだけで FAIL 条件ではなく、Q の数値列も対象外だった。今回、<strong>全 37 個の Q 表、合計約 660 KB</strong>の数値列を読み、3,691 query 全てで有限値を確認した。空の 31 件も n_p/n_b/n_e/n_e25/f_applied=0、e_empty=1 だった。将来の資産にも同じ保証を使うなら、NaN だけでなく Inf、Q 列、空 query のこれらの条件を検査の失敗条件に含めるとよい。今回のデータを作り直す理由にはならない。</p>
+<p>e に追加する照合は、候補 key・順位・名簿・hash の技術検査だけで行う。truth/class・到達・MRR を使わず、一致件数と PASS/FAIL だけを残せば、e の一回限りの性能確認は保たれる。</p>
+<h2 id="q2-analog-round-6">Q2. analog を round 6 で照合する変更</h2>
+<p><strong>採用してよい。</strong> P の保存規則が <code>round(float(v), 6)</code> で、E が生値なら、E に同じ保存規則を適用してから比較するのが正しい。性能を読む前に、保存コードから原因を特定して固定した変更であり、性能を通すための許容差選びとは区別できる。</p>
+<p>保証するのは「順序を含む key と、保存された精度での値が一致すること」であり、丸め前の bit 単位の一致ではない。同じ丸め区間に入る微小な生値の差は隠れ得る。したがって、以後も「生値が完全一致した」とは記録しない。</p>
+<p>大量の値を比べれば、生値と丸め値の最大差が半単位の 5e-7 に近づくことは自然で、表示上その値になること自体は異常の証拠ではない。最大差の表示桁だけで厳密な等号を主張する必要もない。今回の key 完全一致、コード・入力の来歴、同じ保存規則での全件一致を合わせれば、受け入れに十分。<strong>このために全 analog を再生成する必要はない。</strong> 今後、丸め前の微小差が閾値や同点処理を変える疑いが具体的に出た場合にだけ、同条件の少数 query で両経路の生値を比較する。</p>
+<h2 id="q3-001-public-0500">Q3. 診断の読みと、+0.01 / Public 0.500 への道筋</h2>
+<p><strong>(a) は「一つの改善の方向・規模が整合した」という補助的な証拠まで。</strong> ローカルの +0.0182 と Public の +0.020 が近いことは好材料だが、世界の再現性を一般に検証できたことにはならない。今回のローカルは 398 件・少数のバッチ組で、Public とクラス、化学領域、学習済み identity、源の被覆などの混合比も同じとは限らない。今後の +0.01 が Public に同量移るという校正には使わない。</p>
+<p><strong>(b) の「主因は共通候補の並べ替え」は支持できる。</strong> 根拠は候補の順位が 73.5% 変わったことだけではない。398 件で、真が E25 にあり P25 にない件数は 2。新しい候補の到達から得られる MRR 増分は、両方が 1 位でも最大 2/398 ≈ 0.0050。全体の純増 +0.0182 のうち、少なくとも約 +0.0132 は真がもともと P25 にあった query 側の純増になる。新しい 1 位 14 件のうち少なくとも 12 件も、元の P25 に真があったケースになる。到達の寄与をゼロとは言わないが、主因の判断には根拠がある。</p>
+<p><strong>(c) は母集団と「上限」の意味を直す。</strong> 0.652 は 1,198 件、0.4723 は 398 件なので、その差 0.18 は有効な headroom の実測値ではない。基準を読む際に、同じ主集合 S で</p>
+<p><code>headroom_U2(S) = mean_S 1[truth ∈ U2] − mean_S RR(F-world)</code></p>
+<p>を出す。同じ集合なら、これは「全ての到達済み正解を 1 位にできたとき」の上限であって、62 特徴から学習可能な改善量ではない。次の三群に分けると判断に使いやすい。</p>
+<ol>
+<li>真が F の上位 25 にある: 順位を改善できる余地。</li>
+<li>真が U2 にあるが F の上位 25 にない: F の出力に残らなかった E/B 等を選ぶ余地。</li>
+<li>真が U2 にない: 現在の候補表と ranker の調整では回復できない領域。</li>
+</ol>
+<p>117 件の「E 源の外」も、現在の実装での定義は <strong>C1/C2 の真がその query の E 窓にない</strong>というもの。DB 全体に構造が存在しない場合だけでなく、質量・adduct・窓の条件で外れた場合も含み得る。DB 不在と同一視せず、この層で F が P を傷つけないかも補助的に見る。</p>
+<p><strong>FH-PEB は本質的な問題の一つに向いている。ただし突破を予測できる段階ではない。</strong> E2 の有用な順位情報と B を同じ候補表へ接続した点には意味があり、+0.01 は測る価値がある。一方、固定 RRF は既に強い規則で、二値学習がその順位を崩す費用もある。到達率の高さだけを根拠に突破見込みを高く置かず、基準と PE の比較で判断する。</p>
+<p>C3 については、この主集合では 360/1,198 が C3、B の到達が 0.225。<strong>現在の B を完璧に順位付けして C3 だけで増やせる全体 MRR は、最大でも約 (360/1,198)×0.225 = 0.0676</strong>である。これは到達済みの真を全て 1 位にし、C1/C2 を全く傷つけない楽観的な上限。現状の Public にそのまま移せる上限ではないが、同じ混合を仮定してさえ +0.086 の全てを C3 だけに期待する計画には足りない。C1/C2 の順位改善と、必要なら候補の被覆改善も要る。</p>
+<p>また、C3 は 1 位でなければ無価値ではない。回復できた真の順位ごとに RR は積み上がる。ただし B の誤挿入による C1/C2 の損失を差し引いて評価する必要がある。</p>
+<p><strong>次の最小の判別は、予定している基準と PE の比較で行える。</strong> seed 11 の OOF について、F、独立に学習した固定 FH-PE、FH-PEB を比較する。追加の記述として、同じ FH-PEB の得点から PE 資格だけを残した順位も読める。これは新しい学習済み PE 対照ではなく、同一モデルで B の追加出力を許す費用を分けるための反実仮想である。</p>
+<ul>
+<li>固定 FH-PE が F を改善するが PEB で失うなら、DB 候補と生成候補を一緒に学ぶ・競争させる部分が問題。</li>
+<li>PEB の PE 限定順位はよいが全候補では悪いなら、主に B 追加候補と PE の間の得点の比較・挿入判断が問題。</li>
+<li>PE 限定順位も悪いなら、B を含む学習が PE 内の順位まで変えている可能性がある。</li>
+<li>到達済みの同じ候補で全方式が失敗するなら、設定探索だけで十分な識別情報が得られるとは考えない。</li>
+</ul>
+<p>構造的な次案としては、上の結果が混在による損失を示した場合に、<strong>PE と B追加候補の順位付けを分け、観測可能な P/E の一致度・参照強度・B の支持から両者の競争を調整する二系統のモデル</strong>が考えられる。最小の比較は、同じ U2・外側 fold・情報・seed・計算予算で単一 PEB と一案だけを比べるもの。調整器がモデル得点を学習入力にするなら、学習 fold 内でも OOF で作り、真の class/pi を入力や適用条件にしない。これは現行の TUNABLE/rounds 調整とは別の設計変更として扱い、基準の途中で切り替えない。</p>
+<p>候補の被覆を変える必要があるかは、「E の全窓にはあるが U2 にない」と「全窓にも U2 にもない」を先に交差集計すれば判別できる。前者なら shortlist の選び方、後者なら窓・源・生成の問題である。新しい巨大な生成を先に始める必要はない。Public 0.500 へ向けた次の投資先は、この分解と基準の結果から選ぶ。</p>
+<h2 id="q4-u2-31-query">Q4. 空の U2 の 31 query</h2>
+<p><strong>分母に残し、RR=0 とするので正しい。</strong> 空の query は Q/validation/test_ids に残り、予測は全 PAD、metrics は RR を 0 にして主集合の平均へ含める。人工データでもこの経路を確認した。</p>
+<p>31 は dev と hold、複数の π の合計である。主指標の 1,198 件から一括して除くなどの扱いはしない。学習には候補行が存在しないが、identity ごとの単位数を数える Q の名簿には残す、という現在の重みの定義とも整合する。</p>
+<p>合法的に空になった候補表と、未生成・欠損・失敗した入力は区別する。後者は停止すべきで、空の候補表に置き換えて正常な 0 点に混ぜない。今回の名簿・hash・件数検査は、この区別のために必要である。</p>
+<h2 id="q5-g0">Q5. G0 後の順序</h2>
+<p><strong>基準 PEB の seed 11/12/13 → 固定 PE の seed 11 → 結果に基づく内側ループ、に賛成。</strong> 次の運用を固定する。</p>
+<ul>
+<li>三つの基準は同じ source/config/データで完走させる。σ は同一母集団の主 MRR の seed 間標準偏差であり、標本抽出の不確実性や Public の誤差ではない。3 seed なので粗い推定でもある。max(2σ, 0.005) の下限を維持する。</li>
+<li>初期 PE の対応先は seed 11 の PEB。11/12/13 の最大値を後から初期対照にしない。平均 ensemble を候補にするなら、別の登録された候補として数える。</li>
+<li><strong>基準 3 seed は exploit 6 枠のうち 3 枠を使う。</strong> 同じ 48 時間の窓で、その後に新規で使える exploit は原則あと 3 件であり、さらに 6 件ではない。自動 ensemble も枠を使う。</li>
+<li>固定 PE は規定どおり探索枠 0 件でも、計算費用は 0 ではない。一度だけ作り、CPU 並列数・メモリ・時間の記録に含める。調整した PEB と固定 PE の差を、生成物の純粋な効果とは呼ばない。</li>
+<li>F に対する主差、組の区間、保護層、PE/B の費用を一緒に読み、突破しない原因に応じて残りの枠を使う。e は凍結した最終候補の一回確認まで未開封を維持する。</li>
+</ul>
+<p>残る e の技術照合を通した後は、準備を繰り返すより、この順序で基準を測ることを勧める。本レビューは利用者による G0 操作の代行ではない。</p>
+<p>REVIEW_COMPLETE: 160</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#correctnessg0">correctness(G0 の前に処理した)</a></li>
+<li><a href="#scientific_uncertainty">scientific_uncertainty(実験で決める。検査を足して先送りしない)</a></li>
+<li><a href="#suggestion">suggestion(任意、採るのは結果を見てから)</a></li>
+<li><a href="#q5">運用(Q5、そのまま採用)</a></li>
+<li><a href="#g0">G0</a></li>
+</ul>
+</div>
+</div><h1 id="160-2026-10-30-2000-jstclaude-codecodex-160-harness-codex-integration-v1-3">160 の判断(2026-10-30 20:00 JST、Claude Code。Codex 160 を受けて。指摘は harness の codex-integration-v1 の 3 分類で扱う)</h1>
+<h2 id="correctnessg0">correctness(G0 の前に処理した)</h2>
+<ul>
+<li>e の 6 世界の正解を使わない照合(Codex Q1): experiments/w135/x160_echeck.py(列を選んで読み、truth / wclass / fam / y / is_truth / truth_in_ewin は読み込まない)→ <strong>X160_ECHECK PASS 596 / 596</strong>(名簿 = バッチの CSV、U2 = P25 ∪ E25 ∪ B、P の順序と E の台帳、F のリスト = Q2 の f_top25 = U2 の f_rank の順序)。</li>
+<li>非有限値を失敗の条件に(Codex Q1 の補足): x160_flags.py に T7(U と Q の全ての数値の列で NaN / Inf は失敗、空の U2 は n_b = n_e = 0 かつ e_empty = 1)→ <strong>PASS</strong>。v2 の仕様書 §14 に追記(G0 の前)。</li>
+</ul>
+<h2 id="scientific_uncertainty">scientific_uncertainty(実験で決める。検査を足して先送りしない)</h2>
+<ul>
+<li>世界の再現性(a)は「一つの変化の向きと大きさが整合した」補助的な証拠まで。今後の +0.01 が Public に同じ量で移るという校正には使わない。</li>
+<li><strong>撤回</strong>: 「余地 0.18」とクラス別の余地(C2 0.089 / C3 0.068 / C1 0.022)は、1,198 query の到達と 398 query の MRR を混ぜた計算だった。基準の読みで、同じ主集合 S の上で headroom_U2(S) = mean 1[truth ∈ U2] − mean RR(F) を出し、三群(正解が F の上位 25 / U2 にあるが F の上位 25 の外 / U2 の外)に分ける。これは「到達した正解を全て 1 位にできたとき」の上限で、学習で得られる量ではない。</li>
+<li>C3 だけの上限: (360 / 1,198) × 0.225 = 0.0676(楽観、C1 / C2 を傷つけない仮定)。+0.086 を C3 だけに期待しない。C1 / C2 の順位と、必要なら候補の被覆も要る。</li>
+<li>被覆の分解: 「E の全窓にあるが U2 に無い」と「全窓にも U2 にも無い」の交差集計を、基準の読みと一緒に dev だけで出す(前者なら shortlist、後者なら窓・源・生成の問題)。</li>
+<li>117 query の「E 源の外」は「C1 / C2 の正解がその query の E 窓に無い」で、窓の条件で外れた場合も含みうる。「DB に無い」とは呼ばない。</li>
+<li>最小の判別(基準の後): seed 11 の OOF で F、固定の FH-PE、FH-PEB、FH-PEB の得点から PE の資格だけ残した順位(同じモデルの反実仮想、記述)を比べ、損失の場所(DB と生成物の競争 / 挿入の判断 / PE の中の順位)を分ける。</li>
+</ul>
+<h2 id="suggestion">suggestion(任意、採るのは結果を見てから)</h2>
+<ul>
+<li>混在の損失が出たら: PE と B の追加候補を別の系統で順位付けし、観測できる P / E の一致度・参照の強さ・B の支持で両者の競争を調整する二系統のモデル(調整器の入力のモデル得点は学習 fold の中でも OOF、class / π を入力や適用条件にしない)。同じ U2・fold・情報・seed・予算で単一 PEB と一案だけを比べる。基準の途中で切り替えない。</li>
+</ul>
+<h2 id="q5">運用(Q5、そのまま採用)</h2>
+<ul>
+<li>基準 FH-PEB の seed 11 / 12 / 13 → 固定 FH-PE(seed 11、一度だけ)→ 結果に基づく内側のループ。</li>
+<li>基準 3 seed は exploit の 6 枠のうち 3 枠(48 時間の窓)を使う。残りは 3。自動の ensemble も枠を使う。</li>
+<li>初期の PE の対応は seed 11 の PEB(後から最大の seed を選ばない)。σ は同じ母集団の主 MRR の seed 間の標準偏差(3 seed で粗い)、max(2σ, 0.005) を維持。</li>
+<li>e は凍結した最終候補の一回の確認まで開けない。</li>
+</ul>
+<h2 id="g0">G0</h2>
+<ul>
+<li>利用者がチャットで承認し、「今回はわたしのこの承認をG0の証人として扱ってください」と指示した(v2 の reports/deviations/D8)。Codex 160 の correctness の処理を固定の前に終えてから、Claude Code が G0 のコマンドを実行する。</li>
+</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
