@@ -3,7 +3,9 @@
              code hashes equal to the committed v2.1 versions, the frozen E2 model's full SHA-256 and 800 trees, both check lines PASS;
   manifests: ewin (masks, eval_csv, gen_dump, fold-safe FPNet, version 2.1), e2f (masks, eval_csv, input ewin, output, analogs), e2s (input ewin /
              e2f, output, model) all agree with each other and with the receipt;
-  analogs  : every scored query's analog list equals the W135 world P's list: keys exactly, values within rtol 0 / atol 1e-12 (max diff kept);
+  analogs  : every scored query's analog list equals the W135 world P's list: keys exactly; values EXACTLY after rounding the E side with the
+             same rule P used when it stored them (w135_p.py: round(float(v), 6)); the raw max |diff| is kept as a log (<= 5e-7 by construction).
+             (159 decision, tolerance fixed before any performance read: P.parquet stores 6-decimal values, the E dump stores raw values.)
   zlog     : every query's |zlog - B1 gen dump| <= 1e-5 (from the E ledger).
 Writes experiments/w135/v2_1/audit.json; exit 1 when any world fails.
 Usage (Spark, repo root): .venv/bin/python -X utf8 experiments/w135/w135_v21_audit.py --expect experiments/w135/v21_expected.json"""
@@ -44,12 +46,13 @@ def audit(w, X):
     need(ms["sets"][b]["input_ewin"] == rc["outputs"][f"ewin_{b}.parquet"] and ms["sets"][b]["input_e2f"] == rc["outputs"][f"e2f_{b}.parquet"] and ms["sets"][b]["sha"] == rc["outputs"][f"e2s_{b}.parquet"], "e2s manifest chain")
     an = json.load(open(os.path.join(O, f"e2f_analogs_{b}.json")))
     Pw = pd.read_parquet(os.path.join(ROOT, "experiments/w135/worlds", w, "P.parquet")); Pw["molecule"] = Pw.molecule.astype(str); pan = dict(zip(Pw.molecule, Pw.analogs))
-    max_d = 0.0
+    max_d = 0.0; n_val_bad = 0
     for m, lst in an.items():
         ref = json.loads(pan.get(m, "[]"))
         if [k for k, _ in lst] != [k for k, _ in ref]: fails.append(f"analog keys differ for {m}"); break
+        n_val_bad += sum(round(float(v), 6) != float(r) for (_, v), (_, r) in zip(lst, ref))
         if lst: max_d = max(max_d, float(np.max(np.abs(np.array([v for _, v in lst]) - np.array([v for _, v in ref])))))
-    need(max_d <= 1e-12, f"analog values differ (max {max_d:.2e})")
+    need(n_val_bad == 0, f"analog values differ after the P rounding rule ({n_val_bad} pairs)")
     L = pd.read_csv(os.path.join(O, f"ewin_molecules_{b}.csv"), dtype={"molecule": str})
     need((L.zlog_maxdiff.astype(float) <= 1e-5).all(), "zlog provenance")
     return dict(world=w, ok=not fails, fails=fails, analog_max_diff=max_d, zlog_max=float(L.zlog_maxdiff.max()), queries=int(len(L)), analog_lists=len(an))
