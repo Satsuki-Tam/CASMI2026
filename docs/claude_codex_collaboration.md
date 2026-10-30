@@ -10,6 +10,10 @@ Claude Code が調査・実装・実験を進め、Codex が仮説・検証設�
 
 初回の競技調査の結果は `reports/agent_review/000_codex_initial_review.md` にある。
 
+## ハーネス導入後(2026-10-30〜)
+
+利用者の指示により、以後の実験は kaggle-harness(C:\kaggle\CASMI\kaggle-harness、ワークスペース C:\kaggle\competitions\casmi-harness)の手順に従う。Codex の役割は docs/harness_roles.md のとおり(Critic・Judge・発想役の一つ・文献の照合)。G0〜G4 の承認は利用者。この依頼の番号の仕組み(reports/agent_review/NNN)は、ハーネスの外の設計レビュー・議論に引き続き使う。Critic / Judge の JSON はワークスペースの規定の場所に保存する。
+
 ## この会話への依頼
 
 作業場所：`C:\kaggle\CASMI`
