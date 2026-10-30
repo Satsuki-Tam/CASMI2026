@@ -46,3 +46,15 @@
 - 候補の母集団の固定により、E2 の候補・新しい生成の方式・窓の拡張は、このワークスペースでは測れない(新しいワークスペースで)。
 - Public LB は最適化の目的にしない(違和感の検出だけ)。0.500 の目標とは、この CV と Public の関係を違和感の監視で確かめながら付き合う。
 - Kaggle への組み込み(FH を提出用のカーネルに入れる)は、CV の外の工程(G3 の前に parity を確認)。
+
+## 改訂 v2(2026-10-30 15:40 JST、Codex 154 と 154_decision.md を反映。G0 に出すのはこの版)
+- 主指標の母集団: **π3 0.3 の F / R の 12 世界 = 1,198 query**。cU1_p30 は補助。7 fold の CV は 153 の再現ではない新しい開発。各出力の母集団(n_total / n_primary / π)は固定の補助 reader(src/aux_reader.py、G0 で固定)で明示する。
+- **query の ID は不透明**(salt つきの hash。W135 の分子 ID は正解の InChIKey 系なので、ワークスペースに入れない)。表は許可した列だけで書き出す(w135_fh_export.py)。対応表・salt・正解・クラス・家族はワークスペースの外。
+- **test = fold 0 の e 世界の π3 0.3 だけ(596 query)**。同じ分子の π0 と π0.3 を両方入れると、候補表の差分から C3 の正解が分かるため。
+- **提出しない枠**: 予測値 ≤ −1e8 の枠はその出力のリストに入れない(P の参照・DB だけの head の生成物の枠)。人工例と実データで、P の参照が生成物の中の正解を数えないことを確認した(41 件、RR 0)。
+- **同点の規則 = 153 と同じ**(得点 → P の順位 → key)。枠の順を P の順位 → 生成物は key 順にした。
+- 基本データ(開発・test の表、test の ID の一覧、補助 reader)は G0 で hash ごと固定する(evaluation.protected_paths + data/folds/data_manifest.json。adapter は読む全ファイルの hash を照合する)。基準の 3 seed は資源 ID を持たないので、この固定で代える。新しい外部データ・モデルは G4。
+- test の集約: 7 fold のモデルの test 予測の平均(runner の既定)を holdout の一回の評価に使う。
+- 逸脱(docs/harness_roles.md の D1〜D5): Windows の sandbox local、CPU だけで GPU 時間による lane の配分が働かない(Orchestrator が lane ごとの job 数を管理、CPU 予算の追加をハーネスに提案)、Codex / Gemini の発想役は隔離が無いので Claude で代替、holdout のラベルは運用上の分離、正式な Critic は Codex の新しい文脈。
+- モデル ID: claude = claude-opus-5-5、codex = gpt-6-astra(read-only の codex exec の表示から確認)。Judge は提案者ごとに別のモデル。
+- 主系 / holdout へ進む関門(案): 主指標で親に対して +2σ 以上かつ +0.005 以上、組の対応差の下限 > 0、保護(π0.3 の C1 / C2、π0 の C1 / C2)の下限 ≥ −0.01。最終候補を凍結した後に、e の holdout を外側の reader で一回だけ読む。
