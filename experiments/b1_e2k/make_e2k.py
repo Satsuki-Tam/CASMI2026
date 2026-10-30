@@ -12,6 +12,9 @@ Construction:
   (4) _fusion_pass gets a keyword hook (default None) called once per molecule at the END of the loop body with (mid, rows, order); the hook
       fuses P's final top 25 (official keys) with the E2 order by e2_engine.fuse_rrf (alpha 0 must give P; empty E2 -> P);
   (5) output: submission.csv = F / H, submission_pref.csv = P; molecules without P candidates keep the placeholder.
+v2 (Codex 145): E2 has its OWN library index and analog store built from the shipped inchikey14 -> scorer key map (--e2_index; the development
+index), while P keeps its frozen index; the GL / ICE budgets are computed as if E2 had not run (E2 time subtracted from the elapsed time);
+the model's feature names must equal e2_common.FEATS.
 Without --e2_model the run is the pop0 / v8w7a run (hook None; outputs as before).
 Usage: python -X utf8 experiments/b1_e2k/make_e2k.py   (writes experiments/b1_e2k/b1_pipeline.py + copies; prints the checks)"""
 import hashlib, os, shutil
@@ -42,14 +45,14 @@ rep('    ap.add_argument("--gl_json", default=None,',
     '    ap.add_argument("--e2_model", default=None, help="145: E2 second engine (experiments/e2 e2_lgb.txt); submission.csv = the fixed identity RRF F of the final main order with E2 (K 10, alpha 0.5; --e2_hedge 1 = H), the main list = submission_pref.csv (default None = off, outputs as before)")\n'
     '    ap.add_argument("--e2_model_sha", default=None, help="145: expected sha256 of --e2_model (stop on mismatch)"); ap.add_argument("--e2_hedge", type=int, default=0, choices=[0, 1])\n'
     '    ap.add_argument("--e2_dump", type=int, default=0, choices=[0, 1], help="145: also write the E2 tables (e2_ewin.parquet / e2_feats.parquet) for the parity check")\n'
-    '    ap.add_argument("--e2_bio", default="bio_structures.parquet"); ap.add_argument("--e2_pcl", default="pubchemlite_annotations.parquet"); ap.add_argument("--e2_structs", default="train_structs.parquet")\n'
+    '    ap.add_argument("--e2_bio", default="bio_structures.parquet"); ap.add_argument("--e2_pcl", default="pubchemlite_annotations.parquet"); ap.add_argument("--e2_structs", default="train_structs.parquet"); ap.add_argument("--e2_index", default="e2_ik14_to_scorer.parquet")\n'
     '    ap.add_argument("--gl_json", default=None,')
 # 3. engine setup (after the evaluation-mode masks)
 rep('        if EXCL_ROWS or EXCL_IDS or MASK: log(f"EVALUATION MODE: global masks {len(EXCL_ROWS)} rows / {len(EXCL_IDS)} identities; per-molecule masks for {len(MASK)} molecules")\n',
     '        if EXCL_ROWS or EXCL_IDS or MASK: log(f"EVALUATION MODE: global masks {len(EXCL_ROWS)} rows / {len(EXCL_IDS)} identities; per-molecule masks for {len(MASK)} molecules")\n'
-    '        E2 = None; E2_ORDER = {}; E2_TAB = []; E2_FAIL = []; E2_MAN = None\n'
+    '        E2 = None; E2_ORDER = {}; E2_TAB = []; E2_FAIL = []; E2_MAN = None; E2_SEC = [0.0]\n'
     '        if args.e2_model:   # 145: E2 engine on the same queries / FPNet logits / library index / analog store as P\n'
-    '            import hashlib as _hl2, lightgbm as _lgb2\n'
+    '            _t2s = time.time(); import hashlib as _hl2, lightgbm as _lgb2\n'
     '            from e2_engine import EStores, E2Engine\n'
     '            from rdkit import Chem as _Ch2\n'
     '            from rdkit.Chem import rdFingerprintGenerator as _rfg2\n'
@@ -66,7 +69,16 @@ rep('        if EXCL_ROWS or EXCL_IDS or MASK: log(f"EVALUATION MODE: global mas
     '                return hits_[0]\n'
     '            _e2m = _res2(args.e2_model); _e2ms = _sha2(_e2m)\n'
     '            if args.e2_model_sha and _e2ms != args.e2_model_sha: raise SystemExit(f"145: E2 model sha256 {_e2ms} != expected {args.e2_model_sha}")\n'
-    '            _e2b = _lgb2.Booster(model_file=_e2m); _bio_p, _pcl_p, _str_p = _res2(args.e2_bio), _res2(args.e2_pcl), _res2(args.e2_structs)\n'
+    '            _e2b = _lgb2.Booster(model_file=_e2m); _bio_p, _pcl_p, _str_p, _idx_p = _res2(args.e2_bio), _res2(args.e2_pcl), _res2(args.e2_structs), _res2(args.e2_index)\n'
+    '            from e2_common import FEATS as _FE2\n'
+    '            assert list(_e2b.feature_name()) == list(_FE2), ("145: E2 model features differ from e2_common.FEATS", _e2b.feature_name())\n'
+    '            _ixm = meta.select("row", "inchikey14").join(pl.read_parquet(_idx_p).select("inchikey14", "scorer_ik14").rename({"scorer_ik14": "_e2key"}), on="inchikey14", how="left").sort("row")   # E2 index = the development index\n'
+    '            assert _ixm.height == meta.height and _ixm["row"].to_list() == list(range(meta.height)), "145: E2 index rows"\n'
+    '            _key_of_row2 = np.asarray(_ixm["_e2key"].to_list(), dtype=object); _unm2 = int(sum(k_ is None for k_ in _key_of_row2))\n'
+    '            if "scorer_ik14" in meta.columns:\n'
+    '                _mis2 = int(sum(a_ != b_ for a_, b_ in zip(_key_of_row2, meta["scorer_ik14"].to_list()))); assert _mis2 == 0, ("145: shipped E2 index differs from the store scorer keys", _mis2)\n'
+    '            key_rows_e2 = {k_: np.asarray(r_, np.int64) for k_, r_ in _ixm.filter(pl.col("_e2key").is_not_null()).group_by("_e2key").agg(pl.col("row")).iter_rows()}\n'
+    '            ANA_E2 = BA.Store(np.arange(len(lib_of_row)), lib_of_row, add_of_row, mode_of_row, ce_of_row_, _key_of_row2, prec_of_row, lambda x_: spectrum(int(x_)), log=log)\n'
     '            _pcl_rows = pl.read_parquet(_pcl_p, columns=["tier_row"]).filter(pl.col("tier_row") >= 0)["tier_row"].unique().to_numpy()\n'
     '            _bio = pl.read_parquet(_bio_p, columns=["smiles", "monoisotopic_mass"]).drop_nulls()\n'
     '            _ts2 = pd.read_parquet(_str_p, columns=["key", "smiles"]).drop_duplicates("key"); _key_smi2 = dict(zip(_ts2.key.astype(str), _ts2.smiles.astype(str)))\n'
@@ -86,15 +98,17 @@ rep('        if EXCL_ROWS or EXCL_IDS or MASK: log(f"EVALUATION MODE: global mas
     '                        except Exception: pass\n'
     '                except Exception: pass\n'
     '                return keys_\n'
-    '            E2 = E2Engine(EStores(tmass, toff, tbuf, _pcl_rows, pool, CMASS, CSMI, _bio), _e2b, key_rows, lambda x_: spectrum(int(x_)), lib_of_row, add_of_row, mode_of_row, prec_of_row, ANA_STORE, _key_smi2, _mfp2)\n'
+    '            E2 = E2Engine(EStores(tmass, toff, tbuf, _pcl_rows, pool, CMASS, CSMI, _bio), _e2b, key_rows_e2, lambda x_: spectrum(int(x_)), lib_of_row, add_of_row, mode_of_row, prec_of_row, ANA_E2, _key_smi2, _mfp2)\n'
     '            E2_MAN = dict(model=_e2m, model_sha256=_e2ms, expected_sha_given=bool(args.e2_model_sha), trees=_e2b.num_trees(), feats=list(_e2b.feature_name()), K=10.0, alpha=0.5, hedge=args.e2_hedge,\n'
     '                          bio=_bio_p, bio_sha256=_sha2(_bio_p), pcl=_pcl_p, pcl_sha256=_sha2(_pcl_p), structs=_str_p, structs_sha256=_sha2(_str_p), pcl_tier_rows=int(len(_pcl_rows)), bio_rows=int(_bio.height),\n'
-    '                          coconut=int(len(CMASS)) if CMASS is not None else 0)\n'
+    '                          coconut=int(len(CMASS)) if CMASS is not None else 0, index=_idx_p, index_sha256=_sha2(_idx_p), index_keys=len(key_rows_e2), index_unmapped_rows=_unm2)\n'
+    '            E2_SEC[0] += time.time() - _t2s\n'
     '            log(f"145 E2: model {_e2m} ({_e2ms[:12]}, {_e2b.num_trees()} trees), PCL tier rows {len(_pcl_rows):,}, BIO {_bio.height:,}, COCONUT {E2_MAN[\'coconut\']:,}, hedge {args.e2_hedge}")\n')
 # 4. per-molecule E2 order (read only)
 rep("            feats[mid] = rows\n",
     "            feats[mid] = rows\n"
     "            if E2 is not None:   # 145: the E2 order of this molecule from the same q / M_by_add / zlog (P's rows untouched)\n"
+    "                _t2m = time.time()\n"
     "                try:\n"
     "                    _c1t = (same_lib.get('identity'), _alias2(same_lib.get('identity'), str(mid)), same_lib.get('lib')) if same_lib else None\n"
     "                    def _fm2(sm_, _z=zlog):\n"
@@ -104,7 +118,11 @@ rep("            feats[mid] = rows\n",
     "                    E2_ORDER[str(mid)] = (E2.rank(_Et, _Ft), dict(zip(_Et.official_key.astype(str), _Et.smiles.astype(str))) if _Et is not None else {})\n"
     "                    if args.e2_dump and _Et is not None: E2_TAB.append((_Et, _Ft))\n"
     "                except Exception as e_:\n"
-    "                    E2_FAIL.append(str(mid)); log('145 E2 failed for', mid, repr(e_))\n")
+    "                    E2_FAIL.append(str(mid)); log('145 E2 failed for', mid, repr(e_))\n"
+    "                E2_SEC[0] += time.time() - _t2m\n")
+# 5a. the forward budgets ignore the E2 time (P's GL / ICE coverage = the run without E2)
+rep("        if args.deadline_s > 0: b = min(b, int(args.deadline_s - (time.time() - T0) - 900))",
+    "        if args.deadline_s > 0: b = min(b, int(args.deadline_s - (time.time() - T0 - E2_SEC[0]) - 900))   # 145: E2 time excluded (P's budget unchanged)")
 # 5. hook
 rep("    def _fusion_pass(LAM, fused_stats):",
     "    E2_OUT, E2_ST = {}, []\n"
@@ -139,7 +157,7 @@ rep('    df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"
     '        _st2 = pd.DataFrame(E2_ST, columns=["molecule", "n_p", "n_e2", "top1_changed", "top25_changed", "new_keys", "e2_top1_p_rank", "failed"]); _st2.to_csv(f"{P[\'work\']}/e2_stats.csv", index=False)\n'
     '        if args.e2_dump and E2_TAB:\n'
     '            pd.concat([e_ for e_, _ in E2_TAB], ignore_index=True).to_parquet(f"{P[\'work\']}/e2_ewin.parquet", index=False); pd.concat([f_ for _, f_ in E2_TAB], ignore_index=True).to_parquet(f"{P[\'work\']}/e2_feats.parquet", index=False)\n'
-    '        E2_MAN.update(molecules=len(_need), e2_nonempty=int((_st2.n_e2 > 0).sum()), e2_failed=len(E2_FAIL), top1_changed=int(_st2.top1_changed.sum()), top25_changed=int(_st2.top25_changed.sum()),\n'
+    '        E2_MAN.update(e2_seconds=round(E2_SEC[0], 1), molecules=len(_need), e2_nonempty=int((_st2.n_e2 > 0).sum()), e2_failed=len(E2_FAIL), top1_changed=int(_st2.top1_changed.sum()), top25_changed=int(_st2.top25_changed.sum()),\n'
     '                      new_keys_mols=int((_st2.new_keys > 0).sum()), lists_changed=int(sum(a_ != b_ for (_, a_), (_, b_) in zip(sub, sub_pref))))\n'
     '        log(f"145 E2: {E2_MAN[\'molecules\']} molecules, E2 non-empty {E2_MAN[\'e2_nonempty\']}, failed {E2_MAN[\'e2_failed\']}, rank-1 changed {E2_MAN[\'top1_changed\']}, lists changed {E2_MAN[\'lists_changed\']}")\n'
     '    df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P[\'work\']}/submission.csv", index=False)')
@@ -148,7 +166,7 @@ rep("        out_ = dict(official_mrr25=official, official_mrr25_fixed=official_
     "        official_pref = _score(pd.DataFrame(sub_pref, columns=['molecule_id', 'smiles']))[0] if sub_pref is not None else None   # 145: main list P of the same run\n"
     "        if official_pref is not None: log(f'145: OFFICIAL MRR@25 of F {official:.4f} vs the main list P {official_pref:.4f}')\n"
     "        out_ = dict(official_mrr25=official, official_mrr25_pref=official_pref, official_mrr25_fixed=official_fixed,")
-open(os.path.join(HERE, "b1_pipeline.py"), "w", encoding="utf-8").write(t)
+open(os.path.join(HERE, "b1_pipeline.py"), "w", encoding="utf-8", newline="\n").write(t)   # LF: file bytes = the embedded text
 import ast
 ast.parse(t)
 print("wrote", os.path.join(HERE, "b1_pipeline.py"), hashlib.sha256(t.encode()).hexdigest()[:12], f"{len(t) - len(s):+d} chars vs pop0")

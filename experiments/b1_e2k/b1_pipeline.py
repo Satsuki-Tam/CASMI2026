@@ -228,7 +228,7 @@ def main():
     ap.add_argument("--e2_model", default=None, help="145: E2 second engine (experiments/e2 e2_lgb.txt); submission.csv = the fixed identity RRF F of the final main order with E2 (K 10, alpha 0.5; --e2_hedge 1 = H), the main list = submission_pref.csv (default None = off, outputs as before)")
     ap.add_argument("--e2_model_sha", default=None, help="145: expected sha256 of --e2_model (stop on mismatch)"); ap.add_argument("--e2_hedge", type=int, default=0, choices=[0, 1])
     ap.add_argument("--e2_dump", type=int, default=0, choices=[0, 1], help="145: also write the E2 tables (e2_ewin.parquet / e2_feats.parquet) for the parity check")
-    ap.add_argument("--e2_bio", default="bio_structures.parquet"); ap.add_argument("--e2_pcl", default="pubchemlite_annotations.parquet"); ap.add_argument("--e2_structs", default="train_structs.parquet")
+    ap.add_argument("--e2_bio", default="bio_structures.parquet"); ap.add_argument("--e2_pcl", default="pubchemlite_annotations.parquet"); ap.add_argument("--e2_structs", default="train_structs.parquet"); ap.add_argument("--e2_index", default="e2_ik14_to_scorer.parquet")
     ap.add_argument("--gl_json", default=None, help="pop0 local parity only (ignored on Kaggle): load GL from this gl_out.json instead of running the forward models")
     ap.add_argument("--lam_fixed", type=float, default=None, help="116/124 pop0 DIAGNOSTIC: fixed-rule prior coefficient of S (both paths); the run also writes the frozen-LAM list as submission_lamref.csv (default None = frozen LAM, one pass)")
     ap.add_argument("--frag_w_fallback", type=float, default=0.0, help="MetFrag-lite (b1_frag, 038): + w * z(fragmentation score) for molecules on the GL-coverage fallback path; default 0 = off")
@@ -328,9 +328,9 @@ def main():
         EXCL_IDS = set(json.load(open(args.exclude_identities))) if args.exclude_identities else set()
         MASK = json.load(open(args.mask_json)) if args.mask_json else {}
         if EXCL_ROWS or EXCL_IDS or MASK: log(f"EVALUATION MODE: global masks {len(EXCL_ROWS)} rows / {len(EXCL_IDS)} identities; per-molecule masks for {len(MASK)} molecules")
-        E2 = None; E2_ORDER = {}; E2_TAB = []; E2_FAIL = []; E2_MAN = None
+        E2 = None; E2_ORDER = {}; E2_TAB = []; E2_FAIL = []; E2_MAN = None; E2_SEC = [0.0]
         if args.e2_model:   # 145: E2 engine on the same queries / FPNet logits / library index / analog store as P
-            import hashlib as _hl2, lightgbm as _lgb2
+            _t2s = time.time(); import hashlib as _hl2, lightgbm as _lgb2
             from e2_engine import EStores, E2Engine
             from rdkit import Chem as _Ch2
             from rdkit.Chem import rdFingerprintGenerator as _rfg2
@@ -347,7 +347,16 @@ def main():
                 return hits_[0]
             _e2m = _res2(args.e2_model); _e2ms = _sha2(_e2m)
             if args.e2_model_sha and _e2ms != args.e2_model_sha: raise SystemExit(f"145: E2 model sha256 {_e2ms} != expected {args.e2_model_sha}")
-            _e2b = _lgb2.Booster(model_file=_e2m); _bio_p, _pcl_p, _str_p = _res2(args.e2_bio), _res2(args.e2_pcl), _res2(args.e2_structs)
+            _e2b = _lgb2.Booster(model_file=_e2m); _bio_p, _pcl_p, _str_p, _idx_p = _res2(args.e2_bio), _res2(args.e2_pcl), _res2(args.e2_structs), _res2(args.e2_index)
+            from e2_common import FEATS as _FE2
+            assert list(_e2b.feature_name()) == list(_FE2), ("145: E2 model features differ from e2_common.FEATS", _e2b.feature_name())
+            _ixm = meta.select("row", "inchikey14").join(pl.read_parquet(_idx_p).select("inchikey14", "scorer_ik14").rename({"scorer_ik14": "_e2key"}), on="inchikey14", how="left").sort("row")   # E2 index = the development index
+            assert _ixm.height == meta.height and _ixm["row"].to_list() == list(range(meta.height)), "145: E2 index rows"
+            _key_of_row2 = np.asarray(_ixm["_e2key"].to_list(), dtype=object); _unm2 = int(sum(k_ is None for k_ in _key_of_row2))
+            if "scorer_ik14" in meta.columns:
+                _mis2 = int(sum(a_ != b_ for a_, b_ in zip(_key_of_row2, meta["scorer_ik14"].to_list()))); assert _mis2 == 0, ("145: shipped E2 index differs from the store scorer keys", _mis2)
+            key_rows_e2 = {k_: np.asarray(r_, np.int64) for k_, r_ in _ixm.filter(pl.col("_e2key").is_not_null()).group_by("_e2key").agg(pl.col("row")).iter_rows()}
+            ANA_E2 = BA.Store(np.arange(len(lib_of_row)), lib_of_row, add_of_row, mode_of_row, ce_of_row_, _key_of_row2, prec_of_row, lambda x_: spectrum(int(x_)), log=log)
             _pcl_rows = pl.read_parquet(_pcl_p, columns=["tier_row"]).filter(pl.col("tier_row") >= 0)["tier_row"].unique().to_numpy()
             _bio = pl.read_parquet(_bio_p, columns=["smiles", "monoisotopic_mass"]).drop_nulls()
             _ts2 = pd.read_parquet(_str_p, columns=["key", "smiles"]).drop_duplicates("key"); _key_smi2 = dict(zip(_ts2.key.astype(str), _ts2.smiles.astype(str)))
@@ -367,10 +376,11 @@ def main():
                         except Exception: pass
                 except Exception: pass
                 return keys_
-            E2 = E2Engine(EStores(tmass, toff, tbuf, _pcl_rows, pool, CMASS, CSMI, _bio), _e2b, key_rows, lambda x_: spectrum(int(x_)), lib_of_row, add_of_row, mode_of_row, prec_of_row, ANA_STORE, _key_smi2, _mfp2)
+            E2 = E2Engine(EStores(tmass, toff, tbuf, _pcl_rows, pool, CMASS, CSMI, _bio), _e2b, key_rows_e2, lambda x_: spectrum(int(x_)), lib_of_row, add_of_row, mode_of_row, prec_of_row, ANA_E2, _key_smi2, _mfp2)
             E2_MAN = dict(model=_e2m, model_sha256=_e2ms, expected_sha_given=bool(args.e2_model_sha), trees=_e2b.num_trees(), feats=list(_e2b.feature_name()), K=10.0, alpha=0.5, hedge=args.e2_hedge,
                           bio=_bio_p, bio_sha256=_sha2(_bio_p), pcl=_pcl_p, pcl_sha256=_sha2(_pcl_p), structs=_str_p, structs_sha256=_sha2(_str_p), pcl_tier_rows=int(len(_pcl_rows)), bio_rows=int(_bio.height),
-                          coconut=int(len(CMASS)) if CMASS is not None else 0)
+                          coconut=int(len(CMASS)) if CMASS is not None else 0, index=_idx_p, index_sha256=_sha2(_idx_p), index_keys=len(key_rows_e2), index_unmapped_rows=_unm2)
+            E2_SEC[0] += time.time() - _t2s
             log(f"145 E2: model {_e2m} ({_e2ms[:12]}, {_e2b.num_trees()} trees), PCL tier rows {len(_pcl_rows):,}, BIO {_bio.height:,}, COCONUT {E2_MAN['coconut']:,}, hedge {args.e2_hedge}")
         for n_i, (mid, spectra) in enumerate(mols.items()):
             tm0 = time.time()
@@ -514,6 +524,7 @@ def main():
                     for f_name in ("ap", "mean_tan", "ap_x", "mean_tan_x"): r_["ana_" + f_name] = float(fa_[f_name][j_])
             feats[mid] = rows
             if E2 is not None:   # 145: the E2 order of this molecule from the same q / M_by_add / zlog (P's rows untouched)
+                _t2m = time.time()
                 try:
                     _c1t = (same_lib.get('identity'), _alias2(same_lib.get('identity'), str(mid)), same_lib.get('lib')) if same_lib else None
                     def _fm2(sm_, _z=zlog):
@@ -524,6 +535,7 @@ def main():
                     if args.e2_dump and _Et is not None: E2_TAB.append((_Et, _Ft))
                 except Exception as e_:
                     E2_FAIL.append(str(mid)); log('145 E2 failed for', mid, repr(e_))
+                E2_SEC[0] += time.time() - _t2m
             if args.frag_w_fallback: qspec_of[mid] = [dict(mz=s_["mz"], it=s_["it"], prec=s_["prec"], mode=s_["mode"]) for s_ in q]
             molinfo[mid] = dict(n_query=len(q), ce_known=float(np.mean([s["ce"] is not None for s in q])), n_unique=float(n_u))
             rspec = [dict(mz=s["mz"].tolist(), it=s["it"].tolist(), prec=s["prec"], adduct=s["adduct"], mode=s["mode"], instrument=s["instrument"],
@@ -541,7 +553,7 @@ def main():
     runner.sort(key=lambda it: it["lib_max"]); items = [dict(mid=it["mid"], spectra=it["spectra"], cands=it["cands"]) for it in runner]
     json.dump(items, open(f"{P['work']}/b1_forward_in.json", "w"))
     def _budget(b):
-        if args.deadline_s > 0: b = min(b, int(args.deadline_s - (time.time() - T0) - 900))
+        if args.deadline_s > 0: b = min(b, int(args.deadline_s - (time.time() - T0 - E2_SEC[0]) - 900))   # 145: E2 time excluded (P's budget unchanged)
         return max(300, int(b))
     GL, ICE = {}, {}
     if args.gl_json and not KAGGLE:   # pop0 local parity only: reuse the stored GLACIER output of an earlier run on the same items (no forward run)
@@ -684,7 +696,7 @@ def main():
         _st2 = pd.DataFrame(E2_ST, columns=["molecule", "n_p", "n_e2", "top1_changed", "top25_changed", "new_keys", "e2_top1_p_rank", "failed"]); _st2.to_csv(f"{P['work']}/e2_stats.csv", index=False)
         if args.e2_dump and E2_TAB:
             pd.concat([e_ for e_, _ in E2_TAB], ignore_index=True).to_parquet(f"{P['work']}/e2_ewin.parquet", index=False); pd.concat([f_ for _, f_ in E2_TAB], ignore_index=True).to_parquet(f"{P['work']}/e2_feats.parquet", index=False)
-        E2_MAN.update(molecules=len(_need), e2_nonempty=int((_st2.n_e2 > 0).sum()), e2_failed=len(E2_FAIL), top1_changed=int(_st2.top1_changed.sum()), top25_changed=int(_st2.top25_changed.sum()),
+        E2_MAN.update(e2_seconds=round(E2_SEC[0], 1), molecules=len(_need), e2_nonempty=int((_st2.n_e2 > 0).sum()), e2_failed=len(E2_FAIL), top1_changed=int(_st2.top1_changed.sum()), top25_changed=int(_st2.top25_changed.sum()),
                       new_keys_mols=int((_st2.new_keys > 0).sum()), lists_changed=int(sum(a_ != b_ for (_, a_), (_, b_) in zip(sub, sub_pref))))
         log(f"145 E2: {E2_MAN['molecules']} molecules, E2 non-empty {E2_MAN['e2_nonempty']}, failed {E2_MAN['e2_failed']}, rank-1 changed {E2_MAN['top1_changed']}, lists changed {E2_MAN['lists_changed']}")
     df = pd.DataFrame(sub, columns=["molecule_id", "smiles"]); df.to_csv(f"{P['work']}/submission.csv", index=False)
