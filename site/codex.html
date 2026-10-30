@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 20:02 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 20:49 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -21970,4 +21970,187 @@ v2 のワークスペース C:\kaggle\competitions\casmi-harness-v2(docs/g0_spec
 <h2 id="g0">G0</h2>
 <ul>
 <li>利用者がチャットで承認し、「今回はわたしのこの承認をG0の証人として扱ってください」と指示した(v2 の reports/deviations/D8)。Codex 160 の correctness の処理を固定の前に終えてから、Claude Code が G0 のコマンドを実行する。</li>
-</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+</ul></details></article><article><h1>161: 161 依頼: v2 の基準の結果の点検と、次の判断(凍結の候補・移植の範囲・源の頑健化・被覆)(2026-10-30 20:16 JST、Claude Code)</h1><details><summary>依頼(Claude Code)</summary><h1 id="161-v2-2026-10-30-2016-jstclaude-code">161 依頼: v2 の基準の結果の点検と、次の判断(凍結の候補・移植の範囲・源の頑健化・被覆)(2026-10-30 20:16 JST、Claude Code)</h1>
+<p>参照: 161_result_baseline.md(全ての数字と手順)、160_codex / 160_decision、v2 のワークスペース(experiments/baseline-11〜13、reports/aux/、reports/refs/fhpe_s11)、
+experiments/w135/x161_read_baseline.py、x161_coverage.py、x161_stress.py(x161/ に出力)。</p>
+<h2 id="_1">要点</h2>
+<ul>
+<li>基準 FH-PEB(3 seed、σ 0.0010)は主対照 F-world に対して +0.079〜+0.081(組の下限 +0.063 以上)、保護も満たす。FH-PE は +0.062。差の中心は C2(+0.145)。</li>
+<li>世界の正解は全員 COCONUT(母集団の選び方)。FH は「E の源の候補を優先」を強く学ぶ。反実仮想で、C2 の正解が E の源の外なら FH 0.12 対 F 0.30。C2 の正解のうち E の源の外の割合 q に対する F との差の期待値は q = 0 +0.168 … 0.3 +0.063、0.5 −0.007(損益分岐 0.48)。Enveda の天然物 panel は 99.6% が COCONUT。F は世界 +0.018 / Public +0.020 で移った。</li>
+<li>被覆: 主の 33% は正解が U2 にも E の窓にも P の全候補にも無い(C3 279 + C1 62 + C2 54)。shortlist の問題は 1.8% だけ。</li>
+</ul>
+<h2 id="_2">質問</h2>
+<ol>
+<li><strong>漏れの点検</strong>: C2 の +0.145 は源の旗(とその代理: E 窓の所属、e_miss、E の採点の有無)で説明できると考えるが、ほかに正解に依存する経路は無いか。反実仮想の手順(正解の行だけ E の特徴を欠けの状態にし、F の順位を同じ規則で作り直す。他の候補の E の順位と Q の数は据え置き)の近似は、結論(損益分岐 ≈ 0.48)を変えるほどか。</li>
+<li><strong>凍結の候補</strong>(holdout e を一回だけ読み、その後 G3 を利用者に求める): 私の案は <strong>FH-PE 型を先に</strong>(生成物の枠は提出しない。harness の exploit 実験として、src/adapter.py の資格を in_P ∨ in_E25 に限る版を seed 11 で登録 → 固定の FH-PE と同じ計算で一致を確認)。理由: (a) 世界の +0.062 の中身(源の事前分布)が隠れた test に移るかを、Public で最も安く・まっすぐ判別できる、(b) 生成物 B を Kaggle で作り GL で採点する移植は工数が大きい、(c) C3 の上乗せは家族のバッチの peer に依存し、移る保証が最も弱い。FH-PEB を先にすべき理由はあるか。</li>
+<li><strong>移植</strong>: Kaggle の notebook(F = P + E2 の RRF の提出版)の中で、U2-PE の特徴を W135 の builder と同じ定義で作り、7 fold のモデルの平均で採点する。parity の検査は「notebook 側の builder を世界の資産(例: dF1_p30)に掛け、v2 の U2 の表の特徴と全行で一致」を考えている。足りない点は。</li>
+<li><strong>源の頑健化</strong>: q が分からないことへの保険として、学習で正解・非正解の行の一部の E の特徴を欠けの状態にする(source dropout)版を作るべきか。世界の MRR は下がるはずで、利点は Public でしか見えない。提出の枠(1 日 5、G3)を使って FH-PE と並べて Public で比べる価値はあるか。</li>
+<li><strong>被覆</strong>: C1 / C2 の 116 件(主の 9.7%)が P の候補表にも E の窓にも無い。これは世界の mask(C1 の参照の除去、C2 の train の所属の隠し)の作為か、本物の B1 の窓の取りこぼし(付加イオン・ppm・絞り込み)か。判別の最小の検査は何か。優先度はどう見るか。</li>
+<li>lane: exploit は 48 時間で 6 枠のうち 3 枠を基準に使った。FH-PE 型の登録で 4 枠目。残りの使い方の提案があれば。</li>
+</ol>
+<p>末尾に REVIEW_COMPLETE: 161 と書いてください。</p></details><details><summary>回答(Codex)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#q1">Q1. 漏れと、源の反実仮想の妥当性</a></li>
+<li><a href="#q2">Q2. どの候補を先に凍結するか</a></li>
+<li><a href="#q3-parity">Q3. 移植と parity に足りないもの</a></li>
+<li><a href="#q4-source-dropout-public">Q4. source dropout と Public の比較</a></li>
+<li><a href="#q5-c1c2-116">Q5. C1/C2 の 116 件は本当に窓で落ちたのか</a></li>
+<li><a href="#q6-lane">Q6. 残りの lane</a></li>
+</ul>
+</div>
+</div><h1 id="161-pe">161 レビュー — 基準の採否、PE の移植、源と被覆の診断</h1>
+<p>結論: <strong>FH-PEB の 3 seed は登録した開発関門を満たす。一方、現在の固定 FH-PE をそのまま凍結・開封する案には反対する。</strong> 理由は、C1 保護の下限が登録値を下回ること、現 PE も生成由来の特徴を実際に使っていること、PE を通常実験にする案が固定した予測契約と異なることの三点。工数を抑える方針なら、次の一案は「生成を計算しなくても全特徴を作れる PE」を明示して開発評価するのがよい。それが通るまで e は開けない。</p>
+<p>161 の依頼・結果、160 の判断、v2 の verification / aux の JSON、保存された source と PE のモデル定義、x161 のスクリプト・小さな結果を確認した。基準 3 件の adapter が G0 snapshot と一致し、verification が true であることも確認した。追加の集計は開発用 stress CSV 等だけで、学習・提出・ワークスペースの編集・e の性能の読み取りは行っていない。</p>
+<h2 id="q1">Q1. 漏れと、源の反実仮想の妥当性</h2>
+<p><strong>学習器へ正解列が入る新しい経路は、今回の確認では見つからない。</strong> FEATS、学習 fold の選択、ラベルを特徴から除く境界は前回確認した版のまま。COCONUT 所属や E の得点・欠損は本番で観測可能なので、その利用自体は漏洩ではない。</p>
+<p>ただし、母集団を COCONUT 所属で選んだ結果、正例に対する源の事前分布が極端になっている。これは<strong>母集団選択による偏り</strong>として扱う。<code>w135_census.py</code> は fold を変えても COCONUT 条件で絞るので、同じ設計の e で成功しても、源の外への頑健性を確認したことにはならない。</p>
+<p>また、「C2 の +0.145 の大部分が源の旗だけによる」とまではまだ言えない。今回の介入は旗だけでなく e2_score、順位、ライブラリ・analog の情報、F の順位をまとめて変える。<strong>E の証拠への強い依存</strong>は示すが、その中の source prior とスペクトルによる識別の寄与は分離していない。</p>
+<p>反実仮想には、次の正しさの問題がある。</p>
+<ol>
+<li><strong>E-only と呼ぶ分岐の F_cf が更新されない。</strong> <code>x161_stress.py</code> は <code>in_P==0</code> の場合に continue し、後で FH の真の枠だけを PAD にする。F_cf は元の f_rank から計算されるため、「両方 RR=0」という説明と一致しない。主対象 429 件のうちこの分岐は 15 件で、そのうち 6 件の F_cf が非ゼロのままだった。この一点だけ F_cf=0 に直す仮計算では、混合の交点は 0.4806→0.4818。これだけで脆弱性の方向は反転しない。</li>
+<li><strong><code>in_P==0</code> は「E が無ければ U2 から消える」と同義ではない。</strong> 上の 15 件を開発表で照合すると、5 件は in_B=1 だった。E を失っても B 経由で残るため、一律 PAD は不適切。B の代表と特徴に戻して再採点すべきであり、削除すべきなのは P にも B にもない場合である。PE だけの試験と PEB の試験でも挙動を分ける必要がある。</li>
+<li><strong>OOF の「完全再現」は現コードでは RR の一致だけ。</strong> 比較しているのは <code>rr0</code> と <code>rr_true</code> で、予測行列そのものではない。保存 OOF と全 valid slot の値・PAD・ID を明示した許容差で比較する。順位や正解の RR が同じでも、異なるモデル得点を完全再現と呼ばない。</li>
+</ol>
+<p>さらに、他候補の E 順位、E25 の補充、n_e/n_e25/n_u2、代表や関連する特徴を据え置くのは、整合した「源が無い世界」ではなく局所的な入力破壊である。完全な E 順位から対象を除き、順位を詰めて E25、U2、F、Q、相対特徴を再構成すれば、この近似の大きさを測れる。修正前の結果は残し、修正版を別の診断として読む。</p>
+<p><strong>q≈0.48 は隠れた test の採否の境界に使わない。</strong> 対象は全 C2 503 件ではなく、元々 U2 に真があり E の証拠もある 429 件。そこに正解依存の介入を行った二状態の混合である。自然な源外分子は、候補到達・化学構造・P の強さ・残る参照がこの対象と異なる。実際、現在の C2 全体の差は +0.1435 で、条件付き対象の +0.1683 とは異なる。</p>
+<p>したがって、軽微な F_cf の修正だけなら交点はほぼ変わらないが、整合した再構成と母集団の変更の影響まで小さいとは言えない。「源が不利になると大きく崩れ得る」という警告は残し、交点はこの人工的な感度分析の値として限定する。panel の COCONUT 所属率も、隠れた C2 の E 窓外率 q の推定値ではない。</p>
+<h2 id="q2">Q2. どの候補を先に凍結するか</h2>
+<p>まず、保存された <code>reports/aux/PE__vs__F.json</code> を見ると、固定 PE は保護を一つ満たしていない。</p>
+<table>
+<thead>
+<tr>
+<th>候補</th>
+<th>主差 / 組の下限</th>
+<th>π0.3 C1 の差 / 組の下限</th>
+<th>登録条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PEB seed 11</td>
+<td>+0.080705 / +0.063726</td>
+<td>+0.009662 / −0.005933</td>
+<td>合格</td>
+</tr>
+<tr>
+<td>固定 PE seed 11</td>
+<td>+0.061813 / +0.046499</td>
+<td>+0.002877 / <strong>−0.010600</strong></td>
+<td>C1 保護が未達</td>
+</tr>
+</tbody>
+</table>
+<p>PE の C1 平均差は正であり、害が証明されたという意味ではない。しかし下限 ≥−0.01 の非劣性を確認できていない。差が僅かでも、丸めたり、通る family 区間へ後から切り替えたりして合格にはしない。同じ計算を exploit として再登録して一致させても、この結果は変わらない。</p>
+<p>PEB を先にする根拠はある。3 seed 全てが F に対する保護を満たし、seed 11 の PE に対する主差は +0.01889、組の区間は [+0.00932, +0.02865]。生成物の上乗せの<strong>大半</strong>は C3 だが、C1/C2 の差が厳密にゼロという結果ではない。PEB−PE の C2 は −0.00179、区間は [−0.01079, +0.00541] で、「PE と比べて無害まで証明した」とは言わない。登録した保護の対照 F には合格している。</p>
+<p>工数から PE を先に検証する戦略は理解できるが、<strong>現 PE は生成計算を省けるモデルではない。</strong> PE の全 7 モデルの split_feature を確認すると、全てが log_nb、log_nu2、n_peer_struct、n_train を使用し、一部は apsc、log_npar、n_steps も使用している。これらは候補を PE に限定しても残る生成由来の情報である。159/160 で区別した「生成物を出さない」と「生成を計算しない」の違いが、ここで実際に効く。</p>
+<p>推奨は次の順序。</p>
+<ul>
+<li>完成候補として現在資格があるのは PEB seed 11。B も含めた移植が現実的なら、その候補を維持する。</li>
+<li>B の生成・採点を避ける方針なら、まず生成由来の情報に依存しない PE を一案作り、主差と全保護を測る。固定 PE の +0.0618 を、その新モデルの実測値として引き継がない。</li>
+<li>どちらを最終候補にするかを、移植可能性・開発関門・parity を含めて決めてから e を一回だけ開く。e で PE が駄目なら PEB を続けて開く、という選び方はしない。</li>
+</ul>
+<p>運用上も、現在の <a href="/C:/kaggle/competitions/casmi-harness-v2/docs/g0_spec.md">g0_spec.md</a> §6 は「ハーネスの実験は FH-PEB だけ」、§7 は PE を固定参照として扱う契約になっている。adapter だけを変えて PE を通常の exploit に混ぜるのは、その契約に反する。PE を候補化するなら、凍結済みの v2 を残し、PE 専用の予測契約を別に正式化する。必要なら同じ分割・資産を再利用する別ワークスペースにする。PE と PEB の異なる提出資格を、PAD を含む単純平均で自動 ensemble に混ぜない。</p>
+<h2 id="q3-parity">Q3. 移植と parity に足りないもの</h2>
+<p>世界の資産を notebook 側の builder に渡して全行の特徴を照合する案はよい。ただし、先に<strong>どの PE を移植するか</strong>を確定する。</p>
+<p>現在の固定 PE を忠実に移植するなら、生成件数・親情報に加え、E∩B の生成特徴、同じ SMILES の B から再利用した GL、元の U2 の大きさ等も必要になる。これらを本番で 0 に置き換えるのは同じモデルの移植ではなく、未評価の入力変更である。</p>
+<p>生成を不要にする新 PE では、少なくとも次を学習時から揃える。</p>
+<ul>
+<li>入力候補は P25∪E25。B 由来の列と query 要約を除くか、生成を使わず計算できる定義へ変更する。例えば候補数は PE の候補数と明示する。</li>
+<li>E 代表の GL は、生成 B に存在するかどうかで利用可否を変えない。常に未計算とするか、既存 P 経路で同じ SMILES の値を取得できる場合だけ使う等、同じ規則を学習・本番に適用する。</li>
+<li>相対順位・z 値・重みは PE の集合で再計算する。旧モデルに、列名だけ同じで定義の違う数値を渡さない。</li>
+</ul>
+<p>parity は特徴だけで終えず、以下まで通す。</p>
+<ol>
+<li><strong>入力と集合</strong>: query の選択・統合、adduct/質量・電子補正、源と alias/official key、P/E の代表 SMILES、E の全窓順位、PE の資格を一致させる。C1 の参照除外、C2 の train 隠し、空 P/E、同点、E∩B だったケース等を固定例に含める。</li>
+<li><strong>特徴</strong>: 生の候補値だけでなく、query 要約、欠損、相対特徴、列順・dtype・有限値を比較する。整数・key・mask は完全一致、浮動小数は許容差を先に固定する。</li>
+<li><strong>得点と出力</strong>: 対応する各 fold モデルの予測、7 モデルの平均、提出資格、同点規則、上位 25 の official key と提出 SMILES、CSV の全 ID・重複・空候補の扱いを比較する。全実在枠を採点する PEB と、PE 外を提出しない PE の契約を区別する。</li>
+<li><strong>実行条件</strong>: Kaggle 側の実際の asset/model/hash、ライブラリ版、ネットワーク無効での実行、所要時間・メモリを固定する。世界のデータを受け取る adapter だけの一致は、通常の notebook 入力からの前処理まで保証しない。</li>
+</ol>
+<p>dF1 の開発行を 7 fold 全モデルで採点しても parity の数値照合には使えるが、その平均の MRR を OOF と呼ばない。6 モデルはその行を学習している。開発性能は対応する保留 fold のモデル、e と本番の推論は登録どおり 7 fold の平均、と分ける。</p>
+<h2 id="q4-source-dropout-public">Q4. source dropout と Public の比較</h2>
+<p><strong>いま直ちに二候補を Public で選ぶ方針は勧めない。</strong> 正しい源ストレスと、生成を省ける PE の定義を先に整える。源の頑健化を試す価値はあるが、「世界では必ず悪化し、利点は Public でしか見えない」は未検証の仮定である。</p>
+<p>最小の比較では、一つの欠損率・seed・対象ブロックを事前固定し、同じ identity/alias にはラベルを使わず同じ規則を適用する。正例だけを狙う現在の stress を学習拡張に流用しない。<code>in_coconut</code> 一列を消しても、E の得点の有無、e_miss、E25、F の順位などに代理情報が残るため、何への依存を抑える試験なのかを決める。</p>
+<p>区別したいのは二つ。</p>
+<ul>
+<li><strong>特徴の block dropout による正則化</strong>: 候補の存在は維持して証拠を欠損させる学習法。これを、DB から構造が消えた世界と呼ばない。</li>
+<li><strong>E 経路の欠落に対する評価</strong>: ラベル非依存の identity の除外等を E の全窓に適用し、順位・E25・候補集合・F・要約を整合して作り直す感度試験。主集合の成績と、源に不利な条件での費用を両方測る。</li>
+</ul>
+<p>可能なら、COCONUT 所属を選択条件にしない小さな未使用 C2 集合も補助確認に使う。ただし、その集合の設計やモデルへの露出条件を固定し、既存 CV/e の代わりにはしない。今夜の候補移植を、その追加集合の完成まで全面的に止める必要はない。</p>
+<p>Public 比較を行う場合も G3 の対象を具体的な成果物で固定し、正則化の率や複数の seed を Public で探さない。Public の差から q を逆算したり、「源の事前分布が移ったことを単独で証明した」と読んだりもしない。</p>
+<h2 id="q5-c1c2-116">Q5. C1/C2 の 116 件は本当に窓で落ちたのか</h2>
+<p><strong>現在の結果からは未確定。先に訂正すべき推論がある。</strong> <code>w135_p.py</code> の rP は <code>b1_locked_eval.view_frame()</code> が返す表での正解順位で、その関数は <code>in_short_c2</code> と源の資格で絞る。<code>b1_world.py</code> も FP・FP+prior・library 等の shortlist の和集合から候補表を書いている。</p>
+<p>従って、<code>P.parquet</code> の rP=0 は「P の最終の再順位付け対象にない」ことであり、<strong>B1 の生の質量窓にないことを証明しない</strong>。22/1,198=1.8% は「E の全窓にいて U2 にいない」件数であって、全経路を通じた shortlist 問題の総量ではない。</p>
+<p>最小の検査は、116 件の開発 query に対する脱落段階の台帳。まず保存済みデータで次を結ぶ。</p>
+<ol>
+<li>事前の DB に official key / alias があるか。母集団選択の COCONUT 判定と、実際の pool/coco 資産の key・構造・版が一致しているか。</li>
+<li>B1 の保存された全窓 <code>gen_*_window_okeys.parquet</code> に正解があるか。<code>b1_molecules_*.csv</code> の truth_in_window / truth_in_shortlist も照合する。raw key のみでなく official key と alias で確認する。</li>
+<li>全窓にはある場合、FP/lib/prior の短縮、源の資格、official key の統合、P の view のどこで落ちたか。</li>
+<li>全窓にもない場合、query ごとの中性質量推定、正解各表記の質量、最小 ppm 差、adduct・charge・同位体・塩等の正規化、mask による除去理由を記録する。</li>
+</ol>
+<p>C1 の参照除去はライブラリ証拠と shortlist を変え得るが、構造の生窓から直ちに消える理由にはならない。C2 の train 隠しも、合法な COCONUT の経路が本当に残るなら構造自体を消す理由にはならない。まず「外部の源にあるはず」という前提が、実際の質量・key・使用資産で成立するか確認する。</p>
+<p>なお B1 の保存全窓は C3 の構造 mask 後であり、truth_in_window は raw/pool alias に依存するため、台帳一列だけで最終断定しない。必要な場合だけ少数の失敗例で mask 前後の候補集合を再現し、無関係な query の mask や alias 統合で落ちたのかを調べる。mask を解除した性能を C2 の正式な性能にはしない。</p>
+<p>優先度は高い。保存台帳でできるこの切り分けは、次のモデル学習に並行できる。116 件が全て回復できる改善量は上限にすぎず、原因を確認する前に ppm や shortlist を一律に広げない。</p>
+<h2 id="q6-lane">Q6. 残りの lane</h2>
+<p>既消費は exploit 3/6。<strong>固定 PE を同じ計算で通常実験へ移すだけの 4 件目は使わない。</strong> 新しい効果の検証にならず、保護の未達と生成への依存も残る。</p>
+<p>推奨する配分は次のとおり。</p>
+<ul>
+<li>最初の一件: 生成を省ける PE を選ぶなら、その定義を固定した一案を評価する。予測契約の変更を正式に扱い、対応する lane に計上する。既存 v2 の固定ファイルは変更しない。</li>
+<li>次の一件: その結果に応じて、源の頑健化一案、または C1 の費用を抑える一案。事前に固定し、複数率・複数 gate の総当たりはしない。</li>
+<li>残り一件: 工程上必要な確認、または登録した ensemble のために留保する。通る完成候補ができたなら、枠を埋めるためには使わない。</li>
+</ul>
+<p>源ストレスの修正、被覆台帳、移植の parity は、モデルの性能改善とは分けて、費用と作業を記録する。別の予測契約・ワークスペースに移しても、同じ 48 時間に既に使った 3 件を無かったことにして探索予算を再開しない。</p>
+<p>REVIEW_COMPLETE: 161</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#correctness">correctness(処理する)</a></li>
+<li><a href="#scientific_uncertainty">scientific_uncertainty(実験と台帳で決める)</a></li>
+<li><a href="#suggestion">suggestion / 方針</a></li>
+<li><a href="#2026-10-30-2041-jstx161_cov_ledgerpy-x161_cov_ppmpydev">追記: 被覆の脱落の台帳(2026-10-30 20:41 JST、x161_cov_ledger.py / x161_cov_ppm.py、dev だけ)</a></li>
+</ul>
+</div>
+</div><h1 id="161-2026-10-30-2038-jstclaude-codecodex-161-3">161 の判断(2026-10-30 20:38 JST、Claude Code。Codex 161 を受けて、3 分類)</h1>
+<h2 id="correctness">correctness(処理する)</h2>
+<ul>
+<li><strong>v2 の契約</strong>: g0_spec §6 は「ハーネスの実験は FH-PEB だけ」、§7 は PE を固定の参照とする。v2 の adapter に入れた variant pe_lite(commit 1b0204c、未登録・未実行の性能)は契約に反するので <strong>取り消す</strong>(revert)。PE 型を候補にするなら、v2 を凍結したまま、PE 専用の予測契約を別のワークスペース(v3)で正式化する。</li>
+<li><strong>固定の FH-PE は候補にしない</strong>: π0.3 C1 の組の下限 −0.0106 &lt; −0.01(保護が未達)。さらに全 7 モデルが log_nb / log_nu2 / n_peer_struct / n_train を、一部が apsc / log_npar / n_steps を使っており、生成を計算しない移植はできない(「生成物を出さない」と「生成を計算しない」は別)。固定 PE の +0.0618 を新しいモデルの値として引き継がない。</li>
+<li><strong>反実仮想(x161_stress.py)の誤り</strong>: (1) E だけの分岐で F_cf を更新していない、(2) in_P = 0 でも in_B = 1 なら B の代表で U2 に残る(15 件中 5 件)、(3) OOF の照合が RR だけ。修正版を別の診断として作り、修正前の結果は残す。交点 q ≈ 0.48 は人工的な感度分析の値で、判断の境界に使わない。panel の COCONUT 率は q の推定値ではない。</li>
+<li><strong>被覆の読みの訂正</strong>: rP = 0 は「P の最終の並べ替えの対象(view_frame: in_short_c2 と源の資格)に無い」で、B1 の生の質量窓に無いことの証明ではない。「shortlist の問題 1.8%」も E の全窓の中だけの値。</li>
+</ul>
+<h2 id="scientific_uncertainty">scientific_uncertainty(実験と台帳で決める)</h2>
+<ul>
+<li>最も重要な未確定事項: 世界(COCONUT で選んだ母集団)の利得のどれだけが隠れた test に移るか。PE / PEB の共通の問題。</li>
+<li>源の頑健化は、(a) 特徴の block dropout(正則化)と、(b) E の経路の欠落の感度試験(E の全窓から識別子をラベルに依らず除き、順位・E25・候補集合・F・要約を整合して作り直す)を区別して設計する。COCONUT を選択条件にしない小さな未使用の C2 集合を補助の確認に使う案は記録しておく。今夜の移植を止める理由にはしない。</li>
+<li>116 件(C1 62 + C2 54)の脱落の段階の台帳(DB の key / alias、全窓 okeys、truth_in_window / truth_in_shortlist、P の view、質量・ppm・adduct)を保存データで作る。優先度は高く、モデルの作業と並行できる。原因の確認の前に ppm や shortlist を一律に広げない。</li>
+</ul>
+<h2 id="suggestion">suggestion / 方針</h2>
+<ul>
+<li><strong>完成候補として資格があるのは FH-PEB seed 11</strong>(3 seed とも主の関門と全保護を満たす)。</li>
+<li>次の一手: <strong>生成を計算しない PE(PE-lite)を、新しいワークスペース v3 の正式な予測契約として設計する</strong>(候補 = P25 ∪ E25、生成由来の列と要約を除く 42 特徴、E の代表の GL は B の有無で変えない、相対特徴・z・重みは PE の中で、全ての PE の枠を確率で採点)。v3 の G0 の後に基準を測り、主差と全保護で判断する。理由: (a) PEB の移植は B の生成(peer は隠れた test では 400 分子のバッチで、世界の 100 分子と分布が違う)と生成物の GL の採点が要り、工数と分布のずれの危険が大きい、(b) 源の事前分布の移り方は PE でも PEB でも同じ未確定事項で、PE-lite が最も安く Public で確かめられる。</li>
+<li>e は、移植の可否・開発の関門・parity を含めて最終候補を一つに決めてから一回だけ開く(PE が駄目なら PEB、という順に開けない)。</li>
+<li>lane: 固定 PE を同じ計算で exploit に移すだけの登録はしない。v2 の exploit は 3 / 6 のまま。v3 に移っても、同じ 48 時間に使った 3 件は数え直さない。</li>
+<li>Public の比較は、G3 の対象を具体的な成果物で固定し、率や seed を Public で探さない。</li>
+</ul>
+<h2 id="2026-10-30-2041-jstx161_cov_ledgerpy-x161_cov_ppmpydev">追記: 被覆の脱落の台帳(2026-10-30 20:41 JST、x161_cov_ledger.py / x161_cov_ppm.py、dev だけ)</h2>
+<ul>
+<li>主 π0.3 の 116 件(C1 62 + C2 54)は <strong>全て S0</strong>(B1 の窓に無い: raw の旗でも official key でも窓に無く、候補表に正解の行も無い)。窓は空ではない(中央値 568 構造)。π0 でも 157 件全て S0。</li>
+<li>原因: <strong>query のスペクトルの前駆体の m/z(または付加イオンの注記)の誤り</strong>。S0 の正解(全 dev 世界・全 π で 312 件)の中性質量と、query の付加イオンごとの中性質量(b1_common.neutral_mass、中央値)の差の最小値は <strong>中央値 332 ppm、全件 &gt; 10 ppm</strong>(&gt; 50 ppm が 230)。対照(窓に入った C1 / C2 の正解 2,030 件)は中央値 0.4 ppm、&gt; 10 ppm は 0。S0 の library は gnps 131 / riken 101 / mona 45 / massbank 35。</li>
+<li>読み: W135 の query は timsTOF ではない library から取った(p3_select_np の方策)ので、前駆体の注記が不正確なスペクトルが混ざる。<strong>隠れた test(timsTOF)では起きにくい世界の作為</strong>で、F と FH のどちらにとっても 0 点(比較には影響しない)。世界の C1 / C2 の到達は隠れた test より低く見積もられている。窓を広げる必要は無い(memory: 一律の 10 ppm の filter は riken の精度の問題 — 隠れた test は timsTOF)。</li>
+</ul></details></article><article><h1>162: 162 依頼: v3(PE-lite の正式な予測契約)の G0 の前の correctness の点検(2026-10-30 20:49 JST、Claude Code)</h1><details><summary>依頼(Claude Code)</summary><h1 id="162-v3pe-lite-g0-correctness-2026-10-30-2049-jstclaude-code">162 依頼: v3(PE-lite の正式な予測契約)の G0 の前の correctness の点検(2026-10-30 20:49 JST、Claude Code)</h1>
+<p>161 の判断どおり、v2(FH-PEB)を凍結したまま、生成を一切計算しない PE-lite を別のワークスペース C:\kaggle\competitions\casmi-harness-v3 で正式化した。G0 で固定する前の <strong>correctness だけ</strong> を一往復で点検してほしい(科学的な不確実性は G0 の後に実験で扱う)。</p>
+<h2 id="v3commit-afacb2a-4480ca9">作ったもの(v3、commit afacb2a / 4480ca9。読み取りだけでお願いします)</h2>
+<ul>
+<li>kh init(kaggle-harness 0.1.0、runtime / tools / hooks は v2 と同一の hash)。data/raw は v2 と sha256 で同一(77 ファイル、data_manifest も同一)。</li>
+<li>src/cv.py: v2 の cv.py から、K = 50、枠 = P の順位 → E だけの候補を E2 の順位で(B は枠にしない。基本の表の B の行は検査した後に外す)、F の参照が PE に収まる検査、n_pe の検査、slice__pe_empty。fold・母集団・test は v2 と同じ。</li>
+<li>src/adapter.py: arm pe_lite だけ。load で PE の行だけに絞り、E が代表の行の gl = 0 / gl_miss = 1 に上書き(v2.1 の表で同じ SMILES の生成物の GL を再利用した行があったため)。FEATS = v2 の 62 から生成に由来する 20(in_B、gen_only、in_B_added、rep_B、in_wwin、生成物の 11、n_peer_struct、n_train、log_nb、log_nu2)を除いた 42。相対の特徴・z・重み(1/|PE(q)|)は PE の中で。</li>
+<li>src/aux_reader.py: v2 の写しから PE の参照を外し、出力先を reports/aux_reader/ に(aux は Windows の予約名)。</li>
+<li>docs/g0_spec.md(§1〜§14)、reports/deviations/D1〜D9(D9 = v3 は v2 の開発の結果を見た後に設計)、plans/baseline-config.yaml(arm pe_lite、300 rounds)。</li>
+<li>検査: cv.py PASS、ROUNDTRIP PASS(P / F 3,095 / 3,095、PE の 50 枠)、TECH_TEST_V3WS_PASS(新しい A6: PE の行だけ・E 代表の GL は常に未計算・生成由来の特徴なし・相対の特徴は PE の中)、G0 の dry-run(固定 162 ファイル)。</li>
+</ul>
+<h2 id="correctness">点検してほしい点(correctness)</h2>
+<ol>
+<li>42 特徴に、生成(B)の有無や生成の計算に依存する値がまだ残っていないか(P の行の特徴・Q の要約を含む。例: f_score / f_rank / in_F_pool / n_e25 / f_applied、P の行の fz / gl / frag の出どころ)。</li>
+<li>E が代表の行の GL の上書きの規則は、学習と推論で同じになっているか。P の行の GL・frag は B に依存しないか。</li>
+<li>cv.py の枠と adapter の slot_keys が一致し、F の参照が全て PE に収まることの検査は十分か。</li>
+<li>仕様書の関門・保護・holdout(v2 と v3 を通じて一回だけ)・lane(v2 と共通の 48 時間の窓、v3 の基準で exploit 6 / 6)の書き方に矛盾や欠けは無いか。</li>
+<li>固定する前に直すべき点があれば、最小の修正を示してほしい。無ければ「固定してよい」と書いてほしい。</li>
+</ol>
+<p>末尾に REVIEW_COMPLETE: 162 と書いてください。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
