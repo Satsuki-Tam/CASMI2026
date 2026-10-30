@@ -1,4 +1,4 @@
-"""Technical test v3 of the casmi-harness src (cv / metrics / adapter / aux reader) -- every check is an assert (155 decision C).
+"""Technical test v4 (157: + P3 missing U file, C1 bidirectional labels) of the casmi-harness src (cv / metrics / adapter / aux reader) -- every check is an assert (155 decision C).
 Temporary copy: dev = the 30 exported worlds except cU1_p30; a fake feature-only hold = cU1_p30 (y / iid removed; its uids become the test
 ids); the copied cv.py has its expected counts adapted to this copy. No real holdout data is used.
 Checks:
@@ -82,6 +82,8 @@ def main():
     assert np.allclose(rrP, direct); print("P1 aux reader P reference == RR from P's ranks: ok")
     inB = set(Ud[(Ud.y == 1) & (Ud.src == "B")].uid); mB = np.array([u in inB for u in V["ids"]])
     assert mB.sum() > 0 and rrP[mB].sum() == 0; print(f"P2 P reference ignores {int(mB.sum())} truths among the products: ok")
+    fu = sorted(glob.glob(os.path.join(tmp, "data/raw/w135_u_dev_v2/U_*.parquet")))[-1]; keep_u = open(fu, "rb").read(); os.remove(fu)
+    msg = raises(R.p_reference, V); assert "differ" in msg, msg; open(fu, "wb").write(keep_u); print("P3 P reference stops when a U file is missing: ok")
     # ---- adapter
     fold = V["fold"]; va = np.flatnonzero(fold == 0); tr = np.flatnonzero(fold != 0)
     ctx = dict(workspace=tmp, validation_path=os.path.join(tmp, "data/folds/validation.npz"), train_indices=tr, valid_indices=va, seed=11, smoke=False,
@@ -103,7 +105,13 @@ def main():
     raises(A.run_fold, ctx); open(fq, "wb").write(keep_q); open(man_p, "wb").write(keep_m); print("A5 missing Q row refused: ok")
     Rw = pd.DataFrame(dict(uid=["u1", "u1", "u2", "u3"], nU=[2, 2, 1, 1])); Qw = pd.DataFrame(dict(uid=["u1", "u2", "u3", "u4"], iid=["i1", "i1", "i2", "i1"]))
     w = A.train_weights(Rw, Qw); assert np.allclose(w, [1 / 2 / 3, 1 / 2 / 3, 1 / 3, 1.0]), w; print("A6 roster-based weights (empty unit u4 counted): ok")
-    shutil.rmtree(tmp, ignore_errors=True); print("TECH_TEST_V3_PASS")
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp2, _, _ = build_tmp(); f = sorted(glob.glob(os.path.join(tmp2, "data/raw/w135_u_dev_v2/U_*.parquet")))[0]
+    d = pd.read_parquet(f); i = int(np.flatnonzero(d.y.values == 1)[0]); d.loc[d.index[i], "y"] = 0; d.to_parquet(f, index=False)
+    cv2 = mod(tmp2, "cv"); msg = raises(cv2.main); assert "labels disagree" in msg, msg
+    assert not os.path.exists(os.path.join(tmp2, "data/folds/validation.npz")); shutil.rmtree(tmp2, ignore_errors=True)
+    print("C1 cv.py stops on a truth row labelled 0 and writes nothing: ok")
+    print("TECH_TEST_V4_PASS")
 
 
 if __name__ == "__main__":
