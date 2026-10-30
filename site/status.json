@@ -4,7 +4,7 @@
   "目標 (Public LB)": "0.500 以上(金圏、利用者の目標)",
   "自前の最高 Public": "0.394(v8w7a、10/28)/ E0 再現 0.464(公開系譜、計測基準)",
   "現在の LB(10/30 11 時台)": "首位 0.517 / 3 位 0.501 / 10 位 0.484 / 20 位 0.481(10/23 の首位 0.504 から上昇中)",
-  "本日の提出(09:00 JST リセット)": "1 回使用(132、結果待ち)/ 残り 4 回。F は点検 4 つの PASS 後に 1 回",
+  "本日の提出(09:00 JST リセット)": "2 回使用(132 = 採点中、F 57790338 = 採点中)/ 残り 3 回",
   "E2 の開発の読み(144)": "F 主指標 +0.0035(関門 不合格)/ E 源の正解 C2: fold 1 +0.030、fold 2 +0.028 / F − Fpe +0.0155(E2 の順位の価値)/ 損益分岐の E 源割合 0.786",
   "Public の群の診断(10/29)": "B 群(COCONUT・非 train): E0 0.259 / v8w7a 0.220、T 群: E0 0.160 / v8w7a 0.148",
   "計算資源": "Spark: E2 の表・学習・評価・一致確認、A3(GL)。PC の GPU は 00:00〜09:00 と許可時のみ"
@@ -29,16 +29,16 @@
    "eta": "11:38"
   },
   {
-   "state": "run",
+   "state": "done",
    "name": "提出の条件 2: F version 2 のコミット実行の点検",
-   "detail": "11:37 push。点検 v2(E2 の失敗 0、索引・特徴・木の数、P の byte 一致)",
-   "eta": "11:55 頃"
+   "detail": "version 2 で点検 v2 PASS(P byte 一致、E2 の失敗 0、索引・特徴・木の数)",
+   "eta": "11:52"
   },
   {
-   "state": "wait",
-   "name": "F の提出(診断、1 回)",
-   "detail": "条件 2 の PASS の後。読み: ≥ 0.409 正 / ≤ 0.379 負 / 間は保留",
-   "eta": "12:00 頃"
+   "state": "run",
+   "name": "F の Public(57790338)",
+   "detail": "11:53:28 提出。隠しテストでの再実行に 4〜5 時間",
+   "eta": "16〜17 時頃"
   },
   {
    "state": "wait",
@@ -503,6 +503,13 @@
    "what": "132 one-shot (exception, keeps the 102 NO): v8w7a + fixed E-lite RRF (rrf_rank_e1r_0.5, K 10, alpha 0.5, E = P shortlist E subset); parity A/B/C PASS",
    "public": "採点中",
    "note": "登録: ≥ 0.402 暫定採用 / 0.379〜0.402 保留 / ≤ 0.379 不採用"
+  },
+  {
+   "when": "2026-10-30 11:53",
+   "id": "57790338",
+   "what": "145 F = v8w7a + E2 second engine, identity RRF (K 10, alpha 0.5); local gate not passed -> registered Public diagnostic path",
+   "public": "採点中",
+   "note": "登録: ≥ 0.409 正 / 0.380〜0.408 保留 / ≤ 0.379 負。主に E 源の優遇の得失を測る"
   }
  ],
  "docs": [
