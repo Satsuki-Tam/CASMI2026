@@ -27,7 +27,7 @@ _m = _j.load(open('/kaggle/working/b1_run_manifest.json')); _e = _m.get('e2') or
 assert _e.get('model_sha256') == '%s' and _e.get('expected_sha_given') is True, ('E2 model', _e.get('model_sha256'), _e.get('expected_sha_given'))
 assert _e.get('K') == 10.0 and _e.get('alpha') == 0.5 and _e.get('hedge') == %d, ('E2 combination', _e.get('K'), _e.get('alpha'), _e.get('hedge'))
 assert _m['params'].get('LAM') == 0.5 and _m['params'].get('lam_fixed') is None and _m.get('learned_model'), ('fusion parameters / ranker', _m['params'].get('LAM'), _m['params'].get('lam_fixed'), _m.get('learned_model'))
-assert all(str(_e.get(k_, '')).startswith('/kaggle/input/') for k_ in ('model', 'bio', 'pcl', 'structs')), ('E2 inputs not resolved under /kaggle/input', {k_: _e.get(k_) for k_ in ('model', 'bio', 'pcl', 'structs')})
+assert all(str(_e.get(k_, '')).startswith('/kaggle/input/') for k_ in ('model', 'bio', 'pcl', 'structs', 'index')), ('E2 inputs not resolved under /kaggle/input', {k_: _e.get(k_) for k_ in ('model', 'bio', 'pcl', 'structs', 'index')})
 _st = _p.read_csv('/kaggle/working/b1_stage_stats.csv', dtype={'molecule': str})
 _withc = set(_st[_st['n_shortlist'].fillna(0) > 0].molecule) if 'n_shortlist' in _st.columns else None
 _es = _p.read_csv('/kaggle/working/e2_stats.csv', dtype={'molecule': str})
@@ -42,7 +42,7 @@ _ch = [k for k in _a.index if _a[k] != _b[k]]; _t1 = [k for k in _a.index if _a[
 assert set(_ch) <= set(_es.molecule), 'a list changed for a molecule that did not go through E2'
 assert not (set(_ch) & set(_es[_es.n_e2 == 0].molecule)), 'a list changed although E2 was empty'
 assert not _m['fusion'].get('learned_failed'), 'learned fusion failed on some molecule'
-print('E2_RECORD', _j.dumps(dict(e2={k: _e.get(k) for k in ('model', 'model_sha256', 'trees', 'K', 'alpha', 'hedge', 'molecules', 'e2_nonempty', 'e2_failed', 'top1_changed', 'top25_changed', 'new_keys_mols', 'lists_changed', 'pcl_tier_rows', 'bio_rows', 'coconut')},
+print('E2_RECORD', _j.dumps(dict(e2={k: _e.get(k) for k in ('model', 'model_sha256', 'trees', 'K', 'alpha', 'hedge', 'molecules', 'e2_nonempty', 'e2_failed', 'top1_changed', 'top25_changed', 'new_keys_mols', 'lists_changed', 'pcl_tier_rows', 'bio_rows', 'coconut', 'index_sha256', 'index_keys', 'index_unmapped_rows', 'e2_seconds')},
       lists_changed=len(_ch), top1_changed=len(_t1), fusion=_m['fusion'])), flush=True)
 """ % ("H" if HEDGE else "F", SHA, HEDGE)
 assert len(nb["cells"]) == 2, len(nb["cells"])

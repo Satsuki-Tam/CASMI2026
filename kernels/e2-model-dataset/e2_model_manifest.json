@@ -1,0 +1,62 @@
+{
+ "purpose": "145 / 144_prereg_e2.md v2: the second engine E2 of the fusion F (identity RRF K 10, alpha 0.5) in the B1 pipeline (experiments/b1_e2k)",
+ "files": {
+  "e2_lgb.txt": {
+   "sha256": "fba8e860a5203ef12a785839a63932b886f3eb77ae4edb48881af092c28811ae",
+   "bytes": 5763354
+  },
+  "e2_ik14_to_scorer.parquet": {
+   "sha256": "2f025d15479ec1a88c678c216a57c0f203ee97a94b234417370d61377d15be62",
+   "bytes": 4782385,
+   "what": "inchikey14 -> official scorer key of every train structure (computed from train.parquet SMILES with RDKit 2026.03.3; = the development library index of E2)"
+  }
+ },
+ "trainer": "experiments/e2/e2_train.py (LightGBM binary, fixed parameters, rounds chosen by the fold 3 <-> 4 cross-fit only)",
+ "features": [
+  "fp",
+  "fp_rank",
+  "fp_z",
+  "fp_gap",
+  "log_n",
+  "ppm_err",
+  "in_train",
+  "lib_sim",
+  "lib_same",
+  "lib_nref",
+  "lib_gap",
+  "frag",
+  "frag_rank",
+  "frag_gap",
+  "ana_ap",
+  "ana_a1",
+  "ana_best_tan",
+  "ana_top_tan",
+  "ana_mean_tan",
+  "ana_ap_rank",
+  "ana_ap_gap"
+ ],
+ "params": {
+  "objective": "binary",
+  "learning_rate": 0.05,
+  "num_leaves": 63,
+  "min_data_in_leaf": 50,
+  "feature_fraction": 0.8,
+  "bagging_fraction": 0.8,
+  "bagging_freq": 1,
+  "lambda_l2": 1.0,
+  "verbose": -1,
+  "seed": 7,
+  "num_threads": 8,
+  "deterministic": true,
+  "force_row_wise": true
+ },
+ "rounds": 800,
+ "groups": 5482,
+ "rows": 662897,
+ "groups_by_view": {
+  "c1": 2476,
+  "c2": 3006
+ },
+ "training_data": "E-window tables (experiments/e2/b1_ewin.py + e2_feats.py) of the fold 3 / 4 pool molecules (train_pool_f3a/f3b/f4a/f4b, np061_f3pool/f4pool) built from the competition train.parquet spectra, the v2 pool / COCONUT / PubChemLite / ChEBI-LIPID MAPS structures of the public Kaggle datasets, and the fold-safe FPNet of each molecule's fold (public dataset casmi26-fold-safe-fpnet); no NIST-derived data",
+ "code": "experiments/e2/{b1_ewin,e2_feats,e2_common,e2_train}.py in the team repository (training code available)"
+}
