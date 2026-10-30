@@ -1,0 +1,419 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E2 の開発の評価(登録どおり)</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:27 JST</span></header>
+<main><article><h1 id="144-e2-reading-model-experimentse2model_v1e2_lgbtxt-2026-10-30-1050">144 E2 reading (model experiments/e2/model_v1/e2_lgb.txt; 2026-10-30 10:50)</h1>
+<p>Checks: groups 2830 = P's; F0 == P on all; empty-E2 groups 16 unchanged; values in [0, 1]</p>
+<h2 id="decision-table-vs-p-102-registration">Decision table (vs P; 102 registration)</h2>
+<table>
+<thead>
+<tr>
+<th>list</th>
+<th>primary 1/2 A + 1/2 B_D</th>
+<th>A 053 NP C2</th>
+<th>B_D f1/f2 D C2</th>
+<th>old B f1/f2 NP C2 (C-F)</th>
+<th>E-outside truths C2 (A + old B, pooled)</th>
+<th>G C1 (f1/f2)</th>
+<th>panel C1 clean</th>
+<th>053 NP C1 (4 cells)</th>
+<th>gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F</td>
+<td><strong>+0.0035 [-0.0125, +0.0192]</strong></td>
+<td>+0.0408 [+0.0242, +0.0588]</td>
+<td>-0.0339 [-0.0603, -0.0083]</td>
+<td>-0.0451 [-0.0600, -0.0307] (harm)</td>
+<td>-0.1058 [-0.1266, -0.0859] (harm)</td>
+<td>+0.0449 [+0.0264, +0.0652] (non-inferior)</td>
+<td>-0.0366 [-0.0647, -0.0103] (harm)</td>
+<td>+0.0397 [+0.0114, +0.0701] (non-inferior)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>H</td>
+<td><strong>+0.0025 [-0.0140, +0.0190]</strong></td>
+<td>+0.0419 [+0.0233, +0.0616]</td>
+<td>-0.0368 [-0.0639, -0.0106]</td>
+<td>-0.0517 [-0.0675, -0.0362] (harm)</td>
+<td>-0.1170 [-0.1385, -0.0958] (harm)</td>
+<td>+0.0479 [+0.0283, +0.0687] (non-inferior)</td>
+<td>-0.0420 [-0.0727, -0.0138] (harm)</td>
+<td>+0.0422 [+0.0124, +0.0743] (non-inferior)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>Fpe (descriptive)</td>
+<td><strong>-0.0120 [-0.0267, +0.0030]</strong></td>
+<td>+0.0152 [+0.0089, +0.0225]</td>
+<td>-0.0391 [-0.0682, -0.0101]</td>
+<td>-0.0570 [-0.0709, -0.0436] (harm)</td>
+<td>-0.1268 [-0.1490, -0.1053] (harm)</td>
+<td>+0.0420 [+0.0244, +0.0604] (non-inferior)</td>
+<td>+0.0043 [+0.0001, +0.0104] (non-inferior)</td>
+<td>+0.0185 [+0.0039, +0.0371] (non-inferior)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>Hp (descriptive)</td>
+<td><strong>+0.0024 [-0.0029, +0.0082]</strong></td>
+<td>+0.0085 [-0.0000, +0.0181]</td>
+<td>-0.0038 [-0.0099, +0.0035]</td>
+<td>-0.0050 [-0.0088, -0.0009] (non-inferior)</td>
+<td>-0.0129 [-0.0168, -0.0093] (undetermined)</td>
+<td>+0.0086 [+0.0017, +0.0172] (non-inferior)</td>
+<td>-0.0036 [-0.0111, +0.0047] (undetermined)</td>
+<td>+0.0013 [-0.0087, +0.0137] (non-inferior)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>F1 (descriptive)</td>
+<td><strong>-0.0024 [-0.0226, +0.0182]</strong></td>
+<td>+0.0511 [+0.0286, +0.0739]</td>
+<td>-0.0559 [-0.0899, -0.0218]</td>
+<td>-0.0790 [-0.0980, -0.0599] (harm)</td>
+<td>-0.1703 [-0.1967, -0.1453] (harm)</td>
+<td>+0.0520 [+0.0303, +0.0745] (non-inferior)</td>
+<td>-0.0907 [-0.1260, -0.0563] (harm)</td>
+<td>+0.0137 [-0.0258, +0.0519] (undetermined)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>E2 (descriptive)</td>
+<td><strong>-0.0598 [-0.0891, -0.0310]</strong></td>
+<td>+0.0095 [-0.0251, +0.0426]</td>
+<td>-0.1290 [-0.1783, -0.0810]</td>
+<td>-0.1944 [-0.2225, -0.1657] (harm)</td>
+<td>-0.3406 [-0.3827, -0.3004] (harm)</td>
+<td>+0.0495 [+0.0203, +0.0801] (non-inferior)</td>
+<td>-0.2847 [-0.3345, -0.2350] (harm)</td>
+<td>-0.0096 [-0.0643, +0.0439] (undetermined)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>pe (descriptive)</td>
+<td><strong>-0.0520 [-0.0760, -0.0283]</strong></td>
+<td>+0.0158 [+0.0093, +0.0232]</td>
+<td>-0.1197 [-0.1671, -0.0728]</td>
+<td>-0.1729 [-0.1983, -0.1486] (harm)</td>
+<td>-0.3406 [-0.3827, -0.3004] (harm)</td>
+<td>+0.0420 [+0.0244, +0.0604] (non-inferior)</td>
+<td>+0.0048 [+0.0001, +0.0113] (non-inferior)</td>
+<td>+0.0191 [+0.0044, +0.0381] (non-inferior)</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>F gate: no</strong>; H - F primary -0.0010 [-0.0052, +0.0037] (A +0.0010, B_D -0.0030); <strong>H gate (H - F point &gt; 0, lower &gt;= -0.005, H protections vs P): no</strong></li>
+<li>Public diagnostic path: E-source C2 F - P fold 1 +0.0299 (n 449), fold 2 +0.0277 (n 425); new rank-1 48 / lost rank-1 86 (A + old B C2) -&gt; <strong>eligible</strong></li>
+</ul>
+<h2 id="diagnostics-row-means-not-used-for-the-decision">Diagnostics (row means; not used for the decision)</h2>
+<table>
+<thead>
+<tr>
+<th>layer</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">P</th>
+<th style="text-align: right;">E2</th>
+<th style="text-align: right;">F</th>
+<th style="text-align: right;">F0</th>
+<th style="text-align: right;">H</th>
+<th style="text-align: right;">pe</th>
+<th style="text-align: right;">Fpe</th>
+<th style="text-align: right;">Hp</th>
+<th style="text-align: right;">F1</th>
+<th style="text-align: right;">oracle max(P, E2)</th>
+<th style="text-align: right;">truth in E source</th>
+<th style="text-align: right;">truth in E2 window</th>
+<th style="text-align: right;">truth in E2 top 25</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A 053 NP C2</td>
+<td style="text-align: right;">514</td>
+<td style="text-align: right;">0.5876</td>
+<td style="text-align: right;">0.5557</td>
+<td style="text-align: right;">0.6174</td>
+<td style="text-align: right;">0.5876</td>
+<td style="text-align: right;">0.6171</td>
+<td style="text-align: right;">0.6048</td>
+<td style="text-align: right;">0.6041</td>
+<td style="text-align: right;">0.5905</td>
+<td style="text-align: right;">0.6152</td>
+<td style="text-align: right;">0.6628</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0.860</td>
+<td style="text-align: right;">0.811</td>
+</tr>
+<tr>
+<td>B_D f1/f2 D C2</td>
+<td style="text-align: right;">198</td>
+<td style="text-align: right;">0.2810</td>
+<td style="text-align: right;">0.1520</td>
+<td style="text-align: right;">0.2472</td>
+<td style="text-align: right;">0.2810</td>
+<td style="text-align: right;">0.2442</td>
+<td style="text-align: right;">0.1613</td>
+<td style="text-align: right;">0.2419</td>
+<td style="text-align: right;">0.2772</td>
+<td style="text-align: right;">0.2251</td>
+<td style="text-align: right;">0.3025</td>
+<td style="text-align: right;">0.237</td>
+<td style="text-align: right;">0.212</td>
+<td style="text-align: right;">0.202</td>
+</tr>
+<tr>
+<td>old B f1/f2 NP C2</td>
+<td style="text-align: right;">787</td>
+<td style="text-align: right;">0.4287</td>
+<td style="text-align: right;">0.2356</td>
+<td style="text-align: right;">0.3839</td>
+<td style="text-align: right;">0.4287</td>
+<td style="text-align: right;">0.3773</td>
+<td style="text-align: right;">0.2568</td>
+<td style="text-align: right;">0.3721</td>
+<td style="text-align: right;">0.4237</td>
+<td style="text-align: right;">0.3503</td>
+<td style="text-align: right;">0.4693</td>
+<td style="text-align: right;">0.457</td>
+<td style="text-align: right;">0.423</td>
+<td style="text-align: right;">0.384</td>
+</tr>
+<tr>
+<td>G C1</td>
+<td style="text-align: right;">200</td>
+<td style="text-align: right;">0.8830</td>
+<td style="text-align: right;">0.9325</td>
+<td style="text-align: right;">0.9279</td>
+<td style="text-align: right;">0.8830</td>
+<td style="text-align: right;">0.9308</td>
+<td style="text-align: right;">0.9250</td>
+<td style="text-align: right;">0.9250</td>
+<td style="text-align: right;">0.8916</td>
+<td style="text-align: right;">0.9350</td>
+<td style="text-align: right;">0.9500</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0.985</td>
+</tr>
+<tr>
+<td>panel C1 clean</td>
+<td style="text-align: right;">202</td>
+<td style="text-align: right;">0.9251</td>
+<td style="text-align: right;">0.6403</td>
+<td style="text-align: right;">0.8885</td>
+<td style="text-align: right;">0.9251</td>
+<td style="text-align: right;">0.8831</td>
+<td style="text-align: right;">0.9298</td>
+<td style="text-align: right;">0.9294</td>
+<td style="text-align: right;">0.9215</td>
+<td style="text-align: right;">0.8344</td>
+<td style="text-align: right;">0.9402</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0.970</td>
+</tr>
+<tr>
+<td>053 NP C1</td>
+<td style="text-align: right;">113</td>
+<td style="text-align: right;">0.8530</td>
+<td style="text-align: right;">0.8289</td>
+<td style="text-align: right;">0.8921</td>
+<td style="text-align: right;">0.8530</td>
+<td style="text-align: right;">0.8940</td>
+<td style="text-align: right;">0.8729</td>
+<td style="text-align: right;">0.8723</td>
+<td style="text-align: right;">0.8535</td>
+<td style="text-align: right;">0.8701</td>
+<td style="text-align: right;">0.9128</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0.991</td>
+</tr>
+<tr>
+<td>f1/f2 NP C1</td>
+<td style="text-align: right;">389</td>
+<td style="text-align: right;">0.8778</td>
+<td style="text-align: right;">0.9111</td>
+<td style="text-align: right;">0.9030</td>
+<td style="text-align: right;">0.8778</td>
+<td style="text-align: right;">0.9086</td>
+<td style="text-align: right;">0.8937</td>
+<td style="text-align: right;">0.8918</td>
+<td style="text-align: right;">0.8924</td>
+<td style="text-align: right;">0.9077</td>
+<td style="text-align: right;">0.9397</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0.977</td>
+</tr>
+<tr>
+<td>panel C2</td>
+<td style="text-align: right;">250</td>
+<td style="text-align: right;">0.9535</td>
+<td style="text-align: right;">0.8578</td>
+<td style="text-align: right;">0.9567</td>
+<td style="text-align: right;">0.9535</td>
+<td style="text-align: right;">0.9555</td>
+<td style="text-align: right;">0.9605</td>
+<td style="text-align: right;">0.9592</td>
+<td style="text-align: right;">0.9549</td>
+<td style="text-align: right;">0.9381</td>
+<td style="text-align: right;">0.9789</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>list</th>
+<th>layer</th>
+<th style="text-align: right;">rescued</th>
+<th style="text-align: right;">lost</th>
+<th style="text-align: right;">new rank-1</th>
+<th style="text-align: right;">lost rank-1</th>
+<th style="text-align: right;">d truth in E source (n)</th>
+<th style="text-align: right;">d truth outside (n)</th>
+<th style="text-align: right;">d COCONUT truth</th>
+<th style="text-align: right;">d non-COCONUT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F</td>
+<td>A</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">39</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">+0.0298 (514)</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">+0.0298 (514)</td>
+<td style="text-align: right;">n/a</td>
+</tr>
+<tr>
+<td>F</td>
+<td>B_D</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">+0.0623 (47)</td>
+<td style="text-align: right;">-0.0638 (151)</td>
+<td style="text-align: right;">+0.0665 (29)</td>
+<td style="text-align: right;">-0.0511 (169)</td>
+</tr>
+<tr>
+<td>F</td>
+<td>old B</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">165</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">+0.0274 (360)</td>
+<td style="text-align: right;">-0.1058 (427)</td>
+<td style="text-align: right;">+0.0249 (270)</td>
+<td style="text-align: right;">-0.0813 (517)</td>
+</tr>
+<tr>
+<td>H</td>
+<td>A</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">+0.0295 (514)</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">+0.0295 (514)</td>
+<td style="text-align: right;">n/a</td>
+</tr>
+<tr>
+<td>H</td>
+<td>B_D</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">+0.0638 (47)</td>
+<td style="text-align: right;">-0.0681 (151)</td>
+<td style="text-align: right;">+0.0689 (29)</td>
+<td style="text-align: right;">-0.0550 (169)</td>
+</tr>
+<tr>
+<td>H</td>
+<td>old B</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">183</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">+0.0265 (360)</td>
+<td style="text-align: right;">-0.1170 (427)</td>
+<td style="text-align: right;">+0.0221 (270)</td>
+<td style="text-align: right;">-0.0897 (517)</td>
+</tr>
+<tr>
+<td>Fpe</td>
+<td>A</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+0.0165 (514)</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">+0.0165 (514)</td>
+<td style="text-align: right;">n/a</td>
+</tr>
+<tr>
+<td>Fpe</td>
+<td>B_D</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">+0.0743 (47)</td>
+<td style="text-align: right;">-0.0744 (151)</td>
+<td style="text-align: right;">+0.0859 (29)</td>
+<td style="text-align: right;">-0.0606 (169)</td>
+</tr>
+<tr>
+<td>Fpe</td>
+<td>old B</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">140</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">+0.0265 (360)</td>
+<td style="text-align: right;">-0.1268 (427)</td>
+<td style="text-align: right;">+0.0210 (270)</td>
+<td style="text-align: right;">-0.0972 (517)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Mixture sensitivity (A + old B C2): E-source g +0.0288, E-outside c -0.1058; break-even E-source share w* = 0.786 (w g + (1 - w) c = 0); not an estimate of the hidden w.</li>
+<li>F - Fpe (E2's ordering beyond source re-weighting), primary weights: +0.0155 [+0.0069, +0.0248]</li>
+<li>Rank-1 complementarity, C2 A + old B: P right &amp; E2 wrong 226, E2 right &amp; P wrong 84, both 293; truths found by E2 outside P's top 25: 35</li>
+</ul></article><p class='small muted'>原文: <code>experiments/e2/eval_v1/e2_eval_summary.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

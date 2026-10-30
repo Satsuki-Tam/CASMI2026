@@ -1,0 +1,199 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>144 事前登録(E2 と融合)</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:27 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-e2">1. E2(独立した第二エンジン)の定義</a></li>
+<li><a href="#2-e0-lb">2. 融合の候補(定数は固定。E0 の LB で合わせた値は使わない)</a></li>
+<li><a href="#3-public-pd">3. 開発での読み(主指標 = Public への射影 PD)</a></li>
+<li><a href="#4-public">4. Public での読み(関門を通った場合)</a></li>
+<li><a href="#5">5. 位置づけ</a></li>
+<li><a href="#v22026-10-30-1007-jst-git-1b7b19b-codex-143-e2">改訂 v2(2026-10-30 10:07 JST = git 1b7b19b の時刻、Codex 143 の回答を受けて。E2 の学習も評価もまだ走らせておらず、数字は一つも見ていない)</a><ul>
+<li><a href="#2">2'. 融合の候補(定数は固定)</a></li>
+<li><a href="#3-102-experimentse2e2_evalpy">3'. 開発での読み(102 の最終登録を継承する: experiments/e2/e2_eval.py)</a></li>
+<li><a href="#4-public_1">4'. Public での読み</a></li>
+<li><a href="#1">1' への補足(学習)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div><h1 id="144-2026-10-30-1004-jstclaude-code-e2-p-143">144 事前登録(2026-10-30 10:04 JST、Claude Code)— 第二エンジン E2 と P の融合(143 の主軸、土台の作り直し)</h1>
+<p>E2 の学習の結果も、開発での数字も、まだ一つも見ていない時点で登録する。</p>
+<h2 id="1-e2">1. E2(独立した第二エンジン)の定義</h2>
+<ul>
+<li><strong>窓(experiments/e2/b1_ewin.py)</strong></li>
+<li>query の ±10 ppm にある、次の源の全構造を窓に入れる。shortlist で切らない。<ul>
+<li>v2 pool(train / COCONUT)</li>
+<li>COCONUT store</li>
+<li>PubChemLite(tier 行のあるもの)</li>
+<li>BIO</li>
+</ul>
+</li>
+<li>構造は official key で統合する。</li>
+<li>view ごとの扱い(e2_common.view_frame):<ul>
+<li>C1: 全行を使う。</li>
+<li>C2: 正解の「train だけにある行」を除く。C2 の前提では、正解は train に無いからである。</li>
+</ul>
+</li>
+<li><strong>特徴(e2_common.FEATS、21 個)</strong></li>
+<li>fp(f.z)と、窓の中での順位・z・最大値との差、窓の大きさ、ppm 誤差</li>
+<li>view の train の印</li>
+<li>ライブラリ類似度(sim / same / nref と、窓の最大値との差)</li>
+<li>MetFrag-lite(値・順位・差)</li>
+<li>analog propagation(ap / a1 / best_tan / top_tan / mean_tan と、ap の順位・差)</li>
+<li><strong>使わないもの</strong>: 人気度、GL、train の印以外の source の印。</li>
+<li>FPNet は各分子の fold の fold-safe 版を使う。P の表と hash が一致することを確認済み(fold 1 1739d568、fold 2 257062cb、fold 3 ac61125e、fold 4 ad0b2a43、パネル full_eval 5b8d1c31)。</li>
+<li><strong>学習(e2_train.py)</strong></li>
+<li>学習行: fold 3 / 4 の pool の 6 ディレクトリの C1 群と C2 群。<ul>
+<li>C2 群: 正解が窓の中にある群。</li>
+<li>C1 群: そのうえで、除外の後に参照が 1 本以上ある群。</li>
+<li>分子が重なる場合は、最初のディレクトリの行だけを残す。</li>
+<li>行の重みは 1 / 群の大きさ。</li>
+</ul>
+</li>
+<li>学習器: LightGBM binary。パラメタは固定する(lr 0.05、葉 63、min_data 50、feature/bagging 0.8、l2 1、seed 7)。</li>
+<li>木の本数: {100, 200, 400, 800} の中から選ぶ。<ul>
+<li>fold 3 → 4 と fold 4 → 3 の、学習 fold の中だけの交差で決める。</li>
+<li>基準は、(方向, view) の 4 区画の MRR@25 の平均。</li>
+<li>開発の fold 1 / 2 とパネルは、学習にも本数の選択にも一切使わない。</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-e0-lb">2. 融合の候補(定数は固定。E0 の LB で合わせた値は使わない)</h2>
+<ul>
+<li>開発の比較の対象は、P の上位 25 件と同じ (set, view, 分子) の群で、対にして比べる。</li>
+<li>P の上位 25 件 = diag/top102_<tag>.parquet、v8w7a の main の順。</li>
+<li>比べるリスト:</li>
+<li>P</li>
+<li>E2 単独</li>
+<li>rrf0.5 / rrf1: s = 1/(10 + r_P) + w/(10 + r_E)。<ul>
+<li>候補は、P の上位 25 件と E2 の上位 25 件の和。</li>
+<li>r_E は view の窓全体での E2 の順位。</li>
+<li>欠ける項は 0 とする。</li>
+</ul>
+</li>
+<li>hedge: P の順で、E2 の 1 位が P の上位 2 件に無ければ、2 位に挿入する。</li>
+<li>rrf0.5_h / rrf1_h: rrf の順に、同じ挿入をする。</li>
+</ul>
+<h2 id="3-public-pd">3. 開発での読み(主指標 = Public への射影 PD)</h2>
+<ul>
+<li><strong>層</strong></li>
+<li>T = C1 の群。G(合成の timsTOF)と、パネル C1 の非 clean は除く。</li>
+<li>B = C2 の群のうち、正解が COCONUT の構造であるもの。</li>
+<li>R = その他の C2 の群(G は除く)。</li>
+<li><strong>PD = 0.148·r_T + 0.220·r_B + 0.026·r_R</strong></li>
+<li>r_g = Σ RR(リスト) / Σ RR(P) − 1 を、層 g の群をプールして求める。</li>
+<li>係数は、Public で確定済みの v8w7a の群の寄与である(1029: v8w7a_T 0.148、v8w7a_B 0.220、残り 0.394 − 0.368 = 0.026)。今回の候補を見て決めた値ではない。</li>
+<li>区間: 各 (tag, set, view) の区画の中で分子を再標本する。2000 回、seed 144 で 95% 区間を出す。</li>
+<li><strong>選択</strong></li>
+<li>c* = 5 つの融合候補(rrf0.5、rrf1、hedge、rrf0.5_h、rrf1_h)のうち、PD の点推定が最大のもの。</li>
+<li>同点の場合は、hedge → rrf0.5 → rrf1 → rrf0.5_h → rrf1_h の順(単純なものを優先)。</li>
+<li><strong>関門(Public の 1 枠を使う条件)</strong></li>
+<li>PD(c*) ≥ +0.005、かつ下限 &gt; 0。</li>
+<li><strong>保留</strong></li>
+<li>関門を通らないが r_B(c*) の下限 &gt; 0 の場合は、Public には出さず、原因を分析する。</li>
+<li><strong>不採用</strong>: 上記以外。</li>
+<li><strong>記述だけ(判定に使わない)</strong>: E2 単独の層別、1 位の相補性(P だけ正しい / E2 だけ正しい)、区画表、窓の中に正解がある割合、G の層。</li>
+</ul>
+<h2 id="4-public">4. Public での読み(関門を通った場合)</h2>
+<ul>
+<li>比較の基準は、現行の v8w7a の 0.394。</li>
+<li><strong>暫定採用</strong>: 0.402 以上。新しい土台にする。</li>
+<li><strong>保留</strong>: 0.387〜0.402。開発とのずれを分析する。</li>
+<li><strong>不採用</strong>: 0.386 以下。</li>
+<li>Kaggle への組み込みでは、提出の前に、開発と同じ表で一致(parity)を確認する。具体的には、E2 の窓・特徴・順位が、Spark での値と一致することを、パネルの分子で確かめる。</li>
+</ul>
+<h2 id="5">5. 位置づけ</h2>
+<ul>
+<li>132(E-lite の elite 案)の Public の結果とは独立に進める。</li>
+<li>class 3 の生成(W135)と A3(GL)は、この融合の上に部品として後で載せる。</li>
+</ul>
+<hr />
+<h2 id="v22026-10-30-1007-jst-git-1b7b19b-codex-143-e2">改訂 v2(2026-10-30 10:07 JST = git 1b7b19b の時刻、Codex 143 の回答を受けて。E2 の学習も評価もまだ走らせておらず、数字は一つも見ていない)</h2>
+<p><strong>§2〜§4 を、以下で置き換える。</strong> 旧 §3 の射影 PD は、判定に使わない。理由は、Public の T/B の probe は候補を絞った順位の値であり、通常の MRR の寄与の分解にならないからである(Codex 143 Q1)。</p>
+<h3 id="2">2'. 融合の候補(定数は固定)</h3>
+<ul>
+<li><strong>F</strong>: identity 単位の RRF。</li>
+<li>候補は、P の上位 25 件と E2 の上位 25 件の和。</li>
+<li>s = 1/(10 + r_P) + 0.5/(10 + r_E)。r_E は view の窓全体での E2 の順位。欠ける側の項は 0 とする。</li>
+<li>同点は P の順位 → E2 の順位 → key の順で決め、25 件で切る。</li>
+<li>E2 が空なら、F = P になる。</li>
+<li><strong>F0</strong>: 重みを 0 にした同じ処理で、E2 の候補は加えない。全ての群で P と完全に一致することを、技術検査とする。</li>
+<li><strong>H</strong>: F の順で、E2 の 1 位が F の 1 位でも 2 位でもなければ、2 位へ移すか挿入する。</li>
+<li>F の 1 位は保つ。その他の相対順序も保ち、25 件で切る。</li>
+<li><strong>対照・記述用</strong>(判定には使わない):</li>
+<li>pe: P を view の E 窓の候補に制限した順。</li>
+<li>Fpe: RRF(P, pe)。候補源の重み付けだけの効果を測る。</li>
+<li>Hp: P に同じ挿入をしたもの。</li>
+<li>F1: 重み 1 の RRF。</li>
+<li>E2 単独。</li>
+</ul>
+<h3 id="3-102-experimentse2e2_evalpy">3'. 開発での読み(102 の最終登録を継承する: experiments/e2/e2_eval.py)</h3>
+<ul>
+<li><strong>事前の検査</strong>(読む前に全て通ること)</li>
+<li>群が P の群と完全に一致すること。</li>
+<li>F0 = P であること。</li>
+<li>E2 が空の群で F = P であること。</li>
+<li>値が [0, 1] にあること。</li>
+<li><strong>主指標</strong>: 1/2 A + 1/2 B_D(F − P)。</li>
+<li>A = 053 の NP_H / NP_N の C2(両 fold、4 区画を等しく重み付け)。</li>
+<li>B_D = f1 / f2 の D の C2。</li>
+<li><strong>F の関門</strong>: 主指標 ≥ +0.005、かつ下限 &gt; 0。そのうえで、以下の下限が全て −0.01 以上であること。</li>
+<li>A、B_D</li>
+<li>旧 B(f1/f2 NP C2 の C〜F)</li>
+<li>E 源の外の正解の C2(プール)</li>
+<li>G C1</li>
+<li>パネル C1 clean</li>
+<li>053 NP C1</li>
+<li>区間は、区画の中で分子を再標本して出す(4000 回、102 の seed)。</li>
+<li><strong>H の関門</strong>(F とは別に読む): H − F の主指標の点推定 &gt; 0、かつ下限 ≥ −0.005。加えて、H の P に対する保護の下限が全て −0.01 以上であること。</li>
+<li><strong>Public の診断経路</strong>(Codex 143)</li>
+<li>F がローカルの関門を通らなくても、次の両方を満たせば、F を「ローカル不合格の診断提出」として Public へ一度出してよい。<ul>
+<li>(a) E 源の正解の C2 で、F − P が両 fold とも正である。</li>
+<li>(b) A + 旧 B の C2 で、新たに 1 位になった分子が 10 以上ある。</li>
+</ul>
+</li>
+<li>この場合、P の置き換えを先に決めない。</li>
+<li><strong>記述</strong>(判定には使わない):</li>
+<li>層別の各リスト、oracle max(P, E2)</li>
+<li>窓への到達 → E2 の上位 25 件への到達 → F の上位 25 件</li>
+<li>救済と損失、F − Fpe(候補源の重み付けを超える E2 の順位の価値)</li>
+<li>混合の感度(E 源の内の利得 g と外の費用 c、損益分岐 w*。隠しの w の推定ではない)</li>
+<li>旧 PD は参考値に留める。</li>
+</ul>
+<h3 id="4-public_1">4'. Public での読み</h3>
+<ul>
+<li><strong>第 1 枠: F の通常の出力</strong>(関門を通過、または診断経路で出す場合)。</li>
+<li>0.409 以上: 明瞭な正方向。新しい土台の候補とする。</li>
+<li>0.379 以下: 負方向。</li>
+<li>その間: 保留。</li>
+<li>これらは有意差検定ではない。</li>
+<li><strong>第 2 枠: H</strong>。H の関門を通った場合だけ出す。</li>
+<li>H − F ≥ +0.015: 正。</li>
+<li>H − F ≤ −0.015: 負。</li>
+<li>その間: 保留。差が小さい場合に、E0 の +0.010 を理由として採用へ繰り上げない。</li>
+<li>F と H を同じ日に出す場合は、どちらの Public も見る前に、両方のコード・入力・出力の規則を凍結する。</li>
+<li><strong>132 との関係</strong>: 132 は別の凍結候補として結論を残す。132 の順位を F の対照へ置き換えない。</li>
+</ul>
+<h3 id="1">1' への補足(学習)</h3>
+<ul>
+<li>各群の総重みは 1 とする(行の重みは 1 / 群の大きさ)。C1 と C2 の比は、群の数のままにする(追加の重み付けはしない)。</li>
+<li>正例の無い群(正解が view の窓に無い群、C1 で参照の無い群)は学習から除く。除いた数は、view ごと・ディレクトリごとに manifest に記録し、黙って除かない。</li>
+<li><strong>E 窓の被覆の限界</strong>: PubChemLite のうち tier の SMILES が無い 51,516 件は、窓に入らない(E key v2 の manifest)。被覆の不足として開示する。</li>
+</ul></article><p class='small muted'>原文: <code>reports/agent_review/144_prereg_e2.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

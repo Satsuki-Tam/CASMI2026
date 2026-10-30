@@ -1,0 +1,80 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>143 主軸の転換: 土台の作り直し</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:27 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#_1">なぜ変えるか</a></li>
+<li><a href="#e0-lb">何を作るか(我々の実装・我々の検証。E0 の重み・行・LB で合わせた定数は持ち込まない)</a></li>
+<li><a href="#132">132 の結果との関係</a></li>
+<li><a href="#_2">止める・下げるもの</a></li>
+<li><a href="#codex">Codex に確認したい点</a></li>
+</ul>
+</div>
+</div><h1 id="143-2026-10-30-094x-jstclaude-code">143 計画(2026-10-30 09:4x JST、Claude Code)— 主軸の転換: 部品の積み上げから、土台の作り直し(独立した第二エンジン + 融合)へ</h1>
+<h2 id="_1">なぜ変えるか</h2>
+<ul>
+<li>現在 0.394。0.500 まで +0.106。これまでの部品(MIST、GL の適応、class 3 の selector など)は、どれも登録の基準に届かないか、効果が +0.01〜0.02 の規模だった。全部を楽観的に足しても 0.45 前後で、届かない。</li>
+<li>E0(0.464)との差 0.07 の内訳は、Public の診断で分かっている。</li>
+<li>COCONUT 群(train 外): E0 0.259 対 P 0.220。<ul>
+<li>E0 の一本目だけでは 0.213、二本目だけでは 0.223 で、どちらも単独では P と同程度。</li>
+<li><strong>融合で 0.249(+0.026)、2 位ヘッジで 0.259(+0.010)</strong>。</li>
+</ul>
+</li>
+<li>train 群: +0.012。残り: +0.019。</li>
+<li><strong>利得の源は、性質の違う二つのエンジンの融合</strong>である。</li>
+<li>132 の E-lite の二本目は、P の shortlist の中で、P とほぼ同じ特徴の ranker を使っている。誤りが P と似ているので、融合の利得が小さいはずである(102 の開発でも費用が出た)。</li>
+<li>E0 の二本目は、窓・学習器・証拠・学習行の全てが一本目と違う(069 §2.3)。<ul>
+<li>窓: COCONUT・BIO・PubChemLite・train の全窓で、切り詰めない。</li>
+<li>学習器: 点ごとの GBDT。</li>
+<li>証拠: GL を使わず、ライブラリ・analog・MetFrag を使う。</li>
+<li>学習行: ライブラリから class 1/2 を模擬した行。</li>
+</ul>
+</li>
+</ul>
+<h2 id="e0-lb">何を作るか(我々の実装・我々の検証。E0 の重み・行・LB で合わせた定数は持ち込まない)</h2>
+<ol>
+<li><strong>第二エンジン E2</strong>:
+   - 窓: query の ±10 ppm の、COCONUT・train・PubChemLite / BIO(E key v2)の全構造。shortlist で切らない。
+   - 特徴: P と重ならない証拠を中心にする。fold-safe FPNet の f.z と窓内の順位、ライブラリの類似度(view の mask)、analog propagation、MetFrag-lite、ppm。人気度・source・GL は使わない(P との誤りの相関を下げるため)。
+   - 学習器: 点ごとの LightGBM binary(固定のパラメタ)。
+   - 学習行: fold 3 / 4 の train の identity で、C1 / C2 を模擬した行(W135 の world の mask の仕組み、または b1_features の view)。</li>
+<li><strong>融合 F</strong>: P と E2 の identity 単位の RRF。2 本の top-1 が割れるときは、E2 の top-1 を 2 位へ置くヘッジを加える。定数は、開発で決める規則か、事前に固定した値にする(E0 の LB で合わせた α 0.6 / offset 3 はそのまま使わない)。</li>
+<li><strong>検証</strong>:
+   - 開発: np053 / f1 / f2 の C1・C2 view と、W135 の世界(class の混合 π 0 / 0.3)。
+   - Public: 段階ごとに一回ずつ確認する(1 日 5 枠を計画的に使う)。</li>
+<li><strong>その上に</strong>: class 3 の生成(W135)と A3(GL の識別)を、融合の中の部品として後から載せる。</li>
+</ol>
+<h2 id="132">132 の結果との関係</h2>
+<ul>
+<li>132 ≥ 0.402: 融合が隠しテストで効く証拠になる。E2 の作り直しに全力を注ぐ。</li>
+<li>132 が保留 / 不採用: 「P に似た二本目では融合が効かない」と読み、E2 をより独立に作る設計を、むしろ強める。E0 自身の診断で、二本の融合が Public で +0.026 だったことは確定している。</li>
+</ul>
+<h2 id="_2">止める・下げるもの</h2>
+<ul>
+<li>142(class 3 の校正)の fold 0 の世界の構築は止めた(09:34)。</li>
+<li>A3 は GPU で自動的に進めるが、主軸ではない。</li>
+<li>class 3 は、E2 と融合ができた後に、部品として接続する。</li>
+</ul>
+<h2 id="codex">Codex に確認したい点</h2>
+<ol>
+<li>この転換の判断(融合の構造が主因、という読み)に、見落としはないか。</li>
+<li>E2 の設計(窓・特徴・学習器・学習行)で、P との独立性と、隠しテストでの有効性を両立させるための注意点。</li>
+<li>開発と Public の食い違い(102 の開発では費用、E0 の Public では利得)を踏まえて、融合を開発でどう検証すべきか(どの集合・どの指標・どの関門か)。</li>
+<li>最短で Public の証拠を得る段階の切り方(例: E2 単独 → RRF → ヘッジ の順に 1 枠ずつ)。</li>
+</ol></article><p class='small muted'>原文: <code>reports/agent_review/143_plan_base_rebuild.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

@@ -1,0 +1,163 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>144 の結果</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:27 JST</span></header>
+<main><article><h1 id="144-2026-10-30-1052-jst-v2-experimentse2eval_v1e2_eval_summarymd">144 の結果(2026-10-30 10:52 JST、登録 v2 どおりの読み。experiments/e2/eval_v1/e2_eval_summary.md)</h1>
+<ul>
+<li>モデル: experiments/e2/model_v1/e2_lgb.txt(sha fba8e860…)。</li>
+<li>木は 800 本(交差の基準: 100 → 0.7527、200 → 0.7616、400 → 0.7664、800 → 0.7673)。</li>
+<li>学習の群は 5,482(C1 2,476 / C2 3,006)、行は 662,897。</li>
+<li>事前の検査は全て通過した。</li>
+<li>群の数は 2,830 で、P と一致した。</li>
+<li>F0 は全ての群で P と一致した。</li>
+<li>E2 が空の 16 群は、F = P のまま変わらなかった。</li>
+</ul>
+<h2 id="_1">判定</h2>
+<table>
+<thead>
+<tr>
+<th>リスト</th>
+<th>主指標 1/2 A + 1/2 B_D</th>
+<th>A</th>
+<th>B_D</th>
+<th>旧 B</th>
+<th>E 源の外 C2</th>
+<th>G C1</th>
+<th>パネル C1 clean</th>
+<th>053 NP C1</th>
+<th>関門</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>F</strong></td>
+<td><strong>+0.0035 [−0.0125, +0.0192]</strong></td>
+<td>+0.0408</td>
+<td>−0.0339</td>
+<td>−0.0451(害)</td>
+<td>−0.1058(害)</td>
+<td>+0.0449</td>
+<td>−0.0366(害)</td>
+<td>+0.0397</td>
+<td><strong>不合格</strong></td>
+</tr>
+<tr>
+<td>H</td>
+<td>+0.0025 [−0.0140, +0.0190]</td>
+<td>+0.0419</td>
+<td>−0.0368</td>
+<td>−0.0517(害)</td>
+<td>−0.1170(害)</td>
+<td>+0.0479</td>
+<td>−0.0420(害)</td>
+<td>+0.0422</td>
+<td>不合格</td>
+</tr>
+<tr>
+<td>- <strong>F</strong>: 関門は不合格。主指標が +0.005 に届かず、下限も 0 以下である。保護は、旧 B・E 源の外・パネル C1 clean の三つが害だった。</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- <strong>H</strong>: H − F は −0.0010 [−0.0052, +0.0037] で、H の関門も不合格。<strong>H は出さない。</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- <strong>Public の診断経路(登録 §3'): 条件を満たした。</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- (a) E 源の正解の C2 の F − P が、fold 1 で +0.0299(449 分子)、fold 2 で +0.0277(425 分子)と、両方とも正。</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- (b) A + 旧 B の C2 で、新たに 1 位になった分子が 48(失った 1 位は 86)。</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>- → 登録どおり、<strong>F を「ローカル不合格の診断提出」として Public へ一度出す。P の置き換えは先に決めない。</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">記述(判定には使わない)</h2>
+<ul>
+<li><strong>E2 の順位の価値</strong>: F − Fpe(候補源の重み付けを超える、E2 の順位そのものの寄与)は、+0.0155 [+0.0069, +0.0248] だった。</li>
+<li>E2 は、P の上位 25 件に無かった正解のうち、35 分子を上位 25 件に入れた。</li>
+<li>1 位の相補性(A + 旧 B の C2): P だけ正しい 226、E2 だけ正しい 84、両方正しい 293。</li>
+<li><strong>得と損の構図</strong></li>
+<li>E 源の正解: A +0.0298、B_D +0.0623(47 分子)、旧 B +0.0274(360 分子)と、一貫して得。</li>
+<li>E 源の外の正解: 旧 B −0.1058、B_D −0.0638 と、損。</li>
+<li>損益分岐の E 源の割合: w* = 0.786(A + 旧 B の C2。隠しの w の推定ではない)。</li>
+<li><strong>C1</strong></li>
+<li>G +0.045、053 NP +0.040、f1/f2 NP +0.025 で得。</li>
+<li>パネル C1 clean だけが −0.037 で損(人気の高い正解の層。102 と同じ構図)。</li>
+<li>パネル C2 は +0.003。</li>
+<li><strong>E2 単独</strong>: A 0.556(P 0.588)、旧 B 0.236(P 0.429)、パネル C1 clean 0.640(P 0.925)。E 源の外を拾えないことと、人気度を使わないことによる差である。</li>
+<li><strong>Public の読み(登録 §4')</strong></li>
+<li>0.409 以上: 明瞭な正。新しい土台の候補にする。</li>
+<li>0.379 以下: 負。</li>
+<li>その間: 保留。</li>
+</ul></article><p class='small muted'>原文: <code>reports/agent_review/144_result.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

@@ -1,165 +1,70 @@
 {
- "headline": "自前 B1 の最高 Public 0.354(M2x blend21)。全 train FPNet を手元 GPU で自前学習中(15:35 完了予定、Spark で自動評価)。pool 窓 branch(E0 の小窓設計の移植)は C2 リークを修正して再評価中。PubChemLite は強い事前分布だがブーストは規則上不採用。今夜は事前登録した規則で 1〜2 提出(基準 0.354)。",
+ "headline": "(10/30 11:10 更新)主軸を「部品の積み上げ」から「土台の作り直し」に転換した(143、09:35)。P(v8w7a、Public 0.394)と性質の違う第二エンジン E2(COCONUT / PubChemLite / BIO / train の全窓、人気度・GL を使わない、点ごとの LightGBM)を作り、P と identity 単位で融合する(F = RRF K 10、α 0.5)。開発では F の関門は不合格(+0.0035)だが、E 源の正解は両 fold で +0.03 の得、登録した Public の診断経路を満たした。Codex 145 の指摘(本番の索引の差、GL 予算、一致確認の穴、評価器の完全性)を直し、F の提出前の点検 4 つを実行中。目標は Public 0.500 以上。",
  "kpi": {
-  "目標 (Public LB)": "0.480 以上(金圏)、理想 0.500",
-  "現在の最高 Public LB": "0.464 (E0, 公開系譜の再現) / 自前 B1 の最高 **0.354**(M2x blend21、10/25 提出)/ 保険 0.336 / M1 0.322 / 旧固定 0.334",
-  "本日の残り提出": "3 回(UTC 日付、09:00 JST リセット)",
-  "開発集合 eval 群 strict(C1 / C2)": "固定 0.45 / 0.44 → M2x(rank_v4b) 0.833 / 0.527、M1x(rank_v4g) 0.833 / 0.501",
-  "パネル 250 分子(C1 / C2、固定 0.864 / 0.864、参照単独 0.909、公開 0.955 / 0.971)": "M1 0.588 / 0.900 → M1x 0.699 / 0.886; M2 0.430 / 0.934 → M2x 0.737 / 0.882",
-  "首位 / 金圏下限 (10/25 07:50)": "0.504 / 10 位 0.482、11〜12 位 0.479(20 位 0.471)",
-  "手元 PC の利用": "許可 10:50〜20:50(GPU/CPU)。FPNet 学習に使用中"
+  "目標 (Public LB)": "0.500 以上(金圏、利用者の目標)",
+  "自前の最高 Public": "0.394(v8w7a、10/28)/ E0 再現 0.464(公開系譜、計測基準)",
+  "現在の LB(10/30 11 時台)": "首位 0.517 / 3 位 0.501 / 10 位 0.484 / 20 位 0.481(10/23 の首位 0.504 から上昇中)",
+  "本日の提出(09:00 JST リセット)": "1 回使用(132、結果待ち)/ 残り 4 回。F は点検 4 つの PASS 後に 1 回",
+  "E2 の開発の読み(144)": "F 主指標 +0.0035(関門 不合格)/ E 源の正解 C2: fold 1 +0.030、fold 2 +0.028 / F − Fpe +0.0155(E2 の順位の価値)/ 損益分岐の E 源割合 0.786",
+  "Public の群の診断(10/29)": "B 群(COCONUT・非 train): E0 0.259 / v8w7a 0.220、T 群: E0 0.160 / v8w7a 0.148",
+  "計算資源": "Spark: E2 の表・学習・評価・一致確認、A3(GL)。PC の GPU は 00:00〜09:00 と許可時のみ"
  },
  "jobs": [
   {
    "state": "done",
-   "name": "忠実な M1 パネル(K=100)",
-   "detail": "rank_v2 C1 0.599 / C2 0.918(固定 0.856 / 0.852)。クラス 1 崩壊は候補構成に依存しない",
-   "eta": "02:15 完了"
+   "name": "E2 の表と学習(143/144)",
+   "detail": "E 窓の表: 学習 6 本・開発 5 本(10:30)。E2 = LightGBM 800 本、交差 MRR C1 0.906 / C2 0.62〜0.64(f.z だけ 0.65 / 0.49)",
+   "eta": "10:51 完了"
   },
   {
    "state": "done",
-   "name": "M1 対照の修正表(run1b_v2 / run_c1b_v2)と最終比較(dev_pair_final)",
-   "detail": "登録出力同士の正しい比較: M2x blend21 − 旧 M1 learned = A C2 −0.016 [−0.040, +0.008]、B C2 +0.005、B C1(41)−0.028 [−0.084, +0.024]、C1 集合 eval 群 0.000 [−0.055, +0.056]。開発集合では同等〜わずかに劣る;M2x の根拠はパネル(C1 0.891 vs 0.599)のみ",
-   "eta": "完了"
-  },
-  {
-   "state": "done",
-   "name": "Codex 014(開封前の登録確認)",
-   "detail": "比較列の訂正、開封前 3 条件(登録出力比較・共有キャッシュ parity・開封時の合格確認)を実装。W7 両 view 合格が開封条件",
-   "eta": "完了"
-  },
-  {
-   "state": "done",
-   "name": "W7 600 分子の機械的一致(M2x blend21、正しい test)",
-   "detail": "C2・C1 とも共有キャッシュで top-1/RR/top-25 集合/順序付きが 599/599 一致(PASS)。独立 forward では 1〜2 分子が GL 雑音で入れ替わる",
-   "eta": "04:51 完了"
-  },
-  {
-   "state": "done",
-   "name": "locked 開封(1 回、05:04)",
-   "detail": "REGISTERED M2x blend21 − M1 learned: A C2 +0.007 [−0.016, +0.030]、B C2 −0.008 [−0.028, +0.013]、B C1(50)−0.023 [−0.087, +0.040]。凍結規則では M2x 昇格せず(未確定)。学習 − 固定は A +0.07〜0.10、B +0.01〜0.03",
-   "eta": "完了"
+   "name": "144 の登録どおりの読み",
+   "detail": "F 関門 不合格、H 不合格、Public の診断経路は条件を満たす(144_result.md)",
+   "eta": "10:53"
   },
   {
    "state": "run",
-   "name": "Kaggle kernel 実行中: 本命 casmi26-b1-baseline v4(M2x blend21)/ 保険 casmi26-b1-insurance v1",
-   "detail": "04:11 push。完走後、09:00 以降に「比較目的」として提出(Codex 015 で確認)",
-   "eta": "07:15 頃"
+   "name": "Spark: パネル C1 の一致確認 v2",
+   "detail": "生成したカーネルの処理(E2 専用の索引 + analog store、GL 予算から E2 時間を除外)と開発の表・オフラインの F・参照の P の一致",
+   "eta": "11:35 頃"
   },
   {
-   "state": "done",
-   "name": "Codex 015(開封結果の読みと朝の提出)",
-   "detail": "2 提出は「2 つの最終出力ポリシーの比較」として了承。表現を訂正(同等 → 優劣未確定・昇格条件未達)。次段の順序 (c)→(a)→(b)→(d)",
-   "eta": "完了"
+   "state": "run",
+   "name": "Kaggle: casmi26-b1-e2f v1 のコミット実行",
+   "detail": "11:06 push。終わり次第 check_e2k_commit.py(P が v8w7a と byte 一致など)",
+   "eta": "11:25 頃"
   },
   {
-   "state": "done",
-   "name": "Codex 015 (c): query 選択の共通関数化",
-   "detail": "b1_common.select_queries に一本化。旧 3 実装と実データ 600 分子で全一致(評価器・builder・パイプライン、パイプライン(8)=評価器(8) 600/600)。eval_test_full3 再構築も同一。016 の補修: 同条件再構築の証跡(ログ保存)・失敗時の非 0 終了・呼出側 assert",
-   "eta": "06:52 完了"
+   "state": "run",
+   "name": "評価器 v3 での再採点 + 別表記の監査",
+   "detail": "Codex 145: 名簿・順序付きの検査・固定の所属表。C2 の正解の代表 SMILES が train だけの表記かを数える",
+   "eta": "11:20 頃"
   },
   {
-   "state": "running",
-   "name": "Codex 015 (a): E0(公開 0.464 系譜)を自前分子で実行",
-   "detail": "Spark で E0 を自前分子に対して実行中(runs/c2_full3: W7 600 分子の C2 代理)。段階別出力を保存し e0_vs_b1_stages.py で結合する(Codex 016 の必須列を送付済み)",
-   "eta": "移植後に起動、数時間"
+   "state": "run",
+   "name": "Codex 146",
+   "detail": "144 の結果、145 への対応、F の提出の判断、次の構造の一手(別系統の FP / source の階層 / class 3 を E2 で採点)",
+   "eta": "11:40 頃"
   },
   {
-   "state": "done",
-   "name": "(b) p2 v2: query 基準の層定義で再選択",
-   "detail": "Codex 016: 層は実際の query(選択後)と同極性の他ライブラリ参照数で定義、段階別適格数と hash を manifest に。v1(500/500)は暫定、locked2 未開封。v2 選択完了(各層 dev2 100 / locked2 100、適格 group E 876 / F 279 / C 238 / G 333 / D 1,854)、test ファイル 1,464 spectra / 500 分子",
-   "eta": "07:45 完了"
+   "state": "run",
+   "name": "A3(GL の識別目的、副次)",
+   "detail": "C0′ の硬い負例の採点の途中(自動で学習 → 採点へ)",
+   "eta": "夕方"
   },
   {
-   "state": "done",
-   "name": "dev2 v2 の評価チェーン(M1 構成 / M2x 構成の特徴表 → 登録出力の評価器)",
-   "detail": "登録評価完了(10:05): M2x − M1 は C/C1 +0.038 [−0.000, +0.080] のみ正、E/C2 −0.055 [−0.095, −0.017]、G/C2 −0.036 [−0.068, −0.009]、D/F は −0.016〜−0.028。M2x の拡大 shortlist(k_fpp 200 + k_pop 50)は forward 不在層で損、C1 修正は参照多数層でのみ得",
-   "eta": "10:05 完了"
-  },
-  {
-   "state": "done",
-   "name": "B1 パイプラインのパネル run(E0 比較用、M2x blend21、C2/C1)",
-   "detail": "完了 10:21: C2 main 0.905 / 固定 0.858、C1 main 0.882 / 固定 0.865(GL 不足 fallback 34)。E0 のパネル run と段階台帳で比較する(E0 担当に通知済み)",
-   "eta": "10:21 完了"
-  },
-  {
-   "state": "done",
-   "name": "GL なし ranker(fallback 分岐用候補、rank_v4b_nogl)",
-   "detail": "不採用: パネル GL 不足 34 分子で正確な保険 0.809 に対し 0.402(C1)。E/F では rank_v4b・GL なしとも保険を上回る(strict: E/C2 0.308 / 0.367 / 0.235)。fallback は保険のまま(置き換え候補が保護条件を満たさないため)。共通要因の仮説: timsTOF query + 他ライブラリ参照の体制の学習行不足(7 分子)",
-   "eta": "08:51 完了"
-  },
-  {
-   "state": "done",
-   "name": "Codex 017(fallback 出力ポリシー、timsTOF クラス 1 の学習行追加)",
-   "detail": "回答 09:01: 公開ダミーに基づく「隠しテスト」推論を撤回(test.parquet は train 由来のダミー)、GL なし ranker 不採用、次は rank_v4b vs G 72 群追加の一対比較(保護層・ε=0.02 事前登録)、fold 拡張は保留",
-   "eta": "完了"
-  },
-  {
-   "state": "done",
-   "name": "ranker 一対比較: rank_v4b vs +G 72 群(fold 0、他集合と排他)",
-   "detail": "結果 11:15: G/C1 +0.097 [+0.052, +0.144](仮説支持)。保護層 C/C1 −0.036 [−0.069, −0.005]、A/C2 −0.027 [−0.040, −0.015] が ε=0.02 を割る → 不採用。次: 装置一致・参照数の観測可能特徴を加えた同レシピ比較",
-   "eta": "11:15 完了"
-  },
-  {
-   "state": "done",
-   "name": "同一特徴表での切り分け(M1 構成の表上で rank_v2 learned vs rank_v4b blend21)",
-   "detail": "rank_v4b blend21 − rank_v2 learned(同じ候補): C/C1 +0.040、D/C2 −0.042 [−0.078, −0.009]、C/C2 −0.031、G/C2 −0.020、G/C1 +0.020、E/F 0(保険同一)。M2x の損は ranker/ICE 無しと候補拡大の両方",
-   "eta": "10:40 完了"
-  },
-  {
-   "state": "done",
-   "name": "E0 自前実行 c2_full3r(W7 600、C2 代理)と段階台帳",
-   "detail": "E0 0.681 vs B1 blend21 0.616(保険 0.510)。B1 到達: 窓 0.958 / shortlist 0.755。E0 engine-1 base-60 0.939(全分子学習済み)、GLACIER 融合で 0.696 に低下。Engine 2 の未被覆 7 分子は記録化。c1_full3r → パネル C2/C1 へ自動継続(ETA 12:10 / 14:15 / 16:30)",
-   "eta": "10:18 完了"
-  },
-  {
-   "state": "running",
-   "name": "同一窓 FPNet 比較(fold-0 / fold-1 学習済み / 公開 full1): パネル・W7 A/B・dev2 D/E/F",
-   "detail": "パネル full1 特徴表 10:41 完了 → GL → W7 A/B fold-1 → full1(W7 A/B、dev2 D/E/F)→ fp_reach_compare。診断として読む(学習済みデータ)",
-   "eta": "午後"
-  },
-  {
-   "state": "done",
-   "name": "Codex 018(shortlist 到達と学習済みモデルの記憶の仮説)",
-   "detail": "帰属を訂正(E0 の窓は B1 の 1/100、0.939 は ranker 後、両方に真あり 450 分子では B1 が良い)。同一窓での FPNet 比較を先に、full1 は診断用、提出用の重みは自前学習。C1/C2 は「参照の有無」と「モデルの露出」を別軸に",
-   "eta": "11:00 完了"
-  },
-  {
-   "state": "done",
-   "name": "全 train FPNet の自前学習(full_eval、手元 RTX 5070 Ti)",
-   "detail": "完了 15:33(82,855 更新、3.84 h;dev2 保留 MRR 0.712、学習 0.979;sha256 5b8d1c31…)。Spark で現行 M2x + full_eval の登録評価中",
-   "eta": "15:33 完了"
-  },
-  {
-   "state": "done",
-   "name": "ranker 固定パラメータ対照(Codex 019)",
-   "detail": "v4b 完全再現。G72(C1×3/×1)は G/C1 +0.089/+0.074 だが保護層の下限 < −0.02 → 未確定、v4b 維持",
-   "eta": "12:39 完了"
-  },
-  {
-   "state": "done",
-   "name": "pool 窓 branch(k_pool 60)端から端の比較",
-   "detail": "不採用: 端から端で C1 利得なし(0〜負)、G C1 −0.040 [−0.069, −0.013]。今夜の候補から外した",
-   "eta": "15:20 完了"
-  },
-  {
-   "state": "done",
-   "name": "PubChemLite 事前分布の検証",
-   "detail": "パネル: 真 92.4% vs デコイ 4.9%。ブーストはパネル C1 +0.01〜0.02、NP 開発 C2 は 0〜負 → 事前規則で不採用",
-   "eta": "13:20 完了"
-  },
-  {
-   "state": "running",
-   "name": "二本目の FPNet 学習 full_rk(ranker 学習表用、手元 GPU)",
-   "detail": "p1_run1 を identity ごと除外、W7・eval_c1・パネルは query 取得のみ除外(C1-seen / C2-unseen の ranker 行を同じ FPNet で作る、Codex 021)。15:34 開始、20:19 自己停止",
-   "eta": "19:30 頃"
+   "state": "wait",
+   "name": "132(E-lite RRF の一回比較)",
+   "detail": "09:00:16 提出、Kaggle で採点中。≥ 0.402 暫定採用 / 0.379〜0.402 保留 / ≤ 0.379 不採用",
+   "eta": "—"
   }
  ],
  "next": [
-  "09:00 以降に提出: 本命 casmi26-b1-baseline v4(M2x blend21)/ 保険 casmi26-b1-insurance v1(固定 + libpri τ0.9)。提出 ID・Public 値を記録(読みの規則は 015_decision.md)",
-  "E0 自前分子実行(c2_full3)の完走 → 段階別の差を特定(Codex 017)",
-  "dev2 v2 の層別結果(C/D/E/F/G × view)→ 層ごとの paired Δ と CI、n_query 事後層別も併記",
-  "朝の進捗報告を確定(docs/progress_2026-10-25_morning.md)"
+  "F の提出: 一致確認 v2・コミット実行の点検・評価器 v3 の診断経路・別表記の監査の 4 つが揃ったら 1 回提出(1030_submission_plan_e2.md)",
+  "F の Public の読み: ≥ 0.409 正(新しい土台)/ 0.380〜0.408 保留 / ≤ 0.379 負(登録 144 v2 §4')",
+  "132 の Public を登録どおりに読む(F とは別の凍結候補)",
+  "次の構造の一手を Codex 146 と決める: 二本のエンジンの相補性(どちらかが 1 位 63% vs P 52%)を、固定の RRF は半分も取れていない",
+  "Public 0.500 への道筋: E0 の構造(二本の融合・source の階層・class 3 の生成をエンジン内で採点・rank-2 hedge)を自前で揃え、その上に自前の強み(analog、ライブラリ)を載せる"
  ],
  "pages": [
   [
@@ -190,7 +95,7 @@
   [
    "codex.html",
    "Codex 議論",
-   "依頼 → 回答 → 判断記録(000〜005)"
+   "依頼 → 回答 → 判断記録(000〜146)"
   ],
   [
    "submissions.html",
@@ -201,6 +106,31 @@
    "competition.html",
    "コンペ概要",
    "課題・データ・評価・ルール"
+  ],
+  [
+   "plan143.html",
+   "土台の作り直し(143)",
+   "なぜ部品の積み上げをやめたか、何を作るか"
+  ],
+  [
+   "result144.html",
+   "E2 と融合の結果(144)",
+   "登録どおりの読みと、得と損の構図"
+  ],
+  [
+   "e2_eval_v1.html",
+   "E2 の評価の全表",
+   "関門・保護・層別・相補性"
+  ],
+  [
+   "plan1030_e2.html",
+   "F の提出計画",
+   "提出の条件 4 つと Public の読み"
+  ],
+  [
+   "progress_1030.html",
+   "進捗 10/30",
+   "夜間から今朝の経過"
   ]
  ],
  "experiments": [
@@ -283,6 +213,63 @@
    "code": "experiments/b1_baseline/b1_rank_train.py --drop --c1_repeat --c2_nolib --monotone_lib",
    "page": "diagnose.html",
    "state": "done"
+  },
+  {
+   "id": "102/104",
+   "question": "同じ証拠の第二 ranker(E-lite)を P と融合すると効くか",
+   "result": "102 選択なし、104 t1E +0.0019 で閉じた。効果の大半は候補源の再加重(E 源の正解 +、PubChem だけの正解 −0.12)",
+   "code": "experiments/b1_baseline/x102_summary.py",
+   "state": "done"
+  },
+  {
+   "id": "128",
+   "question": "同じ分子式の中で GL / MIST で並べ替えると効くか",
+   "result": "全候補で負(主指標 −0.020〜−0.074)。単独の証拠は P より弱い",
+   "code": "experiments/b1_baseline/gen_eval2fd.py --wf",
+   "state": "done"
+  },
+  {
+   "id": "132",
+   "question": "E-lite RRF(rrf_rank_e1r_0.5)を Public で一回比較",
+   "result": "parity A/B/C PASS、10/30 09:00 提出(57785453)、採点待ち",
+   "code": "experiments/b1_elite/",
+   "state": "run"
+  },
+  {
+   "id": "133",
+   "question": "MIST(別系統の FP)を ranker の特徴に足すと効くか",
+   "result": "NO(fold 1 主指標 −0.0011 [−0.0120, +0.0103])",
+   "code": "experiments/mist/",
+   "state": "done"
+  },
+  {
+   "id": "134",
+   "question": "GLACIER の timsTOF 適応(強度側)で同分子式内の識別が上がるか",
+   "result": "NO(f1G +0.0437 だが費用の下限が不合格)",
+   "code": "experiments/glt/",
+   "state": "done"
+  },
+  {
+   "id": "W135 (136/139)",
+   "question": "class 3(どの DB にも無い正解)に生成で届くか、選択できるか",
+   "result": "stage 1 oracle U +0.0683 → INVEST、stage 2 の選択器は +0.0144(関門 +0.02 に届かず NO)",
+   "code": "experiments/w135/",
+   "state": "done"
+  },
+  {
+   "id": "141 A3",
+   "question": "GL を同分子式の硬い負例で識別学習すると効くか",
+   "result": "実行中(副次)",
+   "code": "experiments/glt/finetune_glt_v3.py",
+   "state": "run"
+  },
+  {
+   "id": "143/144 E2",
+   "question": "性質の違う第二エンジン E2 を作り P と融合すると、土台が上がるか",
+   "result": "F 関門 不合格(+0.0035)、E 源の正解は両 fold で +0.03、F − Fpe +0.0155、診断経路を満たす → F を提出準備中",
+   "code": "experiments/e2/",
+   "page": "result144.html",
+   "state": "run"
   }
  ],
  "research": [
@@ -315,51 +302,213 @@
  "submissions": [
   {
    "when": "2026-10-24 02:13",
-   "id": "E0 (57567821)",
-   "what": "公開最高系譜の忠実再現(evgendvorkin V18 = Gluzdov 構成)",
+   "id": "57567821",
+   "what": "E0 baseline: faithful reproduction of public pipeline (evgendvorkin V18 = Gluzdov scriptVersionId 361008383 config); measurement run, no method claim",
    "public": 0.464,
-   "note": "計測基準。報告値と一致し提出経路を確認"
+   "note": "候補"
   },
   {
    "when": "2026-10-24 10:51",
-   "id": "E4 v5 (57578830)",
-   "what": "E0 + PubChem リスト K 25→100、ICE/GL 全候補採点、全体 z 和(GL 2, ICE 1)、E0 規則への fallback",
-   "public": "Public 0.464(E0 と同値)",
-   "note": "P1 では strict 差 A +0.049 / B +0.042。LB は方向のみ読み、増分は予測しない",
-   "score": "0.464",
-   "state": "done"
+   "id": "57578830",
+   "what": "E4 v5 measurement: E0 + PubChem-only list K 25->100, whole-list z(pc_fz)+2z(GL)+z(ICE) only when both models cover the whole list (else E0 rule); extra ICE/GL in separate budgeted ",
+   "public": 0.464,
+   "note": "候補"
   },
   {
-   "when": "2026-10-24 17:55",
-   "id": "B1 v2 (57588650)",
-   "what": "自前パイプライン B1 v2 Notebook(version 2): PubChem/COCONUT 10 ppm 窓、shortlist FP100 ∪ FP+prior100 ∪ 参照20、固定規則 z(FP)+2z(GL)+z(ICE)+0.5pop、参照優先なし、学習モデルなし(埋め込み漏れ)",
-   "public": "Public 0.334",
-   "note": "E0(0.464)より 0.13 低い。参照優先・学習融合の無い自前固定規則。注: Notebook ログの参照類似 0.8 等は可視ダミー test の値で隠し test の性質ではない(Codex 011)。",
-   "score": "0.334",
-   "state": "done"
+   "when": "2026-10-24 17:51",
+   "id": "57588650",
+   "what": "B1 v2 notebook (own pipeline, measurement): label-free PubChem/COCONUT 10ppm windows, shortlist FP100+FPprior100+lib20, fixed rule z(FP)+2z(GL)+z(ICE)+0.5pop, no library priority, ",
+   "public": 0.334,
+   "note": "候補"
   },
   {
    "when": "2026-10-24 21:08",
-   "id": "B1 M1 (57593667)",
-   "what": "候補 M1: B1 v2 パイプライン + LambdaRank 28 特徴(rank_v2, sha a84fe3ff, fit 884 群)。shortlist FP100 ∪ FP+prior100 ∪ 参照20、GL+ICE、本命 = 学習融合(修正前の GL 被覆ポリシー: GL 無しの 29 分子にも学習器を適用)。Notebook version 3、3.17 h(可視ダミー test での実行時間)",
-   "public": "Public 0.322(固定 0.334 −0.012)",
-   "note": "学習融合(rank_v2 28 特徴)+ 保険 libpri 0.9。開発集合の学習利得(+0.075)は隠しテストに移らず。パネル診断の C1 崩壊と整合するが単一値から寄与は分解しない(Codex 012)",
-   "score": null,
-   "state": "wait"
+   "id": "57593667",
+   "what": "B1 M1 (own pipeline v2 + LambdaRank 28 features rank_v2 sha a84fe3ff, fit 884 groups; shortlist FP100+FPprior100+lib20; GL+ICE; learned main; pre-fix GL-coverage policy); kernel 3.",
+   "public": 0.322,
+   "note": "候補"
   },
   {
-   "when": "2026-10-25 09:02 JST",
+   "when": "2026-10-25 09:02",
    "id": "57610156",
-   "what": "本命 casmi26-b1-baseline v4: M2x blend21(rank_v4b、k_fpp 200 / k_pop 50、w_ice 0、τ0.9、GL 不足 → 保険)",
-   "public": "0.354",
-   "note": "M1 0.322 から +0.032(変更全体の総合効果)"
+   "what": "B1 M2x blend21 (rank_v4b, k_fpp200 k_pop50, w_ice0, tau0.9, GL-cover fallback) - comparison vs M1 0.322 / fixed 0.334",
+   "public": 0.354,
+   "note": "候補"
   },
   {
-   "when": "2026-10-25 09:02 JST",
+   "when": "2026-10-25 09:02",
    "id": "57610167",
-   "what": "保険 casmi26-b1-insurance v1: 同一 run の固定規則 + 参照優先 τ0.9 リスト",
-   "public": "0.336",
-   "note": "旧固定 0.334 から +0.002;本命との差 −0.018(出力ポリシー、±0.02 以内)"
+   "what": "B1 M2x insurance list (fixed rule + library priority tau0.9, same pipeline run) - output-policy comparison",
+   "public": 0.336,
+   "note": "候補"
+  },
+  {
+   "when": "2026-10-25 21:39",
+   "id": "57630176",
+   "what": "DIAGNOSTIC probe pool (Codex 023b): B1 M2x main order with PubChem-tier-only candidates removed (keep train or COCONUT by run provenance); empty -> CCO; pipeline sha 1bc93dda; not ",
+   "public": 0.336,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-25 21:44",
+   "id": "57630335",
+   "what": "DIAGNOSTIC probe Pc (Codex 023b): B1 M2x main order keeping only PubChem-tier-only candidates (not train, not COCONUT by run provenance); empty -> CCO; pipeline sha 1bc93dda; not a",
+   "public": 0.046,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-25 22:08",
+   "id": "57630996",
+   "what": "B1 M2x + own full-train FPNet (full_eval_final.pt sha 5b8d1c31, private model) - one-change comparison vs 0.354 (57610156): FPNet checkpoint only; same args, rank_v4b, blend21, GL-",
+   "public": 0.37,
+   "note": "候補"
+  },
+  {
+   "when": "2026-10-26 09:01",
+   "id": "57645888",
+   "what": "DIAGNOSTIC probe T (Codex 027): old M2x main order, training-structure candidates only (run provenance); empty -> CCO; pipeline f9122e77; not a method candidate",
+   "public": 0.16,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-26 09:01",
+   "id": "57645901",
+   "what": "DIAGNOSTIC probe B (Codex 027): old M2x main order, COCONUT-and-not-train candidates only; empty -> CCO; pipeline f9122e77; not a method candidate",
+   "public": 0.202,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-26 09:02",
+   "id": "57645908",
+   "what": "DIAGNOSTIC probe band26 (Codex 027): ranks 26-50 of the old M2x main order (oracle add-on score); pipeline f9122e77; not a method candidate",
+   "public": 0.005,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-26 09:02",
+   "id": "57645926",
+   "what": "DIAGNOSTIC (Codex 032): working baseline full_eval (0.370) with the inference-time entropy near-duplicate reference rule off (--dup_sim 1.01, exact rule kept); one change",
+   "public": 0.37,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-26 11:05",
+   "id": "57650023",
+   "what": "Codex 035 one-change comparison: working baseline full_eval (0.370) + library-analog channel anaw0.5 (score + 0.5 z(ap), own b1_analog 4f471bd1, pipeline ef8f8f96); DUP 0.98; readi",
+   "public": 0.379,
+   "note": "候補"
+  },
+  {
+   "when": "2026-10-27 09:01",
+   "id": "57681793",
+   "what": "Codex 038/039 one-change comparison vs 0.379 (FE + anaw0.5): v7f = analog-feature ranker rank_v7a (600 trees) on GL-covered molecules, insurance + 1 z(ap) + 1 z(MetFrag-lite) on GL",
+   "public": 0.39,
+   "note": "候補"
+  },
+  {
+   "when": "2026-10-27 09:01",
+   "id": "57681864",
+   "what": "DIAGNOSTIC (Codex 039): working-baseline shortlist (full_eval, k_fpp 200, k_pop 50) ordered by the prior alone (FP tie-break), no forward models; measures this fixed policy only",
+   "public": 0.135,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-27 09:02",
+   "id": "57681941",
+   "what": "Codex 043 one-change comparison vs 0.379 (FE + anaw0.5): + one generated analog derivative (own b1_gen v2 ef8c856a; top-10 analog parents, 1-2 biosynthetic edits, query-derived mas",
+   "public": 0.377,
+   "note": "候補"
+  },
+  {
+   "when": "2026-10-27 09:02",
+   "id": "57682008",
+   "what": "DIAGNOSTIC pair (Codex 049, 055): E0 (0.464 reproduction) final list restricted to group B = COCONUT and not training (official key; T-priority exclusive), order kept, no refill, e",
+   "public": 0.259,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-27 09:02",
+   "id": "57682054",
+   "what": "DIAGNOSTIC pair (Codex 049, 055): current B1 0.379 (57650023 kernel) final list restricted to group B with the identical appended cell; not a method candidate",
+   "public": 0.204,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-28 09:01",
+   "id": "57716320",
+   "what": "Codex 087/092 one-change vs v7f (0.390): ranker rank_v8w7a (v7f analog-feature recipe + fold-3a/4a pools, pool C1 x1; dev 053 NP_H C2 +0.0327 vs v7a_pc, G C1 +0.18; reserved-083 co",
+   "public": 0.394,
+   "note": "候補"
+  },
+  {
+   "when": "2026-10-28 09:02",
+   "id": "57716378",
+   "what": "Codex 045/046 one-change vs 0.379: one generated analog derivative at rank 3 (b1_gen v2), GL gate on the GL path, fallback f.z gate vs main ranks 2-3 (ggt3t); gt3 Public 0.377 = un",
+   "public": 0.378,
+   "note": "候補"
+  },
+  {
+   "when": "2026-10-28 09:02",
+   "id": "57716445",
+   "what": "Codex 076/082b one-change vs 0.379: explained-away demotion EA (score - 1 x [library references present and lib_sim < 0.5]); 073 confirmation NP C2 +0.0246 [+0.017, +0.033]; parity",
+   "public": 0.385,
+   "note": "候補"
+  },
+  {
+   "when": "2026-10-28 09:02",
+   "id": "57716496",
+   "what": "Codex 080/081 one-change vs v7f (0.390): v7f + EA (theta 0.5, w 1); 053 conf NP C2 +0.0163 [+0.0086, +0.0252]; parity v7f-alone PASS both views, v7f+EA C2 PASS, C1 outputs identica",
+   "public": 0.392,
+   "note": "候補"
+  },
+  {
+   "when": "2026-10-28 09:03",
+   "id": "57716550",
+   "what": "DIAGNOSTIC (Codex 088): E0 engine-1 BASE list top 25 restricted to group B (COCONUT and not training, official key, T-priority exclusive), order kept, no refill, empty -> CCO; comp",
+   "public": 0.213,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-29 09:30",
+   "id": "57753331",
+   "what": "DIAGNOSTIC (Codex 101): E0 engine-2 ENG list top 25 restricted to group B (COCONUT and not training, official key, T-priority exclusive), order kept, no refill, empty -> CCO; read ",
+   "public": 0.223,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-29 09:31",
+   "id": "57753342",
+   "what": "DIAGNOSTIC (Codex 101): E0 output just before the final rank-2 insertion (E006 control) top 25 restricted to group B, same extraction; D = 0.259 - pre-rank2_B read with eta 0.015; ",
+   "public": 0.249,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-29 09:57",
+   "id": "57753951",
+   "what": "DIAGNOSTIC (Codex 049/124): v8w7a (Public 0.394; notebook of kernel b1-fpnet-v8w7a v1 unchanged) final list top 25 restricted to group T (training structure, official key), order k",
+   "public": 0.148,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-29 10:01",
+   "id": "57754031",
+   "what": "DIAGNOSTIC (Codex 049/124): v8w7a (Public 0.394; notebook of kernel b1-fpnet-v8w7a v1 unchanged) final list top 25 restricted to group B (COCONUT and not training, official key, T-",
+   "public": 0.22,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-29 10:19",
+   "id": "57754476",
+   "what": "DIAGNOSTIC (Codex 049/124/125): E0 final list (same base and extraction cell as E0_B 0.259) top 25 restricted to group T (training structure, official key), order kept, no refill, ",
+   "public": 0.16,
+   "note": "診断"
+  },
+  {
+   "when": "2026-10-30 09:00",
+   "id": "57785453",
+   "what": "132 one-shot (exception, keeps the 102 NO): v8w7a + fixed E-lite RRF (rrf_rank_e1r_0.5, K 10, alpha 0.5, E = P shortlist E subset); parity A/B/C PASS",
+   "public": "採点中",
+   "note": "登録: ≥ 0.402 暫定採用 / 0.379〜0.402 保留 / ≤ 0.379 不採用"
   }
  ],
  "docs": [
@@ -422,6 +571,46 @@
    "docs/b1_diagnostic_2026-10-24.md",
    "diagnose.html",
    "B1 失敗モード診断(10/24 午後)"
+  ],
+  [
+   "docs/progress_2026-10-30.md",
+   "progress_1030.html",
+   "進捗 10/30"
+  ],
+  [
+   "docs/progress_2026-10-30_morning_brief.md",
+   "brief_1030.html",
+   "朝のまとめ 10/30"
+  ],
+  [
+   "reports/agent_review/143_plan_base_rebuild.md",
+   "plan143.html",
+   "143 主軸の転換: 土台の作り直し"
+  ],
+  [
+   "reports/agent_review/144_prereg_e2.md",
+   "prereg144.html",
+   "144 事前登録(E2 と融合)"
+  ],
+  [
+   "reports/agent_review/144_result.md",
+   "result144.html",
+   "144 の結果"
+  ],
+  [
+   "experiments/e2/eval_v1/e2_eval_summary.md",
+   "e2_eval_v1.html",
+   "E2 の開発の評価(登録どおり)"
+  ],
+  [
+   "reports/agent_review/1030_submission_plan_e2.md",
+   "plan1030_e2.html",
+   "10/30 提出計画(2): F"
+  ],
+  [
+   "reports/agent_review/145_coco_pickle_audit.md",
+   "audit145.html",
+   "145 COCONUT の pickle の監査"
   ]
  ]
 }

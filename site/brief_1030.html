@@ -1,0 +1,57 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>朝のまとめ 10/30</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:27 JST</span></header>
+<main><article><h1 id="2026-10-30claude-code-2026-10-29-2131date">朝のまとめ 2026-10-30(夜間の作業、Claude Code)— 下書き 2026-10-29 21:31(date)、随時更新</h1>
+<h2 id="0">0. 要点(最新を上に)</h2>
+<ul>
+<li><strong>08:30 今日の方針</strong>(Codex 140 / 141):</li>
+<li>(1) 09:00 に 132 を一回提出して読む。</li>
+<li>(2) W135 は、二段の確率の校正という一比較だけにする。確認は fold 0 で、P の教師 232 identity を除いた集合を使う。NO なら、この経路への反復投資は止める。</li>
+<li>(3) 次の主要な投資は、<strong>同じ式の識別</strong>。開発の誤りの台帳では、list 内の誤りの損失の 89% が同じ式の異性体の取り違えである。GLACIER を、同じ式の hard negative で識別学習させる A3 を、Codex の設計で準備する(A2 との一対比較)。</li>
+<li><strong>07:38 W135 段階 2 = NO(性能上)</strong>:</li>
+<li>凍結した selector を fold 2 の確認 13 世界に一度だけ適用した。π 0.3 の全 598 query で <strong>+0.0144 [組 +0.0081, +0.0190]</strong>。登録の基準 +0.02 に届かない。費用は全て非劣性の基準を満たした(−0.001〜−0.004)。</li>
+<li>選別は機能している(到達した C3 の 63% で真を選んだ)。ただし挿入の多くが 3 位で、それが律速である。家族の濃いバッチでは +0.023。</li>
+<li>次の一手と、Public での診断(要相談)を Codex に質問中(140)。</li>
+<li><strong>Kaggle の認証は復旧済み</strong>(06:05 に確認)。<strong>09:00 に 132(E-lite)を一回提出する</strong>(A・B・C とも PASS)。</li>
+<li><strong>class 3(W135)</strong>:</li>
+<li>段階 1(02:10)= INVEST。class 3 の到達の上限は U = +0.068(π 0.3)で、C3 の 21% で正解を生成し、B 内に入れられる。</li>
+<li>段階 2(selector と挿入の方策)は Codex の修正を全て入れて登録し、学習・凍結済み(04:19)。設計の CV(記述)は π 0.3 で +0.011、π 0 で −0.003、π 0.6 で +0.029。</li>
+<li>選別の正解率は、到達した C3 の 53%。ただし挿入の多くが 3 位で、全挿入の正解率は 12%。CV からは、登録の関門(π 0.3 で +0.02)に届くかは微妙である。</li>
+<li>fold 2 の確認 13 世界で一度だけ読む(08:00 頃の予定)。</li>
+<li><strong>132 の parity B</strong>(00:45): c2 は PASS。c1 は一分子(SQFSKOYWJBQGKQ)の E-lite の順序だけが違い、FAIL だった。原因は 076 / 082 で既知の評価表の性質(別表記の構造を C1 + C2 の和で集約していた)。本番と同じ view ごとの集約(<code>--alias_perview</code>)で評価表を作り直した再検査では、<strong>両 view とも完全一致で PASS</strong>(01:11)。<strong>Codex 138 で、この再検査を B の合格として扱うことになった</strong>(旧 FAIL は記録に残す。同じ候補の in_coconut の残差も記録した)。A・B・C とも PASS なので、<strong>Kaggle の再ログインさえあれば 09:00 以降に 132 を一回提出できる</strong>。</li>
+<li><strong>W135(class 3)</strong>: Codex 136 の指摘を全て反映した。C1 の適格性を、world と同じ規則で数え直した結果、p30 で C1 に割り当てた 9 分子に参照が残らないことが分かった。そこでクラスを訂正し、全世界を作り直している。到達の数字はまだ読んでいない。6 世界が揃うと、検査 → 段階 1 の計算 → 登録した判断(INVEST / LIMITED / STOP / UNDETERMINED)が自動で走る。</li>
+<li>(解決済み)<strong>00:05 判明</strong>: Kaggle API の認証が切れていた(提出・kernel・leaderboard の各 API が 401 Unauthorized)。公開の discussion の取得だけは動く。資格情報のファイルには触れていない。<strong>09:00 の 132 の提出には再ログインが必要</strong>: <code>! C:\kaggle\CASMI\.venv\Scripts\kaggle.exe auth login</code>(ブラウザでログイン)、または Kaggle の設定画面で API token を作り直す。</li>
+<li><strong>134(GLACIER の timsTOF 適応 A2)は NO</strong>(23:17): 主指標 f1G の rr_form は +0.0437 <a href="下限が 0 未満">−0.0132, +0.1023</a>。費用(timsTOF 以外の NP_H、D、panel)の下限も不成立。登録どおり止める。評価器の表示行のバグ(DataFrame.empty)は結果を読む前に直し、分子ごとの表が直す前と同一であることを確認した。</li>
+<li><strong>135(class 3 の計画)は Codex の回答を全面採用</strong>。共通の世界(W135)を作った。全 query に同じ C1 / C2 / C3 の資産を適用し、P を一度だけ作って凍結する。既存の評価経路との parity は表 2,231 行・P 260 分子で完全一致。<strong>136(段階 1: class 3 の到達と oracle 上限)を、数字を計算する前に登録し、Codex に確認中</strong>。</li>
+<li><strong>今日の提出(候補 1 件、09:00 以降)</strong>: 132 の <strong>E-lite RRF</strong>(v8w7a + 人気度・候補源を使わない第 2 の ranker e1r を、P の候補の E 部分集合で identity RRF、K 10・α 0.5)。102 の開発の関門では NO だったものを、10/29 の Public 診断(E0 の後段の優位)を受けて<strong>例外として一回だけ測る</strong>(Codex 131 の推奨、既知の費用:D −0.035、E 源外の正解 −0.116、パネル C1 −0.035)。読みは v8w7a 0.394 比で ≥ 0.402 暫定採用候補 / 0.379〜0.402 保留 / ≤ 0.379 点検。</li>
+<li>技術検査: (A) 102 の評価器の中で共有関数が全 6 表・全分子で完全再現(PASS)、(C) Kaggle の commit run で P が v8w7a と byte 一致・RDKit 2026.03.3(PASS)、(B) パネル 250 × 2 view の pipeline と評価器の完全一致(<strong>00:00 に PC の GPU で実行</strong>)。B が通れば提出。</li>
+<li><strong>次の候補 2 つを準備中(結果は未読)</strong>:</li>
+<li>134(105): GLACIER(前方モデル)を timsTOF のスペクトル(enveda-180、2,000 identity)で強度側だけ追加学習。学習環境の検査(演算の監査、勾配の参照照合、データ契約)を通過し、変種 A1 を学習・採点中。</li>
+<li><strong>133(MIST の特徴を ranker に)は NO</strong>(fold 1 主指標 −0.0011)。115(模擬スペクトルで FPNet を補う)も NO。</li>
+<li>134(GLACIER の timsTOF 適応)は Codex 134 の指摘で設計を直し(CE は固定、end-to-end の強度損失)、v2 を実行中。</li>
+</ul>
+<h2 id="1">1. 夜間の時系列</h2>
+<ul>
+<li>19:30 Codex 131 の回答 → 132 を登録、実装、parity A / C、Codex 132 の修正(提出前の必須 3 点)。</li>
+<li>20:23 115 は NO。20:40〜 133(MIST ranker)の準備と学習、Codex 133 の修正(v2)、fold 1 評価開始(21:21)。</li>
+<li>20:45〜 GLACIER 適応の段階 0〜1、21:28 段階 2 の学習開始。</li>
+<li>22:40 A2 の事前検査が PASS、学習(123 s)、export の検査が PASS → 4 cell の採点 → 23:17 段階 2 の読み = NO。</li>
+<li>23:01 Codex 135 の回答 → 23:14 135 の決定 → W135 の構築(census → バッチ → b1_world の parity → w135_p の parity → dF1 p30 の世界と速度試験)→ 00:02 136 を登録し Codex に依頼。</li>
+<li>00:00 PC で 132 の parity B を開始(パネル 250、C2 → C1)。00:05 Kaggle API の 401 を確認。</li>
+</ul></article><p class='small muted'>原文: <code>docs/progress_2026-10-30_morning_brief.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

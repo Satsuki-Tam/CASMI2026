@@ -1,0 +1,82 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>進捗 10/30</title><style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--acc:#0b6e4f;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+header .title{font-weight:700;margin-right:10px}header a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}header a.on{background:var(--acc);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.card h2{margin:0 0 8px;font-size:1.05rem}
+.kpi{display:flex;gap:22px;flex-wrap:wrap}.kpi div{min-width:120px}.kpi .v{font-size:1.5rem;font-weight:700}.kpi .l{color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#fafafa}
+.ev{border-left:3px solid var(--line);padding:4px 10px;margin:6px 0}.ev.decision{border-color:var(--acc)}.ev.result{border-color:#2563eb}.ev.issue{border-color:var(--bad)}.ev.submit{border-color:var(--warn)}
+.ev .t{color:var(--muted);font-size:.8rem;margin-right:8px}.muted{color:var(--muted)}.badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.78rem;background:#eef2ff}
+.badge.run{background:#dcfce7}.badge.wait{background:#fef9c3}.badge.done{background:#e5e7eb}.badge.fail{background:#fee2e2}
+article{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 24px}article h1{font-size:1.4rem}article h2{font-size:1.15rem;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:28px}
+article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:pointer;font-weight:600}.toc{background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.9rem}
+code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
+.small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
+</style></head><body>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:27 JST</span></header>
+<main><article><div class="toc"><div class="toc">
+<ul>
+<li><a href="#1-22400140">1. 22:40〜01:40 のまとめ</a></li>
+<li><a href="#2-01400245">2. 01:40〜02:45</a></li>
+<li><a href="#3-09351030-e2-p">3. 09:35〜10:30 主軸の転換: 土台の作り直し(独立した第二エンジン E2 + P との融合)</a></li>
+</ul>
+</div>
+</div><h1 id="2026-10-30claude-code-date-git">進捗 2026-10-30(夜間、Claude Code)— 時刻は date / git の記録から</h1>
+<h2 id="1-22400140">1. 22:40〜01:40 のまとめ</h2>
+<ul>
+<li><strong>134(GLACIER の timsTOF 適応 A2)は NO</strong>(23:17)。主指標 f1G の rr_form は +0.0437 [−0.0132, +0.1023]。費用(NP_H・D・panel)の下限も不成立。評価器の表示行のバグを結果の前に直した(v2.1。分子ごとの表は直す前と同一)。Codex 136 は、技術修正と NO の扱いの両方を支持した。記録の文言は「区間が広く、有効性・非劣性を確認できなかった」に訂正した。</li>
+<li><strong>135 / 136(class 3 の共通の世界 W135)</strong>:</li>
+<li>Codex 135 を採用。バッチ単位で C1 / C2 / C3 の代理の資産を全 query に共通に適用し、P を一度だけ作って凍結し、peer の予測と train の analog を親にする。</li>
+<li>基盤: census(fold 1 の COCONUT の真 1,937 identity、timsTOF は 12 だけ)、家族(Butina 0.5)、バッチ(家族 3 + 無作為 3、確認用 fold 2 の 3)、b1_world.py、w135_p.py、w135_gen(_v2).py、w135_read(_v2).py。</li>
+<li>parity: 表は既存の run と 2,231 行・33 列で一致、P は r133 と 260 分子で一致(v2 でも再確認済み)。</li>
+<li>Codex 136 の指摘(C1 の適格性、peer の極性と重複、novel の意味、roster、CI、provenance)を全て、結果を見る前に反映した。C1 の監査で、p30 で C1 に割り当てた 9 分子に除外後の参照が無いことが分かった。クラスを訂正し、全世界を作り直した(v1 の世界は性能を読まずに退避した)。</li>
+<li>6 世界の不変条件の検査は全て PASS(C1 の analog 再選択の分岐も実データで照合)。01:39 に段階 1 の計算を開始した。</li>
+<li><strong>132(E-lite)の parity B</strong>:</li>
+<li>00:45 は c1 で一分子 FAIL だった。原因は 076 / 082 で既知の、評価表の別表記の集約である。</li>
+<li><code>--alias_perview</code> の評価表での再検査で、両 view とも完全一致した(01:11)。Codex 138 で B の合格として扱うことになった。</li>
+<li>A・B・C とも PASS。<strong>提出には Kaggle の再ログインが必要</strong>(00:05 から API が 401)。</li>
+<li><strong>調査の記録</strong>:</li>
+<li>開発 C2 での P の MRR は、真の人気度の四分位で 0.50 → 0.69 と上がる。パネル(Enveda の例)の真は、開発より遥かに人気度が高い(中央値 18.2 対 4.9)。</li>
+<li>窓に真が無い分子の多くは、前駆体 / 付加体のメタデータの誤り(50 ppm 超)である。</li>
+<li>shortlist での取りこぼしは 1〜9% と小さい。</li>
+<li>ranker の学習量は 127 でほぼ飽和と確認済み。</li>
+</ul>
+<h2 id="2-01400245">2. 01:40〜02:45</h2>
+<ul>
+<li><strong>132</strong>: parity B の再検査は PASS。Codex 138 で B の合格として扱うことになった(旧 FAIL と in_coconut の残差は記録)。提出に必要なのは<strong>再ログインだけ</strong>。</li>
+<li><strong>136 段階 1(02:10)= INVEST</strong>: U = +0.0683 [組 +0.060, +0.080]。C3 の到達は 21%(train 親だけで 18%)。家族 0.083・無作為 0.053。到達できたのは単純な 1〜2 段の編集。真の f.z の順位は 1 位 9 / 3 位以内 23 / 41。</li>
+<li><strong>139(段階 2 の selector)</strong>: 登録案 → Codex 139 の修正(利得の式の二重条件付け、q 表の集計、重み付き標準化、編集の表、重複を除いた順位、空の窓、入力の検査、費用を 5 項目に分ける等)を全て入れ、学習の前にコミットした(06235b9)。合成データの試験は PASS。構造の近さの表は結果の前に固定した(697 中 ≥ 0.85 が 24)。</li>
+<li><strong>データの準備(結果は読まない)</strong>: 設計の 18 世界(p0 / p60 は構築中)の生成と生成物の GL。確認の fold 2 の 13 世界(cF2 / cR2 / cF3 / cR3 を追加。C1 を world 規則で監査して再割当)。全て揃ったら、cv(記述)→ fit(凍結)→ 確認に一度だけ適用 → 登録した関門で読む。</li>
+</ul>
+<h2 id="3-09351030-e2-p">3. 09:35〜10:30 主軸の転換: 土台の作り直し(独立した第二エンジン E2 + P との融合)</h2>
+<ul>
+<li><strong>転換</strong>(143、09:35): 利用者の指摘「部品の改善では 0.500 に届かない」を受け、主軸を土台の作り直しに移した。</li>
+<li>Codex 143 は転換を支持した。ただし二点を訂正した。<ul>
+<li>E0 の +0.026 は、処理一式の差である。</li>
+<li>Public の T/B の probe は、通常の MRR の寄与の分解にはならない。</li>
+</ul>
+</li>
+<li><strong>E2 の部品</strong>(全て commit 済み)</li>
+<li>b1_ewin.py: E 窓の表。</li>
+<li>e2_feats.py: MetFrag-lite と analog の特徴。</li>
+<li>e2_common.py: 21 特徴と、view の窓。</li>
+<li>e2_train.py: LightGBM binary。木の本数は、fold 3↔4 の交差だけで選ぶ。</li>
+<li>e2_eval.py: 102 の関門を継承する。</li>
+<li><strong>事前登録</strong>: 144 を 10:04 に登録し、Codex 143 を受けて v2 を 10:07 に改訂した(1b7b19b)。</li>
+<li>F = RRF(K 10、α 0.5)。H = F に 2 位の挿入を加えたもの。F0 = P の検査。</li>
+<li>Public の読みは、F が 0.409 以上で正、0.379 以下で負。</li>
+<li><strong>カーネル</strong>: E2 エンジン(e2_engine.py)を、評価器とカーネルで共通にした。</li>
+<li>開発の表と、10 分子・887 行で全ての差 0(f2f0f92)。</li>
+<li>生成スクリプト(make_e2k.py → b1_pipeline 52fbf43e)、ノートブックの生成(make_b1_e2k.py)、コミット実行の点検(check_e2k_commit.py)、Spark でのパネル C1 の一致確認のジョブを用意した。</li>
+<li><strong>安全</strong>(145_coco_pickle_audit.md): 既存のコードが unpickle していた、ダウンロード由来の COCONUT の pickle を、静的に解析した。numpy の配列の復元だけだったので、parquet に変換した。</li>
+<li><strong>実行中</strong>(Spark)</li>
+<li>E 窓と特徴: 学習用 6 本・開発用 5 本。</li>
+<li>学習 → 評価の自動の連鎖: 11 時ごろに結果が出る。</li>
+<li>カーネルの一致確認: モデルができた後に始まる。</li>
+<li>A3(GL の識別、副次)。</li>
+<li><strong>Codex</strong>: 145(実装と組み込みの点検)を 10:26 に依頼した。</li>
+<li><strong>132</strong>: Public の結果を待っている。</li>
+</ul></article><p class='small muted'>原文: <code>docs/progress_2026-10-30.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

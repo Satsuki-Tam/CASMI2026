@@ -186,3 +186,32 @@
 {"time": "2026-10-28 16:14", "kind": "decision", "text": "Literature report (reports/CASMI 2026 順位融合と注釈伝播.md): fusion/propagation help only with differently-erring evidence, ~1/4 of oracle headroom recovered; NP-focused CASMI 2017 is where popularity priors hurt. Next: GLACIER timsTOF adaptation pilot (needs user OK for ms-pred), E0 later-stage probes (10/29, needs user OK)"}
 {"time": "2026-10-28 18:38", "kind": "result", "text": "106 pilots closed: GLACIER per-spectrum peak-explanation summary and ICEBERG on same-formula groups add nothing beyond the main list (within-group MRR main 0.72 vs GL 0.46 vs ICE 0.37 on 053 C2). 107 started: ranker data scaling (used fold-safe dev tables, 2-fold cross-fitting)"}
 {"time": "2026-10-28 19:55", "kind": "result", "text": "107/108 ranker data scaling: 107 primary +0.0090 [+0.0036,+0.0151] but G C1 / panel C1 undetermined -> NO; 108 (C1 weight share restored) +0.0026 -> NO. Line closed. Panel CSV identity_group is a local index (global overlap 0)."}
+{"time": "2026-10-28 20:48", "kind": "plan", "text": "110 追記(Codex 110 対応、結果の前): split 監査 14/14 合格(全 sid 一致、公開 fold-0 split を完全再現)、完了判定は progress / checkpoint の内容で(ジョブの exit 表示は bash の展開順で常に 0 と判明)、段階 1 の関門 = 1/4 NP_H + 1/4 NP_N + 1/2 D の FP 単独 MRR 差 > 0、対照は同じ実行系で作り直す seed 0 単体。学習終了(5:20 頃)を待つジョブを起動済み。"}
+{"time": "2026-10-28 21:12", "kind": "plan", "text": "111(自前の採点器 N)を登録・技術試験合格、fold-1 NP C1 確認群 861 group を選択、discussion 新着 2 件(LB ノイズモデル、公開重みの再現性)。Codex 112 にレビュー依頼中。"}
+{"time": "2026-10-28 21:49", "kind": "plan", "text": "Codex 112 の指摘(110 のジョブが学習終了直後に必ず停止するバグ等)を結果の前にすべて修正。GLACIER は候補単位の共有キャッシュ + 監査を判定前の関門に。111 の負例から保留 group の別表記 7 行を含む 24 行を除外。Codex 113 の条件付き同意で 111 の学習を 110 と並行で開始(評価は両学習の後に直列)。"}
+{"time": "2026-10-28 22:22", "kind": "plan", "text": "並行学習は GPU 律速で総処理量が直列と同等(FPNet 1.14 it/s)と分かり、事前の基準どおり直列に戻した。111 の 2k は完了・保持、8k/20k は 110 の評価の後に単独で学習。全工程を完了票で待つ直列の鎖に再構成(FPNet → 110 評価 → 111 学習 → c1 群 GL → 111 評価)。"}
+{"time": "2026-10-29 01:01", "kind": "plan", "text": "夜間の準備(結果の前): 110 が fold 1 で通った場合の fold 2 再現一式を固定(73fde15;fold 1 の読み取りからパス・hash だけ置換して生成、学習ジョブは鎖の後に起動)。MIST 比較の事前登録の草稿を作成し Codex 117 に相談中(導入は朝の許可待ち;開発集合は MSG 除外済みで MIST の学習分子と重ならない)。FPNet seed 1 は step 37,400/82,855、5:40 頃終了の見込み。"}
+{"time": "2026-10-29 05:04", "kind": "plan", "text": "05:04 115 v2: 学習ジョブ(1 群ずつ、登録レシピ、完了検査)と評価ジョブ(P0/R/A の表 → 段階 1 → 共有 GL → main → 段階 3)を結果の前に固定(363ad0a)、Codex 120 に点検依頼。M_all の CPU 生成は 04:58 開始、FPNet 76k/82,855 step(2.43 it/s で低下なし)。discussion は 01:00 以降の新着なし、LB 首位 0.516、0.480 以上は 18 チーム。"}
+{"time": "2026-10-29 05:18", "kind": "plan", "text": "05:18 115 の段階 1 の読み取りを既存の表で空試験 → 窓が空の 4 分子の NaN で 110 の段階 1 が必ず停止する不具合を発見。窓が空の行だけ『窓に無い = −1』として受理する修正を、x110 の manifest 作成前(学習中)に Spark へ配置(1bdfb45、110_prereg §6)。Codex 121 に確認依頼。"}
+{"time": "2026-10-29 05:39", "kind": "plan", "text": "05:39 Codex 120/120b/121 を反映: 115 の学習・評価ジョブ(GPU 排他ロック、GPU 使用中の拒否、コード・入力 manifest、和集合の GL、新規 run のみ)、読み取り(identity 単位の露出、完全性、判定 JSON)、空窓の受理条件の厳格化(110 の manifest 前に配置)、111 の欠測検査の厳格化。Codex 122 に再点検を依頼中。"}
+{"time": "2026-10-29 06:23", "kind": "result", "text": "06:23 110 段階 1 PASS: FP 単独の dFP +0.0141(NP_H 0.138→0.162、NP_N 0.279→0.292、D 0.093→0.103、G 不変)。対照は既存の表と完全一致。段階 3(v8w7a の端から端)の GL・main を計算中。"}
+{"time": "2026-10-29 06:58", "kind": "result", "text": "06:58 110 段階 3 NO: 主指標 −0.0046 [−0.0149, +0.0047]。FP 単独の改善(+0.0141)が凍結 v8w7a の ranker を通すと消えた(リスト内の順位が C/D/E で低下、到達は不変)。特徴分布のずれを記述で確認し、次の登録を Codex と決める。GPU は 111 の直列学習へ。"}
+{"time": "2026-10-29 09:33", "kind": "plan", "text": "10/29 提出: E0 診断 ENG_B(57753331)・pre-rank2_B(57753342)を提出。残り 3 枠(v8w7a_B、T の一対 E0_T / v8w7a_T)は読みを事前に固定し、commit run 後に提出"}
+{"time": "2026-10-29 12:32", "kind": "plan", "text": "pop0 診断 kernel を作成(push 前): 凍結ループを AST 同一のまま関数化し、同じ run 内で凍結係数の参照リストも出力。CPU 自己整合 PASS(60 分子)。局所費用は 111 後に Spark で自動計算。Codex 126 に点検依頼。"}
+{"time": "2026-10-29 12:39", "kind": "result", "text": "111 の結果: NO(主指標 −0.0018〜−0.0088、関門 +0.005 に届かず)。N 単独は FP より良いが、1 位固定の接続の費用を埋められない。115 の R を GPU で開始。"}
+{"time": "2026-10-29 17:02", "kind": "result", "text": "10/29 の診断 5 件が揃った: B 群の差 +0.039 は残る、E0 の優位は同程度の 2 本のリストの融合と forward の並べ替え(2 位挿入は +0.010)。MIST を導入し公表値を再現、検査 C2 合格。同分子式内の並べ替え(128 v3)を fold 1 で評価中。"}
+{"time": "2026-10-29 18:56", "kind": "result", "text": "128 v3 NO: 同じ分子式の中の GL / MIST による並べ替えは全候補で負。単独の証拠は P より弱い。"}
+{"time": "2026-10-29 19:42", "kind": "decision", "text": "132 を登録: E-lite RRF を Public で一回比較する(102 の NO は維持した例外)。parity A/B/C を提出の条件にした。"}
+{"time": "2026-10-29 22:15", "kind": "result", "text": "133 NO: MIST(別系統の FP)を ranker の特徴に足しても NP C2 の主指標は動かない(−0.0011)。"}
+{"time": "2026-10-29 23:18", "kind": "result", "text": "134 NO: GLACIER の timsTOF 適応(強度側)は f1G で +0.044 だが、費用の下限が不合格。"}
+{"time": "2026-10-30 01:17", "kind": "decision", "text": "132 の parity B: 別表記の集約の既知の差を直した再検査で PASS(Codex 138)。A/B/C とも PASS。"}
+{"time": "2026-10-30 02:11", "kind": "result", "text": "W135 stage 1: class 3 の oracle U = +0.0683 → INVEST(B = 50 で C3 の到達 21%)。"}
+{"time": "2026-10-30 07:40", "kind": "result", "text": "W135 stage 2 NO: 選択器の利得 +0.0144 が関門 +0.02 に届かない。費用は通過。"}
+{"time": "2026-10-30 08:08", "kind": "result", "text": "誤りの台帳: P の C2 の MRR の損失は、正解が候補に無い 47%、同分子式の異性体 47%、他の分子式 6%。"}
+{"time": "2026-10-30 09:00", "kind": "submit", "text": "132 を提出(57785453): v8w7a + E-lite RRF。採点待ち。"}
+{"time": "2026-10-30 09:35", "kind": "decision", "text": "主軸の転換(143): 部品の積み上げでは 0.500 に届かない。P と性質の違う第二エンジン E2 + 融合で、土台を作り直す。142 は停止した。"}
+{"time": "2026-10-30 10:07", "kind": "plan", "text": "144 の事前登録 v2(Codex 143): F = RRF K 10 α 0.5、H は別の関門、102 の関門を継承、Public の診断経路を登録した。"}
+{"time": "2026-10-30 10:14", "kind": "result", "text": "E2 エンジン(カーネルと評価器で共通)が、開発の表を完全に再現した(10 分子・887 行で差 0)。"}
+{"time": "2026-10-30 10:53", "kind": "result", "text": "144 の結果: F の関門は不合格(+0.0035)。E 源の正解は両 fold で +0.03、F − Fpe +0.0155。Public の診断経路は条件を満たした。", "link": "result144.html"}
+{"time": "2026-10-30 11:03", "kind": "decision", "text": "Codex 145 の指摘に対応した。E2 専用の索引(本番の索引は 0.57% の参照が欠ける)、GL 予算から E2 の時間を除外、一致確認 v2、評価器 v3。"}
+{"time": "2026-10-30 11:07", "kind": "plan", "text": "F の提出計画: カーネル casmi26-b1-e2f v1(11:06 push)と private データセット casmi26-e2-model。点検 4 つの PASS 後に 1 回提出する。"}
