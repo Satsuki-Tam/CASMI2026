@@ -1,0 +1,12 @@
+{
+ "commit": "a2108af",
+ "code": {
+  "experiments/e2/b1_ewin_world.py": "9991b824ad6c23641857dcd31bea199393d78033ff816fc386eec6033c854e90",
+  "experiments/e2/w135_ewin_check.py": "08856bcdf261040cd31b1cb42dbf94a6906612539d4d7e8da454e93d794be701",
+  "experiments/e2/e2_feats_world.py": "34aa4254cec43f46eed8bd25a85ffe3bb5aa7bda7d91462be177c9f6800caea7",
+  "experiments/e2/e2_score_world.py": "e0372019c364a84c2aba8602b3fa1f2d78c341b05d8aa4a8f0192c84685957fd",
+  "experiments/e2/e2_common.py": "3b34d05f1320d66137261f14d06016a4ef6d383833922dbc4e6f5773ff732324"
+ },
+ "model_sha256": "fba8e860a5203ef12a785839a63932b886f3eb77ae4edb48881af092c28811ae",
+ "model_rounds": 800
+}
