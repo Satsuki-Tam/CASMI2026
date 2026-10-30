@@ -1,0 +1,558 @@
+{
+ "feats": [
+  "fp",
+  "fp_rank",
+  "fp_z",
+  "fp_gap",
+  "log_n",
+  "ppm_err",
+  "in_train",
+  "lib_sim",
+  "lib_same",
+  "lib_nref",
+  "lib_gap",
+  "frag",
+  "frag_rank",
+  "frag_gap",
+  "ana_ap",
+  "ana_a1",
+  "ana_best_tan",
+  "ana_top_tan",
+  "ana_mean_tan",
+  "ana_ap_rank",
+  "ana_ap_gap"
+ ],
+ "params": {
+  "objective": "binary",
+  "learning_rate": 0.05,
+  "num_leaves": 63,
+  "min_data_in_leaf": 50,
+  "feature_fraction": 0.8,
+  "bagging_fraction": 0.8,
+  "bagging_freq": 1,
+  "lambda_l2": 1.0,
+  "verbose": -1,
+  "seed": 7,
+  "num_threads": 8,
+  "deterministic": true,
+  "force_row_wise": true
+ },
+ "grid": [
+  100,
+  200,
+  400,
+  800
+ ],
+ "rounds": 800,
+ "criterion": {
+  "100": 0.7527251645851902,
+  "200": 0.7616146231038677,
+  "400": 0.7663916917388855,
+  "800": 0.7673127148995065
+ },
+ "groups": 5482,
+ "rows": 662897,
+ "groups_by_view": {
+  "c1": 2476,
+  "c2": 3006
+ },
+ "inputs": {
+  "train_pool_f3a/C_np_crosslib": [
+   "5bd432c897dc8b1d",
+   "99546a4eff4dfbc6"
+  ],
+  "train_pool_f3a/D_np_single": [
+   "883773cefc1aa734",
+   "ae2e509624715842"
+  ],
+  "train_pool_f3a/E_np_negonly": [
+   "ffc8274c73524959",
+   "757ef4a079fe8c37"
+  ],
+  "train_pool_f3a/F_np_uncovered": [
+   "74e5f08558ad48a0",
+   "07ca486dc5e72173"
+  ],
+  "train_pool_f3a/G_tims_crosslib": [
+   "86868eafa99ccc12",
+   "8f5ac83aea669356"
+  ],
+  "train_pool_f3b/C_np_crosslib": [
+   "08a82510847c4581",
+   "8e6344d943811002"
+  ],
+  "train_pool_f3b/D_np_single": [
+   "2e371d3252f7bc60",
+   "503cf0741d8f5e4f"
+  ],
+  "train_pool_f3b/E_np_negonly": [
+   "6cba5c81dec00867",
+   "551f5c97f1bceb36"
+  ],
+  "train_pool_f3b/F_np_uncovered": [
+   "115f85a098c31274",
+   "c40e77cb6c6d5146"
+  ],
+  "train_pool_f3b/G_tims_crosslib": [
+   "bef84d29b632d052",
+   "fdee048e9560aea7"
+  ],
+  "np061_f3pool/NP_H": [
+   "504ffe8823a7f68b",
+   "5dc1042643221d0f"
+  ],
+  "np061_f3pool/NP_X": [
+   "94e52673ff672800",
+   "a9f7edfd8aa726f3"
+  ],
+  "np061_f3pool/NP_N": [
+   "c3a2ca892ed1bbe5",
+   "4c3bc34c7423c950"
+  ],
+  "train_pool_f4a/C_np_crosslib": [
+   "f6a29f04c50fe5d6",
+   "8634e86ef0aaa1f9"
+  ],
+  "train_pool_f4a/D_np_single": [
+   "98739b45c6219feb",
+   "622870ba9fb90753"
+  ],
+  "train_pool_f4a/E_np_negonly": [
+   "9f176bbc548566e4",
+   "6df3df88bafe2f07"
+  ],
+  "train_pool_f4a/F_np_uncovered": [
+   "91f44b189dc36a0a",
+   "b2c03e0961cb41e0"
+  ],
+  "train_pool_f4a/G_tims_crosslib": [
+   "89a38e63b96fb5fd",
+   "ea675115de543b93"
+  ],
+  "train_pool_f4b/C_np_crosslib": [
+   "23c8d440fd0bf637",
+   "fd3c1aa33e30220e"
+  ],
+  "train_pool_f4b/D_np_single": [
+   "0c809c368947cd6b",
+   "f5ea3876ab3254f2"
+  ],
+  "train_pool_f4b/E_np_negonly": [
+   "889f0e12e3fe78b0",
+   "259d83eaa2b8796d"
+  ],
+  "train_pool_f4b/F_np_uncovered": [
+   "b70c4771347ccb10",
+   "ca02ac54cf36430a"
+  ],
+  "train_pool_f4b/G_tims_crosslib": [
+   "20c6286c19f792a4",
+   "30121ca4388615ae"
+  ],
+  "np061_f4pool/NP_H": [
+   "b19c261ca811db9f",
+   "bd10d0277d0ea7bb"
+  ],
+  "np061_f4pool/NP_X": [
+   "bf91b1944464f48a",
+   "73ec453a8e485a23"
+  ],
+  "np061_f4pool/NP_N": [
+   "01b54226709a53b6",
+   "2cb38b3980cfde95"
+  ]
+ },
+ "script": "eca161666135d66d",
+ "common": "3b34d05f1320d661",
+ "dropped_groups": {
+  "train_pool_f3a/C_np_crosslib/c1": {
+   "groups": 192,
+   "kept": 183,
+   "no_positive": 9,
+   "dup_molecules": 0,
+   "molecules_without_window": 8
+  },
+  "train_pool_f3a/C_np_crosslib/c2": {
+   "groups": 192,
+   "kept": 93,
+   "no_positive": 99,
+   "dup_molecules": 0,
+   "molecules_without_window": 8
+  },
+  "train_pool_f3a/D_np_single/c1": {
+   "groups": 195,
+   "kept": 1,
+   "no_positive": 194,
+   "dup_molecules": 0,
+   "molecules_without_window": 5
+  },
+  "train_pool_f3a/D_np_single/c2": {
+   "groups": 195,
+   "kept": 38,
+   "no_positive": 157,
+   "dup_molecules": 0,
+   "molecules_without_window": 5
+  },
+  "train_pool_f3a/E_np_negonly/c1": {
+   "groups": 199,
+   "kept": 135,
+   "no_positive": 64,
+   "dup_molecules": 0,
+   "molecules_without_window": 1
+  },
+  "train_pool_f3a/E_np_negonly/c2": {
+   "groups": 199,
+   "kept": 104,
+   "no_positive": 95,
+   "dup_molecules": 0,
+   "molecules_without_window": 1
+  },
+  "train_pool_f3a/F_np_uncovered/c1": {
+   "groups": 197,
+   "kept": 88,
+   "no_positive": 109,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f3a/F_np_uncovered/c2": {
+   "groups": 197,
+   "kept": 94,
+   "no_positive": 103,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f3a/G_tims_crosslib/c1": {
+   "groups": 200,
+   "kept": 200,
+   "no_positive": 0,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "train_pool_f3a/G_tims_crosslib/c2": {
+   "groups": 200,
+   "kept": 4,
+   "no_positive": 196,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "train_pool_f3b/C_np_crosslib/c1": {
+   "groups": 157,
+   "kept": 150,
+   "no_positive": 7,
+   "dup_molecules": 0,
+   "molecules_without_window": 4
+  },
+  "train_pool_f3b/C_np_crosslib/c2": {
+   "groups": 157,
+   "kept": 74,
+   "no_positive": 83,
+   "dup_molecules": 0,
+   "molecules_without_window": 4
+  },
+  "train_pool_f3b/D_np_single/c1": {
+   "groups": 199,
+   "kept": 1,
+   "no_positive": 198,
+   "dup_molecules": 0,
+   "molecules_without_window": 1
+  },
+  "train_pool_f3b/D_np_single/c2": {
+   "groups": 197,
+   "kept": 37,
+   "no_positive": 160,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f3b/E_np_negonly/c1": {
+   "groups": 197,
+   "kept": 120,
+   "no_positive": 77,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f3b/E_np_negonly/c2": {
+   "groups": 197,
+   "kept": 114,
+   "no_positive": 83,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f3b/F_np_uncovered/c1": {
+   "groups": 69,
+   "kept": 33,
+   "no_positive": 36,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f3b/F_np_uncovered/c2": {
+   "groups": 68,
+   "kept": 33,
+   "no_positive": 35,
+   "dup_molecules": 0,
+   "molecules_without_window": 4
+  },
+  "train_pool_f3b/G_tims_crosslib/c1": {
+   "groups": 169,
+   "kept": 169,
+   "no_positive": 0,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "train_pool_f3b/G_tims_crosslib/c2": {
+   "groups": 169,
+   "kept": 5,
+   "no_positive": 164,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "np061_f3pool/NP_H/c1": {
+   "groups": 581,
+   "kept": 111,
+   "no_positive": 470,
+   "dup_molecules": 0,
+   "molecules_without_window": 19
+  },
+  "np061_f3pool/NP_H/c2": {
+   "groups": 581,
+   "kept": 513,
+   "no_positive": 68,
+   "dup_molecules": 0,
+   "molecules_without_window": 19
+  },
+  "np061_f3pool/NP_X/c1": {
+   "groups": 200,
+   "kept": 7,
+   "no_positive": 193,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "np061_f3pool/NP_X/c2": {
+   "groups": 200,
+   "kept": 200,
+   "no_positive": 0,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "np061_f3pool/NP_N/c1": {
+   "groups": 196,
+   "kept": 45,
+   "no_positive": 151,
+   "dup_molecules": 0,
+   "molecules_without_window": 4
+  },
+  "np061_f3pool/NP_N/c2": {
+   "groups": 196,
+   "kept": 181,
+   "no_positive": 15,
+   "dup_molecules": 0,
+   "molecules_without_window": 4
+  },
+  "train_pool_f4a/C_np_crosslib/c1": {
+   "groups": 196,
+   "kept": 188,
+   "no_positive": 8,
+   "dup_molecules": 0,
+   "molecules_without_window": 4
+  },
+  "train_pool_f4a/C_np_crosslib/c2": {
+   "groups": 196,
+   "kept": 89,
+   "no_positive": 107,
+   "dup_molecules": 0,
+   "molecules_without_window": 4
+  },
+  "train_pool_f4a/D_np_single/c1": {
+   "groups": 196,
+   "kept": 0,
+   "no_positive": 196,
+   "dup_molecules": 0,
+   "molecules_without_window": 4
+  },
+  "train_pool_f4a/D_np_single/c2": {
+   "groups": 193,
+   "kept": 44,
+   "no_positive": 149,
+   "dup_molecules": 0,
+   "molecules_without_window": 7
+  },
+  "train_pool_f4a/E_np_negonly/c1": {
+   "groups": 198,
+   "kept": 124,
+   "no_positive": 74,
+   "dup_molecules": 0,
+   "molecules_without_window": 2
+  },
+  "train_pool_f4a/E_np_negonly/c2": {
+   "groups": 197,
+   "kept": 109,
+   "no_positive": 88,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f4a/F_np_uncovered/c1": {
+   "groups": 197,
+   "kept": 80,
+   "no_positive": 117,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f4a/F_np_uncovered/c2": {
+   "groups": 197,
+   "kept": 112,
+   "no_positive": 85,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f4a/G_tims_crosslib/c1": {
+   "groups": 200,
+   "kept": 200,
+   "no_positive": 0,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "train_pool_f4a/G_tims_crosslib/c2": {
+   "groups": 200,
+   "kept": 2,
+   "no_positive": 198,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "train_pool_f4b/C_np_crosslib/c1": {
+   "groups": 156,
+   "kept": 148,
+   "no_positive": 8,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f4b/C_np_crosslib/c2": {
+   "groups": 156,
+   "kept": 73,
+   "no_positive": 83,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f4b/D_np_single/c1": {
+   "groups": 197,
+   "kept": 1,
+   "no_positive": 196,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f4b/D_np_single/c2": {
+   "groups": 195,
+   "kept": 34,
+   "no_positive": 161,
+   "dup_molecules": 0,
+   "molecules_without_window": 5
+  },
+  "train_pool_f4b/E_np_negonly/c1": {
+   "groups": 195,
+   "kept": 114,
+   "no_positive": 81,
+   "dup_molecules": 0,
+   "molecules_without_window": 5
+  },
+  "train_pool_f4b/E_np_negonly/c2": {
+   "groups": 193,
+   "kept": 100,
+   "no_positive": 93,
+   "dup_molecules": 0,
+   "molecules_without_window": 7
+  },
+  "train_pool_f4b/F_np_uncovered/c1": {
+   "groups": 78,
+   "kept": 26,
+   "no_positive": 52,
+   "dup_molecules": 0,
+   "molecules_without_window": 3
+  },
+  "train_pool_f4b/F_np_uncovered/c2": {
+   "groups": 77,
+   "kept": 36,
+   "no_positive": 41,
+   "dup_molecules": 0,
+   "molecules_without_window": 4
+  },
+  "train_pool_f4b/G_tims_crosslib/c1": {
+   "groups": 167,
+   "kept": 167,
+   "no_positive": 0,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "train_pool_f4b/G_tims_crosslib/c2": {
+   "groups": 167,
+   "kept": 2,
+   "no_positive": 165,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "np061_f4pool/NP_H/c1": {
+   "groups": 588,
+   "kept": 116,
+   "no_positive": 472,
+   "dup_molecules": 0,
+   "molecules_without_window": 12
+  },
+  "np061_f4pool/NP_H/c2": {
+   "groups": 588,
+   "kept": 526,
+   "no_positive": 62,
+   "dup_molecules": 0,
+   "molecules_without_window": 12
+  },
+  "np061_f4pool/NP_X/c1": {
+   "groups": 200,
+   "kept": 1,
+   "no_positive": 199,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "np061_f4pool/NP_X/c2": {
+   "groups": 200,
+   "kept": 200,
+   "no_positive": 0,
+   "dup_molecules": 0,
+   "molecules_without_window": 0
+  },
+  "np061_f4pool/NP_N/c1": {
+   "groups": 199,
+   "kept": 68,
+   "no_positive": 131,
+   "dup_molecules": 0,
+   "molecules_without_window": 1
+  },
+  "np061_f4pool/NP_N/c2": {
+   "groups": 199,
+   "kept": 189,
+   "no_positive": 10,
+   "dup_molecules": 0,
+   "molecules_without_window": 1
+  }
+ },
+ "model": "fba8e860a5203ef12a785839a63932b886f3eb77ae4edb48881af092c28811ae",
+ "gain": {
+  "fp": 280.9,
+  "fp_rank": 5067.9,
+  "fp_z": 496.3,
+  "fp_gap": 841.5,
+  "log_n": 282.4,
+  "ppm_err": 368.0,
+  "in_train": 15.2,
+  "lib_sim": 384.0,
+  "lib_same": 183.6,
+  "lib_nref": 138.7,
+  "lib_gap": 306.0,
+  "frag": 318.5,
+  "frag_rank": 213.5,
+  "frag_gap": 426.2,
+  "ana_ap": 284.1,
+  "ana_a1": 311.6,
+  "ana_best_tan": 292.8,
+  "ana_top_tan": 296.8,
+  "ana_mean_tan": 320.8,
+  "ana_ap_rank": 4274.5,
+  "ana_ap_gap": 1400.2
+ },
+ "seconds": 23
+}
