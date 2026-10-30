@@ -28,7 +28,7 @@ def main():
     for k in ("ewin", "eval_csv", "fold_safe"): ap.add_argument(f"--{k}", required=True)
     ap.add_argument("--sets", nargs="+", required=True); ap.add_argument("--n", type=int, default=20); ap.add_argument("--model", default=""); ap.add_argument("--workers", type=int, default=6)
     a = ap.parse_args(); P_ = lambda p: p if os.path.isabs(p) else os.path.join(ROOT, p); t0 = time.time()
-    import torch, pickle, lightgbm as lgb
+    import torch, lightgbm as lgb
     sys.path.insert(0, P_("data/external/v3_models/code"))
     from casmi import fpnet, chem
     from casmi.spectra import merge_spectra
@@ -49,9 +49,9 @@ def main():
     tier = P_("data/external/pubchem_tier"); tmass = np.load(f"{tier}/pc_mass.npy", mmap_mode="r"); toff = np.load(f"{tier}/pc_off.npy", mmap_mode="r"); tbuf = np.load(f"{tier}/pc_smiles.npy", mmap_mode="r")
     pcl_rows = pl.read_parquet(PCLP, columns=["tier_row"]).filter(pl.col("tier_row") >= 0)["tier_row"].unique().to_numpy()
     pool = pl.read_parquet(P_("data/external/v2_pool/pool_meta.parquet")).select("key", "smiles", "mass", "src", "pid")
-    cmeta = pickle.load(open(P_("data/external/coconut/coco_meta.pkl"), "rb")); cmass = np.load(P_("data/external/coconut/coco_mass.npy"))   # own COCONUT prep file (as b1_ewin)
+    csmi = pd.read_parquet(P_("data/external/coconut/coco_meta.parquet"), columns=["smiles"]).smiles.to_numpy(); cmass = np.load(P_("data/external/coconut/coco_mass.npy"))   # 145: parquet converted once from the opcode-verified pickle (no unpickling here)
     bio = pl.read_parquet(BIOP, columns=["smiles", "monoisotopic_mass"]).drop_nulls()
-    stores = EStores(tmass, toff, tbuf, pcl_rows, pool, cmass, np.asarray(cmeta["smiles"]), bio)
+    stores = EStores(tmass, toff, tbuf, pcl_rows, pool, cmass, csmi, bio)
     ana = BA.Store(np.arange(meta.height), lib_of_row, add_of_row, mode_of_row, ce_of_row, key_of_row, prec_of_row, spectrum, log=lambda *x: None)
     ts = pd.read_parquet(STRUCTS, columns=["key", "smiles"]).drop_duplicates("key"); key_smi = dict(zip(ts.key.astype(str), ts.smiles.astype(str)))
     _fp = {}
