@@ -1,5 +1,5 @@
 {
- "headline": "(10/30 16:30 更新)F(P + E2 の RRF)が Public 0.414 で自前の最高を更新(P 0.394 から +0.020)。二つのエンジンの融合が隠しテストで効いた。利用者の指示でハーネス v1 を導入し、CASMI のワークスペース(C:\\kaggle\\competitions\\casmi-harness)の G0 の材料を準備中(Codex 154 の指摘で見つかった test の ID の正解の漏れ等を修正済み)。G0 は利用者の承認待ち。FH v0(153)は NO。",
+ "headline": "(10/30 17:27 更新)F(P + E2 の RRF)が Public 0.414 で自前の最高(暫定の作業基準)。ハーネス v1 の CASMI ワークスペースの G0 の材料は、Codex 154/155/157 の指摘を全て反映して完成(技術の検査 v4 PASS)。G0 は利用者の承認待ち。次の主軸は v2(E2 を W135 の世界に入れた FH、主対照は F-world)で、Codex 156 の設計に沿って段階的に準備中。",
  "kpi": {
   "目標 (Public LB)": "0.500 以上(金圏、利用者の目標)",
   "自前の最高 Public": "0.414(F = v8w7a + E2 の RRF、10/30、暫定の作業基準)/ 132 0.403 / v8w7a 0.394 / E0 再現 0.464",
@@ -12,35 +12,28 @@
  },
  "jobs": [
   {
-   "state": "run",
-   "name": "e 世界(fold 0)の作成",
-   "detail": "ハーネスの test(π0.3 の 6 世界、596 query、特徴だけ)。15:10 開始、2 つ完成",
-   "eta": "16:30〜17:00"
-  },
-  {
-   "state": "run",
-   "name": "Codex 155",
-   "detail": "G0 の材料 v2(Codex 154 の指摘の実装)の点検",
-   "eta": "16 時台"
-  },
-  {
    "state": "wait",
    "name": "G0(利用者)",
-   "detail": "C:\\kaggle\\CASMI\\.venv を有効にして python tools/human.py G0 ... --confirm",
-   "eta": "評価データの確定後"
+   "detail": "C:\\kaggle\\CASMI\\.venv を有効にして python tools/human.py G0 ... --confirm(docs/g0_spec.md)",
+   "eta": "利用者の都合"
   },
   {
-   "state": "done",
-   "name": "F の Public(57790338)",
-   "detail": "0.414(明瞭な正、暫定の作業基準)",
-   "eta": "16:29"
+   "state": "run",
+   "name": "e 世界の π0 の 6 つ",
+   "detail": "分析用(test には使わない)",
+   "eta": "17:50 頃"
+  },
+  {
+   "state": "run",
+   "name": "v2 の準備",
+   "detail": "世界の E 窓・E2 の特徴・E2 の得点のスクリプト(Codex 156 の修正を反映)。次は E の世界の検査と技術標本",
+   "eta": "今夜"
   }
  ],
  "next": [
-  "e 世界の完成 → test 資源の書き出し(不透明な ID、許可した列)→ validation.npz の確定 → Codex 155 の反映 → 利用者に G0 を依頼",
-  "G0 の後: 基準(FH の gen、seed 11/12/13)で σ、P の順の参照、ハーネスの内側のループ",
-  "F の結果を受けた次の構造の手: E2 を W135 の世界の mask つきで作り、FH の候補表・特徴に入れる(候補の母集団が変わるので新しいワークスペース)",
-  "予約の確認(fold 0 の e)は、E2 を含む最終候補の凍結後まで温存(Codex 153 Q5)"
+  "G0 の後: 基準(FH-gen、seed 11/12/13)で σ、P の参照との比較(補助の reader は利用者が実行)",
+  "v2: 技術標本 → 構造だけの到達の診断(d / c)→ 一組の完成の診断(事前登録)→ 全 37 世界 → v2 のワークスペースの G0",
+  "e(fold 0)は v2 の最終候補の凍結後まで性能を読まない"
  ],
  "pages": [
   [

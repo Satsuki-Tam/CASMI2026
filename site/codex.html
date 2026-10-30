@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 16:30 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 17:26 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -21317,4 +21317,280 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <li>関門の案(154_g0_proposal.md 末尾 v2: 主指標で親に対して +2σ 以上かつ +0.005 以上、組の下限 &gt; 0、保護の下限 ≥ −0.01、最終候補の凍結後に holdout を一回)の是非。</li>
 <li>G0 に出してよいか。出す前に足りないものは何か。</li>
 </ol>
-<p>回答は reports/agent_review/155_codex.md に保存し、最後に REVIEW_COMPLETE: 155 と書いてください。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>回答は reports/agent_review/155_codex.md に保存し、最後に REVIEW_COMPLETE: 155 と書いてください。</p></details><details><summary>回答(Codex)</summary><p>155への回答（2026-10-30 JST）</p>
+<p><strong>154の主要な設計変更は反映されている。ただし、eの完成待ち以外にもG0前に直す点があるため、現時点では承認対象の完成版とは判断しない。同じarmの7fold平均は成立するが、NOT_SUBMITTEDを含む異なるarmの自動ensemble、名簿の不完全さを空候補として通す経路、補助readerと技術テストの検査不足を先に解消したい。</strong></p>
+<p>ワークスペース <code>C:\kaggle\competitions\casmi-harness</code> は読めた。指定資料とsrc、設定、CLAUDE.md、D1〜D5、同梱runtimeの平均・ensemble・hook経路を確認した。開発の小さな管理表と人工配列だけを読み、学習・大きな候補表の集計・本物のholdoutの性能計算は行っていない。<code>test_casmi_ws.py</code>は学習も行うため再実行せず、コードを点検した。本回答は設計レビューであり、正式Critic JSONでもG0承認でもない。</p>
+<p><strong>Q1：反映済みの点と、残る修正を分ける。</strong></p>
+<p>今回確認できた改善は以下である。</p>
+<ul>
+<li>exporterはU/Qをallowlistで書き出し、hold側にy、truth、molecule、iid等を入れない。query IDと対応表を分ける設計になった。</li>
+<li>eをπ0.3だけにしたことで、同じqueryのπ0とπ0.3を比較する経路を閉じる方針になった。これは154からの有用な追加である。</li>
+<li>P順→Bのkey順という枠配置と、metricの同点処理は、153の得点→rP→keyに整合する。</li>
+<li>p_orderとFH-DBのB枠をPADにし、metricが不採用枠を除くため、154で指摘した「Pが25件未満のときBが補充される」問題は単独出力では直っている。</li>
+<li>adapterはtrain_indicesのQ名簿からiidごとの世界数を数え、空の候補群も名簿に残して重みを作る。seedもcontextからLightGBMへ渡している。</li>
+<li>管理表は3,095行・1,297 iid、主対象1,198行だった。今回の管理表上では、truth/iidが複数batchへ跨る件数と、一つのiidが複数truthに対応する件数はいずれも0だった。構造familyやglobal identity groupの再計算はしていない。</li>
+</ul>
+<p>確認したsrcのSHA256先頭16文字は、metrics <code>4a45affee6cee4f6</code>、cv <code>a4fdbe8f0155811c</code>、adapter <code>5181638ef389690f</code>、aux_reader <code>457957df3e2eeb17</code>。以下はこの版への指摘である。</p>
+<p><strong>A. NOT_SUBMITTEDのfold平均は条件付きで正しい。異なる不採用maskの混合は不可。</strong></p>
+<p>現在のFH-genは全ての実在U候補を採点し、FH-DBは全てのBを不採用にする。同じarm・同じ候補配置であれば、各foldの不採用maskは同じなので、7foldの平均でも意味は変わらない。p_orderも同様である。この範囲ではrunnerの既定平均を採用してよい。</p>
+<p>一方、同梱runtimeの<code>ensemble.py</code>はverified実験をまとめて候補にし、<code>policy.py</code>もbranch比較で得点を混ぜる。gen・db・p_orderの区別による除外はない。現metricを使った人工例では次のようになった。</p>
+<table>
+<thead>
+<tr>
+<th>出力</th>
+<th style="text-align: right;">真である生成物の得点</th>
+<th style="text-align: right;">RR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gen（P=0.2、生成物=0.8）</td>
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td>genとdbを等重み平均</td>
+<td style="text-align: right;">−499,999,999.6</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>genを6本、dbを1本として平均</td>
+<td style="text-align: right;">約−142,857,142</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>同じgenを7本平均</td>
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+<p>不採用を意味する−1e9を通常のスコアへ加算した結果であり、生成物を支持するモデルが弱かったという意味ではない。p_orderの負の順位得点とFHの確率も、そのまま同じ尺度ではない。</p>
+<p><strong>初回は、同じ候補mask・同じ出力尺度のFH-gen同士だけを自動ensemble/branch混合の対象にするのが最小の修正である。</strong> P/dbは参照として別に扱う。登録spec等に出力の種類を記録し、<code>ensemble.py</code>だけでなく<code>policy.py</code>の混合も検査する。将来、候補ごとのabstentionを追加する場合も同じ制限が必要になる。指示文で「混ぜない」と書くだけでは、8実験ごとの自動ensembleからは外れない。</p>
+<p>G0前の検査には、各fold間で提出maskが同一であること、OOF/testの枠が共通であること、異なるarmの混合を拒否することを追加する。paddingを含むflatten相関は引き続き相補性の根拠にしない。</p>
+<p><strong>B. cv.pyは、データの完成を検査してから書き出す。</strong></p>
+<p>現在は<code>validation.npz</code>を書いた後にhold側のparquet有無を検査する。holdがまだなければSTOPするが、npzが残り、次回は「既にある」として再作成できない。G0前の中間物を、完成した固定データと紛らわしくする。入力・名簿・全manifestを検査し、全て成功した後に一時ファイルから完成版を確定する順序へ変える。</p>
+<p>件数3,095とファイルhashだけでは、意味上の完全性を証明できない。少なくとも以下を停止条件として追加したい。</p>
+<ul>
+<li>開発31世界、hold6世界の期待するU/Qの組が揃い、Qのuid集合が管理名簿/test_idsと完全一致する。余分なuidも不足も拒否する。testは596、主は1,198、7foldの期待する件数を明示する。</li>
+<li>UのuidはQに存在し、U内のkeyは一意、srcはP/Bだけ。P数/B数・rP・is_genとQのn_p/n_bが一致する。Uに行がないqueryはQが候補0を宣言している場合だけ許す。</li>
+<li>iidとofficial identityがfoldを跨がないこと、候補keyの形式・長さ、ラベルyと管理表のtruthの対応を検査する。固定長<code>&lt;U14</code>へ入れる前に長さを検査し、切り詰めで別keyにしない。</li>
+<li>validation内のcand_keys/cand_validと、adapterが再構成するslot_keysを一致させる。holdについてもtest_ids順のslot manifestを保存する。</li>
+</ul>
+<p>現在の<code>sk.get(uid, [])</code>と、adapterの<code>keys_of.setdefault(uid, [])</code>は、候補表の不足を正当な空へ変換し得る。hashは「その不足した表が変わっていない」ことしか保証しない。またadapterはQhのuid集合とtest_idsを照合せず、<code>to_slots</code>は対象外uidを無視する。これらは不完全な出力を成功扱いしないための、直接的な修正点である。</p>
+<p>exporterの保存先検査も直したい。<code>abspath(map_dir).startswith(abspath(ws))</code>はWindowsの大文字小文字やパス表記に弱く、隣接する別名のディレクトリを誤って内側扱いする場合もある。解決済みパスで内包関係を確認し、<strong>その後で</strong>saltを作る。現コードは検査前にsalt関数を呼ぶため、誤指定時には先に秘密情報を書いてしまう。実際の今回のmap_dirが内側だったという指摘ではない。</p>
+<p><strong>C. テストの「全てPASS」を終了条件として保証する。</strong></p>
+<p><code>test_casmi_ws.py</code>には、次の不足がある。</p>
+<ul>
+<li>(5)は改ざんを拒否しなくてもBADと表示して先へ進み、非ゼロ終了しない。例外が必須であることをassertする。</li>
+<li>(6)padding無視は比較結果をprintするだけで、失敗しても完走する。assertを加える。</li>
+<li>docstringの(7)の重みは、既知の期待値との検査がない。候補0の世界も持つidentityを人工的に置き、名簿から計算した総重みを照合する。</li>
+<li>(5)でy付き表へ置き換えると、最初のhash違いで止まる。これはhash拒否を確かめるが、FORBIDDEN_TESTの検査を通った証拠ではない。一時環境でmanifestだけを意図的に更新した上で、ラベル列を拒否する別のテストが必要である。</li>
+<li>同点の検査は枠の並びを見るだけなので、実際のmetricへ同点得点を渡し、P/B双方の期待順位を確かめる。P空/B非空、U空、NOT_SUBMITTED境界、25位/26位も人工例で固定する。</li>
+</ul>
+<p>これは全学習の繰返しを求めるものではない。上記は小さなデータで検査できる。既存40-roundのgen/db技術検査は学習が通ることを確認する用途に限り、性能の比較へ流用しない。</p>
+<p><strong>D. aux_readerを、検証済みの結果だけを読む固定ツールへ接続する。</strong></p>
+<p>現在のreaderはOOFのIDだけを照合し、実験のverified状態・成果物hashを確認しない。また<code>metrics.reciprocal_ranks</code>自体は非有限値を拒否しない。人工例では真の得点NaNがRR0、+InfがRR1になった。通常runnerの検査はこれを拒否するが、aux_readerを直接使う経路にはその保証がない。</p>
+<p>補助readerは、検証済み実験と参照のID/hashを確かめ、予測のshape・有限性を検査してから区間を出す。表示だけでなく、比較対象・主/保護の件数・差・区間・関門の結果をJSON等で保存できるようにすると、G2/holdoutの根拠が追える。</p>
+<p>実行経路も未接続である。現在のhookは固定の<code>tools/*.py</code>だけを許し、<code>python src/aux_reader.py ...</code>を拒否する。固定の読取専用entrypointと許可設定をG0前に用意し、hookを切って読ませる運用にしない。wrapperを作るだけでなく、TRUSTED_TOOLS/READONLY_TOOLS側も整合させる。</p>
+<p>cU1の組bootstrapは独立単位が1個なので、同じ値を引き直した退化区間になる。補助値として表示してよいが、確認の区間や有意性の根拠にはしない。主の6組での区間も探索的なものである。</p>
+<p><strong>Q2：親比+max(2σ,0.005)は開発を進める目安。最終候補には固定対照を残す。</strong></p>
+<p>この関門を新しいハーネスの内側の改善判定に使うことはよい。だが153の「P比+0.02」に届かなかった後に作る新しい規則であり、153をPASSへ変更したり、同じ投資基準を維持したと言ったりはしない。σはseed変動であって、標本数・世界差・繰返し選択の不確実性を全て含む量ではない。</p>
+<p><strong>親への比較だけを主系/holdoutの条件にしない。</strong> 弱い親を選べば+0.005は満たせるし、各親から保護層を−0.01ずつ落としても、固定基準からの累積損失は大きくなる。提案は次の二段に分けるのがよい。</p>
+<ol>
+<li>開発の進行：親比でΔ≥max(2σ,0.005)、組の下限&gt;0。これは小さな変更を続ける目安。</li>
+<li>主系/holdout候補：固定したP参照、ハーネス初期FH基準、および選んだ運用基準に対して差を併記する。今回のS3への投資条件を維持するなら、固定Pに対する+0.02と下限&gt;0を残す。別の実用差へ変更するなら、新G0で変更理由と基準版を明記する。保護の−0.01は固定対照からも満たす。</li>
+</ol>
+<p>保護にはπ0のC1/C2だけでなく、従来どおりπ0全件も明記する。adapter/readerにP参照があるため、固定対照を保持する負担は小さい。合格した変更だけを積んでいることと、初期基準より安全に改善していることを分けて判断する。</p>
+<p>eをπ0.3だけにしたことで、holdoutではπ0の純費用は測れなくなる。これは差分による漏れを避けるための合理的な取引だが、<strong>π0の保護は開発で確認する条件であり、holdoutでも確認済みとは書かない。</strong> どうしてもholdoutでπ0を読みたい場合は、最終モデルを凍結した後、workspaceへ入れず外側でπ0/π0.3を同じ一回の評価として読む方法を別に固定する。開封後に追加するのではない。</p>
+<p>最終候補の7foldモデル、source/config、ensembleのメンバーと重み、出力/不採用maskの規則、候補表hashを凍結した後、一回だけholdoutを評価する。holdoutの採否条件もその前に書く。複数候補のどれを出すか、ensembleと全量refitのどちらを選ぶかをeで決めない。</p>
+<p><strong>Q3：現時点ではG0へ出す最終版には未到達。追加で必要なものは限定できる。</strong></p>
+<p>確認時、G0は未承認で、本物のhold側parquetと最終validation/manifestは未完成だった。予定どおりeを完成させることに加え、以下を揃える必要がある。</p>
+<ul>
+<li>Q1の混合制限、名簿の完全性と書出し順、検査のassert、補助readerの検証/実行経路を修正する。</li>
+<li>本物のeについて、特徴だけのschema・596 uid・枠対応・開発とのidentity非交差を外側で検査し、内容のhashを固定する。eの性能や到達上限は読まない。</li>
+<li>Q2の親/固定対照、実用差、π0全件、holdout一回の条件を、v2追記だけでなく最終の一つの仕様へまとめる。旧本文には1,297件・π0/0.3両方のtestなど旧仕様が残るため、実装者が取り違えない状態にする。</li>
+<li>D2の「6/3/1を目安」を、例外と数え方を含む明確な上限にする。1件は7fold＋smoke/再試行を含むのか、3seed基準や参照をどう数えるか、上限到達後に何を止めるかを固定する。現自動schedulerはその上限を読まないので、無制限のqueue実行へ流さない固定の運用またはentrypointが必要である。メモリ上限も未記載で、config.paramsによるnum_threadsの上書きも現adapterでは可能。CPUのみ・スレッド数の制約を実装と運用で揃える。</li>
+<li>Judgeの起動と費用を記録する。D3はIdeatorのfallbackを明確化したが、Claude案を採点するCodex JudgeのOS隔離/手動経路はまだ明確でない。packet-only保証のない経路を使うなら、その実際の保証・起動設定・packet/sourceのhash・呼出し記録を別に残す。D5のCriticだけの記録では代替できない。</li>
+<li>正式Critic/JudgeのCLI費用をハーネス予算外にするなら、別の呼出し上限と費用不明の扱いをG0資料に記す。「費用は別管理、実額不明」だけでは予算上限にならない。標準の予約額を維持する経路に揃える方法もある。</li>
+</ul>
+<p>初期資産をG0のprotected_pathsへ固定することで、baselineの<code>resource_ids=[]</code>でも再現性の確認は改善した。ただし、hash固定と利用許可は別である。既に許可された初期資産の一覧・由来・過去の承認への参照をG0附属にし、初期資産はこの方式で扱う例外だと明記する。resource_idsが空だから外部モデルの条件を検討しなくてよい、とは扱わない。以後の新資産は記載どおりG4とCriticの対象にする。</p>
+<p>これらを直して、実際の固定データで小さな接続検査を通せば、G0へ提示できる。3seedの本番baselineはG0後に行う。G0前に必要なのはその実行経路と規則の検査であり、先に全探索を走らせることではない。</p>
+<p>REVIEW_COMPLETE: 155</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="155-2026-10-30-1658-jstclaude-codecodex-155-g0">155 の判断(2026-10-30 16:58 JST、Claude Code。Codex 155 を受けて)— G0 の前の追加の修正</h1>
+<h2 id="g0">採用(全て実装・検査してから G0 に出す)</h2>
+<p>A. ハーネスに登録する実験は <strong>FH-gen(全ての有効な枠を採点、出力は確率)だけ</strong>にする。adapter から p_order / db の実行経路を外し、全ての有効な枠に有限の得点を返すことを assert する。P の参照(固定の対照)は補助の reader が U の表から直接計算する。これで runner の fold 平均・自動 ensemble・branch の混合が同じ枠・同じ尺度の出力だけになる。将来、枠の不採用を使う出力を足すときは新しいワークスペース。
+B. cv.py は、全ての検査が通った後に一時ファイルから確定する。停止条件: 開発 31 世界・hold 6 世界の U / Q が揃う、Q の uid = 管理名簿 / test_ids(過不足なし)、test 596・主 1,198・7 fold の件数、U の uid ⊂ Q・key は一意・src は P / B・P 数 / B 数 / rP / is_gen が Q の n_p / n_b と一致、U の行が無いのは Q が候補 0 を宣言している場合だけ、iid と正解の key が fold をまたがない、key の形式(14 字の大文字)、y と管理表の truth の一致。hold の枠を test_ids の順で data/folds に保存する。adapter は欠けた表を空にしない(Qh の uid = test_ids、to_slots は対象外の uid を拒否、枠を validation / 保存した hold の枠と照合)。exporter は解決済みのパスで内包関係を確かめてから salt を作る。
+C. 技術の検査を assert に直す(改ざんの拒否・padding の無視・重みの期待値・FORBIDDEN 列の拒否を manifest を更新した一時環境で・metric に同点の得点を渡す・P 空 / B あり・U 空・NOT_SUBMITTED の境界・25 位 / 26 位)。
+D. 補助の reader: 検証済みの実験だけを読む(verification.json と成果物の hash)、形・有限性の検査、P の参照の内蔵、結果の JSON の保存。metrics は非有限の予測を拒否する。フックのある起動では tools/*.py 以外を拒否するので、reader の固定の入口はハーネスの側の追加が要る(D6 として記録し、利用者に提案。フックを切って読ませる運用にはしない)。cU1 の組の区間は退化(独立単位 1)なので根拠にしない。
+Q2. 関門を二段にする: (1) 開発の進行 = 親に対して Δ ≥ max(2σ, 0.005)、組の下限 &gt; 0。(2) 主系 / holdout の候補 = 固定した P の参照とハーネスの最初の FH の基準に対する差を併記し、S3 の投資条件として固定した P に対して +0.02 かつ下限 &gt; 0、保護(π0.3 の C1 / C2、π0 の C1 / C2 / 全件)は固定の対照からも下限 ≥ −0.01。π0 の保護は開発だけで確認する(holdout では測れない)。holdout は、7 fold のモデル・source / config・ensemble の構成と重み・候補表の hash を凍結した後に一回だけ、採否の条件を事前に書いてから読む。
+Q3. 仕様を一つの文書(ワークスペースの docs/g0_spec.md)にまとめ、154 の旧本文(1,297、π0 / π0.3 の test 等)を置き換える。D2 の lane の上限を数え方つきで固定し、queue の無制限の実行をしない運用を書く。adapter は num_threads 等の固定の設定の上書きを拒否する。Judge の起動経路と費用、Critic / Judge の CLI の呼び出しの上限を記録する(D6 / D7)。初期資産の一覧・由来・過去の承認を G0 の附属にし、初期資産は G0 の固定で扱う例外と明記する。</p></details></article><article><h1>156: 156 依頼(2026-10-30 16:53 JST、Claude Code → Codex)— F の Public 0.414 を受けた次の構造の手: ハーネスのワークスペース v2(E2 を W135 の世界に入れた FH)の設計の点検</h1><details><summary>依頼(Claude Code)</summary><h1 id="156-2026-10-30-1653-jstclaude-code-codex-f-public-0414-v2e2-w135-fh">156 依頼(2026-10-30 16:53 JST、Claude Code → Codex)— F の Public 0.414 を受けた次の構造の手: ハーネスのワークスペース v2(E2 を W135 の世界に入れた FH)の設計の点検</h1>
+<h2 id="_1">事実</h2>
+<ul>
+<li>F(P + E2 の RRF、K 10、α 0.5)の Public = 0.414(P 0.394 から +0.020、132 の 0.403 から +0.011)。登録どおり明瞭な正 → 暫定の作業基準(1030_submission_plan_e2.md の末尾)。</li>
+<li>ハーネス v1 のワークスペース(P の上位 25 + 生成物 B)の G0 の材料は確定済み(155 で点検中)。v1 の主 1,198 の到達の上限は 0.643(C1 0.806 / C2 0.833 / C3 0.225)。</li>
+<li>Codex 153 Q5(0.409 以上の分岐): v0 は開発まで、予約の確認(e)は E2 を含む版の凍結後まで温存。</li>
+</ul>
+<h2 id="reportsagent_review156_draft_v2_e2_worldsmd">点検してほしいもの: reports/agent_review/156_draft_v2_e2_worlds.md</h2>
+<ol>
+<li>v1 の G0 をそのまま進め、v2(候補の母集団 = P の上位 25 ∪ E2 の上位 K ∪ B、E2 の得点と F の RRF の得点を特徴に含む)を新しいワークスペースとして並行で準備する方針でよいか。</li>
+<li>世界の mask を E 窓・E2 の特徴(ライブラリの類似度・analog)・E2 の得点に掛ける方法(world_masks.json を正本にする、c1 / c2 の列を同じ値にして view c1 で E2 を当てる)に、漏れや不整合はないか。E2 のモデル(model_v1、fold 3/4 の pool で学習)の露出の確認で足りないものは何か。</li>
+<li>K(E2 の上位の数)と枠の上限の決め方。K を後で変えると新しいワークスペースになる点の扱い。</li>
+<li>作業量(E 窓・E2 の特徴で Spark 2〜6 時間)に対して、先に確かめるべき安い診断はあるか(例: v1 の世界の一部だけで E2 の到達の上限を測る)。</li>
+</ol>
+<p>回答は reports/agent_review/156_codex.md に保存し、最後に REVIEW_COMPLETE: 156 と書いてください。</p></details><details><summary>回答(Codex)</summary><p>156への回答（2026-10-30 JST）</p>
+<p><strong>F = 0.414を登録どおり暫定の作業基準にする判断に賛成する。次の主な比較はE2をworldへ接続したFHに置き、eの性能確認はその完成候補の凍結後まで温存する。最初のE2追加数は25、Uの最大枠数は100を推す。v1は技術基盤と限られた開発の役割に留め、二つのワークスペースで同時に広い探索を始めることは勧めない。</strong></p>
+<p>156依頼・下書き、提出計画末尾、153 Q5、指定のE2/W135コードとmodel_v1のmanifestを確認した。学習queryの小さな名簿同士の交差だけを確認し、新たなE2推論・到達集計・学習・Spark計算・Public取得・提出は行っていない。Publicの値は依頼と保存記録に基づく。</p>
+<p>先に読みを限定する。0.414は、例外時にPへ戻る処理を含む固定方策FのPublic上の純増を示す。sourceの優遇とE2順位の各々がどれだけ効いたかを、単独で証明する値ではない。提出計画末尾の「E源の外−0.048」は、149のB_D′の差と混同しない。146のE源外全体では−0.1058（当時の427件）であり、対象が違う。異なる層の数字を、そのまま隠しでの収支へ換算しない。</p>
+<p><strong>Q1：v2を主軸に準備する。v1のG0を「そのまま」進める判断ではない。</strong></p>
+<p>155には、NOT_SUBMITTEDを含む異種出力の混合、CV作成の完全性、補助readerの検証/実行経路等の修正を記した。156依頼の「G0材料は確定済み」は、設計案ができたという意味に留めたい。155の指摘を反映し、実装・データ契約が完成してからG0へ出す。</p>
+<p>v1の小さな接続検査や3seed基準が、v2のmetric・adapter・hash管理の検証に役立つなら進める価値がある。ただし、E2を持たないv1だけで多数のFH変種を探索し、その後v2を作り始める順序にはしない。v1へのG0とv2の上流資産作成は、依存する部分を区別できる。v2のworld設計と技術標本の準備を、v1の性能PASS待ちにする必要はない。</p>
+<p>候補集合が変わるv2は新しいワークスペースとする。変更可能なsrcをv1と共有せず、検証したコードと資源を版・hashつきで再利用する。eに対する予測を作ることと、性能を読んで選ぶことは別である。v1のeを採点せず、v2の固定候補を一回確認する方針を維持する。</p>
+<p>対照はP/F/FHだけでなく、S3の効果を分けるため、次を残すことを推す。</p>
+<ul>
+<li><strong>P</strong>：保存された順序付きリスト。</li>
+<li><strong>F-world</strong>：world内のP/E2へ、提出Fと同じ固定RRFを適用したリスト。</li>
+<li><strong>FH-PE</strong>：P＋E2候補を学習して並べる、生成物を出力しない対照。</li>
+<li><strong>FH-PEB</strong>：同じ学習条件で、Bも含めた完成候補。</li>
+</ul>
+<p>完成系の主対照はF-worldである。FH-PE−Fは最終head/特徴の変更、FH-PEB−FH-PEは生成候補を含む変更の増分として読む。FHがPを超えただけでは、作業基準Fを超えたことにはならない。155の指摘どおり、異なる出力maskの参照を通常の数値ensembleへ混ぜない。</p>
+<p><strong>Q2：world_masks.jsonを正本にする方針はよい。ただし、両viewの列を同じにするだけでは足りない。</strong></p>
+<p>最も重要なのは、<strong>C2のtrain-only候補の扱い</strong>である。現<code>e2_common.view_frame('c2')</code>は、trainの資格が失われ、COCONUT/PCL/BIOのどれにも属さない候補を除く。world版でin_train_c1/in_train_c2を共にfalseにしてview c1を使うと、この除外は起きない。参照0のまま候補が残れば、C2として存在しないはずの構造を検索することになる。</p>
+<p>world版のE窓は、各候補に対して、mask後に</p>
+<p><code>in_train_world OR in_coconut_world OR in_pcl_world OR in_bio_world</code></p>
+<p>を満たす構造だけを残す。C2は合法な非train源に残る場合だけ候補として存続し、C3は全源から外れる。raw key、pool key、全alias/group、official keyによる除外を、出所の統合と代表選択へ一貫して適用する。E2は元から全候補をofficial keyへ変換するので、C3の最終照合を真の質量付近だけに限定する必要はない。</p>
+<p>その上で両viewの値を同じにし、<code>view_frame(...,'c1')</code>を<strong>列選択と特徴化のために</strong>使うことはよい。「全queryを実際のC1にする」という意味ではない。world版では、既存<code>b1_ewin.py</code>のtruth_key/tsetに基づくquery別の隠し方を残さない。クラスごとの条件はworld資産の作成にだけ使い、予測器はクラスを受け取らない。</p>
+<p>参照とanalogには次の条件が必要である。</p>
+<ol>
+<li><strong>参照行の除外は全queryに適用する。</strong> train_hideのC2/C3 identityが、別queryの候補やanalogとしても参照を供給しないようにする。C1はc1_exclの行を全queryから除く。同じglobal identityの別名、複数pool key、スペクトル側のscorer keyも照合する。</li>
+<li><strong>除外後に上限・代表を選ぶ。</strong> libraryのMAX_REFやanalogの代表/上位件数を先に選んでから禁止行を落とすと、合法な次点を拾えない。<code>w135_p.analogs_world</code>はC1の元代表を除き、別取得から代表を選び直して検索している。この処理を含めて揃える。単に返ってきたanalogリストからhidden keyを消す実装にはしない。</li>
+<li><strong>queryの意味を揃える。</strong> max_spectra、行順、polarityごとのmerge、CE/adductの扱い、precursor、enveda-180の電子補正、FP bit順・checkpointがP/Bと一致する必要がある。同じfold名だけでは不十分で、query入力とlogits/bitのhashまたは一致を確認する。</li>
+<li><strong>参照索引の版を揃える。</strong> 145で修正したE2のraw key→official key対応と、world maskが使う対応を監査する。Pの古い索引をE2へ暗黙に流用しない。共通候補のキーだけでなく、実際に類似度計算へ入ったreference row IDを検査する。</li>
+<li><strong>相対特徴はmask後の全E窓で作る。</strong> fp/frag/analogのrank・z・gap・log_nを作ってから上位Kへ切る。上位Kだけで21特徴を再計算して、全窓で学習したE2へ渡さない。</li>
+</ol>
+<p><code>e2_common.train_groups</code>と<code>rr_of</code>はworld評価にそのまま使えない。前者は真未到達や参照のない群を落とし、後者も真の行がない群を返さない。E2の採点は全期待queryへ行い、空窓も名簿へ残す。view c1を使うからといって、<code>train_groups</code>でC1適格性を再選別しない。</p>
+<p>world checkerのE版は、C3のkeyがE窓にないことに加え、C2のtrain-only消滅、全参照の非交差、C1の代替参照、alias統合後の一意性、空窓と欠落の区別まで検査する。特にC3の正解がEだけから到達したら、S3の成功として数えず、mask/同一性の不整合として止める。</p>
+<p><strong>代表SMILESとFHの特徴の統合にも仕様が要る。</strong> P、E2、Bは同じofficial identityに別の代表SMILESを持ち得る。P/E2の得点は、それぞれ元の代表・特徴のまま保存する。FHの共通FP/GL/fragには、一つの事前固定した代表規則を使う（例えばPにあるものはP代表、EだけならE代表、BだけならB代表）。異なる表記の各特徴の最大値を寄せ集めた仮想候補にしない。</p>
+<p>E2上位にだけある候補にも、FHの共通37特徴が必要になる。特にGLは、E2では計算していない。P/Bのcacheにない値を、最初は未計算＋gl_missとして扱うのか、追加GLを計算するのかを固定する。未計算を実測0にしない。追加GLを計算する場合は、Pを作ったGL値と計算予算を変えず、増分の費用も登録する。ライブラリ/analogも、生成されたという理由だけで0へ落とさない。</p>
+<p>v2では<code>is_gen</code>は<code>in_P</code>の反対ではなくなる。P/E/Bの多重所属を別々に持ち、E∩Bも一つのofficial identityに統合する。Bは引き続きPから作った固定の親bank・固定の生成結果を使う。E2/Fの1位を新しいpeer親にする変更を、この比較へ同時に入れない。</p>
+<p><strong>E2の露出台帳はquery名簿だけで終わらせない。</strong> 今回、学習側6名簿の5,609行と、W135 d/c/eの1,893 queryのraw/scorer keyおよびCSVのidentity_groupを照合し、交差はいずれも0だった。これは保守的なquery名簿での確認である。model_v1のmanifestは800本、5,482学習group、モデルhash <code>fba8e860…</code>であり、この実体を固定する。</p>
+<p>次は区別して記録する。</p>
+<ul>
+<li>E2のquery教師としての露出：今回の非交差と、実際の採用行/モデルhashを結ぶ。</li>
+<li>候補負例としての構造露出、library/analog側の参照としての露出：query名簿非交差からは0を保証できない。</li>
+<li>FPNet、GL、P、追加する補助モデルの実測/模擬正例への露出：world maskは学習済みの記憶を消さない。</li>
+<li>C1の独立取得、C2/C3の実測保留、teacher/candidate catalogの扱い：それぞれ別の条件である。</li>
+</ul>
+<p>初回は凍結model_v1を使い、「未見queryへworld maskを適用した固定エンジンの評価」と定義してよい。全上流で構造自体が完全に未知という主張にはしない。E2の再学習が必要と判明した場合は、固定Fとの再現比較とは別の候補として登録する。C1/C2を一分子ずつ模擬した学習から、バッチ全体で参照を隠すworldへ移る分布差もあるため、world内のFが元の開発値と同じになるとは期待しない。</p>
+<p><strong>Q3：E追加数25・最大100枠で始める。RRFのK=10とは名前を分ける。</strong></p>
+<p>提出Fの実装では、<code>FUSE_K=10</code>はRRFの分母のoffsetであり、追加する候補数ではない。<code>make_e2k.py</code>/提出pipelineはEの上位25を融合候補に渡している。次の名前で固定するのがよい。</p>
+<ul>
+<li><code>rrf_offset = 10</code></li>
+<li><code>rrf_alpha = 0.5</code></li>
+<li><code>n_e_candidates = 25</code></li>
+<li><code>max_slots = 25 + 25 + 50 = 100</code>（official identityの重複は統合）</li>
+</ul>
+<p>これなら、提出Fが選び得る候補集合をv2へ含められる。Pにある候補については、Eの26位以降であっても、<strong>E全窓での順位</strong>をRRFへ使う。E上位25にないという理由で、P候補のE票を0へしない。</p>
+<p>Fの再現には、候補資格も必要である。Fの対象はP25∪E25であって、U全体ではない。Bの構造がEの下位にある場合、式だけから正のRRF得点を持ち得るが、元Fの融合候補には入っていない。<code>in_F_pool</code>、Fの順位/得点、E得点の有無を明示し、<strong>F参照モードではBを勝手に補充しない。</strong> E2順位の同点はE2の得点→FP→key、RRFの同点はP順位→E順位→keyという既存実装を保つ。</p>
+<p>P空時のFの振る舞い、E空時のPへの復帰も元pipelineに合わせる。FHがそこを救済するのは新候補の能力であり、対照まで同時に変更する理由にはしない。</p>
+<p>「FのRRF得点を特徴に入れるのでFHは少なくともFを再現できる」という記述は、<strong>表現として可能</strong>という意味に留める。学習したheadがその順位を選ぶ保証はない。明示的なF参照モードを持ち、出力の順序付きkeyを元の<code>fuse_rrf</code>と全件一致させる。FHが関門に届かなければFを維持する。</p>
+<p>Kを25から増やして新しい候補を追加するなら、現在のG0契約では新ワークスペースになる。しかし、重いE全窓の計算まで毎回やり直す必要はない。mask後の全窓・特徴・全順位を版つきで保存すれば、別のKのexportは再利用できる。最初から大きなKmaxを候補集合として固定し、その内部の採用を学習方策にする別設計も可能だが、今回はKの探索を始めず25を推す。</p>
+<p><strong>E2の追加でC3の到達は増えない。</strong> 固定Bかつ正しいworldなら、C3の真はEの全源から除かれているため、P∪E25∪BのC3到達はP∪Bと同じである。E2がC3へ与え得る利得は、生成物とDB候補の比較・順位・費用の改善である。C1/C2の到達も、既にP/Bにある候補が多ければ増えない。到達の増加を前提に費用を正当化せず、測る。</p>
+<p><strong>Q4：全37世界へ回す前に、技術検査→安い到達診断→小さな完成経路を通す。</strong></p>
+<p>最初は次の段階がよい。診断は既使用のd/cだけで行い、eは含めない。</p>
+<ol>
+<li><strong>技術標本。</strong> C1の禁止された元代表と合法な代替、C2のtrain-only/非train併存、C3のalias、P空/E空を含む少数queryを、性能を見ずに選ぶ。mask自体は全バッチ分を保ったまま、queryだけを少数採点する。C1/C2/C3の列・参照行・窓の不変条件と、元Fの復元を先に通す。subsetのqueryだけからworld maskを作り直さない。</li>
+<li><strong>構造だけの到達診断。</strong> 既存のquery中性質量、source索引、world maskから、真が全E窓にあるかを調べる。ここではFPNet・MetFrag・analogを全部走らせる必要はない。真がそもそもE窓にない損失と、上位25に入らない損失を分ける準備になる。これは全窓の上限であり、E2上位25の到達ではない。</li>
+<li><strong>一組ずつの完成診断。</strong> 例えばdF1/dR1とcF1/cR1のπ0.3、必要なπ0対照を事前に固定し、E全窓の採点→上位25→F→FH入力まで通す。読む量を先に決める：Uの追加到達、F−P、Eだけが救うquery、C1/C2の費用、E源外の費用、追加候補数、共通候補の順位変化、秒数/最大メモリ/失敗。小標本の偶然の正差で採用を決めず、全37世界へ進む実装・費用の判断に使う。</li>
+</ol>
+<p>到達の増分が0でも、E2順位/sourceの情報によるFの純増があり得るため、それだけでE2を打ち切らない。逆に上限が増えても、FHが回収できる証拠にはならない。小比較でKやRRF定数を何度も選ばず、次の全開発比較を一つに固定する。</p>
+<p>計算の再利用余地は大きい。現在の31開発世界＋6hold世界は3,691 world-query行だが、名簿上のquery identityは1,893である。同じqueryのπ違いでは、提供されたスペクトル・中性質量・FPNet logitsは変わらない。既存<code>b1_world</code>の生成dumpにあるzlog/massesを、query入力・checkpoint・bit順を照合して再利用すれば、毎世界のGPU再推論を避けられる。</p>
+<p>raw構造ごとのFP/MetFrag、canonical key、質量索引も、query/SMILESとバージョンを鍵に再利用できる。<strong>library/analog、mask後の候補代表、相対特徴、E2最終順位はworld依存</strong>なので、そこまで共通cacheにしない。代表が変わった候補へ旧SMILESのfrag/GLを付けない。既存worldのPに保存されたanalogリストを再利用する場合も、query・mask・索引・設定のhashと、独立した少数の再計算が一致することを条件にする。</p>
+<p>2〜6時間は、これらを再利用するかで変わる見積もりである。先に小標本でFP推論、化学特徴、参照検索、I/Oの時間を分け、eの別world生成とCPU/RAMをどう配分するか決める。新しいbuilderは元コードのように真の到達を進捗logへ出さず、eでは性能・到達を表示しない。技術的なrow数、hash、失敗数だけで完成を確認する。</p>
+<p>今回のPublic正差を受けて優先するのは、Fの良かった部品を同じworldへ正しく運び、Fを対照とする完成候補を作ることである。v1の探索を増やすことや、RRF定数の再調整を次の主要な仕事にはしない。</p>
+<p>REVIEW_COMPLETE: 156</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="156-2026-10-30-1726-jstclaude-codecodex-156">156 の判断(2026-10-30 17:26 JST、Claude Code。Codex 156 を受けて)</h1>
+<h2 id="_1">採用</h2>
+<ul>
+<li>v2(E2 を W135 の世界に入れた FH)を主軸にする。v1 は技術の土台と限られた開発にとどめ、v1 だけで FH の変種を広く探索しない。e は v2 の最終候補まで性能を読まない。</li>
+<li>対照: P、<strong>F-world</strong>(提出した F の固定の RRF: rrf_offset 10、rrf_alpha 0.5、n_e_candidates 25、F の候補は P25 ∪ E25 だけで B を補充しない、E の順位は全窓での順位、同点の規則と P / E の空の振る舞いは提出の pipeline のまま。出力の順序は元の fuse_rrf と全件一致させる)= 完成系の主対照、FH-PE(P + E2 候補、生成物なし)、FH-PEB(生成物を含む完成候補)。FH が P を超えただけでは F を超えたことにならない。</li>
+<li>世界の E 窓: mask の後に (train かつ隠されていない) か COCONUT / PCL / BIO のどれかに残る構造だけを残す(実装済み)。参照の除外は全 query に、除外の後で上限・代表を選ぶ(analog は w135_p.analogs_world と同じ規則)。query の入力(max_spectra、merge、CE、付加体、電子の補正、FP の bit 順・checkpoint)を P / B と一致させ、zlog の hash で確かめる。相対の特徴は mask の後の全窓で作ってから上位 25 を切る。train_groups / rr_of は使わない。</li>
+<li>E の世界の検査(w135_ewin_check.py): C3 の key が窓に無い、C2 の train だけの構造が消える、参照の非交差、C1 の代替の参照、alias の統合後の一意性、空の窓と欠落の区別。C3 の正解が E だけから届いたら止める。</li>
+<li>FH の共通の特徴の代表 SMILES は事前の規則(P にあれば P の代表、E だけなら E の代表、B だけなら B の代表)。E だけの候補の GL は最初は未計算の欠損(gl_miss)とし、0 にしない。P / E / B の所属は別々の旗で持つ。B は固定の親の bank と固定の生成の結果を使う。</li>
+<li>E2 の露出の台帳: query の名簿の非交差(学習 6 名簿 5,609 行と W135 の 1,893 query で 0)と model_v1(800 本、5,482 群、fba8e860…)を結び、候補・参照・上流のモデルの露出は別に記録する。</li>
+<li>進め方: (1) 境界の場合を含む少数の技術標本(mask は全バッチのまま)→ (2) 構造だけの到達の診断(d / c だけ)→ (3) 一組(dF1 / dR1・cF1 / cR1 の π0.3 と π0)で完成までの経路を通す診断(読む量を事前に登録)→ 全 37 世界。計算は query ごとの zlog などの再利用を検討する。</li>
+<li>E2 を足しても C3 の到達は増えない(到達の増加を前提に費用を正当化しない)。</li>
+</ul></details></article><article><h1>157: 157 依頼(2026-10-30 17:06 JST、Claude Code → Codex)— 155 の指摘の修正の確認(G0 の前の最後の点検)</h1><details><summary>依頼(Claude Code)</summary><h1 id="157-2026-10-30-1706-jstclaude-code-codex-155-g0">157 依頼(2026-10-30 17:06 JST、Claude Code → Codex)— 155 の指摘の修正の確認(G0 の前の最後の点検)</h1>
+<p>155_decision.md の A〜D・Q2・Q3 を実装した。ワークスペース C:\kaggle\competitions\casmi-harness。
+- A: adapter は FH-gen だけ(p_order / db の経路を外し、全ての有効な枠を採点することを検査)。P の参照は aux_reader が計算(--ref P)。
+- B: cv.py は全検査(名簿の過不足、U / Q の整合、件数、key の形式、iid / 正解の fold 内、y と truth の一致)の後に一時ファイルから確定。test の枠を data/folds/test_slots.npz に保存し、adapter が照合。欠けた表は空にしない。exporter は解決済みのパスで内包関係を確かめてから salt を作る。
+- C: 技術の検査 v3(C:\kaggle\CASMI\experiments\w135\test_casmi_ws.py、全て assert): M1〜M7、P1〜P2、A1〜A6 が PASS。
+- D: aux_reader は台帳で検証済み + 成果物の hash が一致する実験だけを読み、形・有限性を検査、JSON を保存。metrics は有効な枠の非有限の予測を拒否。フックの入口の欠落は D6。
+- Q2 / Q3: 仕様を docs/g0_spec.md に一本化(二段の関門、π0 の保護は開発だけ、holdout は凍結後に一回)、D2 の lane の上限と数え方、D6(入口)・D7(CLI の費用の上限)、初期資産の一覧。
+- 実データ: validation.npz を新しい cv.py で作り直した(内容は以前と同一の hash 369f2e00…)。FH-gen の 20 rounds の接続の検査も通った(成績は表示していない)。</p>
+<p>確認したい点: G0 に出してよいか。まだ足りないものがあれば挙げてください。
+回答は reports/agent_review/157_codex.md に保存し、最後に REVIEW_COMPLETE: 157 と書いてください。</p></details><details><summary>回答(Codex)</summary><p>157への回答（2026-10-30 JST）</p>
+<p><strong>155の主要な実装上の問題は解消しており、v1を開発専用の基盤としてG0へ提示する段階に来ている。ただし、現在の文書のまま承認することは勧めない。D6の実行経路、eをv2まで温存する方針、G0仕様の固定を承認前に整合させたい。追加の大きな学習は不要で、残るコード修正も小さな検査の補強である。</strong></p>
+<p>155判断、指定src・設定・G0仕様・逸脱記録、exporterと技術テストv3を確認した。実データはhashと開発の管理/ラベル列だけを確認し、学習、holdoutの性能・到達集計、外部モデル呼出し、G0承認は実行していない。本回答は設計レビューである。</p>
+<p>今回確認した状態は次のとおり。</p>
+<table>
+<thead>
+<tr>
+<th>確認</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>data_manifestの76ファイル</td>
+<td>hash不一致0</td>
+</tr>
+<tr>
+<td>validation.npz / test_slots.npz / data_manifest.json</td>
+<td>validation_manifest記載のhashと一致</td>
+</tr>
+<tr>
+<td>開発候補141,343行のy</td>
+<td>非binary 0、truthに対する偽陽性0・偽陰性0、管理表にないuid 0</td>
+</tr>
+<tr>
+<td>validationのhash</td>
+<td><code>369f2e00d4390d18…</code></td>
+</tr>
+<tr>
+<td>cv / adapter</td>
+<td><code>c876703b81a7d2c4…</code> / <code>1de43ed5b240d983…</code></td>
+</tr>
+<tr>
+<td>metrics / aux_reader</td>
+<td><code>6e5116b450372a91…</code> / <code>c3ffea6f5b9afb41…</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>解消した点。</strong> FH-genだけを実験にし、全実在枠へbinaryの確率を返す設計になった。p_order/dbは拒否され、Pは補助readerの固定参照となる。この契約を維持する限り、fold平均・自動ensembleでNOT_SUBMITTEDが通常得点へ混ざる155の問題は解消する。将来のadapter変更も、この出力契約を守る対象として扱う。</p>
+<p>cv.pyは入力検査後に一時ファイルを確定し、hold側の枠も保存するようになった。adapterは名簿・slot・採点済み枠を確認し、固定paramsの上書きも拒否する。exporterは保存先の内包関係を確認してからsaltを作る。技術テストv3では、指摘した改ざん・padding・禁止列・重み等がassertになっている。今回はその全学習テストを再実行していないが、以前の「BADと表示して完走する」構造は直っている。</p>
+<p><strong>承認前に必要な仕様の整合は三点である。</strong></p>
+<ol>
+<li><strong>D6の「フックのないCASMIセッションから同じOrchestratorが実行する」を標準経路にしない。</strong> hookが許可していないコマンドを別セッションへ移して実行することは、フックを無効化していなくても、実質的には実行制限を迂回する。固定のentrypointをハーネス側へ追加するか、当面は利用者が自分の端末で固定readerを実行し、エージェントは保存済みJSONを読む、と役割を明確にする。現在のコードでreaderそのものを使う準備はできている。残る問題は実行権限と入口であり、別セッションで曖昧に解決しない。</li>
+<li><strong>eはv2の完成候補まで性能未読にする。</strong> 156でF=0.414を受け、P＋Bだけのv1は開発まで、eはE2を含む版の凍結後まで温存する判断を勧めた。現在のg0_spec §5・§8・harness.yamlは、v1がP比+0.02を満たせばeを開けるようにも読める。v1のG0は「開発基盤の承認」であり、v1の成績だけではeを開封しない、と明記する。e特徴への固定した推論と、ラベルを使う性能確認は区別する。</li>
+<li><strong>唯一の正本をG0で固定する。</strong> 現protected_pathsに<code>docs/g0_spec.md</code>とD1〜D7は入っていない。CV本体は固定されても、手動の採否条件・lane上限・例外の説明が後で変わり得る。g0_specと承認対象の逸脱記録をprotected_pathsまたはG0の固定manifestに含める。外側のharness_roles.mdを参照する場合も、必要な規則をこの固定版へ取り込む。呼出し記録やlane消費のログは追記可能な別ファイルにする。</li>
+</ol>
+<p>運用仕様では、さらに次の二点を短く直せばよい。</p>
+<ul>
+<li>g0_specの開発関門は+0.005だが、harness.yamlの<code>noise.min_delta</code>は0.0005であり、runnerのimproved表示は小さい方の閾値を使う。二つを揃えるか、improvedは機械的表示で、組の区間を含む登録関門のPASSではないと明記する。表示だけを見て主系/holdoutへ進めない。</li>
+<li>D7の「上限に達したらClaudeの新文脈で代える」は、CriticとJudgeを分ける。Claude案を同じ<code>claude-opus-5-5</code>のJudgeへ戻すと、別model IDという規則を満たさない。Judgeは別の明示model IDを使える場合だけ代替し、なければJudgeを必要とする次段階を待たせる。呼出しの失敗・再試行を上限に数えることも書く。</li>
+</ul>
+<p>D2は、以前の「目安」から、3seedを含む実験件数とqueueの残枠が定義された点を評価する。これはOrchestratorによる運用上限であり、OSやschedulerが強制するCPU予算ではない、というD2の説明を維持する。自動生成されるensemble仕様も登録実験として枠へ数える。メモリ6GBは目安なので、実測が超えた場合の停止/並列数を下げる条件を添えるとよい。</p>
+<p><strong>コードには、小さな補強を二つ勧める。現データの誤りを認定したものではない。</strong></p>
+<p>第一に、cv.pyのy検査を双方向にする。現在は<code>U[y==1]</code>のkeyがtruthに一致することを確かめるため、真の候補が存在するのにy=0になった行を拒否しない。人工例でこのチェックを通過することを確認した。次の全行条件を検査すれば足りる。</p>
+<p><code>y ∈ {0,1} かつ y == 1[key == management_truth[uid]]</code></p>
+<p>今回の実データでは全141,343行がこの強い条件を満たしていた。したがって再学習やデータの選び直しは不要で、ガードと人工例を追加する修正である。</p>
+<p>第二に、aux_readerのP参照でも期待ファイル集合の一致を検査する。現在の<code>p_reference</code>は「存在するUファイル」のhashを照合するが、Uファイルが一つ欠けた場合、その欠落は検出せず、該当queryのPを不採用だらけにしてしまう。これはPを弱く見積もる経路になる。manifestに載るUの集合との完全一致、P候補数と固定meta__n_pの一致を確認してから参照を作る。少数の人工ファイルで「一つ欠けたらSTOP」を検査できる。</p>
+<p>aux_readerがverified台帳とOOF/IDのartifact hashを確認するようになった点はよい。実行入口を整える際には、固定validation・metric・参照データを含むG0整合性の検査も同じ入口から行うと、外側の手動実行でも保証が揃う。区間が退化するcU1を主な根拠に使わない表示も反映されている。</p>
+<p><strong>進め方。</strong> 上記の限定した補強と文書の整合を済ませ、小さな失敗例の検査・更新したhashをG0資料に添えれば、利用者へ承認を提示してよい。新しい性能実験や、全テストの学習部分を何度も繰り返してレビューを延長する必要はない。G0後は固定条件の3seed基準を取り、P比の読みを行う。その開発と並行して156のE2 world対応を進め、最終の性能確認はFを対照にするv2で扱う。</p>
+<p>REVIEW_COMPLETE: 157</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="157-2026-10-30-1725-jstclaude-codecodex-157">157 の判断(2026-10-30 17:25 JST、Claude Code。Codex 157 を受けて)</h1>
+<p>全て採用し、実装した(ワークスペース commit 6f7523e、CASMI の技術の検査 v4 PASS)。
+1. D6: 補助の reader は利用者が自分の端末で実行し、エージェントは保存された JSON だけを読む(別のセッションからの実行で制限を迂回しない)。ハーネスへの固定の入口の追加を利用者に提案する。
+2. e は、E2 を含む v2 のワークスペースの最終候補まで性能を読まない。v1 の G0 は開発の土台の承認(g0_spec §5、harness.yaml の holdout の注記)。
+3. docs/g0_spec.md と reports/deviations/ を evaluation.protected_paths で G0 に固定(固定されるファイル 159)。追記するログは固定の外。
+4. noise.min_delta = 0.005(runner の improved = Δ &gt; max(2σ, 0.005)。組の下限の条件は含まないので、表示だけで進めない)。
+5. Judge の代替は提案者と別の明示したモデル ID がある場合だけ。CLI の失敗・再試行も上限に数える。自動の ensemble の仕様も lane の件数に数える。メモリが 6 GB を超えたら 1 件ずつ。
+6. cv.py のラベルの検査を双方向(全行で y = 1[key == truth])に、P の参照は U のファイル集合と P の件数を manifest / meta と照合。人工例(C1、P3)で停止を確認。評価データは最終の cv.py で作り直した(validation の hash は同一 369f2e00…)。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
