@@ -16,6 +16,7 @@ from e2_train import PARAMS
 S5 = ["C_np_crosslib", "D_np_single", "E_np_negonly", "F_np_uncovered", "G_tims_crosslib"]; S3 = ["NP_H", "NP_X", "NP_N"]
 FOLD = {3: [("train_pool_f3a", S5), ("train_pool_f3b", S5), ("np061_f3pool", S3)], 4: [("train_pool_f4a", S5), ("train_pool_f4b", S5), ("np061_f4pool", S3)]}
 EVAL = {3: [("f3b", "train_pool_f3b", S5), ("np061f3", "np061_f3pool", S3)], 4: [("f4b", "train_pool_f4b", S5), ("np061f4", "np061_f4pool", S3)]}
+LEDGER = {"f3b": "run_tp_f3b", "f4b": "run_tp_f4b", "np061f3": "run_np061_f3pool", "np061f4": "run_np061_f4pool_p"}   # C1-usable ledgers of the P runs (roster as reader v3)
 ROUNDS, NB, OUT = 800, 4000, os.path.join(ROOT, "experiments/e2/s2_mist")
 EW, MO, B = os.path.join(ROOT, "experiments/e2/ewin"), os.path.join(ROOT, "experiments/e2/mist_out"), os.path.join(ROOT, "experiments/b1_baseline")
 
@@ -82,13 +83,17 @@ def main():
                     LC = {g: x.official_key.astype(str).tolist() for g, x in RC.groupby("molecule", sort=False)} if len(RC) else {}
                     LM = {g: x.official_key.astype(str).tolist() for g, x in RM.groupby("molecule", sort=False)} if len(RM) else {}
                     cover[(tag, s, v)] = (len(cov), Xc.molecule.nunique() if len(Xc) else 0)
-                    for x, g in T[(T.set == s) & (T.view == v)].groupby("molecule", sort=False):
-                        p = g.sort_values("rank").okey.astype(str).tolist()[:25]; t = truth[x]
+                    led = pd.read_csv(os.path.join(B, LEDGER[tag], f"b1_molecules_{s}.csv")); led["molecule"] = led.molecule.astype(str); led = led.set_index("molecule")
+                    roster = [x for x in ev[ev.set == s].molecule if v == "c2" or (x in led.index and bool(led.loc[x, "c1_usable"]))]
+                    PL = {x: g.sort_values("rank").okey.astype(str).tolist()[:25] for x, g in T[(T.set == s) & (T.view == v)].groupby("molecule", sort=False)}
+                    if set(PL) - set(roster): stop(f"{tag} {s} {v}: P groups outside the roster")
+                    for x in roster:
+                        p = PL.get(x, []); t = truth[x]   # no P list -> P = F = [] (kernel placeholder), E2 alone still recorded
                         ec = LC.get(x, []); em = LM.get(x, ec)   # MIST-uncovered -> M := C
                         rc = {k: i + 1 for i, k in enumerate(ec)}; rm = {k: i + 1 for i, k in enumerate(em)}
-                        FC, FM = fuse_rrf(p, rc, ec[:25], 0.5), fuse_rrf(p, rm, em[:25], 0.5)
+                        FC, FM = (fuse_rrf(p, rc, ec[:25], 0.5), fuse_rrf(p, rm, em[:25], 0.5)) if p else ([], [])
                         rr = lambda L: 1.0 / (L.index(t) + 1) if t in L[:25] else 0.0
-                        rows.append(dict(eval_fold=ev_fold, tag=tag, set=s, view=v, molecule=x, tkey=t, covered=x in cov, t_esrc=(v == "c1") or (t in COCO) or (t in ESRC_X),
+                        rows.append(dict(eval_fold=ev_fold, tag=tag, set=s, view=v, molecule=x, tkey=t, covered=x in cov, p_empty=not p, t_esrc=(v == "c1") or (t in COCO) or (t in ESRC_X),
                                          P=rr(p), E2C=rr(ec), E2M=rr(em), FC=rr(FC), FM=rr(FM)))
                 log(f"  eval fold {ev_fold} {tag} {s} ({time.time()-t0:.0f}s)")
     G = pd.DataFrame(rows); G.to_csv(os.path.join(OUT, "s2_mist_groups.csv"), index=False)
