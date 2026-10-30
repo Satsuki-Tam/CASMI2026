@@ -33,7 +33,7 @@ BIOP = f"{K}/casmi26-attributed-v4g-reproduction-assets/casmi-chebi-lmsd-structu
 def main():
     ap = argparse.ArgumentParser()
     for k in ("eval_csv", "fold_safe", "out", "masks"): ap.add_argument(f"--{k}", required=True)
-    ap.add_argument("--sets", nargs="+", required=True); ap.add_argument("--workers", type=int, default=12); ap.add_argument("--max_spectra", type=int, default=8); ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--only", default=""); ap.add_argument("--sets", nargs="+", required=True); ap.add_argument("--workers", type=int, default=12); ap.add_argument("--max_spectra", type=int, default=8); ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--store", default="data/processed/spectra_store"); ap.add_argument("--tier", default="data/external/pubchem_tier"); ap.add_argument("--pool", default="data/external/v2_pool/pool_meta.parquet")
     ap.add_argument("--coco", default="data/external/coconut"); ap.add_argument("--v3", default="data/external/v3_models/code")
     a = ap.parse_args(); t0 = time.time(); os.makedirs(a.out, exist_ok=True); MAX_REF, DUP_SIM = BF.MAX_REF, BF.DUP_SIM
@@ -88,7 +88,10 @@ def main():
         for set_name in a.sets:
             ms = mols[mols.set == set_name]
             if a.limit: ms = ms.head(a.limit)
+            if a.only: ms = ms[ms.molecule.isin(set(a.only.split(",")))]   # technical sample: score only these queries; the masks stay the full batch's
             rows_out, cand_out, ref_cache = [], [], {}
+            refs_log = []   # used reference rows of every candidate that is a batch identity (C1 keys or hidden keys): checked by w135_ewin_check.py
+            BATCH_KEYS = set(C1_EXCL) | TRAIN_HIDE
             for n_i, r in enumerate(ms.itertuples(index=False)):
                 tm0 = time.time(); mid = r.molecule; truth_key = str(r.scorer_key); lib = r.lib; truth_raw = getattr(r, "raw_key", None); shift = ELECTRON if lib == "enveda-180" else 0.0
                 qrows = sorted(int(x) for x in ik_rows.get(mid, []) if lib_of_row[x] == lib and add_of_row[x] in ADDUCT_SHIFT)
@@ -179,6 +182,7 @@ def main():
                         if any(abs(s["prec"] - rprec) < 0.005 and s["mode"] == mode_of_row[x] and entropy_similarity(s["clean"][0], s["clean"][1], rmz, rit) >= DUP_SIM for s in qspec): continue
                         kept.append(x)
                     refs1 = list(kept)
+                    if pk in BATCH_KEYS and refs1: refs_log.append(dict(molecule=mid, official_key=k, pkey=pk, rows=[int(x) for x in refs1]))
                     if len(refs1) > MAX_REF:
                         pri = np.array([0 if add_of_row[x] in M_by_add else 1 for x in refs1]); refs1 = [refs1[i] for i in np.argsort(pri, kind="stable")[:MAX_REF]]
                     b1 = s1 = 0.0; n1 = 0
@@ -201,6 +205,7 @@ def main():
                                      lib_max_c1=float(L["c1"].max()), lib_max_c2=float(L["c2"].max()), seconds=time.time() - tm0))
                 if (n_i + 1) % 25 == 0 or n_i == len(ms) - 1:
                     d_ = pd.DataFrame(rows_out); print(f"  {set_name} {n_i+1}/{len(ms)} | E window median {d_.n_e.median():.0f} | {d_.seconds.mean():.1f}s/mol ({time.time()-t0:.0f}s)", flush=True)
+            json.dump(refs_log, open(f"{a.out}/ewin_refs_{set_name}.json", "w"))
             pd.DataFrame(rows_out).to_csv(f"{a.out}/ewin_molecules_{set_name}.csv", index=False); pd.DataFrame(cand_out).to_parquet(f"{a.out}/ewin_{set_name}.parquet", index=False)
             man["sets"][set_name] = dict(molecules=len(rows_out), rows=len(cand_out)); print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} rows ({time.time()-t0:.0f}s)", flush=True)
     man["seconds"] = round(time.time() - t0); json.dump(man, open(f"{a.out}/ewin_manifest.json", "w"), indent=1); print(f"done {time.time()-t0:.0f}s")
