@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:53 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 12:31 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">位置づけ</a></li>
@@ -30,6 +30,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#1144-1-p-passlogsspark_e2k_pctrllog">11:44 条件 1 の P の項: 同じ計算環境での対照 PASS(logs/spark_e2k_pctrl.log)</a></li>
 <li><a href="#1152-2v2-version-2-v2-passkernelsb1-e2foutput_v2">11:52 条件 2(v2): version 2 のコミット実行の点検 v2 PASS(kernels/b1-e2f/output_v2)</a></li>
 <li><a href="#115328-jst-ref-57790338">11:53:28 JST 提出(ref 57790338)</a></li>
+<li><a href="#1221-codex-147">12:21 訂正(Codex 147)</a></li>
 </ul>
 </div>
 </div><h1 id="1030-2-145-144-v2-f-pv8w7a-e2-identity-rrfk-10-052026-10-30-1107-jst-git-42da166claude-code">10/30 の提出計画(2) — 145 / 144 v2: F = P(v8w7a)+ E2 の identity RRF(K 10、α 0.5)(2026-10-30 11:07 JST = git 42da166、Claude Code)</h1>
@@ -137,4 +138,9 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li>0.380〜0.408: 保留。</li>
 <li>0.379 以下: 負。</li>
 <li>探索の分解(146)により、この結果は主に「隠しテストで E 源を優遇するのが得か」を測ると読む。</li>
+</ul>
+<h2 id="1221-codex-147">12:21 訂正(Codex 147)</h2>
+<ul>
+<li>記録のセルの「E2 の失敗が 8 以下なら、読みへの影響は約 0.002 以下」は保証できない(上界 8/N。Public 側に偏れば最大約 0.061)。</li>
+<li>57790338 は、「例外の時に最大 8 件まで P へ戻す実行方策 F」として読む。</li>
 </ul></article><p class='small muted'>原文: <code>reports/agent_review/1030_submission_plan_e2.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
