@@ -25,18 +25,23 @@ def sha(p):
     return h.hexdigest()
 
 
+dropped = {}
+
+
 def load_fold(ew, f, log):
     parts, seen, hashes = [], set(), {}
     for d, sets in FOLD_DIRS[f]:
         for s in sets:
             pe, pf = f"{ew}/{d}/ewin_{s}.parquet", f"{ew}/{d}/e2f_{s}.parquet"; hashes[f"{d}/{s}"] = [sha(pe)[:16], sha(pf)[:16]]
             E = pd.read_parquet(pe); F = pd.read_parquet(pf); E["molecule"] = E.molecule.astype(str); F["molecule"] = F.molecule.astype(str)
-            dup = set(E.molecule) & seen
+            E_mols = set(pd.read_csv(f"{ew}/{d}/ewin_molecules_{s}.csv").molecule.astype(str)); dup = set(E.molecule) & seen
             if dup: E = E[~E.molecule.isin(dup)]; F = F[~F.molecule.isin(dup)]
             seen |= set(E.molecule)
             for v in ("c1", "c2"):
-                X = train_groups(view_frame(E, F, v)); X["gk"] = f"{d}|{v}|" + X.gk; X["fold"] = f; parts.append(X)
-                log(f"  fold {f} {d} {s} {v}: groups {X.gk.nunique()}, rows {len(X)} (dup molecules dropped {len(dup)})")
+                V = view_frame(E, F, v); X = train_groups(V); X["gk"] = f"{d}|{v}|" + X.gk; X["fold"] = f; parts.append(X)
+                dropped[f"{d}/{s}/{v}"] = dict(groups=int(V.gk.nunique()), kept=int(X.gk.nunique()), no_positive=int(V.gk.nunique() - X.gk.nunique()), dup_molecules=len(dup),
+                                               molecules_without_window=int(len(set(E_mols) - set(V.molecule))))
+                log(f"  fold {f} {d} {s} {v}: groups {X.gk.nunique()} of {V.gk.nunique()}, rows {len(X)} (dup molecules dropped {len(dup)})")
     return pd.concat(parts, ignore_index=True), hashes
 
 
@@ -66,7 +71,7 @@ def main():
     imp = dict(zip(FEATS, [round(float(x), 1) for x in m.feature_importance("gain")]))
     man = dict(feats=FEATS, params=PARAMS, grid=GRID, rounds=best, criterion={str(k): float(v) for k, v in crit.items()}, groups=int(XA.gk.nunique()), rows=int(len(XA)),
                groups_by_view={v: int(XA[XA.view == v].gk.nunique()) for v in ("c1", "c2")}, inputs={**h3, **h4}, script=sha(os.path.abspath(__file__))[:16],
-               common=sha(os.path.join(HERE, "e2_common.py"))[:16], model=sha(f"{out}/e2_lgb.txt"), gain=imp, seconds=round(time.time() - t0))
+               common=sha(os.path.join(HERE, "e2_common.py"))[:16], dropped_groups=dropped, model=sha(f"{out}/e2_lgb.txt"), gain=imp, seconds=round(time.time() - t0))
     json.dump(man, open(f"{out}/e2_train_manifest.json", "w"), indent=1); log(json.dumps(imp)); log(f"E2_TRAIN_DONE {time.time()-t0:.0f}s")
 
 
