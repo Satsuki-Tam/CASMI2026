@@ -46,8 +46,10 @@ def load(src, w):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--part", required=True, choices=["dev", "hold_ids", "hold"]); ap.add_argument("--src", default="")
     ap.add_argument("--ws", required=True); ap.add_argument("--map_dir", required=True); ap.add_argument("--batches_dir", default="experiments/w135/batches")
-    a = ap.parse_args(); s = salt(a.map_dir)
-    if os.path.abspath(a.map_dir).startswith(os.path.abspath(a.ws)): stop("the mapping must stay outside the workspace")
+    a = ap.parse_args()
+    ws_r = os.path.normcase(os.path.realpath(a.ws)); mp_r = os.path.normcase(os.path.realpath(a.map_dir))
+    if os.path.commonpath([ws_r, mp_r]) == ws_r: stop("the mapping must stay outside the workspace")   # resolved, case-normalised containment (Codex 155)
+    s = salt(a.map_dir)   # created only after the containment check
     if a.part == "hold_ids":
         rows = []
         for w in HOLD_WORLDS:
