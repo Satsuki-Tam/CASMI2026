@@ -1,0 +1,9 @@
+PRIMARY pi0.3 F/R                  n  1198 | 2a E window 0.602 | 2b E25 0.568 | U2 0.652 | U1 0.643 | added +0.009
+  pi0.3 C1                         n   335 | 2a E window 0.812 | 2b E25 0.791 | U2 0.809 | U1 0.806 | added +0.003
+  pi0.3 C2                         n   503 | 2a E window 0.893 | 2b E25 0.825 | U2 0.853 | U1 0.833 | added +0.020
+  pi0.3 C3                         n   360 | 2a E window 0.000 | 2b E25 0.000 | U2 0.225 | U1 0.225 | added +0.000
+pi0 (aux)                          n  1198 | 2a E window 0.868 | 2b E25 0.822 | U2 0.843 | U1 0.829 | added +0.014
+pi0.6 (aux)                        n   600 | 2a E window 0.345 | 2b E25 0.318 | U2 0.467 | U1 0.463 | added +0.003
+cU1_p30 (aux)                      n    99 | 2a E window 0.626 | 2b E25 0.596 | U2 0.677 | U1 0.646 | added +0.030
+E-source-outside layer (pi0.3 C1 / C2 truths outside the E window): n 117
+checks: rosters, U2 = P25 + E25 + B, P order U1 == U2, E ledger complete, C3 invariant -- all OK
