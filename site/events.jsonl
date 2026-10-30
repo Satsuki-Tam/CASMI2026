@@ -234,3 +234,4 @@
 {"time": "2026-10-30 17:06", "kind": "milestone", "text": "Codex 155 の指摘(自動 ensemble での不採用の枠の混入、欠けた表の空扱い、検査の甘さ等)を全て修正。技術の検査 v3 PASS。G0 の仕様を docs/g0_spec.md に一本化。G0 は利用者の承認待ち(Codex 157 の最終確認も並行)。", "link": "reports/agent_review/155_decision.md"}
 {"time": "2026-10-30 17:26", "kind": "milestone", "text": "G0 の材料が完成(Codex 157 の指摘まで反映、技術の検査 v4 PASS)。利用者の承認待ち。v2(E2 を世界に入れた FH)は Codex 156 の設計で段階的に準備開始。", "link": "reports/agent_review/157_decision.md"}
 {"time": "2026-10-30 17:35", "kind": "experiment", "text": "v2 の上流(世界の E 窓・E2 の特徴・E2 の得点)を 37 世界で作成開始。技術標本の検査 PASS、zlog は B1 側と完全一致。U2(P25 ∪ E25 ∪ B)の builder で F-world が提出の fuse_rrf と全件一致。", "link": "reports/agent_review/158_prereg_v2_diag.md"}
+{"time": "2026-10-30 18:13", "kind": "experiment", "text": "Codex 158 の指摘で v2 のデータを v2.1 に作り直し中(旧版は未読で退避)。技術標本で全段階 PASS(zlog の差 0、analog のリストは W135 の P と 7 / 7 一致)。v2 のワークスペースの G0 の材料(100 枠、FH-PEB、F-world の参照)を用意し、Codex 159 で点検中。", "link": "reports/agent_review/158_decision.md"}
