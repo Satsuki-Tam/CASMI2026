@@ -16,12 +16,13 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:34 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:48 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-22400140">1. 22:40〜01:40 のまとめ</a></li>
 <li><a href="#2-01400245">2. 01:40〜02:45</a></li>
 <li><a href="#3-09351030-e2-p">3. 09:35〜10:30 主軸の転換: 土台の作り直し(独立した第二エンジン E2 + P との融合)</a></li>
+<li><a href="#4-10301150-e2-codex-145-146-f">4. 10:30〜11:50 E2 の結果、Codex 145 / 146 への対応、F の提出の準備</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-30claude-code-date-git">進捗 2026-10-30(夜間、Claude Code)— 時刻は date / git の記録から</h1>
@@ -79,4 +80,37 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li>A3(GL の識別、副次)。</li>
 <li><strong>Codex</strong>: 145(実装と組み込みの点検)を 10:26 に依頼した。</li>
 <li><strong>132</strong>: Public の結果を待っている。</li>
+</ul>
+<h2 id="4-10301150-e2-codex-145-146-f">4. 10:30〜11:50 E2 の結果、Codex 145 / 146 への対応、F の提出の準備</h2>
+<ul>
+<li><strong>E2 の学習</strong>(10:51)</li>
+<li>LightGBM 800 本。</li>
+<li>fold 3↔4 の交差の MRR は C1 0.906、C2 0.62〜0.64(f.z だけの順位なら 0.65 / 0.49)。</li>
+<li><strong>144 の登録どおりの読み</strong>(10:53、8777e2c)</li>
+<li>F の関門は不合格(+0.0035)。H も不合格。</li>
+<li>Public の診断経路は、条件を満たした(E 源の C2 で、両 fold +0.03)。</li>
+<li><strong>Codex 145</strong>(10:46 着、結果の閲覧の後に読んだ)への対応</li>
+<li>E2 専用の索引(本番の索引は、0.57% の参照が欠ける)。</li>
+<li>GL の予算から、E2 の時間を除いた。</li>
+<li>一致確認 v2、評価器 v3、COCONUT の pickle の監査の表現の訂正。</li>
+<li><strong>評価器 v3 の再採点</strong>(11:30): 判定は同じだった。P が空の 20 群は、全て正当な空だった(x146_emptyP_audit)。</li>
+<li><strong>別表記の監査</strong></li>
+<li>楽観は 5 分子だけだった。最悪側でも、両 fold で +0.024 が残る。</li>
+<li>一回目は、fork と polars の組み合わせで固まった。spawn と pandas に直した。</li>
+<li><strong>一致確認 v2</strong>(Spark、パネル C1 の 250 分子)</li>
+<li>E2 の表・順位・F は、全て一致した。</li>
+<li>P は PC の参照と 141 分子で異なったが、1 位は全て同じだった。計算環境の差による。同じ Spark で E2 を外した対照では、P は 250/250 で一致した(11:44)。</li>
+<li><strong>f.z の計算環境による差</strong>: 分子の中の順位は、Spearman 0.9999(中央値)で保たれる。Kaggle 上の E2 も、ほぼ同じ順位になる見込み。</li>
+<li><strong>Kaggle</strong></li>
+<li>private データセット casmi26-e2-model を作った(モデル、索引の対応表、由来の記録)。</li>
+<li>F のカーネル v1 のコミット実行の点検: PASS。P は v8w7a の参照と byte 一致し、E2 の失敗は 0、隠しテストでの見積もりは 4.7 時間。</li>
+<li>Codex 146 を受けて、記録のセルを強化した v2 を 11:37 に push した。</li>
+<li><strong>Codex 146</strong>: v3 の訂正を判定に使ってよい。H は外す。点検を補強する。次の一手は、(b) 枠の配分の切り分け → (a) 別系統の FP → (c) class 3。</li>
+<li><strong>探索の分解</strong>(x146_slot_decomp): F の得の大部分は、E2 の順位ではなく、候補源の重み付けから来ている。</li>
+<li>E 源の C2: +0.021 / +0.029。E2 の順位そのものは +0.007。</li>
+<li>パネル C1 の損は、E2 の順位から来ている(人気度を使わないため)。</li>
+<li>→ F の Public は、主に「E 源の優遇が隠しテストで得か」を測る。E2 の順位の独自性を高める (a) の重要度が上がった。</li>
+<li><strong>A3</strong>(副次): 10:36 に、学習の段階で失敗していた(DataLoader の spawn の作業プロセスが、関数の中のクラスを pickle できない)。作業プロセス 0 にして、11:40:50 に学習から再開した。</li>
+<li><strong>twin の食い違いの再確認</strong>: コミュニティの「twin だけで 0.275」は、042 で、隠しテストの再実行に問題があった時期の値として不採用にしていた。公開のライブラリ検索だけの 0.151 と、私たちの T の 0.160 が一致するので、class 1 の取りこぼしは大きくない。</li>
+<li><strong>ダッシュボード</strong>: 利用者の指摘で、10/25(status)と 10/29 17:02(出来事)から止まっていたことが分かり、11:27 に追いつかせた。以後、節目ごとに更新する。</li>
 </ul></article><p class='small muted'>原文: <code>docs/progress_2026-10-30.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

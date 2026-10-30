@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:34 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:48 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -20056,4 +20056,156 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 </table>
 <p>(b)の最初の切り分けは、現在のFを変更せず別の探索記録として行える。共通候補だけでE2順位とp_eを比較し、次にE2の全窓順位を使う影響、最後にE2-only候補を採用する影響を分ける。これで追加順位の価値が弱いと分かれば(a)への投資理由になる。E2の有用な順位が接続で失われているなら、先に枠配分を直す理由になる。E0の固定枠位置・閾値を、そのPublicに合った値のまま移植しない。</p>
 <p>今回のFはこの分析で選び直さず、診断条件と技術条件を満たせば凍結版を一回測る。Publicの0.409/0.379の境界も維持する。0.409以上を作業用の新基準へ更新する判断はできるが、ローカルの保護失敗と凍結Pを残し、Privateでの優位や最終提出の確定とは分ける。提出計画末尾の「候補とし、Pを置き換える」は、この暫定的な作業基準の意味として明記すると、登録v2の位置づけと整合する。</p>
-<p>REVIEW_COMPLETE: 146</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>REVIEW_COMPLETE: 146</p></details><details><summary>判断記録(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#git">経緯(時刻は git / ファイルの記録)</a></li>
+<li><a href="#v1-v3">v1 → v3 で変わったもの</a></li>
+<li><a href="#codex-146-q3">別表記の監査の最悪側(Codex 146 Q3 の規則)</a></li>
+<li><a href="#codex-146-q2">提出の経路の補強(Codex 146 Q2)</a></li>
+<li><a href="#codex-146-q4">次の構造の一手(Codex 146 Q4)</a></li>
+<li><a href="#1139git-cf07f4d-x146_slot_decompmdf">追記 11:39(git cf07f4d の時刻): 探索の分解(x146_slot_decomp.md。登録ではなく、F の選び直しには使わない)</a></li>
+</ul>
+</div>
+</div><h1 id="146-2026-10-30-1138-jstclaude-code-codex-146-f">146 判断記録(2026-10-30 11:38 JST、Claude Code)— Codex 146 の採用と、F の提出の前提の補強</h1>
+<h2 id="git">経緯(時刻は git / ファイルの記録)</h2>
+<ul>
+<li>10:46: 145 の回答が届いた(性能の未読時点で書かれたもの)。</li>
+<li>10:52: 評価器 v1 の結果(144_result.md、8777e2c)を読んだ。145 の回答を読んだのは、その後。</li>
+<li>11:03: 145 の指摘への対応(eefd7eb)。</li>
+<li>11:26: 146 の回答が届いた。</li>
+<li>11:30: 評価器 v3 での再採点(ff46296)。</li>
+<li>11:35〜: 146 の補強を実施。</li>
+<li><strong>評価器 v3 は、事前の指摘に基づく、結果を見た後の実装の訂正として採用する。</strong> 新しい独立した確認ではない。</li>
+<li>v1 の「F0 は全ての群で一致」は RR での検査、「群の数は一致」は P の表との一致だった。v3 で順序付きのリストの検査と、台帳からの名簿に改めた。</li>
+</ul>
+<h2 id="v1-v3">v1 → v3 で変わったもの</h2>
+<table>
+<thead>
+<tr>
+<th>訂正</th>
+<th>差分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分母</td>
+<td>C2 の 20 群を追加した(P の表に無かったもの)。x146_emptyP_audit: 20 群の全てで、P の候補資格(in_short_c2 かつ tier / coconut / train_c2)を満たす行が 0 件。<strong>正当な空</strong>であり、P = F = H = <a href="カーネルと同じ"></a>。E の台帳の n_e と表の行数は、1,890 分子の全てで一致した</td>
+</tr>
+<tr>
+<td>所属</td>
+<td>E 源を、固定の所属表(pool の COCONUT key と COCONUT store の official key、E key v2 の PCL / BIO)で付けた。E 源の C2 の母集団は、fold 1 が 449 → 455、fold 2 が 425 → 434</td>
+</tr>
+<tr>
+<td>予測・順位</td>
+<td>共通の群で、P / F / H の順序付きのリストは変わらない(評価器だけの訂正)</td>
+</tr>
+<tr>
+<td>判定</td>
+<td>F の通常の関門: 不合格(+0.0035 → +0.0033)。H: 不合格。診断経路: fold 1 +0.0299 → +0.0295、fold 2 +0.0277 → +0.0271、新たな 1 位 48 identity。<strong>条件を満たす(変わらず)</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="codex-146-q3">別表記の監査の最悪側(Codex 146 Q3 の規則)</h2>
+<ul>
+<li>疑わしい代表(train だけの表記)は 5 分子だった。f1dev E 2 / F 1、f2dev F 2。</li>
+<li>その F を最悪の 0 と仮定すると、g_min は fold 1 で +0.0240(455 分子、うち U が 3)、fold 2 で +0.0244(434 分子、うち U が 2)。</li>
+<li>U を除いた新たな 1 位の identity は 47。</li>
+<li>→ <strong>最悪側でも、診断の条件は残る。</strong>「楽観が無い」「通常の関門に合格」とは呼ばない。</li>
+<li>監査の一回目は、fork の後に polars を使ったため固まった。二回目は fillna の型の誤りで止まった。どちらも直して完走した。</li>
+</ul>
+<h2 id="codex-146-q2">提出の経路の補強(Codex 146 Q2)</h2>
+<ul>
+<li><strong>コミット実行の点検 v2</strong>(check_e2k_commit.py)の合否条件</li>
+<li>E2 の失敗が 0 であること(manifest と e2_stats の両方)。</li>
+<li>索引の sha が 2f025d15… で、対応漏れが 0、key が 274,184 であること。</li>
+<li>特徴が FEATS と同じで、木が 800 本であること。</li>
+<li>version 1 の出力で PASS した。</li>
+<li><strong>記録のセル v2</strong>(make_b1_e2k.py → casmi26-b1-e2f version 2、11:37 に push)</li>
+<li>同じ期待値を assert する。</li>
+<li><strong>E2 の失敗が 8(400 分子の 2%)を超えたら止める。</strong></li>
+<li>理由: 隠しテストの再実行のログは私たちには見えない。一件の失敗で止めると、原因が分からないまま提出の枠を失う。8 件以下が P に戻っても、F の読みが動くのは約 0.002 以下で、登録した ±0.015 の幅に十分収まる。コミット実行の点検では、0 件を要求する。</li>
+<li><strong>P の不変</strong></li>
+<li>Kaggle のコミット実行の P は、v8w7a の参照と byte 一致した(ダミーの test の先頭 12 分子での接続の確認。隠しテストの全件の一致や、時間内の完了の証明ではない)。</li>
+<li>同じ Spark での E2 なしの対照(spark_e2k_pctrl.sh)も実行中。</li>
+<li><strong>時間</strong>: E2 の時間を除く処置は、P の GL の予算を保つためのもので、実際の時間の上限を保つものではない。</li>
+<li>見積もりは、P だけで約 3.9 時間、E2 込みで約 4.7 時間(コミット実行の 1 分子あたりの時間から計算)。9 時間に収まる。</li>
+</ul>
+<h2 id="codex-146-q4">次の構造の一手(Codex 146 Q4)</h2>
+<ul>
+<li>F − Fpe(+0.0155)は、候補源の再加重の対照に対して、新しい順位・全窓の順位・追加の候補を合わせた増分である。「FPNet の共有が原因」とは同定できない。</li>
+<li><strong>順序</strong>
+  1. (b) source の階層・枠の配分の費用を、保存済みの順位で局所的に切り分ける。共通の候補だけでの E2 の順位と p_e、E2 の全窓の順位、E2 にしか無い候補の採用、の三段に分ける。
+  2. (a) 別系統の自前の FP を、fold 3/4 の OOF で「P が外す分子への追加の救済」を測る設計で、先に固定してから学習する。
+  3. (c) class 3 の生成物を E2 で採点するのは後にする。生成物を含む模擬の行が必要なため。</li>
+<li>F はこの分析で選び直さない。</li>
+<li><strong>Public の読み</strong>: 0.409 以上は「暫定の作業基準」の更新であり、最終の提出の確定や Private での優位とは分ける。</li>
+</ul>
+<p>REVIEW_COMPLETE は Codex の回答側の印。この記録は、Claude Code の判断である。</p>
+<h2 id="1139git-cf07f4d-x146_slot_decompmdf">追記 11:39(git cf07f4d の時刻): 探索の分解(x146_slot_decomp.md。登録ではなく、F の選び直しには使わない)</h2>
+<p>F − P を四つに分けた。Fpe − P は候補源の重み付け、Fc1 − Fpe は共通の候補での E2 の順位、Fc2 − Fc1 は全窓の順位の尺度、F − Fc2 は E2 にしか無い候補の追加である。</p>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th>F − P</th>
+<th>Fpe − P</th>
+<th>Fc1 − Fpe</th>
+<th>Fc2 − Fc1</th>
+<th>F − Fc2</th>
+<th>位置保存 Fpp − P</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C2 E 源(874)</td>
+<td>+0.0288</td>
+<td><strong>+0.0206</strong></td>
+<td>+0.0065</td>
+<td>+0.0005</td>
+<td>+0.0011</td>
+<td>+0.0079</td>
+</tr>
+<tr>
+<td>C2 E 源の外(427)</td>
+<td>−0.1058</td>
+<td><strong>−0.1268</strong></td>
+<td>+0.0032</td>
+<td>+0.0179</td>
+<td>−0.0001</td>
+<td>0(定義上)</td>
+</tr>
+<tr>
+<td>C2 A(514)</td>
+<td>+0.0298</td>
+<td>+0.0165</td>
+<td>+0.0122</td>
+<td>+0.0003</td>
+<td>+0.0008</td>
+<td>+0.0110</td>
+</tr>
+<tr>
+<td>C1 f1/f2 NP(389)</td>
+<td>+0.0252</td>
+<td>+0.0140</td>
+<td>+0.0094</td>
+<td>+0.0008</td>
+<td>+0.0009</td>
+<td>+0.0094</td>
+</tr>
+<tr>
+<td>C1 パネル clean(202)</td>
+<td>−0.0366</td>
+<td>+0.0043</td>
+<td><strong>−0.0435</strong></td>
+<td>+0.0026</td>
+<td>0</td>
+<td>−0.0415</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>得の大部分(E 源で +0.021 / +0.029)と、損の全て(E 源の外で −0.127)は、候補源の重み付けから来ている。</strong></li>
+<li>E2 の順位の独自の価値は、共通の候補で +0.007〜0.012 と小さい。パネル C1 では、E2 の順位そのものが −0.044 の損を生む(人気度を使わないため)。</li>
+<li><strong>F の Public の結果は、主に「隠しテストで E 源を優遇することが得か」を測る。</strong> E2 の順位の価値は、その上に小さく乗るだけである。</li>
+<li><strong>次の構造の一手への含意</strong>: E2 の順位の独自性を高める (a)(別系統の FP)の重要度が上がった。(b) の位置保存の融合は、損を消すが得も +0.008 に縮める。どちらに進むかは、F の Public の結果(w の情報)を見て、Codex と決める。</li>
+</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>

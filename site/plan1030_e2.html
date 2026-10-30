@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:34 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 11:48 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">位置づけ</a></li>
@@ -26,6 +26,8 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#144-v2-4public-k">読み(登録 144 v2 §4'。Public を見た後で α / K / 窓を動かさない)</a></li>
 <li><a href="#1128-v2-logsspark_e2k_parity_v2logexperimentse2k_parity_c1_v2checklog">11:28 一致確認 v2 の結果(logs/spark_e2k_parity_v2.log、experiments/e2/k_parity_c1_v2.check.log)</a></li>
 <li><a href="#1135-2-kaggle-passkernelscheck_e2k_commitpykernelsb1-e2foutput_v1">11:35 条件 2: Kaggle のコミット実行の点検 PASS(kernels/check_e2k_commit.py、kernels/b1-e2f/output_v1)</a></li>
+<li><a href="#1138-codex-146-146_decisionmd">11:38 Codex 146 を受けた変更(146_decision.md)</a></li>
+<li><a href="#1144-1-p-passlogsspark_e2k_pctrllog">11:44 条件 1 の P の項: 同じ計算環境での対照 PASS(logs/spark_e2k_pctrl.log)</a></li>
 </ul>
 </div>
 </div><h1 id="1030-2-145-144-v2-f-pv8w7a-e2-identity-rrfk-10-052026-10-30-1107-jst-git-42da166claude-code">10/30 の提出計画(2) — 145 / 144 v2: F = P(v8w7a)+ E2 の identity RRF(K 10、α 0.5)(2026-10-30 11:07 JST = git 42da166、Claude Code)</h1>
@@ -67,7 +69,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 </code></pre>
 <h2 id="144-v2-4public-k">読み(登録 144 v2 §4'。Public を見た後で α / K / 窓を動かさない)</h2>
 <ul>
-<li>0.409 以上: 明瞭な正。新しい土台の候補とし、P を置き換える。</li>
+<li>0.409 以上: 明瞭な正。新しい土台の候補にする(暫定の作業基準の更新。最終の提出の確定や Private での優位とは分ける。Codex 146)。</li>
 <li>0.380〜0.408: 保留。開発の構成とのずれ(E 源の外の費用、人気度)を分析する。</li>
 <li>0.379 以下: 負。F を主系に入れず、窓への到達・条件付きの救済・E 源の外の費用から、不足した場所を判定する。</li>
 </ul>
@@ -99,4 +101,21 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li>E2 の準備は約 150 秒、E2 の計算は 1 分子あたり約 7.5 秒。</li>
 <li>隠しテストの 400 分子での見積もりは約 4.7 時間(P だけなら約 3.9 時間)で、9 時間の上限に収まる。GL の予算は変わらない。</li>
 <li>出力の取得では、<code>--page-size 200</code> と <code>--file-pattern</code> が必要だった(10/29 の注意と同じ)。</li>
+</ul>
+<h2 id="1138-codex-146-146_decisionmd">11:38 Codex 146 を受けた変更(146_decision.md)</h2>
+<ul>
+<li>提出する実体を、<strong>casmi26-b1-e2f version 2</strong>(11:37 に push)に替える。</li>
+<li>パイプラインのコードは同じ(72a1a991)。</li>
+<li>記録のセルで、索引の sha、対応漏れ 0、特徴、木 800 本、E2 の失敗 8 以下を assert する。</li>
+<li>条件 2 は、v2 のコミット実行に対する点検 v2 の PASS とする(E2 の失敗 0 を含む)。</li>
+<li>条件 3: 評価器 v3 で条件を満たす。P が空の 20 群は、全て正当な空だった。</li>
+<li>条件 4: 別表記の監査の最悪側の判定で、条件が残る(g_min +0.0240 / +0.0244、47 identity)。</li>
+<li>条件 1 の P の項: 同じ Spark での E2 なしの対照で判定する(実行中)。</li>
+<li>提出の命令の <code>-v 1</code> は <code>-v 2</code> に替える。</li>
+</ul>
+<h2 id="1144-1-p-passlogsspark_e2k_pctrllog">11:44 条件 1 の P の項: 同じ計算環境での対照 PASS(logs/spark_e2k_pctrl.log)</h2>
+<ul>
+<li>Spark で E2 を外した実行(同じ生成パイプライン 72a1a991、同じ引数で --e2_model なし)の submission.csv と、E2 ありの実行(k_parity_c1_v2)の submission_pref.csv を比べた。250 分子の全てで一致し、異なるリストは 0、ID の集合も同じだった。</li>
+<li>→ E2 は P を変えない。PC の参照との 141 分子の差は、計算環境の差だけである。<strong>条件 1 は満たした。</strong></li>
+<li>残る条件: version 2 のコミット実行の点検 v2(実行中)。</li>
 </ul></article><p class='small muted'>原文: <code>reports/agent_review/1030_submission_plan_e2.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
