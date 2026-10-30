@@ -1,4 +1,4 @@
-# 147 未到達の監査(2026-10-30 12:34 JST、Claude Code。記述であり、判定には使わない)— x147_window_audit.py
+# 147 未到達の監査(2026-10-30 12:33 JST = git 996a177、Claude Code。記述であり、判定には使わない)— x147_window_audit.py
 
 対象: 140 の誤りの台帳(P の view c2、fold 1 の開発 820 分子)の absent 185 分子。
 
