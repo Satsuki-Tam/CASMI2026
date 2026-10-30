@@ -76,3 +76,8 @@ kaggle competitions submit enveda-CASMI26-molecule-id-mass-spectra -k hayatetaf/
 - 条件 4: 別表記の監査の最悪側の判定で、条件が残る(g_min +0.0240 / +0.0244、47 identity)。
 - 条件 1 の P の項: 同じ Spark での E2 なしの対照で判定する(実行中)。
 - 提出の命令の `-v 1` は `-v 2` に替える。
+
+## 11:44 条件 1 の P の項: 同じ計算環境での対照 PASS(logs/spark_e2k_pctrl.log)
+- Spark で E2 を外した実行(同じ生成パイプライン 72a1a991、同じ引数で --e2_model なし)の submission.csv と、E2 ありの実行(k_parity_c1_v2)の submission_pref.csv を比べた。250 分子の全てで一致し、異なるリストは 0、ID の集合も同じだった。
+- → E2 は P を変えない。PC の参照との 141 分子の差は、計算環境の差だけである。**条件 1 は満たした。**
+- 残る条件: version 2 のコミット実行の点検 v2(実行中)。
