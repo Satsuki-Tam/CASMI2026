@@ -6,7 +6,7 @@
 
 ## 固定したもの
 - 表: experiments/w135/w135_fh.py(sha 2e404100615fceca…)。U = P の上位 25(P が選んだ SMILES の f.z、GL、MetFrag-lite)+ B(最大 50、P の上位 25 と key が交わらないことを検査)。P の行は保存済みの top 25 を順序どおりに再現することを検査した。in_wwin = P の行は 1、生成物は生成器の位置が in_window(世界の窓の中。DB の所属の主張ではない)。正解の旗・main・rP・生成表の到達列・世界のクラス / used / 家族番号は特徴に入れない。
-- 学習・適用: experiments/w135/w135_fh_fit.py(sha 669b159490662544…)。LightGBM の二値、num_leaves 15、max_depth −1、min_data_in_leaf 100、lr 0.05、300 rounds、feature_fraction 0.8、bagging 0.8 / 1、lambda_l2 1.0、seed 7、deterministic。特徴 FEATS(36 列)はスクリプトのとおり。二つの head(FH-DB = P の上位 25 だけ、FH-gen = P の上位 25 + B)に同じ query の要約を与える。
+- 学習・適用: experiments/w135/w135_fh_fit.py(sha 669b159490662544…)。LightGBM の二値、num_leaves 15、max_depth −1、min_data_in_leaf 100、lr 0.05、300 rounds、feature_fraction 0.8、bagging 0.8 / 1、lambda_l2 1.0、seed 7、deterministic。特徴 FEATS(37 列)はスクリプトのとおり。二つの head(FH-DB = P の上位 25 だけ、FH-gen = P の上位 25 + B)に同じ query の要約を与える。
 - 重み: 行の重み = 1/|U(q)| × 1/(その identity を含む学習世界の数)。共通の π0 / 0.3 だけで学習するので、各 identity の二つの世界に 1/2 ずつ。正例数での再平衡はしない。
 - 世界: 両側に共通する π0 / π0.3 の 12 世界ずつで学習・主比較(設計 d = fold 1、旧確認 c = fold 2。どちらも 139 で読んだので開発)。d 側の π0.6 と cU1_p30 には適用だけして、記述にする。
 - 二方向: d で学習 → c に適用(x153_d2c)、c で学習 → d に適用(x153_c2d)。
