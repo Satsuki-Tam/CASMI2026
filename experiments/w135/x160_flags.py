@@ -8,7 +8,7 @@ the v2 workspace (what the model sees), dev and hold. Per query (uid):
   T6 f_score == in_P / (10 + rP) + 0.5 * in_Ewin / (10 + e2_rank) (atol 1e-12) on the F-pool rows; f_rank of the F-pool rows ordered by
      (-f_score, rP, e2_rank, key) is 1 .. min(25, pool) and 26 elsewhere (P-empty queries: all 26).
   T0 every U uid is in Q; a Q uid without U rows must have n_u2 = n_p = n_e25 = f_applied = 0 (empty U2), counted separately.
-  NaN counts per numeric column are reported (not asserted).
+  T7 (Codex 160) every numeric U and Q value is finite (NaN or Inf = failure); an empty-U2 query also has n_b = n_e = 0 and e_empty = 1.
 Usage: python -X utf8 experiments/w135/x160_flags.py --ws C:/kaggle/competitions/casmi-harness-v2"""
 import argparse, glob, os, sys
 import numpy as np, pandas as pd
@@ -25,8 +25,12 @@ def main():
             for u in sorted(set(Q.index) - su):
                 q = Q.loc[u]; n_empty += 1
                 if (int(q.n_u2), int(q.n_p), int(q.n_e25), int(q.f_applied)) != (0, 0, 0, 0): fails.append(f"{sub}/{tag}/{u}: T0 empty U2 with non-zero counts")
-            for c in U.columns:
-                if U[c].dtype.kind == "f": nan[c] = nan.get(c, 0) + int(U[c].isna().sum())
+                if (int(q.n_b), int(q.n_e), int(q.e_empty)) != (0, 0, 1): fails.append(f"{sub}/{tag}/{u}: T7 empty U2 needs n_b = n_e = 0 and e_empty = 1")
+            for D_, nm in ((U, "U"), (Q, "Q")):
+                for c in D_.columns:
+                    if D_[c].dtype.kind in "fiu":
+                        k = int((~np.isfinite(D_[c].astype(float))).sum())
+                        if k: nan[f"{nm}.{c}"] = nan.get(f"{nm}.{c}", 0) + k
             for u, g in U.groupby("uid", sort=False):
                 q = Q.loc[u]; nq += 1; nr += len(g); bad = lambda m: fails.append(f"{sub}/{tag}/{u}: {m}")
                 n_p, n_e, n_e25 = int(q.n_p), int(q.n_e), int(q.n_e25)
@@ -57,7 +61,8 @@ def main():
                     if o.f_rank.tolist() != exp: bad("T6 f_rank order")
                 if (g[g.in_F_pool == 0].f_rank != 26).any(): bad("T6 f_rank outside the pool")
     print(f"X160_FLAGS {'PASS' if not fails else 'FAIL'}: {nq_all} queries in Q (dev + hold) = {nq} with U2 rows ({nr} rows) + {n_empty} with an empty U2; {len(fails)} failures")
-    print("  NaN per float column:", {k: v for k, v in nan.items() if v})
+    if nan: fails.append(f"T7 non-finite values {nan}")
+    print("  non-finite per numeric column (U and Q):", nan or "none")
     for f in fails[:10]: print("  -", f)
     sys.exit(0 if not fails else 1)
 
