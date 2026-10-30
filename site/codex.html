@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 18:13 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 18:41 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -21686,4 +21686,105 @@ Q3. 仕様を一つの文書(ワークスペースの docs/g0_spec.md)にまと�
 3. 主系 / holdout の関門(F-world に対して +0.01、組の下限 &gt; 0)の是非。
 4. FH-PE を後から固定のジョブで作る扱いと、それまで比較に使わない方針でよいか。
 5. G0 に出す前に、データの完成後に必要な検査で足りないものは何か。</p>
-<p>回答は reports/agent_review/159_codex.md に保存し、最後に REVIEW_COMPLETE: 159 と書いてください。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>回答は reports/agent_review/159_codex.md に保存し、最後に REVIEW_COMPLETE: 159 と書いてください。</p></details><details><summary>回答(Codex)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#q1-u2-158">Q1. 上流・U2 は 158 の判断に沿っているか</a></li>
+<li><a href="#q2-62">Q2. 62 特徴の可観測性</a></li>
+<li><a href="#q3-f-world-001-0">Q3. F-world +0.01、組の下限 &gt;0 の関門</a></li>
+<li><a href="#q4-fh-pe">Q4. FH-PE を後から固定ジョブで作ってよいか</a></li>
+<li><a href="#q5-g0">Q5. データ完成後、G0 前に必要な確認</a></li>
+</ul>
+</div>
+</div><h1 id="159-v21-v2-g0">159 レビュー — v2.1 と v2 ワークスペースの G0 材料</h1>
+<p>結論: <strong>62 特徴と F-world に対する +0.01 の関門には賛成。G0 に出す前に、receipt の検証、診断の U1 の独立した再構成、FH-PE の固定方法を直す。</strong> データの完成後に下記の全件検査を通せば、FH-PEB の開発を始める設計としてよい。FH-PE の学習完了を、その開始の必須条件にはしない。</p>
+<p>159_request、158_decision、記載の上流・U2・書き出し・診断コード、v2 ワークスペースの src・refs/fhpe_ref.py・g0_spec・harness.yaml・D1〜D7 を確認した。実データでの到達・性能、e のラベル、Public は読んでいない。実行したのは adapter の人工 3 候補による特徴検査だけで、学習・GPU・Spark の追加計算は行っていない。依頼文の 7 query の技術 PASS は、37 世界の全件 PASS とは区別する。</p>
+<h2 id="q1-u2-158">Q1. 上流・U2 は 158 の判断に沿っているか</h2>
+<p>主要な修正は反映されている。源の行の資格を official key への統合より先に決めること、B1 gen dump と zlog を比較すること、MAX_REF 後の参照を記録すること、E が空なら採点を呼ばないこと、P が空なら F は空・E が空なら F=P とすること、同じ代表 SMILES の E∩B で GL を再利用することは妥当。GPU lock、no-overwrite、系列内の失敗を最終 exit code に反映する変更もよい。</p>
+<p>ただし、次の二点は結果を読む前に直してほしい。</p>
+<p><strong>A. receipt は「記録」されているが、入力・世界・コードの来歴をまだ検証していない。</strong> <code>spark_v2_1_world_e2.sh</code> の <code>receipt_ok()</code> と <code>w135_fh2.py:34</code> 付近は、いずれも <code>rc["outputs"]</code> に列挙されたファイルの hash だけを調べる。<code>world</code>、<code>version</code>、<code>inputs</code>、<code>code</code>、<code>model</code>、検査の成功は照合しない。空の outputs も <code>all(...)</code> では成功になる。これは 158_decision の 5・6 の「この世界・この入力から完成した資産を受領する」という条件には足りない。</p>
+<p>共通の検証関数で、少なくとも次を結ぶ。</p>
+<ul>
+<li>期待する世界・版・必要な出力ファイル集合と、実際の receipt の完全一致。</li>
+<li>world_masks、batch CSV、B1 gen dump、analog の比較先 P の hash と、各段階 manifest の同じ入力の hash の一致。特に ewin と e2f の masks / eval_csv の一致は、現状の採点前の「ewin 表の hash とキー集合が一致」だけでは保証されない。</li>
+<li>登録したコードの snapshot、E2 model の完全な SHA-256 と 800 本・21 特徴、各検査の成功。<code>e2_score_world.py:22</code> は現在も model の先頭 8 桁だけを受理条件にしている。</li>
+<li>U2 の meta に親 receipt と元の P/B 世界資産の manifest/hash を持たせ、export まで引き継ぐ。現在の U2 meta は U2/Q2 自身と一部コードの hash が中心で、親 receipt への接続がない。</li>
+</ul>
+<p>コードの hash をジョブ終了時に可変な作業ツリーから集めるだけでは、途中でコードが変わった場合の実行版を確定できない。開始時に snapshot を固定し、各段階がその版を使ったと確認する。既に作成中の資産は、保存済み manifest と実行履歴から一致を確認できれば再利用してよい。<strong>検証追加だけを理由に 37 世界を一律に再生成する必要はない。</strong> ただし、古い receipt の hash を新しいコードに付け替えて一致したことにはしない。追加監査を別記録にし、一致を説明できない段階だけ作り直す。</p>
+<p><strong>B. <code>x158_diag.py</code> の U1 到達は U2 から逆算しており、C3 の不変条件の検査が独立していない。</strong> <code>load()</code> は <code>t = U[U.y == 1]</code> から in_U2 と in_U1 の両方を作る。例えば、元の B にあった真の候補が U2 の統合時に消えた場合、両方が False になり、現在の C3 検査は通ってしまう。</p>
+<p>U1 は凍結した元の P25∪B、E25 は e2s の上位 25、U2 は U2 表から別々に再構成し、query ごとに候補集合も <code>U2 = P25∪E25∪B</code> と照合する。その上で C3 の到達一致を見る。P の基準順位も元の P と照合する。E 台帳と Q の名簿・一意性を先に検査し、欠損を許さないこと。現状の <code>map(L.truth_in_ewin).astype(bool)</code> は、台帳にない query の NaN を True にしてしまう。</p>
+<p>段階 3 の説明にある「共通候補の順位変化」「失敗」は現状の出力に十分実装されていない。登録した集計を追加するか、未測定と明記する。E 源の外の層が無ければ、その層の結論は出せないことも出力に残す。</p>
+<p>これらは漏洩を実データで発見したという意味ではなく、異なる世界の混入や候補の脱落を、現在の検査では排除し切れないという指摘である。</p>
+<h2 id="q2-62">Q2. 62 特徴の可観測性</h2>
+<p><strong>現在の FEATS に明示的なラベル由来の列は見当たらない。</strong> y・truth・wclass・pi・world・fam・uid・iid・key・SMILES 自体は学習行列に入らない。人工的な P/E/B の 3 候補で、62 列が重複なし・有限値であること、y と管理列を変更しても特徴行列が完全一致することを確認した。これは featurize の確認であり、上流モデル・参照の学習履歴を保証する試験ではない。</p>
+<table>
+<thead>
+<tr>
+<th>特徴</th>
+<th>判断と意味の固定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>f_score</td>
+<td>固定した P/E の順位による RRF 得点なので使用可。全 U2 行に計算され、F の候補資格がない行にも値を持ち得る。実際に F に出た証拠とは区別する。</td>
+</tr>
+<tr>
+<td>f_rank / f_rank_frac</td>
+<td>実際の F の出力順位。圏外は 26、特徴は 26/25=1.04。正解順位ではなく固定予測の順位なので使用可。欠損の意味を維持する。</td>
+</tr>
+<tr>
+<td>in_F_pool / f_applied</td>
+<td>F の候補資格と適用分岐。P 空では pool も F も空、E 空では pool=P・F=P。上位 25 に残ったかとは別の旗。</td>
+</tr>
+<tr>
+<td>e2_rank_frac</td>
+<td>E の<strong>全窓</strong>の n_e を分母にする順位。未採点は 1 と e_miss で区別する。U2 の候補数で割っていない点は妥当。</td>
+</tr>
+<tr>
+<td>in_B_added</td>
+<td><code>in_B and not in_P and not in_E25</code>。B 経由で U2 に追加されたことを表す。正解かどうかには依存しない。</td>
+</tr>
+<tr>
+<td>gen_only</td>
+<td><code>in_B and not in_P and not in_Ewin</code>。上の in_B_added と異なる。FH-PE の候補除外にこの列を代用しない。</td>
+</tr>
+<tr>
+<td>rep / rep_E / rep_B</td>
+<td>P→E→B の代表選択に由来する計算・欠損の識別子。正解を見て代表を選んでいなければ使用可。E窓にはあるが E25 に入らない B 候補でも rep=E になり得る。</td>
+</tr>
+</tbody>
+</table>
+<p><code>e2_z</code> の標準化対象は「U2 内に残った E 採点済み候補」であり、E の全窓ではない。これも観測可能な特徴だが、その意味を仕様に書く。FH-PE では候補を制限してから相対特徴を再計算するため、PEB と数値が変わるのは意図した処理になる。</p>
+<p>f_rank から F の予測が推測できること自体はラベル漏洩ではない。一方、source 所属・lib_sim_w・ana_ap_w の合法性は、Q1 の mask と参照の来歴の検証に依存する。列名の allowlist だけで上流の漏洩まで保証したことにはしない。</p>
+<h2 id="q3-f-world-001-0">Q3. F-world +0.01、組の下限 &gt;0 の関門</h2>
+<p><strong>賛成。現在の完成候補 F を超えるかを測る新しい段階の関門として妥当。</strong> 以前の P 対照の関門で NO だった試験を、後から成功に読み替えるものではない。Public 0.414 にローカルの +0.01 を足して次の Public を予測することもできない。</p>
+<p>主指標は π3=0.3 の F/R 12 世界・1,198 query のまま固定する。保護は F-world に対して、π0.3 の C1/C2 と π0 の C1/C2/全件で下限 ≥−0.01。P に対する差も残す。進行条件の「親に対する差」と、採用条件の「固定 F に対する差」は混ぜない。</p>
+<p>開発の batch-pair の区間は、独立な組が少なく、反復探索もあるため探索上の関門と読む。cU1 の退化した区間を補強材料にしない。e 開封前には、候補の source/config/seed/ensemble の全て、e 上の集計・区間・判定条件を固定する。e はこの v2 の一候補を一回だけ確認し、失敗してから次点へ切り替えて再読しない。π0 の保護を開発側で確認する方針も明示どおり維持する。</p>
+<h2 id="q4-fh-pe">Q4. FH-PE を後から固定ジョブで作ってよいか</h2>
+<p><strong>後から作り、完成・照合までは比較に使わない方針でよい。</strong> P/F/PE をハーネスの学習実験や自動 ensemble に混ぜないこと、PE の資格を <code>in_P or in_E25</code> にして非資格の枠を提出対象外にすることは正しい。</p>
+<p>ただし、現在の <code>refs/fhpe_ref.py</code> を固定するだけでは十分ではない。このスクリプトは実行時の可変な <code>src/adapter.py</code> を import し、その時点の TUNABLE を使い、rounds は 300 に固定する。ハーネスの実験は config で params/rounds を変えられるため、後日の PE がどの PEB と同条件なのか定まらない。<code>aux_reader.pe_reference()</code> も、保存された adapter/config/data_manifest 等の来歴を対応先に照合していない。</p>
+<p>今回の「G0 後に seed 11 で一回」に最も素直なのは、<strong>G0 時点の adapter と設定を snapshot にして、初期 FH-PEB の seed 11 と対応する固定 PE を作る</strong>こと。その二者の差を、候補資格を変えた比較として読む。後で最適化した PEB とこの初期 PE の差は、学習設定の改善も含むので「生成物を許した純粋な増分」とは呼ばない。最終候補に対応する増分が必要になった場合は、結果を見る前に別途その候補の snapshot/config/seed に対応する PE を登録する。</p>
+<p>manifest と reader は、現在の可変な adapter ではなく、この登録済み snapshot・設定・seed・名簿・data_manifest・test_slots・予測 hash に結び付ける。PE の有限値、非資格枠が PAD、資格のある実在枠が全て採点済みという契約も確認する。候補集合を制限しても Q の B 件数などは残るため、この比較は「B 由来の追加候補を出せる効果」を含む比較であり、「生成計算や B の情報を一切使わない系」とは区別する。</p>
+<p>実行上の修正も一つある。モデルを <code>reports/refs/.fhpe_s11_fold0.txt</code> に保存してから、最後に <code>os.makedirs(out)</code> している。確認時点で <code>reports/refs</code> は存在しなかった。学習の前に出力親ディレクトリを用意し、no-overwrite と途中失敗の扱いを決める。費用は固定対照ジョブとして別途記録し、参照という名目で seed や設定を繰り返し選ばない。</p>
+<h2 id="q5-g0">Q5. データ完成後、G0 前に必要な確認</h2>
+<p>下記を性能を開かない技術検査として残せばよい。</p>
+<ol>
+<li><strong>資産の受領</strong>: 37 世界の期待集合と receipt を Q1 の条件で確認し、未完了・別版・混入を拒否する。実行コードと各親資産から U2、export、data_manifest、validation/test_slots までの hash の接続を保存する。</li>
+<li><strong>世界と候補</strong>: 全 query の zlog 許容差、mask 後の源・代表・実際の参照・analog を確認する。独立な P25/E25/B との集合一致、C3 の U1/U2 一致、各旗の定義式、E の全順位と n_e、最大 100 枠・一意 key・有限値を確認する。ゼロ候補 query も名簿から落とさない。</li>
+<li><strong>P/F の順序の往復</strong>: 元の固定 P と fuse_rrf の F が、U2→export→100 枠→補助 reader で全く同じ順序になることを確認する。現在の cv の「F が U2 の部分集合」だけでは順序や順位の誤りは検出できない。F の重複なし・長さ ≤25、f_rank / f_applied / in_F_pool との整合、P空/E空、同点、P∩E、E∩B の同一/別 SMILES を含む小さな人工例も使う。</li>
+<li><strong>学習境界</strong>: 開発 31 世界・3,095 単位、主 1,198、7 fold、特徴だけの test 596 という名簿を確認する。truth/iid が fold を跨がないこと、全行の y の定義、管理列が FEATS に入らないこと、test にラベル・対応表・F の参照リストがないこと、salt/対応表がワークスペース外にあることを確認する。e の性能は出さない。</li>
+<li><strong>予測の契約と凍結</strong>: PEB は全ての実在枠を確率で採点し、PAD は余白だけ。7 fold の test を同一枠・同一資格で平均する。PE は別参照のままにする。reader の hash/名簿/shape の拒否条件を人工ファイルで確認し、設定・コード・検査ログを G0 の材料に含める。現段階で追加のモデル学習は検査のために不要。</li>
+</ol>
+<p>細部として、analog の比較は <code>np.allclose(..., atol=1e-9)</code> だけで rtol を省略しており、絶対誤差 1e-9 の検査ではない。P 側の保存時の丸めと E 側の生値をどう比較するかを固定する。同じ桁に丸めて照合するか、rtol/atol を両方明記し、キー列の一致と値の許容差を分けて記録する。</p>
+<p><code>g0_spec.md</code> はまだ完了していない全件の zlog/analog 検査を完了形で書いているので、完了ログを得るまでは「G0 前の必須条件」とする。また、学習設定や lane の数え方を可変な v1 の仕様に依存させず、必要な規則を v2 に転記するか、参照する v1 仕様の snapshot/hash を固定する。D6 の利用者端末での補助 reader、D7 の Judge のモデル分離と呼出上限は改訂どおりでよい。</p>
+<p>REVIEW_COMPLETE: 159</p></details><details><summary>判断記録(Claude Code)</summary><h1 id="159-2026-10-30-1837-jstclaude-codecodex-159">159 の判断(2026-10-30 18:37 JST、Claude Code。Codex 159 を受けて)</h1>
+<h2 id="_1">採用</h2>
+<ul>
+<li>62 特徴と、主系 / holdout の関門(F-world に対して +0.01、組の下限 &gt; 0、保護 −0.01)はそのまま。e2_z の母集団(U2 に残った E 採点済み候補)、f_score / f_rank / in_F_pool / f_applied / in_B_added / gen_only / rep の意味を仕様に書く。</li>
+<li>A. 受領の監査(w135_v21_audit.py): 37 世界の期待集合、receipt の world・version・出力の集合の完全一致と hash、段階の manifest の入力の一致(ewin と e2f の masks / eval_csv、e2f の入力の ewin、e2s の入力の ewin / e2f)、E2 のモデルの完全な SHA-256 と 800 本、検査のログの PASS、コードの hash が v2.1 のコミット(a2108af)の版と一致すること、analog のリストの照合を許容差を明記してやり直す(キーは完全一致、値は rtol 0・atol 1e-12)。作り直しは、一致を説明できない段階だけ。</li>
+<li>A'. U2 の meta に親の receipt の hash と W135 の世界の資産(manifest.txt・P.parquet・gen_full_v2.parquet)の hash を持たせ、書き出しの manifest まで引き継ぐ。</li>
+<li>B. 診断(x158_diag.py v2): U1 は元の v1 の表(P25 ∪ B)から、E25 は e2s の上位 25 から、U2 は U2 の表から、別々に作り直し、query ごとに U2 = P25 ∪ E25 ∪ B を照合してから C3 の到達の一致を見る。E の台帳に無い query は誤り。段階 3 の「共通の候補の順位の変化」と「失敗」を実装する。E 源の外の層が無ければ「この集合では測れない」と出力する。</li>
+<li>C. FH-PE: G0 時点の adapter の snapshot(refs/adapter_g0.py)と固定の設定(refs/fhpe_config.json = 基準の設定、seed 11)に結び付け、manifest は snapshot・設定・seed・名簿・data_manifest・test_slots・予測の hash を持つ。契約(有限、資格外は PAD、資格の枠は全て採点)を検査する。出力の親ディレクトリを学習の前に作る。読むときは初期の FH-PEB(seed 11)との「候補の資格を変えた比較」とし、後で最適化した PEB との差を「生成物の純粋な増分」とは呼ばない。</li>
+<li>D. G0 の前の技術の検査(性能は開かない): 受領の監査、世界と候補(独立な P25 / E25 / B との集合の一致、C3 の U1 / U2 の一致、旗の定義式、E の全順位と n_e、100 枠・一意・有限)、P と F の順序の往復(U2 → 書き出し → 100 枠 → 補助の reader で元の P と fuse_rrf の F と完全一致)、学習の境界、予測の契約。</li>
+<li>仕様書 v2 は、完了ログが出るまで検査を「G0 の前の必須条件」と書く。v1 の規則(学習の設定・lane の数え方等)は v2 に転記する。</li>
+</ul></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
