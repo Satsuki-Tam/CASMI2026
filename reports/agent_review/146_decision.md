@@ -52,7 +52,7 @@
 
 REVIEW_COMPLETE は Codex の回答側の印。この記録は、Claude Code の判断である。
 
-## 追記 11:4x: 探索の分解(x146_slot_decomp.md。登録ではなく、F の選び直しには使わない)
+## 追記 11:39(git cf07f4d の時刻): 探索の分解(x146_slot_decomp.md。登録ではなく、F の選び直しには使わない)
 F − P を四つに分けた。Fpe − P は候補源の重み付け、Fc1 − Fpe は共通の候補での E2 の順位、Fc2 − Fc1 は全窓の順位の尺度、F − Fc2 は E2 にしか無い候補の追加である。
 
 | 層 | F − P | Fpe − P | Fc1 − Fpe | Fc2 − Fc1 | F − Fc2 | 位置保存 Fpp − P |
