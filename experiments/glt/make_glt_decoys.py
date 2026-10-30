@@ -1,6 +1,6 @@
 """141 (A3, GL discrimination objective) step 1, CPU: same-formula candidate decoys for the TRAIN spectra of data/glt/tims_s1 -- no model output.
-For each train identity (official key of its SMILES): structures of the candidate stores (PubChem tier, v2 pool, COCONUT store) within +-2 mDa
-of the truth's exact neutral mass whose neutral formula (wf_common.neutral_formula) equals the truth's, de-duplicated by official key;
+For each train identity (official key of its SMILES): structures of the candidate stores (PubChem tier, v2 pool, COCONUT store) within +-0.2 mDa
+(v2: +-0.2 mDa; v1 used 2 mDa and was stopped unfinished) of the truth's exact neutral mass whose neutral formula (wf_common.neutral_formula) equals the truth's, de-duplicated by official key;
 excluded: the truth's official key, its tautomer-alias raw keys, every key of its identity group; and -- negatives count as TRAINING
 EXPOSURE (Codex 141) -- every structure that is an identity of folds 0 / 1 / 2 or of the panel (official key or raw key in
 identity_folds/structures.parquet with fold_identity in {0, 1, 2}, or a panel key), so that no current or future evaluation identity
@@ -45,7 +45,7 @@ tbuf = np.load(os.path.join(ROOT, "data/external/pubchem_tier/pc_smiles.npy"), m
 pool = pl.read_parquet(os.path.join(ROOT, "data/external/v2_pool/pool_meta.parquet")).select("smiles", "mass"); po = np.argsort(pool["mass"].to_numpy(), kind="stable")
 pmass = pool["mass"].to_numpy()[po]; psmi = pool["smiles"].to_numpy()[po]
 cmeta = pickle.load(open(os.path.join(ROOT, "data/external/coconut/coco_meta.pkl"), "rb")); cmass = np.load(os.path.join(ROOT, "data/external/coconut/coco_mass.npy")); csmi = np.asarray(cmeta["smiles"])   # our own COCONUT prep file
-def window(M, tol=0.002):
+def window(M, tol=0.0002):   # v2: same-formula isomers share the exact mass; +-0.2 mDa keeps them (stored-mass rounding) and avoids scanning ~10^4 other structures
     out = set(); lo = int(np.searchsorted(tmass, M - tol, "left")); hi = int(np.searchsorted(tmass, M + tol, "right"))
     if hi > lo:
         o = np.asarray(toff[lo:hi + 1]).astype(np.int64); raw = bytes(tbuf[o[0]:o[-1]]); base = o[0]
@@ -75,8 +75,9 @@ def job(r):   # one identity (fork: the stores and exclusion sets are shared)
 from multiprocessing import Pool
 rows, n_none = [], 0
 with Pool(12) as pool_:
-    for ik, rr in pool_.imap_unordered(job, list(ids.itertuples(index=False, name=None)), chunksize=4):
+    for i_, (ik, rr) in enumerate(pool_.imap_unordered(job, list(ids.itertuples(index=False, name=None)), chunksize=4)):
         rows += rr; n_none += int(not rr)
+        if (i_ + 1) % 100 == 0: print(f"{i_ + 1}/{len(ids)} identities, {len(rows)} rows ({time.time() - t0:.0f}s)", flush=True)
 rows.sort(key=lambda d: (d["identity"], d["rank"]))
 R = pd.DataFrame(rows); R.to_parquet(os.path.join(OUT, "cands.parquet"), index=False)
 stats.update(identities_with_candidates=int(R.identity.nunique()) if len(R) else 0, identities_without=n_none, rows=len(R), median_same_formula=float(R.groupby("identity").n_same_formula.first().median()) if len(R) else 0.0,
