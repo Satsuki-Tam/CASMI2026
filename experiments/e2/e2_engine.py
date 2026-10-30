@@ -137,3 +137,19 @@ class E2Engine:
         if E is None or not len(E): return []
         X = view_frame(E, F, "c1"); R = rank_lists(X, self.booster.predict(X[FEATS]))
         return R.official_key.astype(str).tolist()
+
+
+FUSE_K = 10.0
+
+
+def fuse_rrf(p, e_rank, e_top, w):
+    """F of 144 (identical to e2_eval.rrf): candidates P top 25 | E2 top 25, s = 1/(10 + r_P) + w/(10 + r_E); w = 0 -> P exactly."""
+    pr = {k: i + 1 for i, k in enumerate(p)}; cand = list(dict.fromkeys(list(p) + (list(e_top) if w else [])))
+    s = lambda k: (1.0 / (FUSE_K + pr[k]) if k in pr else 0.0) + (w / (FUSE_K + e_rank[k]) if (w and k in e_rank) else 0.0)
+    return sorted(cand, key=lambda k: (-s(k), pr.get(k, 99), e_rank.get(k, 1e9), k))[:25]
+
+
+def insert2(L, e1):
+    """H of 144 (identical to e2_eval.insert2): E2's top 1 to position 2 unless it is already 1st or 2nd; the first is kept."""
+    if e1 is None or not L or e1 in L[:2]: return L[:25]
+    return ([L[0], e1] + [k for k in L[1:] if k != e1])[:25]
