@@ -58,7 +58,8 @@ def main():
         maps.append(Q[["uid", "world", "molecule", "truth", "wclass", "fam", "batch", "pi"]].assign(iid=[iid_of(m) for m in Q.molecule]))
         if a.part == "dev":
             units.append(Q[["uid", "iid", "batch", "pi", "wclass", "fam", "truth"]]); frefs.append(Q[["uid", "f_applied", "f_top25"]])
-        man["worlds"][w] = dict(source_U2=mt["U2_sha256"], source_Q2=mt["Q2_sha256"])
+        man["worlds"][w] = dict(source_U2=mt["U2_sha256"], source_Q2=mt["Q2_sha256"], source_meta=sha(os.path.join(a.src, f"U2_{w}.meta.json")),
+                                parent_receipt_sha256=mt["parent_receipt_sha256"], world_assets=mt["world_assets"], builder_sha256=mt["script_sha256"])   # 159 A'
     pd.concat(maps, ignore_index=True).to_parquet(os.path.join(a.map_dir, f"map_{a.part}.parquet"), index=False)
     if a.part == "dev":
         pd.concat(units, ignore_index=True).to_parquet(os.path.join(out, "units_dev.parquet"), index=False)

@@ -5,7 +5,7 @@ Writes experiments/w135/x159_expected_pf.json = {world: {molecule: {"P": [...], 
 Usage (Spark, repo root): .venv/bin/python -X utf8 experiments/w135/x159_expected_pf.py"""
 import json, os, sys
 import pandas as pd
-ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")); sys.path.insert(0, os.path.join(ROOT, "experiments/e2"))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")); sys.path.insert(0, os.path.join(ROOT, "experiments/e2")); sys.path.insert(1, os.path.join(ROOT, "experiments/b1_baseline"))
 import e2_engine as E2M
 DEV = [f"{b}_p{p}" for b in ("dF1", "dF2", "dF3", "dR1", "dR2", "dR3") for p in (0, 30, 60)] + [f"{b}_p{p}" for b in ("cF1", "cF2", "cF3", "cR1", "cR2", "cR3") for p in (0, 30)] + ["cU1_p30"]
 out = {}
