@@ -1,0 +1,54 @@
+{
+ "code": {
+  "e2_s2_mist.py": "045ca574d30ed7afa968ce7b3d22b62669583e4eba9573659dcee08e1b997280",
+  "e2_common.py": "3b34d05f1320d66137261f14d06016a4ef6d383833922dbc4e6f5773ff732324",
+  "e2_engine.py": "85a429b692abd2785c256091495b3d159b33fc09b8c8b50acb4194b622fcc905",
+  "e2_train.py": "eca161666135d66db5a3681e4c13b901e635c2aefc329abdfe11a4534d883110",
+  "e2_mist_inputs.py": "e18d3198df7d294bab21e35838e8292f0e4bae55e3685ca84d2e325b3f4ea3cb"
+ },
+ "inputs": {
+  "top149_f3b": "191a005fad713df2c1f864bc2e904ef3b67f86fc8e2deb2d6ef230004f8671ad",
+  "top149_np061f3": "56c5aa6a62dfce98f1dff550c051b2fcc99281d87568dc1ccb8ee82cc74c0ce6",
+  "top149_f4b": "6cd757883ed710edb7708a312e24dbf37e09408b356874903813d180c89aed48",
+  "top149_np061f4": "0a2038b9d07f94db26886894654e49b77a15a5228a09e194fc79b35ab4e41e9a"
+ },
+ "preflight": {
+  "roster_sizes": {
+   "train_pool_f3a": 1000,
+   "train_pool_f3b": 802,
+   "np061_f3pool": 1000,
+   "train_pool_f4a": 1000,
+   "train_pool_f4b": 807,
+   "np061_f4pool": 1000
+  },
+  "msg_overlap": {
+   "train_pool_f3a": 0,
+   "train_pool_f3b": 0,
+   "np061_f3pool": 0,
+   "train_pool_f4a": 0,
+   "train_pool_f4b": 0,
+   "np061_f4pool": 0
+  },
+  "msg_keys": 28895,
+  "p_teacher_rosters": [
+   "experiments/p1_baseline/run1/p1_molecules.csv",
+   "experiments/b1_baseline/eval_set/p1_molecules.csv",
+   "experiments/b1_baseline/eval_c1/p1_molecules.csv",
+   "experiments/b1_baseline/train_pool_f3a/p2_molecules.csv",
+   "experiments/b1_baseline/train_pool_f4a/p2_molecules.csv"
+  ],
+  "p_teacher_overlap": 0,
+  "mist_ckpt_sha256": "9f251d772f68315ba6fe2dc75a3b2e1ec477d3f41ffbeaf5143749157b67b177",
+  "mist_synthetic_structures_overlap": "unverified (mist_msg_aug)",
+  "p_model_sha256": "fe61dc429bd2722363100d7a749f56cf4e4de3606fdce535f31b391c83004fe3"
+ },
+ "seconds": 55,
+ "models": {
+  "fit3_C.txt": "854c774aebfcd646712c234bf125e18be39c9914f58a5e63c73307ef35fe6701",
+  "fit3_Ccov.txt": "368a491e5e537184485329348c0137f46e8b75951dc666549771b64b991eedc1",
+  "fit3_M.txt": "4d361a975e1bf38b29000fd4f5a88992e75c025204d9c2dddd7720dc81c8df22",
+  "fit4_C.txt": "261f03667e0809c75690d6c7b765923c0ff598ba8077eb6b97d410c4923e445b",
+  "fit4_Ccov.txt": "8408a94e3c35fcfd063d87b807f7be57dd49ef3f905c12ebd9ba83db99b81d7e",
+  "fit4_M.txt": "8791cf1987faba31bae5f30654de17b1656ef3fcbc9c125cb727f804cb09593c"
+ }
+}
