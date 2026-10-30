@@ -90,6 +90,7 @@ def main():
             if a.limit: ms = ms.head(a.limit)
             if a.only: ms = ms[ms.molecule.isin(set(a.only.split(",")))]   # technical sample: score only these queries; the masks stay the full batch's
             rows_out, cand_out, ref_cache = [], [], {}
+            zdump = dict(mol=[], zlog=[])
             refs_log = []   # used reference rows of every candidate that is a batch identity (C1 keys or hidden keys): checked by w135_ewin_check.py
             BATCH_KEYS = set(C1_EXCL) | TRAIN_HIDE
             for n_i, r in enumerate(ms.itertuples(index=False)):
@@ -135,6 +136,7 @@ def main():
                     with torch.autocast("cuda", dtype=dtype): z = model(*inp)[0].float().mean(0).cpu().numpy().astype(np.float32)
                     zl = z * len(grp) if zl is None else zl + z * len(grp); wsum += len(grp)
                 zlog = (zl / wsum).astype(np.float32)
+                zdump["mol"].append(str(mid)); zdump["zlog"].append(zlog)   # 156: compared with the B1 world's gen dump (same query semantics)
                 chunks = [smiles[i:i + 400] for i in range(0, len(smiles), 400)]
                 res = wp.map(BF._feat, [(c, zlog) for c in chunks]) if chunks else []
                 raw_keys = [k for rr in res for k in rr[0]]; fp = np.concatenate([rr[1] for rr in res]) if res else np.zeros(0, np.float32)
@@ -206,6 +208,7 @@ def main():
                 if (n_i + 1) % 25 == 0 or n_i == len(ms) - 1:
                     d_ = pd.DataFrame(rows_out); print(f"  {set_name} {n_i+1}/{len(ms)} | E window median {d_.n_e.median():.0f} | {d_.seconds.mean():.1f}s/mol ({time.time()-t0:.0f}s)", flush=True)
             json.dump(refs_log, open(f"{a.out}/ewin_refs_{set_name}.json", "w"))
+            np.savez(f"{a.out}/ewin_zlog_{set_name}.npz", mol=np.array(zdump["mol"]), zlog=np.stack(zdump["zlog"]) if zdump["zlog"] else np.zeros((0, 1), np.float32))
             pd.DataFrame(rows_out).to_csv(f"{a.out}/ewin_molecules_{set_name}.csv", index=False); pd.DataFrame(cand_out).to_parquet(f"{a.out}/ewin_{set_name}.parquet", index=False)
             man["sets"][set_name] = dict(molecules=len(rows_out), rows=len(cand_out)); print(f"saved {set_name}: {len(rows_out)} molecules, {len(cand_out)} rows ({time.time()-t0:.0f}s)", flush=True)
     man["seconds"] = round(time.time() - t0); json.dump(man, open(f"{a.out}/ewin_manifest.json", "w"), indent=1); print(f"done {time.time()-t0:.0f}s")
