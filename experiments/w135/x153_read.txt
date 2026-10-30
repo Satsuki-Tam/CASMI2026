@@ -1,0 +1,33 @@
+## d2c (train design -> test confirm)
+PRIMARY gen - P (pi 0.3, all): +0.0097 [+0.0037, +0.0165] (n 598)
+  auxiliary family bootstrap: +0.0097 [+0.0020, +0.0172] (n 598)
+protection C1 @ pi0.3: +0.0062 [+0.0005, +0.0106] (n 175) -> ok
+protection C2 @ pi0.3: +0.0035 [-0.0115, +0.0236] (n 243) -> FAIL
+protection C1 @ pi0: +0.0024 [+0.0006, +0.0075] (n 257) -> ok
+protection C2 @ pi0: +0.0020 [-0.0123, +0.0206] (n 341) -> FAIL
+protection all @ pi0: +0.0022 [-0.0058, +0.0116] (n 598) -> ok
+gate (d2c): NO
+gen - db (pi 0.3, all): +0.0045 [-0.0001, +0.0074] (n 598) | db - P (pi 0.3, all): +0.0052 [-0.0036, +0.0166] (n 598)
+  pi0.3 C1 (n 175): P 0.6888 db 0.6895 gen 0.6950
+  pi0.3 C2 (n 243): P 0.5617 db 0.5741 gen 0.5652
+  pi0.3 C3 (n 180): P 0.0000 db 0.0000 gen 0.0216
+cU1_p30 (separate): gen - P -0.0045 [-0.0045, -0.0045] (n 99)
+  C3 (pi0.3): n 180, truth in gen top-25 35, at rank 1 0, mean RR | in top-25 0.111
+  P rank-1 correct (pi0.3): n 218, gen keeps rank 1 212, db keeps 213
+## c2d (train confirm -> test design)
+PRIMARY gen - P (pi 0.3, all): +0.0129 [+0.0030, +0.0272] (n 600)
+  auxiliary family bootstrap: +0.0129 [+0.0031, +0.0227] (n 600)
+protection C1 @ pi0.3: +0.0040 [-0.0191, +0.0351] (n 160) -> FAIL
+protection C2 @ pi0.3: +0.0084 [+0.0016, +0.0142] (n 260) -> ok
+protection C1 @ pi0: +0.0073 [-0.0059, +0.0263] (n 227) -> ok
+protection C2 @ pi0: +0.0059 [-0.0057, +0.0123] (n 373) -> ok
+protection all @ pi0: +0.0064 [-0.0027, +0.0160] (n 600) -> ok
+gate (c2d): NO
+gen - db (pi 0.3, all): +0.0083 [+0.0018, +0.0169] (n 600) | db - P (pi 0.3, all): +0.0047 [+0.0011, +0.0103] (n 600)
+  pi0.3 C1 (n 160): P 0.7244 db 0.7265 gen 0.7284
+  pi0.3 C2 (n 260): P 0.5655 db 0.5750 gen 0.5739
+  pi0.3 C3 (n 180): P 0.0000 db 0.0000 gen 0.0274
+pi 0.6 worlds (sensitivity, real worlds): gen - P +0.0197 [+0.0117, +0.0299] (n 600)
+  C3 (pi0.3): n 180, truth in gen top-25 34, at rank 1 0, mean RR | in top-25 0.145
+  P rank-1 correct (pi0.3): n 220, gen keeps rank 1 213, db keeps 212
+GATE (both directions): NO
