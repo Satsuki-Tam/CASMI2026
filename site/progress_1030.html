@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 20:01 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 20:02 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-22400140">1. 22:40〜01:40 のまとめ</a></li>
@@ -27,6 +27,7 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#6-12561431-149-codex-152-discussion">6. 12:56〜14:31 149 の結果、Codex 152 への依頼、discussion の再確認</a></li>
 <li><a href="#7-14311519-codex-152-153fh-v0no">7. 14:31〜15:19 Codex 152 / 153、FH v0(NO)、ハーネスの導入</a></li>
 <li><a href="#8-19201935-v2-g0">8. 19:20〜19:35 v2 の G0 の前の必須条件の完了と、登録した診断</a></li>
+<li><a href="#9-19352003-codex-160v2-g0">9. 19:35〜20:03 Codex 160、v2 の G0、基準の開始</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-30claude-code-date-git">進捗 2026-10-30(夜間、Claude Code)— 時刻は date / git の記録から</h1>
@@ -199,4 +200,12 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><strong>登録した診断(d / c だけ)</strong>: U2 の追加の到達は主(π0.3、1,198)で <strong>+0.009</strong>(U2 0.652 対 U1 0.643)。4 つの組の世界で <strong>P 0.4540 → F-world 0.4723(+0.018)</strong>。これは Public の +0.020 とほぼ同じで、W135 の世界が順位の変化の向きと大きさを再現している。E2 の効果は到達ではなく、共通の候補の並べ替え(新しい 1 位 14 対 失った 1 位 3)から来ている。</li>
 <li>本質的な余地: 候補の中の順位(U2 の到達 0.652 に対し F の MRR 0.472)と、C3(30%、P も F も 0、生成物 B の到達 0.225)。</li>
 <li>Codex 160 に完了の点検と診断の読みを依頼(19:34)。次は指摘の反映 → v1 / v2 の G0 を利用者に依頼。</li>
+</ul>
+<h2 id="9-19352003-codex-160v2-g0">9. 19:35〜20:03 Codex 160、v2 の G0、基準の開始</h2>
+<ul>
+<li><strong>Codex 160</strong>: 159 の主な指摘は解消。G0 の前の残件は e の 6 世界の正解を使わない照合だけ → x160_echeck.py で <strong>596 / 596 PASS</strong>(正解・クラス・家族の列は読み込まない)。非有限値の検査(U / Q、NaN と Inf)を失敗の条件に → PASS。仕様書 §14 に追記(固定の前)。</li>
+<li>Codex の訂正を採用: 「余地 0.18」とクラス別の余地は、1,198 query の到達と 398 query の MRR を混ぜた計算だったので撤回。基準の読みで同じ集合の上で出す。C3 だけの上限は (360 / 1,198) × 0.225 = 0.068(楽観)で、+0.086 を C3 だけには期待できない。</li>
+<li>指摘はハーネスの codex-integration-v1 の 3 分類(correctness / scientific_uncertainty / suggestion)で扱い、correctness だけを固定の前に処理した。科学的な不確実性は、検査を足さずに実験で決める(continuous-improvement の注意)。</li>
+<li><strong>G0</strong>: 利用者がチャットで承認し、それを G0 の証人として扱うよう指示 → 逸脱 D8 を固定の前に記録し、Claude Code が <code>tools/human.py G0</code> を実行(20:01、固定 164 ファイル)。</li>
+<li>基準 FH-PEB(seed 11 / 12 / 13)を開始(exploit 3 / 6、48 時間の窓)。</li>
 </ul></article><p class='small muted'>原文: <code>docs/progress_2026-10-30.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
