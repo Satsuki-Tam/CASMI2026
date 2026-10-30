@@ -1,0 +1,265 @@
+{
+ "fold": 0,
+ "tag": "e",
+ "seed": 135,
+ "N": 100,
+ "fam_cap": 8,
+ "family_rule": "Butina 0.5 Morgan r2 2048 (census fam50)",
+ "counts": {
+  "population": 1731,
+  "with_query_library": 1723
+ },
+ "checks": {
+  "no_identity_overlap": true,
+  "one_per_group": true,
+  "families_disjoint": true
+ },
+ "batches": {
+  "eF1": {
+   "kind": "family",
+   "n": 100,
+   "classes": {
+    "p0": {
+     "C1": 37,
+     "C2": 63,
+     "C3": 0
+    },
+    "p30": {
+     "C1": 28,
+     "C2": 42,
+     "C3": 30
+    },
+    "p60": {
+     "C1": 18,
+     "C2": 22,
+     "C3": 60
+    }
+   },
+   "n_families": 34,
+   "fam_ge2_in_batch": 34,
+   "used": 94,
+   "pol": {
+    "mix": 18,
+    "neg": 20,
+    "pos": 62
+   },
+   "band": {
+    "300-500": 29,
+    "500-800": 32,
+    "<300": 22,
+    ">=800": 17
+   },
+   "c1_eligible": 37
+  },
+  "eF2": {
+   "kind": "family",
+   "n": 99,
+   "classes": {
+    "p0": {
+     "C1": 34,
+     "C2": 65,
+     "C3": 0
+    },
+    "p30": {
+     "C1": 26,
+     "C2": 43,
+     "C3": 30
+    },
+    "p60": {
+     "C1": 15,
+     "C2": 25,
+     "C3": 59
+    }
+   },
+   "n_families": 29,
+   "fam_ge2_in_batch": 29,
+   "used": 97,
+   "pol": {
+    "mix": 18,
+    "neg": 33,
+    "pos": 48
+   },
+   "band": {
+    "300-500": 47,
+    "500-800": 20,
+    "<300": 18,
+    ">=800": 14
+   },
+   "c1_eligible": 34
+  },
+  "eF3": {
+   "kind": "family",
+   "n": 99,
+   "classes": {
+    "p0": {
+     "C1": 24,
+     "C2": 75,
+     "C3": 0
+    },
+    "p30": {
+     "C1": 15,
+     "C2": 54,
+     "C3": 30
+    },
+    "p60": {
+     "C1": 7,
+     "C2": 33,
+     "C3": 59
+    }
+   },
+   "n_families": 28,
+   "fam_ge2_in_batch": 28,
+   "used": 99,
+   "pol": {
+    "mix": 14,
+    "neg": 39,
+    "pos": 46
+   },
+   "band": {
+    "300-500": 47,
+    "500-800": 11,
+    "<300": 30,
+    ">=800": 11
+   },
+   "c1_eligible": 24
+  },
+  "eR1": {
+   "kind": "random",
+   "matched_to": "eF1",
+   "match_levels": {
+    "0": 100,
+    "1": 0,
+    "2": 0
+   },
+   "n": 100,
+   "classes": {
+    "p0": {
+     "C1": 35,
+     "C2": 65,
+     "C3": 0
+    },
+    "p30": {
+     "C1": 25,
+     "C2": 45,
+     "C3": 30
+    },
+    "p60": {
+     "C1": 18,
+     "C2": 22,
+     "C3": 60
+    }
+   },
+   "n_families": 84,
+   "fam_ge2_in_batch": 4,
+   "used": 96,
+   "pol": {
+    "mix": 18,
+    "neg": 20,
+    "pos": 62
+   },
+   "band": {
+    "300-500": 29,
+    "500-800": 32,
+    "<300": 22,
+    ">=800": 17
+   },
+   "c1_eligible": 35
+  },
+  "eR2": {
+   "kind": "random",
+   "matched_to": "eF2",
+   "match_levels": {
+    "0": 95,
+    "1": 4,
+    "2": 0
+   },
+   "n": 99,
+   "classes": {
+    "p0": {
+     "C1": 32,
+     "C2": 67,
+     "C3": 0
+    },
+    "p30": {
+     "C1": 24,
+     "C2": 45,
+     "C3": 30
+    },
+    "p60": {
+     "C1": 12,
+     "C2": 28,
+     "C3": 59
+    }
+   },
+   "n_families": 94,
+   "fam_ge2_in_batch": 3,
+   "used": 99,
+   "pol": {
+    "mix": 18,
+    "neg": 33,
+    "pos": 48
+   },
+   "band": {
+    "300-500": 47,
+    "500-800": 20,
+    "<300": 18,
+    ">=800": 14
+   },
+   "c1_eligible": 32
+  },
+  "eR3": {
+   "kind": "random",
+   "matched_to": "eF3",
+   "match_levels": {
+    "0": 91,
+    "1": 8,
+    "2": 0
+   },
+   "n": 99,
+   "classes": {
+    "p0": {
+     "C1": 28,
+     "C2": 71,
+     "C3": 0
+    },
+    "p30": {
+     "C1": 22,
+     "C2": 47,
+     "C3": 30
+    },
+    "p60": {
+     "C1": 13,
+     "C2": 27,
+     "C3": 59
+    }
+   },
+   "n_families": 93,
+   "fam_ge2_in_batch": 5,
+   "used": 98,
+   "pol": {
+    "mix": 14,
+    "neg": 39,
+    "pos": 46
+   },
+   "band": {
+    "300-500": 47,
+    "500-800": 11,
+    "<300": 30,
+    ">=800": 11
+   },
+   "c1_eligible": 28
+  }
+ },
+ "inputs_sha256": {
+  "population": "27fcad28c619aa041557443f8c32ad975b6378f3d5e6264e6f10bafab3a02960",
+  "script": "6d60bf84a3c30e5e84bff9879b06287353964d109202234efca9f7274eabf5ae",
+  "spec_meta": "460b910f175e4840c3e145c61e6c6bc2e89116ef1b111ad5493b2e016af9548d"
+ },
+ "exclude": [
+  "experiments/w135/batches/excl_teachers_fold0.csv"
+ ],
+ "exclude_sha256": {
+  "experiments/w135/batches/excl_teachers_fold0.csv": "34afb53934f5ef85618f0d84eb731062eff7c5a81057e4c450c7faf22199b17e"
+ },
+ "start": 1
+}

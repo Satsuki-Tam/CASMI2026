@@ -7,7 +7,7 @@
 set -u
 cd ~/CASMI2026 || exit 1
 BATCH=$1; PI=$2; W=experiments/w135/worlds/${BATCH}_p${PI}; PY=$HOME/CASMI2026/.venv/bin/python; PYI=.venv-ice/bin/python
-case $BATCH in d*) FS=data/external/fpnet_fold1_as_fold0;; c*) FS=data/external/fpnet_fold2_as_fold0;; *) echo "unknown batch $BATCH"; exit 1;; esac
+case $BATCH in d*) FS=data/external/fpnet_fold1_as_fold0;; c*) FS=data/external/fpnet_fold2_as_fold0;; e*) FS=data/external/fold_safe_fpnet;; *) echo "unknown batch $BATCH"; exit 1;; esac   # e* = fold 0 (fold_safe_fpnet/fpnet_fold0.pt excludes fold 0)
 export PYTHONUTF8=1
 fail() { echo "W135_WORLD_FAIL $BATCH p$PI $* $(date '+%F %T')" | tee -a experiments/w135/worlds/status.txt; exit 1; }
 mkdir -p experiments/w135/worlds
