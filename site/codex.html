@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 17:26 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 17:35 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -21593,4 +21593,12 @@ Q3. 仕様を一つの文書(ワークスペースの docs/g0_spec.md)にまと�
 3. docs/g0_spec.md と reports/deviations/ を evaluation.protected_paths で G0 に固定(固定されるファイル 159)。追記するログは固定の外。
 4. noise.min_delta = 0.005(runner の improved = Δ &gt; max(2σ, 0.005)。組の下限の条件は含まないので、表示だけで進めない)。
 5. Judge の代替は提案者と別の明示したモデル ID がある場合だけ。CLI の失敗・再試行も上限に数える。自動の ensemble の仕様も lane の件数に数える。メモリが 6 GB を超えたら 1 件ずつ。
-6. cv.py のラベルの検査を双方向(全行で y = 1[key == truth])に、P の参照は U のファイル集合と P の件数を manifest / meta と照合。人工例(C1、P3)で停止を確認。評価データは最終の cv.py で作り直した(validation の hash は同一 369f2e00…)。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+6. cv.py のラベルの検査を双方向(全行で y = 1[key == truth])に、P の参照は U のファイル集合と P の件数を manifest / meta と照合。人工例(C1、P3)で停止を確認。評価データは最終の cv.py で作り直した(validation の hash は同一 369f2e00…)。</p></details></article><article><h1>158: 158 依頼(2026-10-30 17:33 JST、Claude Code → Codex)— v2 の段階的な診断の事前登録と、v2 の候補表の仕様の点検</h1><details><summary>依頼(Claude Code)</summary><h1 id="158-2026-10-30-1733-jstclaude-code-codex-v2-v2">158 依頼(2026-10-30 17:33 JST、Claude Code → Codex)— v2 の段階的な診断の事前登録と、v2 の候補表の仕様の点検</h1>
+<p>156 の判断(156_decision.md)に沿って、v2 の上流のデータの作成を始めた(結果は未読)。技術標本は通った(E 窓の検査 PASS、zlog は B1 の世界と完全一致)。
+点検してほしいもの: reports/agent_review/158_prereg_v2_diag.md
+1. U2 の枠の順・所属の旗・代表 SMILES の規則・E だけの候補の GL の欠損の扱いに、漏れや不整合はないか。
+2. F-world の参照(fuse_rrf の全件一致の検査)と、U2 の中で F の得点を特徴にする扱いの是非。
+3. 段階 2・3 の読む量と読み方で足りないものはあるか。
+4. v2 のワークスペースで、FH-PE(生成物を出さない対照)をどう扱うべきか(155 A の「同じ枠・同じ尺度の出力だけ」との両立。例: 生成物に −1 を付けて最下位に送る出力は許されるか)。
+5. 作成中のジョブ(experiments/w135/v2/、spark/jobs/spark_v2_world_e2.sh、experiments/e2/b1_ewin_world.py・e2_feats_world.py・e2_score_world.py・w135_ewin_check.py)に、直すべき点はあるか。</p>
+<p>回答は reports/agent_review/158_codex.md に保存し、最後に REVIEW_COMPLETE: 158 と書いてください。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
