@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 14:27 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="on">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 16:30 JST</span></header>
 <main><article><div class="toc"><div class="toc">
 <ul>
 <li><a href="#1-22400140">1. 22:40〜01:40 のまとめ</a></li>
@@ -24,6 +24,8 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><a href="#3-09351030-e2-p">3. 09:35〜10:30 主軸の転換: 土台の作り直し(独立した第二エンジン E2 + P との融合)</a></li>
 <li><a href="#4-10301150-e2-codex-145-146-f">4. 10:30〜11:50 E2 の結果、Codex 145 / 146 への対応、F の提出の準備</a></li>
 <li><a href="#5-11501256-f-132-codex-147-148-s2">5. 11:50〜12:56 F の提出、132 の結果、Codex 147 / 148 の行程表、S2 の準備</a></li>
+<li><a href="#6-12561431-149-codex-152-discussion">6. 12:56〜14:31 149 の結果、Codex 152 への依頼、discussion の再確認</a></li>
+<li><a href="#7-14311519-codex-152-153fh-v0no">7. 14:31〜15:19 Codex 152 / 153、FH v0(NO)、ハーネスの導入</a></li>
 </ul>
 </div>
 </div><h1 id="2026-10-30claude-code-date-git">進捗 2026-10-30(夜間、Claude Code)— 時刻は date / git の記録から</h1>
@@ -130,4 +132,41 @@ code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{ba
 <li><strong>A3 の結果は NO</strong>(141_result.md): 合成化学の timsTOF(G)では +0.072 だったが、天然物(npH、パネル)で悪化した。GL の適応の線は一旦止める。</li>
 <li><strong>Codex 148</strong>: 合成スペクトルによる FPNet の増強は、115 で実測済みだった(FP 単独 +0.0098、凍結した ranker の完成系では NO)。私の見落としであり、メモに残した。文献の数字も訂正した。次の候補は、115 の資産を使った「E2 への接続」の診断(149 の後)。</li>
 <li><strong>S3</strong>(class 3 の生成物をエンジンの中で採点)の学習行の設計の下書き(150)。</li>
+</ul>
+<h2 id="6-12561431-149-codex-152-discussion">6. 12:56〜14:31 149 の結果、Codex 152 への依頼、discussion の再確認</h2>
+<ul>
+<li><strong>149(S2 (i)、MIST 版の第二エンジン)は NO</strong>(149_result.md、14:18)。</li>
+<li>主指標 F_M − F_C = −0.0003 [−0.0043, +0.0036]。両方向も −0.0026 / +0.0021 で、符号がそろわない。保護は全て問題なかった。</li>
+<li>E2 単独の強さも、C 0.556 / M 0.551 とほぼ同じ。同じ分子式の中での順位も、M が良い 218、悪い 258 で、異性体の識別の情報は増えていない。</li>
+<li>F_C の構図(E 源の正解で +0.032、E 源の外で −0.048)は、v8w7a が学習していない fold 3/4 の分子でも再現した。</li>
+<li>登録どおり、MIST の定数の探索はしない。</li>
+<li><strong>Codex 152 を依頼</strong>(14:18)。</li>
+<li>私の読み: 異性体の識別に使える証拠は、手持ちの範囲ではほぼ飽和している(MIST・合成の増強・GL の適応・DreaMS・自前の採点器 N は、どれも単体では差があっても、統合した完成系ではほぼ 0)。残る大きな手は候補の集合の側(S1 = 候補源の方針、S3 = class 3 の生成物をエンジンの中で採点)。</li>
+<li>確認したい点: この読みの見落とし、(ii) の 151 を続けるか S3 を先にするか、150 の点検、F の Public の三つの分岐ごとの次の一手。</li>
+<li><strong>discussion の再取得</strong>(docs/official_1030b、14:21)。新しい投稿は 753900(公開資産の生成コードの開示の依頼)の 1 件だけで、技術的な新情報はない。</li>
+<li><strong>過去の Public の診断提出の読み直し</strong>(10/26 の M2x の順、10/29 の T / B 群)。</li>
+<li>10/26: PubChem のみの候補に絞ると 0.046、train か COCONUT に絞ると 0.336。私たちの得点の 87% 以上は、train か COCONUT の構造が正解の分子から来ている。</li>
+<li>10/29: COCONUT にあり train に無い構造(B 群)に絞ると、E0 0.259 対 v8w7a 0.220。E0 の単体のエンジンはどちらも v8w7a と同程度(0.213 / 0.223)で、差は二本の融合と、その後の並べ替えから来ている。</li>
+<li>読み: 0.500 への主戦場は、B 群の中の順位(COCONUT の異性体の識別)と、その融合の仕方である。F はこの機構の移植で、Public の結果(4.7 時間の実行の見込み、16 時半〜17 時ごろ)で隠しテストでの収支が分かる。</li>
+</ul>
+<h2 id="7-14311519-codex-152-153fh-v0no">7. 14:31〜15:19 Codex 152 / 153、FH v0(NO)、ハーネスの導入</h2>
+<ul>
+<li><strong>Codex 152</strong>: 重心を S3 へ。いまの RRF では P に無い生成物は最終 13 位以下にしかなれない(S3 の寄与は最大 0.0055)→ P・生成物を一つの候補表で並べる、学習した最終の採点器(FH)を設計する。</li>
+<li><strong>極性の観測の型の実現性</strong>(152_feas_ionpattern.md、記述): enveda-180 の OOF の AUC 0.943、パネルへの移り 0.816、同じ分子式の囮との比較 0.625 → 新しい証拠の型の候補(Codex 153: 取得条件の監査をしてから別に登録)。</li>
+<li><strong>153 FH v0 は NO</strong>(153_result.md): π0.3 で FH-gen − P = +0.0097 [+0.0037, +0.0165] / +0.0129 [+0.0030, +0.0272]。関門 +0.02 に届かない。生成物が 1 位に出たことは 0 回(学習の生成物の正例が 41〜46 identity)。P 自身の並べ替えで +0.005。</li>
+<li><strong>ハーネスの導入</strong>(利用者の指示、15:00 ごろ): 専用 venv に install、単体テスト 36 件 PASS、合成デモ完走。CASMI のワークスペースを C:\kaggle\competitions\casmi-harness に作成。</li>
+<li>役割の分担(docs/harness_roles.md): Codex = Critic・Judge・発想役の一つ・文献の照合。Claude = Orchestrator・Executor・Analyst・Librarian。G0〜G4 = 利用者。</li>
+<li>G0 の提案(154_g0_proposal.md): W135 の 31 世界の 3,095 query、7 fold(バッチの組)、主指標 = π3 0.3 の MRR@25(1,297 query)、test = fold 0 の e バッチの世界(特徴だけ、正解は外)。src(指標・CV・adapter)と validation.npz の草案、技術の検査は PASS。Codex 154 で点検中。</li>
+<li>e バッチの 12 世界を Spark で作成中(15:10 開始、データだけ)。</li>
+<li>提出は今後 G3(利用者の承認)が必要。Public LB は違和感の検出だけに使う。</li>
+<li><strong>Codex 154(G0 の提案の点検)と修正</strong>(154_decision.md、15:34〜15:42)</li>
+<li>test の ID に正解が漏れる問題(W135 の分子 ID = 正解の InChIKey 系)→ 不透明な ID と許可した列だけの exporter(w135_fh_export.py)。対応表・salt・正解はワークスペースの外。</li>
+<li>π0 と π0.3 の候補表の差分から C3 の正解が分かる → test は e 世界の π0.3 だけ(596 query)。</li>
+<li>P だけの参照で生成物の中の正解を数えていた → 「提出しない枠」(予測値 ≤ −1e8)を指標に入れた(41 件で RR 0 を確認)。同点の規則を 153 に揃えた。</li>
+<li>主指標の母集団 = 1,198(cU1 は補助)。補助の reader を G0 で固定。基本データは G0 で hash ごと固定(基準の 3 seed は資源 ID を持たないため)。</li>
+<li>役割: 正式な Critic = Codex の新しい文脈、Judge = 提案者と別のモデル(Claude の案 → Codex)、Codex の発想役は隔離が無いので使わない。逸脱 D1〜D5 を記録。</li>
+<li>到達の上限(開発の主 1,198): 正解が候補表にある 0.643(C1 0.806 / C2 0.833 / C3 0.225)。</li>
+<li>ワークスペースの CLAUDE.md に CASMI 固有の規則(日本語、3 回の言い聞かせ、計算資源、認証情報、競技規則、venv)を追記。</li>
+<li>残り: e の π0.3 の 6 世界の完成(16 時半ごろ)→ test 資源の書き出し → validation.npz の確定 → 利用者の G0。</li>
+<li><strong>F の Public = 0.414</strong>(16:29 確認。P 0.394 / 132 0.403)。登録どおり明瞭な正 → 暫定の作業基準を F に更新。二つのエンジンの融合と E 源の優遇は、隠しテストで得だった。予約の確認(e)は E2 を含む版のために温存(Codex 153 Q5)。</li>
 </ul></article><p class='small muted'>原文: <code>docs/progress_2026-10-30.md</code></p><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
