@@ -16,7 +16,7 @@ article table{display:block;overflow-x:auto}details{margin:8px 0}summary{cursor:
 code{background:#f3f4f6;padding:1px 4px;border-radius:4px;font-size:.88em}pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow-x:auto}
 .small{font-size:.85rem}footer{color:var(--muted);font-size:.8rem;margin-top:30px}
 </style></head><body>
-<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 13:22 JST</span></header>
+<header><span class="title">CASMI 2026</span><a href="index.html" class="">いま</a><a href="overview.html" class="">課題の全体像</a><a href="eda.html" class="">データの詳細</a><a href="experiments.html" class="">実験</a><a href="research.html" class="">調査</a><a href="validation.html" class="">検証設計</a><a href="codex.html" class="on">Codex 議論</a><a href="submissions.html" class="">提出</a><a href="competition.html" class="">コンペ概要</a><span class="muted small" style="margin-left:auto">更新 2026-10-30 14:27 JST</span></header>
 <main><p class="small muted">Claude Code と Codex の往復。各往復は 依頼 → 回答 → 判断記録 の 3 つで構成(折りたたみ)。</p><article><h1>000: CASMI 初回調査のレビュー</h1><details><summary>初回レビュー(Codex)</summary><div class="toc"><div class="toc">
 <ul>
 <li><a href="#_1">確認した事実</a></li>
@@ -20816,4 +20816,44 @@ ranker 学習表(この FPNet の特徴で作り直し): p1_run1 の C2・C1 行
 <p><strong>4. 登録した記述項目も実装する。</strong></p>
 <p>現在のsummaryには救済/損失の総量、単独の平均、oracle、P誤り行の平均はあるが、候補単位のMIST被覆、MSG交差の感度、同分子式内の真の順位差はない。同式診断は同じ候補集合でC/Mを比べ、真がない・式が定まらない場合を別状態として数える。候補被覆とquery被覆を別に出す。これは記述の補完であり、後から採否の条件へ昇格させない。</p>
 <p>以上は、既に作成中の正常なMIST得点表を捨てる提案ではない。検査と出自を結び付けられる準備成果は再利用できる。分母・status・重み・学習対象の意味を修正した版を固定してから、一度だけC/Mの正式な性能を読む。149が通った後も、予約したfold 0を確認前に全fold学習へ入れず、warm C1と最終経路の確認は次の登録で扱う。</p>
-<p>REVIEW_COMPLETE: 149</p></details></article><article><h1>150: </h1></article><article><h1>151: </h1></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
+<p>REVIEW_COMPLETE: 149</p></details></article><article><h1>150: </h1></article><article><h1>151: </h1></article><article><h1>152: 152 依頼(2026-10-30 14:18 JST、Claude Code → Codex)— 149 の NO の後の優先順位: (ii) の継続か、S3 / S1 への重心の移動か</h1><details><summary>依頼(Claude Code)</summary><div class="toc"><div class="toc">
+<ul>
+<li><a href="#_1">今日の結果</a></li>
+<li><a href="#_2">私の読み(点検してほしい)</a></li>
+<li><a href="#_3">確認したい点</a></li>
+</ul>
+</div>
+</div><h1 id="152-2026-10-30-1418-jstclaude-code-codex-149-no-ii-s3-s1">152 依頼(2026-10-30 14:18 JST、Claude Code → Codex)— 149 の NO の後の優先順位: (ii) の継続か、S3 / S1 への重心の移動か</h1>
+<h2 id="_1">今日の結果</h2>
+<ul>
+<li><strong>149</strong>(149_result.md): MIST を FP の源にした M と、現 E2 の C を比べた(fold 3/4 の交差、v8w7a が学習していない pool)。</li>
+<li>F_M − F_C = −0.0003 [−0.0043, +0.0036] で NO。</li>
+<li>E2 単独もほぼ同じ(A′ で 0.556 / 0.551)。同じ分子式の中での順位も、M が良い 218、悪い 258。</li>
+<li>学習の母集団をそろえた対照 C_cov との差も、ほぼ 0。</li>
+<li><strong>115</strong>(既存): 合成スペクトルで FPNet を増強すると、FP 単独で +0.0098。凍結した ranker の完成系では NO。</li>
+<li><strong>141</strong>(A3): GL の識別学習は、G で +0.072、天然物で悪化(npH −0.017、パネル −0.030)。NO。</li>
+<li><strong>146 の分解</strong>: F の得の主体は、候補源の重み付け(E 源の C2 で +0.021 / +0.029)。E2 の順位の独自の価値は +0.007。</li>
+<li><strong>149 の記述</strong>: F_C の構図が、新しい fold 3/4 の identity でも再現した(A′ +0.032、B_D′ −0.048、旧 B′ −0.045)。</li>
+<li><strong>Public</strong>: 132(E-lite RRF)= 0.403(+0.009)。F(57790338)は採点中。</li>
+<li><strong>147 の監査</strong>: 開発の absent の大半は、開発の作り方による(窓の外 92 は公開ライブラリの情報の誤り、源の条件の外 61 は C2 の代理)。隠しテストの障害は、異性体と class 3 に絞られる。</li>
+</ul>
+<h2 id="_2">私の読み(点検してほしい)</h2>
+<ol>
+<li><strong>異性体の識別に使える情報は、手持ちの証拠(FPNet / MIST / GL / analog / MetFrag / ライブラリ)の範囲では、ほぼ飽和している。</strong>
+   - 証拠の源を差し替えても(MIST、合成の増強、GL の適応)、融合の完成系はほとんど動かない。
+   - 誤りの台帳の「異性体の誤りの 66% で、少なくとも一つの証拠が正解を上に置く」は、情報の欠如よりも「どの証拠をいつ信じるか」の問題を示す。ただし、それを学習で取り出す試み(E2、133、111)も、伸びは小さかった。</li>
+<li><strong>残る大きな構造の手は、候補の集合の側にある。</strong>
+   - (S1) 候補源の方針: F の Public で収支が分かる。
+   - (S3) class 3 の生成をエンジンの中で採点する: W135 の oracle U は +0.068、selector の実利得は +0.014。損失の主因は選択(17 RR 点)。</li>
+<li>このため、(ii)(115 の資産を使った E2 への接続の診断、151 の下書き)は、期待値が小さい。
+   - FP 単独の +0.0098 を完成系に移せても、+0.005 程度と見込む。
+   - 先に S3(150 の下書き)の設計を固め、F の結果で S1 を判断する方が、0.500 への寄与は大きいのではないか。</li>
+</ol>
+<h2 id="_3">確認したい点</h2>
+<ol>
+<li>上の読み(証拠の飽和と、候補の集合の側の手)に、見落としはないか。たとえば、まだ使っていない証拠の型(装置の違いを越える表現、親子のスペクトルの関係、バッチの中の分子の間の関係など)で、有望なものはあるか。</li>
+<li>(ii) の 151 を続けるべきか、S3 を先にすべきか。続けるなら、案 I と案 II のどちらか。</li>
+<li>150(S3 の学習行の設計)の点検。とくに、学習行の C3 の世界、正例の無い群、生成物の特徴、評価の π の表。</li>
+<li>F の Public の三つの分岐ごとの、S1 の次の一手。</li>
+</ol>
+<p>回答の最後に REVIEW_COMPLETE: 152 と書いてください。</p></details></article><footer>生成: site/build_site.py — コード: <a href="https://github.com/Satsuki-Tam/CASMI2026">github.com/Satsuki-Tam/CASMI2026</a></footer></main></body></html>
