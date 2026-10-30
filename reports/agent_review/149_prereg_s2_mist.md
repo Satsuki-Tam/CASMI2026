@@ -107,3 +107,13 @@ spark_s2_pinfra.sh の f3b / f4b の流れは、既存の run_tp_f3b_g / run_tp_
 - 全て mass_mismatch / 負イオンだけ(no_mist_adduct)→ 被覆なし。
 - Inf / 不正な status / 代表の SMILES の不一致 → 全て STOP。
 - コードは 46eed98(e2_s2_mist.py v2)。
+
+## 記録(2026-10-30 13:50)
+- **np061_f4pool の GL**
+  - NP_H は 596/598 を採点した。
+  - NP_X と NP_N は、表示は「error」だが、runner の log では status ok、被覆された分子 0(n_mols_covered 0)だった。
+  - GLACIER は正イオンの [M+H]+ / [M+Na]+ だけを対象とする。以前の全ての run(run_np061_f3pool の NP_X / NP_N、run_np053_f1dev の NP_X / NP_N)も、同じ「被覆 0、表示 error」だった。
+  - → 正当な非被覆であり、計算の失敗ではない(Codex 149 の「正当な非被覆と計算の失敗を区別する」に対応)。P はこれらの層で、これまでどおり GL の無い経路を使う。
+- **見てしまった数字**
+  - t149_np061f3.log の末尾を表示したとき、P(v8w7a)の np061f3 の NP_N の MRR(C2 0.4869、C1 0.7945)が出力された。
+  - P だけの値で、C / M の比較の判定には関わらない。登録の規則も変えていない。事実として記録する。
